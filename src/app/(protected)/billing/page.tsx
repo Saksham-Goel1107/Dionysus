@@ -14,6 +14,16 @@ const BillingPage = () => {
   const creditsToBuyAmount = creditsToBuy[0]!;
   const price = ((creditsToBuyAmount / 50) * 75).toFixed(2);
 
+  const handleBuyCredits = async () => {
+    setIsLoading(true);
+    try {
+      await createCheckoutSession(creditsToBuyAmount);
+    } catch (error) {
+      console.error("Error starting checkout:", error);
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-xl font-semibold">Billing</h1>
@@ -45,7 +55,7 @@ const BillingPage = () => {
         value={creditsToBuy}
       />
       <div className="h-4"></div>
-      <Button onClick={() => createCheckoutSession(creditsToBuyAmount)} disabled={isLoading}>
+      <Button onClick={handleBuyCredits} disabled={isLoading}>
         {isLoading
           ? "Processing..."
           : `Buy ${creditsToBuyAmount} credits for ₹${price}`}
