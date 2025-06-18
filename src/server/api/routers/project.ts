@@ -28,25 +28,33 @@ export const projectRouter = createTRPCRouter({
         throw new Error("Insufficient credits");
       }
 
-      const project = await ctx.db.project.create({
-        data: {
-          githubUrl: input.githubUrl,
-          name: input.name,
-          userToProjects: {
-            create: {
-              userId: ctx.user.userId!,
+      // Use a transaction for atomicity
+      const result = await ctx.db.$transaction(async (prisma) => {
+        // Deduct credits first
+        await prisma.user.update({
+          where: { id: ctx.user.userId! },
+          data: { credits: { decrement: fileCount } },
+        });
+
+        const project = await prisma.project.create({
+          data: {
+            githubUrl: input.githubUrl,
+            name: input.name,
+            userToProjects: {
+              create: {
+                userId: ctx.user.userId!,
+              },
             },
           },
-        },
-      });
-      await indexGithubRepo(project.id, input.githubUrl, input.githubToken);
-      await pullCommits(project.id);
-      await ctx.db.user.update({
-        where: { id: ctx.user.userId! },
-        data: { credits: { decrement: fileCount } },
+        });
+
+        return project;
       });
 
-      return project;
+      await indexGithubRepo(result.id, input.githubUrl, input.githubToken);
+      await pullCommits(result.id);
+
+      return result;
     }),
 
   getProjects: protectedProcedure.query(async ({ ctx }) => {

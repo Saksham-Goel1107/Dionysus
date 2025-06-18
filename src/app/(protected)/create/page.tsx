@@ -112,6 +112,9 @@ const page = ({}: Props) => {
                   You have <strong>{checkCredits.data?.userCredits}</strong>{" "}
                   credits remaining.
                 </p>
+                <p className="ml-6 text-sm text-red-900">
+                  Remember This process takes some time so be patient and check in 2-5 min till then have a coffee🍵
+                </p>
               </div>
             )}
 

@@ -39,7 +39,7 @@ const BillingPage = () => {
       <Slider
         defaultValue={[100]}
         max={1000}
-        min={10}
+        min={30}
         step={10}
         onValueChange={(value) => setCreditsToBuy(value)}
         value={creditsToBuy}
