@@ -1,0 +1,126 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  imageUrl           String?
+  firstName          String?
+  lastName           String?
+  emailAddress       String              @unique
+  credits            Int                 @default(150)
+  questionsAsked     Question[]
+  stripeTransactions StripeTransaction[]
+  userToProjects     UserToProject[]
+}
+
+model Project {
+  id                   String                @id @default(cuid())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  name                 String
+  githubUrl            String
+  deletedAt            DateTime?
+  commits              Commit[]
+  meetings             Meeting[]
+  savedQuestions       Question[]
+  sourceCodeEmbeddings SourceCodeEmbedding[]
+  userToProjects       UserToProject[]
+}
+
+model UserToProject {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Commit {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  projectId          String
+  commitMessage      String
+  commitHash         String
+  commitAuthorName   String
+  commitAuthorAvatar String
+  commitDate         DateTime
+  summary            String
+  project            Project  @relation(fields: [projectId], references: [id])
+}
+
+model SourceCodeEmbedding {
+  id               String                 @id @default(cuid())
+  summaryEmbedding Unsupported("vector")?
+  sourceCode       String
+  fileName         String
+  summary          String
+  projectId        String
+  project          Project                @relation(fields: [projectId], references: [id])
+}
+
+model Question {
+  id              String   @id @default(cuid())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  question        String
+  answer          String
+  filesReferences Json?
+  projectId       String
+  userId          String
+  project         Project  @relation(fields: [projectId], references: [id])
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+model Meeting {
+  id         String        @id @default(cuid())
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  name       String
+  meetingUrl String
+  projectId  String
+  status     MeetingStatus @default(PROCESSING)
+  issues     Issue[]
+  project    Project       @relation(fields: [projectId], references: [id])
+}
+
+model Issue {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  start     String
+  end       String
+  gist      String
+  headline  String
+  summary   String
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+}
+
+model StripeTransaction {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  credits   Int
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum MeetingStatus {
+  PROCESSING
+  COMPLETED
+}
