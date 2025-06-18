@@ -1,23 +1,87 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Github, Headphones, Users, FileAudio, Bot } from "lucide-react";
+import { Github, Users, FileAudio, Bot } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+
+function AuthButtons() {
+  const { isSignedIn } = useAuth();
+
+  if (isSignedIn) {
+    return (
+      <div className="flex items-center justify-center space-x-4">
+        <Link href="/dashboard">
+          <Button>Go to Dashboard</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center space-x-4">
+      <Link href="/sign-up">
+        <Button>Get Started</Button>
+      </Link>
+      <Link href="/sign-in">
+        <Button>Login</Button>
+      </Link>
+    </div>
+  );
+}
+
+function BottomCTA() {
+  const { isSignedIn } = useAuth();
+
+  if (isSignedIn) {
+    return (
+      <Link href="/dashboard">
+        <Button>Go to Dashboard</Button>
+      </Link>
+    );
+  }
+
+  return (
+    <Link href="/sign-up">
+      <Button>Get Started</Button>
+    </Link>
+  );
+}
+
+function HeaderNav() {
+  const { isSignedIn } = useAuth();
+
+  if (isSignedIn) {
+    return (
+      <nav className="flex items-center gap-4">
+        <Link href="/dashboard" className="text-sm font-medium hover:underline">
+          Dashboard
+        </Link>
+        <Link href="/create" className="text-sm font-medium hover:underline">
+          Create Project
+        </Link>
+      </nav>
+    );
+  }
+
+  return null;
+}
 
 export default function LandingPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="flex h-14 items-center px-4 lg:px-6">
+      <header className="flex h-14 items-center justify-between px-4 lg:px-6">
         <Link className="flex items-center justify-center" href="#">
           <Bot className="h-6 w-6" />
           <span className="ml-2 text-2xl font-bold">Dionysus</span>
         </Link>
+        <HeaderNav />
       </header>
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
@@ -33,14 +97,7 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="w-full max-w-sm space-y-2">
-                <div className="flex items-center justify-center space-x-4">
-                  <Link href="/sign-up">
-                    <Button>Get Started</Button>
-                  </Link>
-                  <Link href="/sign-in">
-                    <Button>Login</Button>
-                  </Link>
-                </div>
+                <AuthButtons />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Start enhancing your GitHub experience today. No credit card
                   required.
@@ -105,9 +162,7 @@ export default function LandingPage() {
                   Join Dionysus today and unlock the power of AI for your GitHub
                   projects.
                 </p>
-                <Link href="/sign-up">
-                  <Button>Get Started</Button>
-                </Link>
+                <BottomCTA />
               </div>
             </div>
           </div>
