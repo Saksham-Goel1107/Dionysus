@@ -32,8 +32,12 @@ const page = ({}: Props) => {
             refetch();
             reset();
           },
-          onError: () => {
-            toast.error("Failed to create project");
+          onError: (error) => {
+            if (error.message.includes("more than 80 credits")) {
+              toast.error("Project creation is disabled for repositories requiring more than 80 credits");
+            } else {
+              toast.error("Failed to create project: " + error.message);
+            }
           },
         },
       );
@@ -108,6 +112,11 @@ const page = ({}: Props) => {
                     this repository.
                   </p>
                 </div>
+                {checkCredits.data?.fileCount > 80 && (
+                  <div className="ml-6 text-sm font-semibold text-red-700 mt-1">
+                    Error: Project creation is disabled for repositories requiring more than 80 credits
+                  </div>
+                )}
                 <p className="ml-6 text-sm text-blue-600">
                   You have <strong>{checkCredits.data?.userCredits}</strong>{" "}
                   credits remaining.
@@ -125,7 +134,8 @@ const page = ({}: Props) => {
               disabled={
                 createProject.isPending ||
                 checkCredits.isPending ||
-                !hasEnoughCredits
+                !hasEnoughCredits ||
+                (checkCredits.data && checkCredits.data.fileCount > 80)
               }
             >
               {!!checkCredits.data ? "Create Project" : "Check Credits"}

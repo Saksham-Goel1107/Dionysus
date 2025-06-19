@@ -104,7 +104,7 @@ export const pullCommits = async (projectId: string) => {
 
     const summaryResponses = await Promise.allSettled(
       unprocessedCommits.map((commit) => {
-        return summariseCommit(githubUrl, commit.commitHash);
+        return summariseCommit(githubUrl, commit.commitHash, project.name || "");
       }),
     );
 
@@ -141,6 +141,7 @@ async function fetchProjectGithubUrl(projectId: string) {
     where: { id: projectId },
     select: {
       githubUrl: true,
+      name: true,
     },
   });
 
@@ -169,11 +170,11 @@ async function filterUnprocessedCommits(
   return unprocessedCommits;
 }
 
-async function summariseCommit(githubUrl: string, commitHash: string) {
+async function summariseCommit(githubUrl: string, commitHash: string, projectName: string) {
   const { data } = await axios.get(`${githubUrl}/commit/${commitHash}.diff`, {
     headers: {
       Accept: "application/vnd.github.v3.diff",
     },
   });
-  return (await aiSummariseCommit(data)) || "";
+  return (await aiSummariseCommit(data, projectName)) || "";
 }

@@ -101,6 +101,8 @@ const MeetingCard = () => {
             Analyse your meeting with Dionysus.
             <br />
             Powered by AI.
+            <br />
+            Please Provide an mp3 file.
           </p>
           <div className="mt-6">
             <Button disabled={isUploading}>

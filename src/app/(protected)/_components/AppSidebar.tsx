@@ -61,12 +61,14 @@ const AppSidebar = ({}: Props) => {
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <Image src="/logo.png" alt="logo" width={40} height={40} />
-          {open && (
-            <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>
-          )}
-        </div>
+        <Link href={'/'}>
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="logo" width={40} height={40} />
+            {open && (
+              <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>
+            )}
+          </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -102,18 +104,19 @@ const AppSidebar = ({}: Props) => {
                 return (
                   <SidebarMenuItem key={project.name}>
                     <SidebarMenuButton asChild>
-                      <div onClick={() => setProjectId(project.id)}>
+                        <div onClick={() => setProjectId(project.id)}>
                         <div
                           className={cn(
-                            "cursor-pointer flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
-                            {
-                              "bg-primary text-white cursor-pointer": project.id === projectId,
-                            },
+                          "cursor-pointer flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
+                          {
+                            "bg-primary text-white cursor-pointer": project.id === projectId,
+                            "px-2": !open, 
+                          },
                           )}
                         >
                           {project.name[0]}
                         </div>
-                        <span>{project.name}</span>
+                        <span className="cursor-pointer">{project.name}</span>
                       </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

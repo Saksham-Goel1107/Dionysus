@@ -23,6 +23,9 @@ export const projectRouter = createTRPCRouter({
 
       const currentCredits = user.credits || 0;
       const fileCount = await checkCredits(input.githubUrl, input.githubToken);
+      if (fileCount > 80) {
+        throw new Error("Project creation is disabled for repositories requiring more than 80 credits");
+      }
 
       if (fileCount > currentCredits) {
         throw new Error("Insufficient credits");

@@ -117,9 +117,10 @@ const AskQuestionCrad = () => {
               placeholder="Which file should I edit to change the home page ?"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
-            ></Textarea>
+              required
+            />
             <div className="h-4"></div>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || question.trim().length < 15}>
               Ask Dionysus
             </Button>
           </form>
