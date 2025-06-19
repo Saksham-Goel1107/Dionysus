@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import useRefetch from "@/hooks/use-refetch";
 import { askQuestion } from "../actions";
 import CodeReferences from "./CodeReferences";
+import Image from "next/image";
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
@@ -58,9 +59,10 @@ const AskQuestionCrad = () => {
         <DialogContent className="sm:max-w-[80vw]">
           <DialogHeader>
             <div className="flex items-center gap-2">
-              <DialogTitle>
-                {/* <Image src=></Image> */}
-                Logo
+              <DialogTitle className="flex items-center cursor-default">
+                <Image src='/logo.png' alt='Logo' width="40" height="40"/>
+                Dionysus
+                
               </DialogTitle>
               <Button
                 variant={"outline"}
