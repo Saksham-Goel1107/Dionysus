@@ -9,6 +9,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Providers from "./Providers"
+import { ThemeProvider } from "./components/theme-provider";
 
 
 export const metadata: Metadata = {
@@ -19,13 +20,19 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
 
   return (
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <TRPCReactProvider>
             {userId ? (
               <Providers>{children}</Providers>
@@ -34,6 +41,7 @@ export default async function RootLayout({
             )}
           </TRPCReactProvider>
           <Toaster richColors />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

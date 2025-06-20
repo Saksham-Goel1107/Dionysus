@@ -147,7 +147,16 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.meeting.findMany({
         where: { projectId: input.projectId },
-        include: { issues: true },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          name: true,
+          meetingUrl: true,
+          projectId: true,
+          status: true,
+          issues: true
+        }
       });
     }),
   deleteMeeting: protectedProcedure
@@ -160,7 +169,16 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.meeting.findUnique({
         where: { id: input.meetingId },
-        include: { issues: true },
+        select: {
+          id: true,
+          createdAt: true,
+          updatedAt: true,
+          name: true,
+          meetingUrl: true,
+          projectId: true,
+          status: true,
+          issues: true
+        }
       });
     }),
   archiveProject: protectedProcedure

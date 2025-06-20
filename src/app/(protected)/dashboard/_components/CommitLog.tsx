@@ -38,7 +38,7 @@ const CommitLog = ({}: Props) => {
                     href={`${project?.githubUrl?.replace(/\.git$/, "")}/commits/${commit.commitHash}`}
                     className="py-0.5 text-xs leading-5 text-gray-500"
                     >
-                    <span className="font-medium text-gray-900">
+                    <span className=" text-gray-900 font-semibold">
                       {commit.commitAuthorName}
                     </span>{" "}
                     <span className="inline-flex items-center">
@@ -48,7 +48,7 @@ const CommitLog = ({}: Props) => {
                     </Link>
                 </div>
 
-                <span className="font-semibold">{commit.commitMessage}</span>
+                <span className="text-gray-800 font-medium">{commit.commitMessage}</span>
                 <pre className="leadinng-6 mt-2 whitespace-pre-wrap text-sm text-gray-500">
                   {commit.summary}
                 </pre>

@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { useState } from "react";
 import { Logo } from "./logo";
+import { ModeToggle } from "./ThemeToggle"
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
@@ -19,7 +20,6 @@ export function Navbar() {
           <span className="text-xl font-bold sm:inline-block">Dionysus</span>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
           <Link
             href="#features"
@@ -33,9 +33,10 @@ export function Navbar() {
           >
             How It Works
           </Link>
-          {/* <Link href="#" className="text-sm font-medium transition-colors hover:text-primary">
+          <Link href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
             Docs
-          </Link> */}
+          </Link>
+          <ModeToggle />
           <Button onClick={() => router.push("/sign-in")}>Get Started</Button>
         </nav>
       </div>

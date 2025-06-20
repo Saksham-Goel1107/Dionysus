@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import { useTheme } from "next-themes";
 
 const MeetingCard = () => {
   const [isUploading, setIsUploading] = React.useState(false);
@@ -85,6 +86,7 @@ const MeetingCard = () => {
       setIsUploading(false);
     },
   });
+  const {resolvedTheme} = useTheme()
   
   return (
     <Card
@@ -94,7 +96,7 @@ const MeetingCard = () => {
       {!isUploading && (
         <>
           <Presentation className="h-10 w-10 animate-bounce"></Presentation>
-          <h3 className="mt-2 text-sm font-semibold text-gray-900">
+          <h3 className={`mt-2 text-sm font-semibold text-${resolvedTheme === "dark" ? "white" : "gray-900"}`}>
             Create a new meeting
           </h3>
           <p className="mt-1 text-center text-sm text-gray-500">

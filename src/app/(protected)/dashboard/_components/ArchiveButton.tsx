@@ -19,7 +19,7 @@ const ArchiveButton = () => {
         variant="destructive"
         onClick={() => {
           const confirm = window.confirm(
-            "Are you sure you want to archive this project ?",
+            "Are you sure you want to delete this project ?",
           );
           if (confirm)
             archiveProject.mutate(
@@ -36,7 +36,7 @@ const ArchiveButton = () => {
             );
         }}
       >
-        Archive
+        Delete
       </Button>
     </div>
   );
