@@ -44,7 +44,7 @@ export async function askQuestion(question:string,projectId:string){
 
     (async () => {
         const { textStream } = streamText({
-            model: google('gemini-1.5-flash'),
+            model: google('gemini-2.0-flash'),
             prompt: `You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern with a basic understanding of programming and software development.
             The AI assistant is a brand new, powerful, human-like artificial intelligence.
             The traits of the AI include expert knowledge, helpfulness, cleverness, and articulateness.

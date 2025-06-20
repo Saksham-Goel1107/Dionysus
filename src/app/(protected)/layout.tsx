@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserButton } from "@clerk/nextjs";
+import { ModeToggle } from "@/app/components/ThemeToggle";
 import AppSidebar from "./_components/AppSidebar";
 
 type Props = {
@@ -14,8 +15,10 @@ const layout = ({ children }: Props) => {
         <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4 shadow">
           {/* <Searchbar /> */}
           <SidebarTrigger />
-          <div className="ml-auto"> </div>
-          <UserButton />
+          <div className="ml-auto flex items-center gap-2">
+            <ModeToggle />
+            <UserButton />
+          </div>
         </div>
         <div className="h-4"> </div>
         {/* MAIN-CONTENT */}
