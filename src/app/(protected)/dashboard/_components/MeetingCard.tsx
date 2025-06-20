@@ -117,19 +117,32 @@ const MeetingCard = () => {
       )}
 
       {isUploading && (
-        <div className="">
-          <CircularProgressbar
-            value={progress}
-            text={`${progress}%`}
-            className="size-20"
-            styles={buildStyles({
-              pathColor: "black",
-              textColor: "black",
-            })}
-          />
-          <p className="text-center text-sm text-gray-500">
-            Uploading your meeting...
-          </p>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative size-24 flex items-center justify-center">
+            <CircularProgressbar
+              value={progress}
+              text={""}
+              className="size-24 transition-all"
+              styles={buildStyles({
+          pathColor: resolvedTheme === "dark" ? "hsl(var(--primary))" : "hsl(var(--primary))",
+          textColor: "transparent",
+          trailColor: resolvedTheme === "dark" ? "hsl(var(--muted))" : "hsl(var(--muted))",
+          rotation: 0.25,
+          strokeLinecap: "round",
+          pathTransitionDuration: 0.5,
+          textSize: "16px",
+              })}
+            />
+            <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold">
+              {progress}%
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm font-medium">Uploading your meeting</p>
+            <p className="text-xs text-muted-foreground">
+              {progress === 100 ? "Processing..." : "Please wait while we upload your file"}
+            </p>
+          </div>
         </div>
       )}
     </Card>

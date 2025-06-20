@@ -69,7 +69,7 @@ const BillingPage = () => {
           step={10}
           onValueChange={(value) => setCreditsToBuy(value)}
           value={creditsToBuy}
-          className="cursor-grab"
+          className="cursor-grab active:cursor-grabbing"
         />
         <div className="h-4"></div>
         <Button onClick={handleBuyCredits} disabled={isLoading}>
@@ -81,46 +81,75 @@ const BillingPage = () => {
 
       <div className="h-8"></div>
 
-      <div className="rounded-lg border bg-card">
-        <div className="p-6 pb-4">
-          <h2 className="text-xl font-semibold">Purchase History</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            View your credit purchase history
-          </p>
+      <div className="rounded-lg border bg-card shadow-sm">
+        <div className="flex items-center justify-between p-6 pb-4 border-b">
+          <div>
+        <h2 className="text-xl font-semibold">Purchase History</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          View your credit purchase history
+        </p>
+          </div>
+          <div>
+        <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+          {transactions?.length ?? 0} {transactions?.length === 1 ? "purchase" : "purchases"}
+        </span>
+          </div>
         </div>
-        <Table>
-          <TableHeader>
+        <div className="overflow-x-auto">
+          <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date</TableHead>
+            <TableHead>Credits</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {transactions?.length ? (
+            transactions.map((transaction: Transaction) => (
+          <TableRow key={transaction.id} className="hover:bg-muted transition">
+            <TableCell>
+              <div>
+            <span className="font-medium">
+              {new Date(transaction.createdAt).toLocaleDateString()}
+            </span>
+            <span className="block text-xs text-muted-foreground">
+              {new Date(transaction.createdAt).toLocaleTimeString()}
+            </span>
+              </div>
+            </TableCell>
+            <TableCell>
+              <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded">
+            +{transaction.credits} credits
+              </span>
+            </TableCell>
+            <TableCell>
+              <span className="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+            Success
+              </span>
+            </TableCell>
+            <TableCell className="text-right">
+              <span className="font-medium">₹{((transaction.credits / 50) * 75).toFixed(2)}</span>
+            </TableCell>
+          </TableRow>
+            ))
+          ) : (
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Credits</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+            <div className="flex flex-col items-center gap-2">
+              <svg width="32" height="32" fill="none" viewBox="0 0 24 24" className="text-muted-foreground">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+            <path d="M8 12h8M12 8v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              <span>No purchase history yet</span>
+            </div>
+          </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions?.length ? (
-              transactions.map((transaction: Transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>
-                    {new Date(transaction.createdAt).toLocaleDateString()} at{" "}
-                    {new Date(transaction.createdAt).toLocaleTimeString()}
-                  </TableCell>
-                  <TableCell>
-                    +{transaction.credits} credits
-                  </TableCell>
-                  <TableCell className="text-right">
-                    ₹{((transaction.credits / 50) * 75).toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-muted-foreground">
-                  No purchase history yet
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+          )}
+        </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

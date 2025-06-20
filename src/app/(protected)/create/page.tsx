@@ -99,7 +99,7 @@ const page = ({}: Props) => {
 
             <Input
               {...register("githubToken")}
-              placeholder="Github Token (optional)"
+              placeholder="Github Token, For private Repo's (optional)"
             />
 
             {!!checkCredits.data && (

@@ -1,6 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import useProject from "@/hooks/use-project";
 import useRefetch from "@/hooks/use-refetch";
 import { api } from "@/trpc/react";
@@ -11,34 +22,52 @@ const ArchiveButton = () => {
   const archiveProject = api.project.archiveProject.useMutation();
   const { projectId } = useProject();
   const refetch = useRefetch();
+  const handleDelete = () => {
+    archiveProject.mutate(
+      { projectId: projectId },
+      {
+        onSuccess: () => {
+          toast.success("Project archived successfully");
+          refetch();
+        },
+        onError: () => {
+          toast.error("Failed to archive project");
+        },
+      },
+    );
+  };
+
   return (
-    <div>
-      <Button
-        disabled={archiveProject.isPending}
-        size="sm"
-        variant="destructive"
-        onClick={() => {
-          const confirm = window.confirm(
-            "Are you sure you want to delete this project ?",
-          );
-          if (confirm)
-            archiveProject.mutate(
-              { projectId: projectId },
-              {
-                onSuccess: () => {
-                  toast.success("project archived");
-                  refetch();
-                },
-                onError: () => {
-                  toast.error("failed to archive project");
-                },
-              },
-            );
-        }}
-      >
-        Delete
-      </Button>
-    </div>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          disabled={archiveProject.isPending}
+          size="sm"
+          variant="destructive"
+        >
+          Delete
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your project
+            and remove all associated data including questions, meetings, and source code analysis.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            disabled={archiveProject.isPending}
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {archiveProject.isPending ? "Deleting..." : "Delete Project"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
