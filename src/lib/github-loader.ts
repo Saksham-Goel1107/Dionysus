@@ -197,13 +197,16 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     let githubRepo = '';
     
     if (githubUrl.includes('github.com')) {
-      try {        const url = new URL(githubUrl.startsWith('http') ? githubUrl : `https://${githubUrl}`);
+      try {
+        const url = new URL(githubUrl.startsWith('http') ? githubUrl : `https://${githubUrl}`);
         const pathParts = url.pathname.split('/').filter(part => part !== '');
         if (pathParts.length >= 2) {
-          githubOwner = pathParts[0] || '';          githubRepo = (pathParts[1] || '').replace(/\.git$/, '');
+          githubOwner = pathParts[0] || '';
+          githubRepo = (pathParts[1] || '').replace(/\.git$/, '');
         }
       } catch (e) {
         console.error("Error parsing GitHub URL:", e);
+        throw new Error("Invalid GitHub URL format. Please provide a valid GitHub repository URL.");
       }
     } else if (githubUrl.includes('/')) {
       const parts = githubUrl.split('/');
@@ -215,7 +218,23 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     
     if (!githubOwner || !githubRepo) {
       console.error("Could not extract owner/repo from URL:", githubUrl);
-      return 10; // Return a default value
+      throw new Error("Could not extract owner and repository name from the GitHub URL. Please provide a valid GitHub repository URL in the format 'owner/repo' or 'github.com/owner/repo'.");
+    }
+    
+    // Verify repository exists before counting files
+    try {
+      await octokit.rest.repos.get({
+        owner: githubOwner,
+        repo: githubRepo,
+      });
+    } catch (error: any) {
+      if (error.status === 404) {
+        throw new Error(`Repository ${githubOwner}/${githubRepo} not found. Please check the URL or provide a personal access token if it's a private repository.`);
+      } else if (error.status === 401 || error.status === 403) {
+        throw new Error(`Access denied to repository ${githubOwner}/${githubRepo}. Please provide a valid personal access token with repo scope.`);
+      } else {
+        throw new Error(`Error accessing repository: ${error.message}`);
+      }
     }
 
     const fileCount = await getFileCount("", octokit, githubOwner, githubRepo, 0);
@@ -223,6 +242,6 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     return fileCount;
   } catch (error) {
     console.error("Error checking credits:", error);
-    return 10; // Return a default value on error
+    throw error;
   }
 };

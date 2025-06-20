@@ -23,7 +23,7 @@ const CommitLog = ({}: Props) => {
                 "absolute left-0 top-0 flex justify-center",
               )}
             >
-              <div className={`w-px translate-x-1 bg-${resolvedTheme === "dark"?"gray-700":"gray-200"}`}></div>
+                <div className={`w-px translate-x-1 ${resolvedTheme === "dark" ? "bg-gray-800" : "bg-gray-200"}`}></div>
             </div>
 
             <>

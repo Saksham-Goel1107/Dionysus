@@ -213,11 +213,27 @@ export const projectRouter = createTRPCRouter({
   checkCredits: protectedProcedure
     .input(z.object({ githubUrl: z.string(), githubToken: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
-      const fileCount = await checkCredits(input.githubUrl, input.githubToken);
-      const userCredits = await ctx.db.user.findUnique({
-        where: { id: ctx.user.userId! },
-        select: { credits: true },
-      });
-      return { fileCount, userCredits: userCredits?.credits || 0 };
+      try {
+        const fileCount = await checkCredits(input.githubUrl, input.githubToken);
+        const userCredits = await ctx.db.user.findUnique({
+          where: { id: ctx.user.userId! },
+          select: { credits: true },
+        });
+        
+        return { 
+          fileCount, 
+          userCredits: userCredits?.credits || 0,
+          isValid: true,
+          error: null
+        };
+      } catch (error: any) {
+        // Return error information without throwing
+        return {
+          fileCount: 0,
+          userCredits: 0,
+          isValid: false,
+          error: error.message || "Failed to check repository"
+        };
+      }
     }),
 });
