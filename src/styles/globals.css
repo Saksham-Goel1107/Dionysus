@@ -80,3 +80,101 @@
     @apply bg-background text-foreground;
   }
 }
+/* MDEditor Dark Mode Enhancements */
+.markdown-editor-container {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* Light mode styling */
+.markdown-editor-container .wmde-markdown {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+}
+
+/* Dark mode styling */
+.dark .markdown-editor-container .wmde-markdown {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+}
+
+.markdown-editor-container .wmde-markdown pre {
+  background-color: hsl(var(--muted));
+  border-radius: 0.375rem;
+}
+
+.dark .markdown-editor-container .wmde-markdown pre {
+  background-color: hsl(var(--muted));
+  border: 1px solid hsl(var(--border));
+}
+
+.markdown-editor-container .wmde-markdown code {
+  color: hsl(var(--card-foreground));
+  background-color: hsl(var(--muted));
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+}
+
+.dark .markdown-editor-container .wmde-markdown code {
+  color: hsl(var(--card-foreground));
+}
+
+.markdown-editor-container .wmde-markdown h1,
+.markdown-editor-container .wmde-markdown h2,
+.markdown-editor-container .wmde-markdown h3,
+.markdown-editor-container .wmde-markdown h4,
+.markdown-editor-container .wmde-markdown h5,
+.markdown-editor-container .wmde-markdown h6 {
+  color: hsl(var(--card-foreground));
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-editor-container .wmde-markdown p,
+.markdown-editor-container .wmde-markdown ul,
+.markdown-editor-container .wmde-markdown ol,
+.markdown-editor-container .wmde-markdown blockquote {
+  color: hsl(var(--card-foreground));
+}
+
+.markdown-editor-container .wmde-markdown a {
+  color: hsl(var(--primary));
+}
+
+.markdown-editor-container .wmde-markdown hr {
+  border-color: hsl(var(--border));
+}
+
+.markdown-editor-container .wmde-markdown table {
+  border-color: hsl(var(--border));
+}
+
+.markdown-editor-container .wmde-markdown table th,
+.markdown-editor-container .wmde-markdown table td {
+  border-color: hsl(var(--border));
+  padding: 0.5rem;
+}
+
+/* File name button styles for light and dark modes */
+body.light button.file-name,
+body.dark button.file-name {
+  color: white !important;
+  background-color: hsl(var(--primary)) !important;
+  border: 1px solid hsl(var(--primary)) !important;
+}
+
+body.light button.file-name:not(.bg-primary),
+body.dark button.file-name:not(.bg-primary) {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--muted)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+button.file-name:hover {
+  opacity: 0.9 !important;
+}
+
+button.file-name.bg-primary {
+  color: white !important;
+  background-color: hsl(var(--primary)) !important;
+  font-weight: bold !important;
+}

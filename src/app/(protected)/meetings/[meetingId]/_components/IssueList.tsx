@@ -11,7 +11,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api, RouterOutputs } from "@/trpc/react";
@@ -202,19 +201,33 @@ User Question: ${userMessage}`,
                   }
                 }}
                 placeholder="Ask me anything about this issue..."
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex-1 border:gray-300 rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
-              <button 
+                <button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || isLoading}
                 className={cn(
-                  "inline-flex items-center justify-center rounded-md px-3 py-2",
+                  "inline-flex items-center justify-center rounded-md p-2",
                   "bg-primary text-primary-foreground hover:bg-primary/90",
                   "disabled:pointer-events-none disabled:opacity-50"
                 )}
-              >
-                Send
-              </button>
+                aria-label="Send"
+                >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 12l14-7-7 14-2-5-5-2z"
+                  />
+                </svg>
+                </button>
             </div>
           </div>
         </DialogContent>
@@ -226,9 +239,13 @@ User Question: ${userMessage}`,
           <CardDescription className="line-clamp-2">{issue.headline}</CardDescription>
         </CardHeader>
         <CardContent className="mt-auto pt-0">
-          <Button onClick={() => setOpen(true)} variant="secondary" className="w-full">
+            <Button 
+            onClick={() => setOpen(true)} 
+            variant="outline" 
+            className="w-full border border-border bg-background text-foreground hover:bg-muted"
+            >
             View Details
-          </Button>
+            </Button>
         </CardContent>
       </Card>
     </>
@@ -240,6 +257,15 @@ type Props = {
 };
 
 const IssueList = ({ meetingId }: Props) => {
+  const [meetingAIOpen, setMeetingAIOpen] = React.useState(false);
+  const [meetingMessage, setMeetingMessage] = React.useState("");
+  const [meetingChatHistory, setMeetingChatHistory] = React.useState<Array<{role: 'user' | 'assistant', content: string, isExpanded?: boolean}>>([]);
+  const [meetingAILoading, setMeetingAILoading] = React.useState(false);
+  
+  const clearMeetingChat = () => {
+    setMeetingChatHistory([]);
+  };
+  
   const { data: meeting, isLoading } = api.project.getMeetingById.useQuery(
     { meetingId },
     {
@@ -247,7 +273,60 @@ const IssueList = ({ meetingId }: Props) => {
     },
   );
 
-  if (isLoading || !meeting) return <div>Loading...</div>;
+  const handleSendMeetingMessage = async () => {
+    if (!meetingMessage.trim() || !meeting) return;
+
+    const userMessage = meetingMessage;
+    setMeetingMessage("");
+    
+    setMeetingChatHistory(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMeetingAILoading(true);
+
+    try {
+      const response = await fetch('/api/meeting-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          meetingId: meetingId,
+          meetingName: meeting.name,
+          meetingDate: meeting.createdAt.toISOString(),
+          issueCount: meeting.issues.length
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+
+      const data = await response.json();
+      setMeetingChatHistory(prev => [...prev, {
+        role: 'assistant',
+        content: data.response
+      }]);
+    } catch (error) {
+      console.error('Error:', error);
+      setMeetingChatHistory(prev => [...prev, {
+        role: 'assistant',
+        content: "I apologize, but I encountered an error. Please try again."
+      }]);
+    } finally {
+      setMeetingAILoading(false);
+    }
+  };
+
+  const toggleMeetingMessageExpand = (index: number) => {
+    setMeetingChatHistory(prev => prev.map((msg, i) => 
+      i === index ? { ...msg, isExpanded: !msg.isExpanded } : msg
+    ));
+  };
+
+  if (isLoading || !meeting) return (
+  <div className="flex items-center justify-center h-[80vh]">
+    <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+  </div>)
   return (
     <div className="p-8">
       <div className="mx-auto flex max-w-2xl items-center justify-between gap-x-8 border-b border-border pb-6 lg:mx-0 lg:max-w-none">
@@ -264,6 +343,17 @@ const IssueList = ({ meetingId }: Props) => {
             </h1>
           </div>
         </div>
+        
+        <Button 
+          variant="outline" 
+          className="flex items-center gap-2" 
+          onClick={() => setMeetingAIOpen(true)}
+        >
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-background">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+          </span>
+          Ask Meeting AI
+        </Button>
       </div>
       <div className="h-6"></div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -271,6 +361,152 @@ const IssueList = ({ meetingId }: Props) => {
           <IssueCard key={issue.id} issue={issue} />
         ))}
       </div>
+
+      {/* Meeting AI Dialog */}
+      <Dialog open={meetingAIOpen} onOpenChange={setMeetingAIOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <div className="flex-none">
+            <DialogTitle className="text-xl font-semibold">Meeting AI</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Ask questions about the meeting, or get summaries and action items.
+            </DialogDescription>
+            <div className="mt-3 p-3 bg-muted/30 rounded-md border border-border">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-base mb-2">Meeting Summary</h2>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearMeetingChat}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Clear Chat
+                </Button>
+              </div>
+              <span className="text-sm text-muted-foreground">Meeting: <strong>{meeting.name}</strong></span>
+              <div className="mt-2 flex justify-between items-center">
+                <span>Total Issues: <strong>{meeting.issues.length}</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-border pt-4 flex-1 min-h-0 flex flex-col">
+            <div className="flex-1 overflow-y-auto pr-2">
+              <div className="flex flex-col gap-4">
+                {meetingChatHistory.map((msg, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      "flex w-full gap-2 rounded-lg p-4",
+                      msg.role === "assistant"
+                        ? "bg-muted/50"
+                        : "bg-primary/5"
+                    )}
+                  >
+                    <div className="flex w-full flex-col gap-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {msg.role === "assistant" ? (
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-background">
+                              <div className="h-3 w-3 rounded-full bg-primary" />
+                            </div>
+                          ) : (
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+                              <div className="h-3 w-3 rounded-full bg-primary-foreground" />
+                            </div>
+                          )}
+                          <p className="text-sm font-medium">
+                            {msg.role === "assistant" ? "AI" : "You"}
+                          </p>
+                        </div>
+                        {msg.role === "assistant" && (
+                          <button
+                            onClick={() => toggleMeetingMessageExpand(i)}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            {msg.isExpanded === false ? 'Show More' : 'Show Less'}
+                          </button>
+                        )}
+                      </div>
+                      <div className={cn(
+                        "text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none",
+                        msg.isExpanded === false && "line-clamp-2"
+                      )}>
+                        {msg.role === "assistant" ? (
+                          <div dangerouslySetInnerHTML={{ 
+                            __html: msg.content
+                              .replace(/^•\s+/gm, '• ') // Format bullet points
+                              .replace(/\n\n/g, '</p><p>') // Convert double newlines to paragraphs
+                              .replace(/^([^•].+?)$/gm, '$1') // Regular lines
+                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+                              .replace(/\*([^\*]+)\*/g, '<em>$1</em>') // Italic text
+                              .split('\n')
+                              .map(line => {
+                                if (line.startsWith('•')) {
+                                  return `<div class="flex gap-2 items-start"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
+                                }
+                                return line;
+                              })
+                              .join('')
+                          }} />
+                        ) : (
+                          <p className="text-foreground/80">{msg.content}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {meetingAILoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-primary" />
+                    <p>AI is thinking...</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex-none mt-4 flex gap-2">
+              <input
+                type="text"
+                value={meetingMessage}
+                onChange={(e) => setMeetingMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMeetingMessage();
+                  }
+                }}
+                placeholder="Ask me anything about the meeting..."
+                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              />
+              <button 
+                onClick={handleSendMeetingMessage}
+                disabled={!meetingMessage.trim() || meetingAILoading}
+                className={cn(
+                  "inline-flex items-center justify-center rounded-md p-2",
+                  "bg-primary text-primary-foreground hover:bg-primary/90",
+                  "disabled:pointer-events-none disabled:opacity-50"
+                )}
+                aria-label="Send"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M5 12l14-7-7 14-2-5-5-2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

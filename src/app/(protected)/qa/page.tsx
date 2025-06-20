@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
+import { useTheme } from "next-themes";
 
 const NoProjectsCard = () => {
   return (
@@ -55,7 +56,7 @@ const QaPage = () => {
       </div>
     );
   }
-
+  const {resolvedTheme} = useTheme();
   return (
     <Sheet>
       <AskQuestionCrad></AskQuestionCrad>
@@ -66,7 +67,7 @@ const QaPage = () => {
         {questions?.map((question, index) => (
           <React.Fragment key={question.id}>
             <SheetTrigger onClick={() => setQuestionIndex(index)}>
-              <div className="flex items-center gap-4 rounded-lg border bg-white p-4 shadow-md shadow-border">
+              <div className={`flex items-center gap-4 rounded-lg border ${resolvedTheme === "dark"?"bg-gray-900":"bg-white"} p-4 shadow-md shadow-border mb-2`}>
                 <img
                   className="rounded-full"
                   height={30}
@@ -76,7 +77,7 @@ const QaPage = () => {
                 />
                 <div className="flex flex-col text-left">
                   <div className="flex items-center gap-2">
-                    <p className="line-clamp-1 text-lg font-medium text-gray-700">
+                    <p className={`line-clamp-1 text-lg font-medium ${resolvedTheme === "dark"?"text-white":"text-gray-700"}`}>
                       {question.question}
                     </p>
                     <span className="whitespace-nowrap text-xs text-gray-400">
@@ -103,12 +104,14 @@ const QaPage = () => {
           <SheetHeader>
             <SheetTitle>{question.question}</SheetTitle>
           </SheetHeader>
-          <div data-color-mode="light">
+          <div data-color-mode={resolvedTheme} className="markdown-editor-container">
             <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
-              <MDEditor.Markdown
-                source={question.answer}
-                className="overflow-auto"
-              />
+              <div className={`p-4 rounded-md ${resolvedTheme === "dark" ? "bg-gray-900" : "bg-card"} text-card-foreground`}>
+                <MDEditor.Markdown
+                  source={question.answer}
+                  className="md-preview-content"
+                />
+              </div>
             </ScrollArea>
           </div>
 

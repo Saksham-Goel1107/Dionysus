@@ -9,9 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import useProject from "@/hooks/use-project";
-import React, { useState } from "react";
+import React from "react";
 import { readStreamableValue } from "ai/rsc";
 import MDEditor from "@uiw/react-md-editor";
+import { useTheme } from "next-themes";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from "@/trpc/react";
 import { toast } from "sonner";
@@ -22,6 +23,7 @@ import Image from "next/image";
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
+  const { theme } = useTheme();
   const [question, setQuestion] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
@@ -91,9 +93,14 @@ const AskQuestionCrad = () => {
               </Button>
             </div>
           </DialogHeader>
-          <div data-color-mode="light">
+          <div data-color-mode={theme} className="markdown-editor-container">
             <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
-              <MDEditor.Markdown source={answer} />
+              <div className="p-4 rounded-md bg-card text-card-foreground">
+                <MDEditor.Markdown 
+                  source={answer}
+                  className="md-preview-content"
+                />
+              </div>
             </ScrollArea>
           </div>
 
