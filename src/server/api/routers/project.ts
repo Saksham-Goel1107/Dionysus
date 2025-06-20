@@ -198,15 +198,20 @@ export const projectRouter = createTRPCRouter({
       });
     }),
   getMyCredits: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.user.findUnique({
+    const user = await ctx.db.user.findUnique({
       where: { id: ctx.user.userId! },
-      select: { credits: true, id: true },
     });
+    return user;
+  }),
+  getMyTransactions: protectedProcedure.query(async ({ ctx }) => {
+    const transactions = await ctx.db.stripeTransaction.findMany({
+      where: { userId: ctx.user.userId! },
+      orderBy: { createdAt: 'desc' },
+    });
+    return transactions;
   }),
   checkCredits: protectedProcedure
-    .input(
-      z.object({ githubUrl: z.string(), githubToken: z.string().optional() }),
-    )
+    .input(z.object({ githubUrl: z.string(), githubToken: z.string().optional() }))
     .mutation(async ({ ctx, input }) => {
       const fileCount = await checkCredits(input.githubUrl, input.githubToken);
       const userCredits = await ctx.db.user.findUnique({
