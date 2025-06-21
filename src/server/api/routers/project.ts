@@ -84,6 +84,41 @@ export const projectRouter = createTRPCRouter({
         where: { projectId: input.projectId },
       });
     }),
+    
+  getContributionStats: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const commits = await ctx.db.commit.findMany({
+        where: { projectId: input.projectId },
+        select: {
+          commitAuthorName: true,
+          commitAuthorUsername: true,
+          commitAuthorAvatar: true,
+        }
+      });
+      
+      const contributionStats = commits.reduce((acc, commit) => {
+        const authorId = commit.commitAuthorUsername || commit.commitAuthorName;
+        
+        if (!acc[authorId]) {
+          acc[authorId] = {
+            authorName: commit.commitAuthorName,
+            authorUsername: commit.commitAuthorUsername,
+            authorAvatar: commit.commitAuthorAvatar,
+            commitCount: 0
+          };
+        }
+        
+        acc[authorId].commitCount += 1;
+        return acc;
+      }, {} as Record<string, { authorName: string; authorUsername: string | null; authorAvatar: string; commitCount: number }>);
+      
+      return Object.values(contributionStats).sort((a, b) => b.commitCount - a.commitCount);
+    }),
   saveAnswer: protectedProcedure
     .input(
       z.object({
@@ -227,7 +262,6 @@ export const projectRouter = createTRPCRouter({
           error: null
         };
       } catch (error: any) {
-        // Return error information without throwing
         return {
           fileCount: 0,
           userCredits: 0,

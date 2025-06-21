@@ -2,7 +2,7 @@
 import useProject from "@/hooks/use-project";
 import { ExternalLink, Github} from "lucide-react";
 import Link from "next/link";
-import CommitLog from "./_components/CommitLog";
+import CommitTabs from "./_components/CommitTabs";
 import AskQuestionCard from "./_components/AskQuestionCard";
 import MeetingCard from "./_components/MeetingCard";
 import ArchiveButton from "./_components/ArchiveButton";
@@ -82,7 +82,7 @@ const page = ({}: Props) => {
 
       <div className="mt-8"></div>
 
-      <CommitLog />
+      <CommitTabs />
     </div>
   );
 };
