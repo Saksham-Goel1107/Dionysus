@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
   }
 
   const paymentIntent = event.data.object as Stripe.PaymentIntent;
-  console.log("Payment intent webhook received:", event.type, paymentIntent.id);
 
   if (event.type === "payment_intent.succeeded") {
     const credits = Number(paymentIntent.metadata?.["credits"]);
@@ -52,7 +51,6 @@ export async function POST(request: NextRequest) {
 
       // If already processed, don't duplicate
       if (existingTransaction) {
-        console.log("Transaction already processed", existingTransaction);
         return NextResponse.json(
           { message: "Transaction already processed" },
           { status: 200 }
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest) {
         data: { isCompleted: true }
       });
 
-      console.log("Credits added successfully via payment intent webhook", { userId, credits });
       return NextResponse.json(
         { message: "Credits added successfully!" },
         { status: 200 },

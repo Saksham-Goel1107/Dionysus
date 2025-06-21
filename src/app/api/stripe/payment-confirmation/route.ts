@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
             if (existingTransactions && existingTransactions.length > 0) {
               // The transaction exists, so we can safely assume credits were already added
               // or will be added by the webhook
-              console.log("Payment was successful but transaction already exists:", paymentIntentId);
               return NextResponse.json({ 
                 success: true, 
                 alreadyProcessed: true

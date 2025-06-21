@@ -38,9 +38,7 @@ export const getCommitHashes = async (
       console.error(`Invalid GitHub URL format: ${githubUrl}`);
       return [];
     }
-    
-    console.log(`Fetching commits for ${owner}/${repo}`);
-    
+        
     const { data } = await octokit.rest.repos.listCommits({
       owner,
       repo,
@@ -100,7 +98,6 @@ export const pullCommits = async (projectId: string) => {
     );
     
     if (unprocessedCommits.length === 0) {
-      console.log(`No new commits to process for project ${projectId}`);
       return { count: 0, message: "No new commits to process" };
     }
 

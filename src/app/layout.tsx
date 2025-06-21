@@ -19,6 +19,7 @@ export const metadata: Metadata = {
     template: "%s | Dionysus",
   },
   description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.",
+  metadataBase: new URL('https://dionysus-gray.vercel.app'),
   keywords: [
     "AI",
     "GitHub",
@@ -103,6 +104,8 @@ export default async function RootLayout({
           </ThemeProvider>
           <SpeedInsights/>
           <Analytics/>
+          {/* PageClip for feedback form */}
+          <script src="https://s.pageclip.co/v1/pageclip.js" charSet="utf-8"></script>
         </body>
       </html>
     </ClerkProvider>

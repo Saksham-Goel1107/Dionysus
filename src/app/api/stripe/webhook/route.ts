@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
-  console.log("Webhook received:", event.type, session.id);
 
   if (event.type === "checkout.session.completed") {
     const credits = Number(session.metadata?.["credits"]);
@@ -52,7 +51,6 @@ export async function POST(request: NextRequest) {
 
       // If already processed via success page, don't duplicate
       if (existingTransaction) {
-        console.log("Transaction already processed", existingTransaction);
         return NextResponse.json(
           { message: "Transaction already processed" },
           { status: 200 }
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest) {
         data: { isCompleted: true }
       });
 
-      console.log("Credits added successfully via webhook", { userId, credits });
       return NextResponse.json(
         { message: "Credits added successfully!" },
         { status: 200 },

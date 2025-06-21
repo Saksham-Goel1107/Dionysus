@@ -110,21 +110,14 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSucce
       });
       
       if (error) {
-        // Special handling for payment_intent errors with status succeeded
         if (error.payment_intent && error.payment_intent.status === 'succeeded') {
-          console.log("Payment error occurred but payment_intent status is succeeded. Proceeding as success.");
           
-          // Use the payment_intent from the error object
           const successfulIntent = error.payment_intent;
           
-          // Still proceed as if payment was successful - skip regular error handling
           await processSuccessfulPayment(successfulIntent, true);
           return;
         }
-        
-        // Before throwing an error, check if credits were actually added
-        // This handles cases where the webhook/backend process succeeded but Stripe API response had an issue
-        try {
+       try {
           const checkResult = await fetch(`/api/stripe/check-payment-status?payment_intent_id=${clientSecret.split('_secret_')[0]}`, {
             method: 'GET',
           });
@@ -132,15 +125,12 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSucce
           if (checkResult.ok) {
             const statusData = await checkResult.json();
             if (statusData.success || statusData.processed) {
-              // Credits were actually added, treat as success despite Stripe error
-              console.log("Payment appears successful on backend despite Stripe API error. Treating as success.");
               await processSuccessfulPayment({ id: clientSecret.split('_secret_')[0] }, true);
               return;
             }
           }
         } catch (checkError) {
           console.error("Failed to check payment status:", checkError);
-          // Continue with normal error flow
         }
         
         console.error("Payment confirmation error:", error);
@@ -153,7 +143,6 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSucce
         await processSuccessfulPayment(paymentIntent);
       } else if (paymentIntent.status === "processing") {
         // Payment is still processing, but likely successful - handle as success
-        console.log("Payment is processing. Treating as success and will check status.");
         await processSuccessfulPayment(paymentIntent);
       } else {
         throw new Error(`Payment status: ${paymentIntent.status}. Please try again later.`);

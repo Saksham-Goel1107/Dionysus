@@ -50,7 +50,6 @@ const MeetingCard = () => {
       if (!project) return;
 
       setIsUploading(true);
-      console.log(acceptedFiles);
 
       const file = acceptedFiles[0];
       if (!file) return;

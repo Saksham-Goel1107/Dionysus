@@ -20,13 +20,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    console.log("Parsed body:", body);
 
     const { meetingUrl, projectId, meetingId } = bodyParser.parse(body);
-    console.log("Body parsed successfully");
 
     const { summaries, transcript } = await processMeeting(meetingUrl);
-    console.log("Process meeting successful:", summaries);
 
     await db.issue.createMany({
       data: summaries.map((summary) => ({

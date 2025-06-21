@@ -9,7 +9,6 @@ export const loadGithubRepo = async (
   githubToken?: string,
 ) => {
   try {
-    console.log(`Loading GitHub repo: ${githubUrl}`);
     
     // Clean up GitHub URL to ensure it's in the correct format
     const cleanGithubUrl = githubUrl
@@ -100,13 +99,11 @@ const generateEmbeddings = async (docs: Document[]) => {
   // Process files sequentially with a delay to avoid rate limits
   for (const doc of docs) {
     try {
-      console.log(`Generating summary for ${doc.metadata.source}`);
       const summary = await summariseCode(doc);
       
       let embedding = null;
       if (summary) {
         try {
-          console.log(`Generating embedding for ${doc.metadata.source}`);
           embedding = await generateEmbedding(summary);
         } catch (error) {
           console.error(`Failed to generate embedding for ${doc.metadata.source}:`, error);
@@ -187,7 +184,6 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
   try {
     // find out how many files are in the repo
     const token = githubToken || process.env.GITHUB_TOKEN;
-    console.log("Using GitHub token:", token ? "Token provided" : "No token");
     
     const octokit = new Octokit({ 
       auth: token
@@ -214,7 +210,6 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
       githubRepo = (parts[1] || '').replace(/\.git$/, '');
     }
     
-    console.log(`Checking repo: ${githubOwner}/${githubRepo}`);
     
     if (!githubOwner || !githubRepo) {
       console.error("Could not extract owner/repo from URL:", githubUrl);
@@ -238,7 +233,6 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     }
 
     const fileCount = await getFileCount("", octokit, githubOwner, githubRepo, 0);
-    console.log(`File count for ${githubOwner}/${githubRepo}:`, fileCount);
     return fileCount;
   } catch (error) {
     console.error("Error checking credits:", error);

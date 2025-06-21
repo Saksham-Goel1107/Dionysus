@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { UserButton } from "@clerk/nextjs";
 import { ModeToggle } from "@/app/components/ThemeToggle";
 import AppSidebar from "./_components/AppSidebar";
+import FeedbackForm from "@/components/feedback/FeedbackForm";
 
 type Props = {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ const layout = ({ children }: Props) => {
           {children}
         </div>
       </main>
+      <FeedbackForm />
     </SidebarProvider>
   );
 };
