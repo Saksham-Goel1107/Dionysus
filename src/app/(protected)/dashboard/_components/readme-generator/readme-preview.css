@@ -1,0 +1,155 @@
+/* README Preview Styles */
+.readme-preview {
+  color: #24292e;
+  line-height: 1.6;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.readme-preview h1 {
+  font-size: 2em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.readme-preview h2 {
+  font-size: 1.5em;
+  border-bottom: 1px solid #eaecef;
+  padding-bottom: 0.3em;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.readme-preview h3 {
+  font-size: 1.25em;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.readme-preview h4 {
+  font-size: 1em;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.readme-preview a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.readme-preview a:hover {
+  text-decoration: underline;
+}
+
+.readme-preview code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+}
+
+.readme-preview pre {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  word-wrap: normal;
+}
+
+.readme-preview pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.readme-preview blockquote {
+  padding: 0 1em;
+  color: #6a737d;
+  border-left: 0.25em solid #dfe2e5;
+  margin: 1em 0;
+}
+
+.readme-preview ul,
+.readme-preview ol {
+  padding-left: 2em;
+}
+
+.readme-preview li + li {
+  margin-top: 0.25em;
+}
+
+.readme-preview table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.readme-preview table th,
+.readme-preview table td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.readme-preview table tr {
+  background-color: #fff;
+  border-top: 1px solid #c6cbd1;
+}
+
+.readme-preview table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.readme-preview img {
+  max-width: 100%;
+  box-sizing: initial;
+  background-color: #fff;
+}
+
+.dark .readme-preview {
+  color: #c9d1d9;
+}
+
+.dark .readme-preview h1,
+.dark .readme-preview h2 {
+  border-bottom-color: #30363d;
+}
+
+.dark .readme-preview a {
+  color: #58a6ff;
+}
+
+.dark .readme-preview code {
+  background-color: rgba(240, 246, 252, 0.15);
+}
+
+.dark .readme-preview pre {
+  background-color: #161b22;
+}
+
+.dark .readme-preview blockquote {
+  color: #8b949e;
+  border-left-color: #30363d;
+}
+
+.dark .readme-preview table tr {
+  background-color: #0d1117;
+  border-top-color: #30363d;
+}
+
+.dark .readme-preview table tr:nth-child(2n) {
+  background-color: #161b22;
+}
+
+.dark .readme-preview table th,
+.dark .readme-preview table td {
+  border-color: #30363d;
+}
