@@ -27,11 +27,21 @@ const CommitLog = ({}: Props) => {
             </div>
 
             <>
+            {commit.commitAuthorUsername ? (
+              <a href={`https://github.com/${commit.commitAuthorUsername}`} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={commit.commitAuthorAvatar}
+                  alt="commit avatar"
+                  className="relative mt-4 h-8 w-8 flex-none rounded-full bg-gray-50"
+                />
+              </a>
+            ) : (
               <img
                 src={commit.commitAuthorAvatar}
                 alt="commit avatar"
                 className="relative mt-4 h-8 w-8 flex-none rounded-full bg-gray-50"
               />
+            )}
 
               <div className={`flex-auto rounded-md ${resolvedTheme === "dark"?"bg-gray-900":"bg-white"} p-3 ring-1 ring-inset ${resolvedTheme==="dark"?"ring-gray-700":"ring-gray-200"}`}>
                 <div className="flex justify-between gap-x-4">

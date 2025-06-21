@@ -27,11 +27,11 @@ const ArchiveButton = () => {
       { projectId: projectId },
       {
         onSuccess: () => {
-          toast.success("Project archived successfully");
+          toast.success("Project deleted successfully");
           refetch();
         },
         onError: () => {
-          toast.error("Failed to archive project");
+          toast.error("Failed to deleted project");
         },
       },
     );

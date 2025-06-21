@@ -302,17 +302,20 @@ const page = ({}: Props) => {
             <Button
               type="submit"
               disabled={
-                createProject.isPending ||
-                checkCredits.isPending ||
-                (checkCredits.data && (!checkCredits.data.isValid || checkCredits.data.fileCount > 80))
+              createProject.isPending ||
+              checkCredits.isPending ||
+              (checkCredits.data && (!checkCredits.data.isValid || checkCredits.data.fileCount > 80))
               }
-            >                {!checkCredits.data 
-                ? "Check Repository" 
-                : !checkCredits.data.isValid
-                ? (checkCredits.data.error?.toLowerCase().includes("token") 
-                    ? "Add Token & Validate Repository" 
-                    : "Fix Issues & Validate Repository")
-                : "Create Project"}
+            >
+              {createProject.isPending
+              ? "Creating Project..."
+              : !checkCredits.data
+              ? "Check Repository"
+              : !checkCredits.data.isValid
+              ? (checkCredits.data.error?.toLowerCase().includes("token")
+                ? "Add Token & Validate Repository"
+                : "Fix Issues & Validate Repository")
+              : "Create Project"}
             </Button>
           </form>
         </div>

@@ -50,17 +50,18 @@ model UserToProject {
 }
 
 model Commit {
-  id                 String   @id @default(cuid())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  projectId          String
-  commitMessage      String
-  commitHash         String
-  commitAuthorName   String
-  commitAuthorAvatar String
-  commitDate         DateTime
-  summary            String
-  project            Project  @relation(fields: [projectId], references: [id])
+  id                   String   @id @default(cuid())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  projectId            String
+  commitMessage        String
+  commitHash           String
+  commitAuthorName     String
+  commitAuthorAvatar   String
+  commitDate           DateTime
+  summary              String
+  commitAuthorUsername String?  @db.VarChar(256)
+  project              Project  @relation(fields: [projectId], references: [id])
 }
 
 model SourceCodeEmbedding {
@@ -117,8 +118,8 @@ model StripeTransaction {
   updatedAt   DateTime @updatedAt
   userId      String
   credits     Int
-  sessionId   String?  // Add sessionId field to track Stripe sessions
-  isCompleted Boolean  @default(false)
+  isCompleted Boolean? @default(false)
+  sessionId   String?  @db.VarChar(256)
   user        User     @relation(fields: [userId], references: [id])
 }
 

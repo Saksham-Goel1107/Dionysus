@@ -11,6 +11,7 @@ type Response = {
   commitHash: string;
   commitMessage: string;
   commitAuthorName: string;
+  commitAuthorUsername?: string; // GitHub login like "saksham-goel1107"
   commitAuthorAvatar: string;
   commitDate: string;
 };
@@ -60,6 +61,7 @@ export const getCommitHashes = async (
       commitHash: commit.sha as string,
       commitMessage: commit.commit?.message ?? "",
       commitAuthorName: commit.commit?.author?.name ?? "",
+      commitAuthorUsername: commit.author?.login ?? undefined, // Getting GitHub login (e.g. "saksham-goel1107")
       commitAuthorAvatar: commit.author?.avatar_url ?? "",
       commitDate: commit.commit?.author?.date ?? "",
     }));
@@ -122,6 +124,7 @@ export const pullCommits = async (projectId: string) => {
           commitHash: unprocessedCommits[index]!.commitHash,
           commitMessage: unprocessedCommits[index]!.commitMessage,
           commitAuthorName: unprocessedCommits[index]!.commitAuthorName,
+          commitAuthorUsername: unprocessedCommits[index]!.commitAuthorUsername,
           commitAuthorAvatar: unprocessedCommits[index]!.commitAuthorAvatar,
           commitDate: unprocessedCommits[index]!.commitDate,
           summary,

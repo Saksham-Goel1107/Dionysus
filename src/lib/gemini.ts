@@ -36,6 +36,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
         because there were more than two relevant files in the hypothetical commit.
         Do not include parts of the example in your summary.
         Do not use any abrevation or punctuation like i am happy to provide or good question no comments like this just provide answer but the answer should be very descriptive covering each and every point
+        Do not use Okay, I understand you're asking about but give direct answer
         It is given only as an example of appropriate comments. `,
     `Please summarise the following diff file: \n\n${diff}`,
   ]);
