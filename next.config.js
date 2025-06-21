@@ -11,7 +11,8 @@ const config = {
     },
     typescript: {
         ignoreBuildErrors: true,
-    }
+    },
+    poweredByHeader: false,
 };
 
 export default config;

@@ -66,6 +66,8 @@
     "@types/ioredis": "^4.28.10",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@uiw/react-md-editor": "^4.0.5",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
     "ai": "^4.0.33",
     "assemblyai": "^4.8.0",
     "axios": "^1.7.9",

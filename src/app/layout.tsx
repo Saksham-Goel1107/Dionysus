@@ -10,12 +10,71 @@ import { auth } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Providers from "./Providers"
 import { ThemeProvider } from "./components/theme-provider";
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: "Dionysus",
-  description: "Your AI Github assistant!",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: {
+    default: "Dionysus – Your AI Github Assistant",
+    template: "%s | Dionysus",
+  },
+  description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.",
+  keywords: [
+    "AI",
+    "GitHub",
+    "assistant",
+    "developer tools",
+    "code assistant",
+    "productivity",
+    "coding",
+    "typescript",
+    "react",
+    "nextjs",
+    "trpc",
+    "open source"
+  ],
+  authors: [{ name: "Saksham Goel", url: "https://dionysus-gray.vercel.app" }],
+  creator: "Saksham Goel",
+  openGraph: {
+    title: "Dionysus – Your AI Github Assistant",
+    description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
+    url: "https://dionysus-gray.vercel.app",
+    siteName: "Dionysus",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Dionysus – Your AI Github Assistant",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dionysus – Your AI Github Assistant",
+    description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
+    images: ["/logo.png"],
+    creator: "@saksham",
+  },
+  icons: [
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", url: "/logo.png" },
+  ],
+  manifest: "/site.webmanifest",
+  themeColor: "#111827",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
 };
 
 export default async function RootLayout({
@@ -42,6 +101,8 @@ export default async function RootLayout({
           </TRPCReactProvider>
           <Toaster richColors />
           </ThemeProvider>
+          <SpeedInsights/>
+          <Analytics/>
         </body>
       </html>
     </ClerkProvider>
