@@ -1,9 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { createCheckoutSession } from "@/lib/stripe";
 import { api } from "@/trpc/react";
-import { useAuth } from "@clerk/nextjs";
 import { Info } from "lucide-react";
 import React from "react";
 import {
@@ -14,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import PaymentForm from "./components/PaymentForm";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 type Transaction = {
   id: string;
@@ -25,18 +25,17 @@ const BillingPage = () => {
   const { data: user } = api.project.getMyCredits.useQuery();
   const { data: transactions } = api.project.getMyTransactions.useQuery();
   const [creditsToBuy, setCreditsToBuy] = React.useState<number[]>([100]);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
   const creditsToBuyAmount = creditsToBuy[0]!;
   const price = ((creditsToBuyAmount / 50) * 75).toFixed(2);
 
-  const handleBuyCredits = async () => {
-    setIsLoading(true);
-    try {
-      await createCheckoutSession(creditsToBuyAmount);
-    } catch (error) {
-      console.error("Error starting checkout:", error);
-      setIsLoading(false);
-    }
+  const utils = api.useUtils();
+  
+  const handlePaymentSuccess = () => {
+    setIsPaymentOpen(false);
+    // Refresh transaction history and credits
+    void utils.project.getMyTransactions.invalidate();
+    void utils.project.getMyCredits.invalidate();
   };
 
   return (
@@ -72,11 +71,28 @@ const BillingPage = () => {
           className="cursor-grab active:cursor-grabbing"
         />
         <div className="h-4"></div>
-        <Button onClick={handleBuyCredits} disabled={isLoading}>
-          {isLoading
-            ? "Processing..."
-            : `Buy ${creditsToBuyAmount} credits for ₹${price}`}
-        </Button>
+        <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              Buy {creditsToBuyAmount} credits for ₹{price}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md md:max-w-lg">
+            <DialogHeader className="mb-4">
+              <DialogTitle>Purchase Credits</DialogTitle>
+              <DialogDescription>
+                Enter your card details to purchase {creditsToBuyAmount} credits.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="pt-2">
+              <PaymentForm 
+                creditsToBuy={creditsToBuyAmount} 
+                price={price}
+                onSuccess={handlePaymentSuccess} 
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="h-8"></div>

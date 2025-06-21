@@ -1,0 +1,36 @@
+/* Custom styling for Stripe Elements */
+#card-element-container {
+  padding: 15px;
+  transition: all 150ms ease;
+}
+
+#card-element-container:focus-within {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.7);
+  outline: none;
+}
+
+#card-element {
+  min-height: 20px;
+}
+
+.StripeElement {
+  width: 100%;
+  padding: 10px 0;
+}
+
+.StripeElement--focus {
+  box-shadow: none;
+}
+
+.StripeElement--invalid {
+  border-color: #ef4444;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fefde5 !important;
+}
+
+/* Fix z-index issues with Stripe Elements in dialog */
+.dialog-content {
+  z-index: 50;
+}

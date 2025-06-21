@@ -551,10 +551,10 @@ export default function DocsPage() {
                 If you couldn't find an answer to your question, please contact
                 our support team at
                 <a
-                  href="mailto:support@dionysusai.com"
+                  href="mailto:sakshamgoel1107@gmail.com"
                   className="text-primary underline"
                 >
-                  support@dionysusai.com
+                  sakshamgoel1107@gmail.com
                 </a>{" "}
                 or use the chat button in the bottom right corner of any page.
               </p>
