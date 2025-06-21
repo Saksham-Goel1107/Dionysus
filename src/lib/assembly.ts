@@ -13,6 +13,7 @@ export const processMeeting = async (meetingUrl: string) => {
   const transcript = await client.transcripts.transcribe({
     audio: meetingUrl,
     auto_chapters: true,
+    speaker_labels: true,
   });
 
   const summaries =
@@ -26,7 +27,18 @@ export const processMeeting = async (meetingUrl: string) => {
 
   if (!transcript.text) throw new Error("No Transcript found");
 
+  // Format transcript with speaker labels if available
+  let formattedTranscript = transcript.text;
+  if (transcript.utterances && transcript.utterances.length > 0) {
+    formattedTranscript = transcript.utterances.map(utterance => {
+      const speaker = utterance.speaker || "Speaker";
+      const text = utterance.text || "";
+      return `${speaker}: ${text}\n`;
+    }).join("\n");
+  }
+
   return {
     summaries,
+    transcript: formattedTranscript,
   };
 };

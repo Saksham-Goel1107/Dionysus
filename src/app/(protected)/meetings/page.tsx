@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import useRefetch from "@/hooks/use-refetch";
 import MeetingCard from "../dashboard/_components/MeetingCard";
+import TranscriptViewer from "./_components/TranscriptViewer";
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -58,6 +59,10 @@ const MeetingsPage = () => {
                   View Meeting
                 </Button>
               </Link>
+              
+              {meeting.status === "COMPLETED" && (
+                <TranscriptViewer meetingId={meeting.id} />
+              )}
 
               <Button
                 size="sm"

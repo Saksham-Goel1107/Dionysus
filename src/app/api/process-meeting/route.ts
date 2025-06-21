@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const { meetingUrl, projectId, meetingId } = bodyParser.parse(body);
     console.log("Body parsed successfully");
 
-    const { summaries } = await processMeeting(meetingUrl);
+    const { summaries, transcript } = await processMeeting(meetingUrl);
     console.log("Process meeting successful:", summaries);
 
     await db.issue.createMany({
@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       data: {
         status: "COMPLETED",
         name: summaries[0]!.headline,
+        transcript: transcript, // Store the transcript in the database
       },
     });
 

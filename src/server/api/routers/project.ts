@@ -190,6 +190,7 @@ export const projectRouter = createTRPCRouter({
           meetingUrl: true,
           projectId: true,
           status: true,
+          transcript: true,
           issues: true
         }
       });
@@ -198,6 +199,27 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.meeting.delete({ where: { id: input.meetingId } });
+    }),
+    
+  getMeetingTranscript: protectedProcedure
+    .input(z.object({ meetingId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const meeting = await ctx.db.meeting.findUnique({
+        where: { id: input.meetingId },
+        select: {
+          transcript: true,
+          name: true,
+        },
+      });
+      
+      if (!meeting || !meeting.transcript) {
+        throw new Error("Transcript not found");
+      }
+      
+      return {
+        transcript: meeting.transcript,
+        name: meeting.name,
+      };
     }),
   getMeetingById: protectedProcedure
     .input(z.object({ meetingId: z.string() }))

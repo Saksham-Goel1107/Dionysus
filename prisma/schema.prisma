@@ -95,6 +95,7 @@ model Meeting {
   meetingUrl String
   projectId  String
   status     MeetingStatus @default(PROCESSING)
+  transcript String?       @db.Text
   issues     Issue[]
   project    Project       @relation(fields: [projectId], references: [id])
 }
