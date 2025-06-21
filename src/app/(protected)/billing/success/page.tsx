@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/trpc/react";
 
-function PaymentProcessor() {
-  const [isProcessing, setIsProcessing] = useState(true);
+function PaymentProcessor() {  const [isProcessing, setIsProcessing] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isAlreadyProcessed, setIsAlreadyProcessed] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -33,17 +33,26 @@ function PaymentProcessor() {
       
       try {
         const credits = parseInt(creditsStr, 10);
-        const success = await verifyAndUpdateCredits(sessionId, credits);
+        const result = await verifyAndUpdateCredits(sessionId, credits);
         
-        if (success) {
-          // Invalidate the credits query to refresh the UI
-          await utils.project.getMyCredits.invalidate();
-          
-          setIsSuccess(true);
-          toast({
-            title: "Credits Added",
-            description: `${credits} credits have been added to your account.`,
-          });
+        if (result.success) {
+          if (result.alreadyProcessed) {
+            // Transaction was already processed before
+            setIsAlreadyProcessed(true);
+            toast({
+              title: "Already Processed",
+              description: "This transaction was already processed. No additional credits added.",
+              variant: "default",
+            });
+          } else {
+            // New successful transaction
+            await utils.project.getMyCredits.invalidate();
+            setIsSuccess(true);
+            toast({
+              title: "Credits Added",
+              description: `${credits} credits have been added to your account.`,
+            });
+          }
         } else {
           toast({
             title: "Error",
@@ -65,7 +74,6 @@ function PaymentProcessor() {
 
     processPayment();
   }, [searchParams, toast, utils.project.getMyCredits]);
-
   return (
     <>
       {isProcessing ? (
@@ -73,6 +81,35 @@ function PaymentProcessor() {
           <Loader2 className="size-12 animate-spin text-primary" />
           <h2 className="text-xl font-semibold">Processing your payment...</h2>
           <p className="text-muted-foreground">Please don't close this page.</p>
+        </div>
+      ) : isAlreadyProcessed ? (
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="rounded-full bg-amber-100 p-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="size-8 text-amber-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold">Nothing to do here again</h2>
+          <p className="text-muted-foreground">
+            This transaction was already processed and credits were already added to your account.
+          </p>
+          <div className="mt-6 flex gap-4">
+            <Button variant="outline" onClick={() => router.push("/billing")}>
+              Go to Billing
+            </Button>
+            <Button onClick={() => router.push("/create")}>Create Project</Button>
+          </div>
         </div>
       ) : isSuccess ? (
         <div className="flex flex-col items-center gap-4 text-center">

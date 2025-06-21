@@ -112,12 +112,14 @@ model Issue {
 }
 
 model StripeTransaction {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  credits   Int
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      String
+  credits     Int
+  sessionId   String?  // Add sessionId field to track Stripe sessions
+  isCompleted Boolean  @default(false)
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 enum MeetingStatus {

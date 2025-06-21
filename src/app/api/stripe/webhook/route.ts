@@ -45,11 +45,8 @@ export async function POST(request: NextRequest) {
       // Check if this transaction was already processed
       const existingTransaction = await db.stripeTransaction.findFirst({
         where: {
-          userId,
-          credits,
-          createdAt: {
-            gte: new Date(Date.now() - 1000 * 60 * 5), // Last 5 minutes
-          },
+          sessionId: session.id,
+          isCompleted: true,
         },
       });
 
@@ -62,13 +59,17 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      await db.stripeTransaction.create({
+      // Create the transaction record first
+      const transaction = await db.stripeTransaction.create({
         data: {
           userId,
           credits,
+          sessionId: session.id,
+          isCompleted: false, // Start as not completed
         },
       });
 
+      // Update user credits
       await db.user.update({
         where: { id: userId },
         data: {
@@ -76,6 +77,12 @@ export async function POST(request: NextRequest) {
             increment: credits,
           },
         },
+      });
+      
+      // Mark as completed after credits are added
+      await db.stripeTransaction.update({
+        where: { id: transaction.id },
+        data: { isCompleted: true }
       });
 
       console.log("Credits added successfully via webhook", { userId, credits });
