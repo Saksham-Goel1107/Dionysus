@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Clock, PieChart, FileText } from "lucide-react";
 import CommitLog from "./CommitLog";
 import ContributionChart from "./ContributionChart";
-import ReadmeGeneratorFormWrapper from "./readme-generator/ReadmeGeneratorFormWrapper";
+import ReadmeGeneratorForm from "./readme-generator/ReadmeGeneratorForm";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 
@@ -74,7 +74,7 @@ const CommitTabs = ({}: Props) => {
             "overflow-hidden",
             resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
           )}>
-            <ReadmeGeneratorFormWrapper />
+            <ReadmeGeneratorForm />
           </div>
         </TabsContent>
       </Tabs>

@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import useRefetch from "@/hooks/use-refetch";
 import MeetingCard from "../dashboard/_components/MeetingCard";
 import TranscriptViewer from "./_components/TranscriptViewer";
+import { Protect } from "@clerk/nextjs";
+import { Lock } from "lucide-react";
+import { useTheme } from "next-themes";
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -20,8 +23,31 @@ const MeetingsPage = () => {
   );
   const deleteMeeting = api.project.deleteMeeting.useMutation();
   const refetch = useRefetch();
+  const {resolvedTheme} = useTheme();
   return (
     <>
+    <Protect
+      plan="dionysus_pro_pack"
+      fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100">
+          <Lock className="w-8 h-8 text-yellow-600" />
+        </div>
+        <h2 className={`text-2xl font-bold text-center ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+          Pro Plan Required
+        </h2>
+        <p className={`text-center ${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}>
+          Access to meetings is available exclusively for <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> subscribers.
+          <br />
+          Upgrade your plan to unlock this feature.
+        </p>
+        <Link href="/subscriptions">
+          <Button size="lg" className="mt-2 bg-yellow-600 hover:bg-yellow-700 text-white">
+        Upgrade Now
+          </Button>
+        </Link>
+      </div>}
+    >
       <MeetingCard></MeetingCard>
       <div className="h-6"></div>
       <h1 className="text-xl font-semibold">Meetings</h1>
@@ -86,6 +112,7 @@ const MeetingsPage = () => {
           </li>
         ))}
       </ul>
+      </Protect>
     </>
   );
 };

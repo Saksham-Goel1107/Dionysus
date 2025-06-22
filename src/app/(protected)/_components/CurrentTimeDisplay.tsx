@@ -1,5 +1,6 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const pad = (n: number) => n.toString().padStart(2, "0");
 
@@ -22,6 +23,7 @@ function getFormattedDateTime() {
 
 export default function CurrentTimeDisplay() {
     const [{ time, date }, setDateTime] = useState(getFormattedDateTime());
+    const { theme } = useTheme();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -30,8 +32,10 @@ export default function CurrentTimeDisplay() {
         return () => clearInterval(interval);
     }, []);
 
+    const isDark = theme === "dark";
+
     return (
-        <div className="current-time-container">
+        <div className={`current-time-container ${isDark ? "dark" : "light"}`}>
             <div className="time" key={time}>
                 {time.split("").map((char, i) => (
                     <span className="digit" key={i}>
@@ -45,13 +49,19 @@ export default function CurrentTimeDisplay() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    background: linear-gradient(90deg, #232526 0%, #414345 100%);
                     padding: 3px 4px;
                     border-radius: 0.5rem;
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-                    color: #fff;
+                    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
                     font-family: 'JetBrains Mono', 'Fira Mono', 'Menlo', monospace;
                     min-width: 60px;
+                }
+                .current-time-container.dark {
+                    background: linear-gradient(90deg, #232526 0%, #414345 100%);
+                    color: #fff;
+                }
+                .current-time-container.light {
+                    background: linear-gradient(90deg, #e0e0e0 0%, #f5f5f5 100%);
+                    color: #111;
                 }
                 .time {
                     font-size: 1rem;
@@ -74,9 +84,18 @@ export default function CurrentTimeDisplay() {
                     text-align: center;
                 }
                 @keyframes pop {
-                    0% { transform: scale(1.15) translateY(-5%); opacity: 0.7; }
-                    60% { transform: scale(0.95) translateY(1%); opacity: 1; }
-                    100% { transform: scale(1) translateY(0); opacity: 1; }
+                    0% {
+                        transform: scale(1.15) translateY(-5%);
+                        opacity: 0.7;
+                    }
+                    60% {
+                        transform: scale(0.95) translateY(1%);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: scale(1) translateY(0);
+                        opacity: 1;
+                    }
                 }
             `}</style>
         </div>

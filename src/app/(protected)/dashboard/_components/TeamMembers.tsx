@@ -10,14 +10,16 @@ const TeamMembers = () => {
     <div className="flex items-center gap-2">
       {members?.map((member) => (
         <div key={member.id} className="relative group">
-          <img
-            key={member.id}
-            src={member.user.imageUrl || ""}
-            alt={member.user.firstName || ""}
-            height={30}
-            width={30}
-            className="rounded-full"
-          />
+          <a href={`mailto:${member.user.emailAddress}`}>
+            <img
+              key={member.id}
+              src={member.user.imageUrl || ""}
+              alt={member.user.firstName || ""}
+              height={30}
+              width={30}
+              className="rounded-full"
+            />
+          </a>
           <div className="absolute bottom-0 left-1/2 z-10 -translate-x-1/2 translate-y-full transform rounded bg-black px-2 py-1 text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
             {member.user.emailAddress || "No Email"}
           </div>

@@ -91,7 +91,7 @@ interface ReadmeGeneratorFormProps {
   hasProPlan: boolean;
 }
 
-export default function ReadmeGeneratorForm({ hasProPlan }: ReadmeGeneratorFormProps) {
+export default function ReadmeGeneratorForm() {
   const { project } = useProject();
   const [formData, setFormData] = useState<ReadmeFormData>(initialFormData);
   const [generatedReadme, setGeneratedReadme] = useState<string>("");
@@ -101,6 +101,20 @@ export default function ReadmeGeneratorForm({ hasProPlan }: ReadmeGeneratorFormP
   const [isAiGenerating, setIsAiGenerating] = useState(false);  const [isCurrentProject, setIsCurrentProject] = useState(false);
   const [isFormEmpty, setIsFormEmpty] = useState(true);  // Track form emptiness
   const [showProPrompt, setShowProPrompt] = useState(false);
+  const [hasProPlan, sethasProPlan] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/user/pro-status");
+        if (!res.ok) throw new Error("Failed to fetch pro status");
+        const data = await res.json();
+        sethasProPlan(data.pro);
+      } catch (error) {
+        sethasProPlan(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     // Compare current form data with initial form data
@@ -139,8 +153,6 @@ export default function ReadmeGeneratorForm({ hasProPlan }: ReadmeGeneratorFormP
       return;
     }
 
-    // Extract repo name and owner from GitHub URL
-    // Example: https://github.com/username/repo-name
     let repoName = "";
     let repoOwner = "";
       try {
