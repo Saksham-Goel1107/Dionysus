@@ -4,6 +4,7 @@ import { ArrowLeft, Shield } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Navbar } from "../components/navbar";
 import {
   Table,
   TableBody,
@@ -21,7 +22,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="container max-w-5xl py-12 md:py-16">
+    <div className="overflow-x-hidden"><Navbar/>
+    <div className="container max-w-5xl pb-12 md:py-16">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <Link href="/">
@@ -674,6 +676,7 @@ export default function PrivacyPage() {
           </div>
         </TabsContent>
       </Tabs>
+    </div>
     </div>
   );
 }

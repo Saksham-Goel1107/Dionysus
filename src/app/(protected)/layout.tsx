@@ -3,6 +3,7 @@ import { ModeToggle } from "@/app/components/ThemeToggle";
 import AppSidebar from "./_components/AppSidebar";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 import ProCrownUserButtonWrapper from "./ProCrownUserButtonWrapper";
+import CurrentTimeDisplay from "./_components/CurrentTimeDisplay";
 
 type Props = {
   children: React.ReactNode;
@@ -16,6 +17,7 @@ const layout = ({ children }: Props) => {
         <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4 shadow">
           {/* <Searchbar /> */}
           <SidebarTrigger />
+            <CurrentTimeDisplay />
           <div className="ml-auto flex items-center gap-2">
             <ModeToggle />
             <ProCrownUserButtonWrapper />

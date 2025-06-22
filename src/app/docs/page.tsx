@@ -6,11 +6,11 @@ import {
   FileText,
   MessageSquare,
   Video,
-  Sparkles,
 } from "lucide-react";
 
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { Navbar } from "../components/navbar";
 import {
   Card,
   CardContent,
@@ -30,7 +30,9 @@ export const metadata: Metadata = {
 
 export default function DocsPage() {
   return (
-    <div className="container max-w-7xl py-12 md:py-16">
+    <div className="overflow-x-hidden">
+      <Navbar/>
+    <div className="container max-w-7xl pb-12 md:py-16">
       <PageHeader
         icon={<BookOpen className="h-6 w-6" />}
         title="Documentation"
@@ -562,6 +564,7 @@ export default function DocsPage() {
           </TabsContent>
         </div>
       </Tabs>
+    </div>
     </div>
   );
 }

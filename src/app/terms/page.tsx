@@ -10,7 +10,8 @@ import {
   StickyTabsHeader,
 } from "@/components/ui/content-layout";
 import { CardWithGradient } from "@/components/ui/card-with-gradient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Navbar } from "../components/navbar";
 
 export const metadata: Metadata = {
   title: "Terms & Conditions | Dionysus",
@@ -19,6 +20,8 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
+    <div className="overflow-x-hidden">
+      <Navbar/>
     <div className="min-h-screen">
       <GradientHeader>
         <ContentContainer>
@@ -407,6 +410,7 @@ export default function TermsPage() {
           </TabsContent>
         </Tabs>
       </ContentContainer>
+    </div>
     </div>
   );
 }
