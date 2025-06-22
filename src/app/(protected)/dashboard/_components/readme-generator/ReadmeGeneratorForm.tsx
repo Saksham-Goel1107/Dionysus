@@ -34,6 +34,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import './readme-preview.css';
+import Link from "next/link";
 
 // Define types for README form data
 interface ReadmeFormData {
@@ -86,7 +87,11 @@ const licenses = [
   { value: "NONE", label: "No License" },
 ];
 
-export default function ReadmeGeneratorForm() {
+interface ReadmeGeneratorFormProps {
+  hasProPlan: boolean;
+}
+
+export default function ReadmeGeneratorForm({ hasProPlan }: ReadmeGeneratorFormProps) {
   const { project } = useProject();
   const [formData, setFormData] = useState<ReadmeFormData>(initialFormData);
   const [generatedReadme, setGeneratedReadme] = useState<string>("");
@@ -95,6 +100,8 @@ export default function ReadmeGeneratorForm() {
   const [generationMethod, setGenerationMethod] = useState<"manual" | "ai">("manual");
   const [isAiGenerating, setIsAiGenerating] = useState(false);  const [isCurrentProject, setIsCurrentProject] = useState(false);
   const [isFormEmpty, setIsFormEmpty] = useState(true);  // Track form emptiness
+  const [showProPrompt, setShowProPrompt] = useState(false);
+
   useEffect(() => {
     // Compare current form data with initial form data
     const isDefault = (key: keyof ReadmeFormData): boolean => {
@@ -422,7 +429,6 @@ export default function ReadmeGeneratorForm() {
     URL.revokeObjectURL(url);
     toast.success("README downloaded!");
   };
-
   return (
     <Card className="w-full">      <CardHeader>
         <div className="flex items-center justify-between">
@@ -486,25 +492,31 @@ export default function ReadmeGeneratorForm() {
                       type="button"
                       onClick={() => setGenerationMethod("manual")}
                       className={`px-4 py-2 text-sm ${
-                        generationMethod === "manual" 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-background"
+                      generationMethod === "manual" 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background"
                       }`}
                     >
                       Manual
                     </button>
-                    <button
+                      <button
                       type="button"
-                      onClick={() => setGenerationMethod("ai")}
+                      onClick={() => {
+                        if (hasProPlan) {
+                          setGenerationMethod("ai");
+                        } else {
+                          setShowProPrompt(true);
+                        }
+                      }}
                       className={`px-4 py-2 text-sm ${
                         generationMethod === "ai" 
-                          ? "bg-primary text-primary-foreground" 
-                          : "bg-background"
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-background"
                       }`}
-                    >
+                      >
                       AI-Powered
-                    </button>
-                  </div>
+                      </button>
+                </div>
                   {generationMethod === "ai" && (
                     <p className="text-xs text-muted-foreground">
                       AI will generate a comprehensive README based on your input
@@ -894,6 +906,21 @@ export default function ReadmeGeneratorForm() {
           </CardFooter>
         </TabsContent>
       </Tabs>
+
+      {showProPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8 max-w-sm w-full text-center border">
+            <h2 className="text-xl font-bold mb-2 text-yellow-700">Pro Required</h2>
+            <p className="mb-4 text-muted-foreground">Upgrade to <span className="font-semibold">Pro</span> to unlock AI-powered README generation.</p>
+            <Link href="/subscriptions">
+              <Button className="w-full mb-2">Get Pro</Button>
+            </Link>
+            <Button variant="outline" className="w-full" onClick={() => setShowProPrompt(false)}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

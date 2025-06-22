@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowUpLeftFromSquare, Presentation, Upload } from "lucide-react";
+import { Presentation, Upload } from "lucide-react";
 import React from "react";
 import { useDropzone } from "react-dropzone";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useTheme } from "next-themes";
+import { Protect } from "@clerk/nextjs";
+import Link from 'next/link'
 
 const MeetingCard = () => {
   const [isUploading, setIsUploading] = React.useState(false);
@@ -69,7 +71,6 @@ const MeetingCard = () => {
           onSuccess: (meeting) => {
             toast.success("Meeting uploaded successfully");
             router.push("/meetings");
-            // after successfull-upload, now callng the processMeeting mutation 
             processMeeting.mutateAsync({
               meetingUrl: downloadURL,
               meetingId: meeting.id,
@@ -88,6 +89,36 @@ const MeetingCard = () => {
   const {resolvedTheme} = useTheme()
   
   return (
+    <Protect
+      plan="dionysus_pro_pack"
+      fallback={
+      <div className={`col-span-2 flex flex-col items-center justify-center p-10 ${resolvedTheme === "dark"?"bg-gray-900":"bg-card"} rounded-xl shadow-md`}>
+        <Presentation
+          className={`h-10 w-10 mb-4 ${
+            resolvedTheme === "dark" ? "text-yellow-400" : "text-yellow-500"
+          }`}
+        />
+        <h3
+          className={`text-lg font-semibold mb-2 ${
+            resolvedTheme === "dark" ? "text-yellow-300" : "text-yellow-700"
+          }`}
+        >
+          Pro Pack Required
+        </h3>
+        <p
+          className={`text-center text-sm mb-4 ${
+            resolvedTheme === "dark" ? "text-gray-400" : "text-muted-foreground"
+          }`}
+        >
+          Only subscribers to the <span className="font-bold">Pro</span> plan can access this content.
+        </p>
+        <Link
+          href="/subscriptions" className={`${resolvedTheme === "dark"?"bg-gray-800":"bg-blue-400"} px-5 py-2 rounded-full font-bold`}
+        >
+          Upgrade Now
+        </Link>
+      </div>}
+    >
     <Card
       className="col-span-2 flex flex-col items-center justify-center p-10"
       {...getRootProps()}
@@ -145,6 +176,7 @@ const MeetingCard = () => {
         </div>
       )}
     </Card>
+    </Protect>
   );
 };
 

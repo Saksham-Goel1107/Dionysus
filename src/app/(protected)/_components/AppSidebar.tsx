@@ -17,6 +17,7 @@ import useProject from "@/hooks/use-project";
 import { cn } from "@/lib/utils";
 import {
   Bot,
+  CircleDollarSign,
   CreditCard,
   LayoutDashboard,
   Plus,
@@ -48,6 +49,11 @@ const items = [
     title: "Billing",
     url: "/billing",
     icon: CreditCard,
+  },
+  {
+    title: "Subscriptions",
+    url: "/subscriptions",
+    icon: CircleDollarSign, 
   },
 ];
 
