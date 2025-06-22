@@ -73,7 +73,7 @@
     "@vercel/speed-insights": "^1.2.0",
     "ai": "^4.0.33",
     "assemblyai": "^4.8.0",
-    "axios": "^1.7.9",
+    "axios": "^1.10.0",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",
