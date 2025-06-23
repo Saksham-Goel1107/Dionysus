@@ -45,3 +45,9 @@ yarn-error.log*
 # idea files
 .idea
 .vercel
+
+# git digram files
+diagram.png
+temp.mmd
+__pycache__/
+*.pyc
