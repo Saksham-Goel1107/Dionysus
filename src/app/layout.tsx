@@ -12,6 +12,7 @@ import Providers from "./Providers"
 import { ThemeProvider } from "./components/theme-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
+import CookieBanner from "./components/CookieBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -93,6 +94,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
+            <CookieBanner/>
           <TRPCReactProvider>
             {userId ? (
               <Providers>{children}</Providers>
