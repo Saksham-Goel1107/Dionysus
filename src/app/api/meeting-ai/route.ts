@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { getChat, setChat } from "../../utils/redis";
 import { db } from "@/server/db";
+import { auth } from '@clerk/nextjs/server'
 
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
@@ -68,6 +69,14 @@ function formatCurrency(value: number): string {
 }
 
 export async function POST(req: NextRequest) {
+  const { has } = await auth()
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' })
+  if (!hasProPlan) {
+    return NextResponse.json(
+      { error: "Pro Plan required for this feature." },
+      { status: 403 }
+    );
+  }
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {

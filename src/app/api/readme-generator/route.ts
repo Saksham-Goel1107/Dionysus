@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from '@clerk/nextjs/server'
 
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
@@ -21,6 +22,16 @@ Make the README thorough, professional, and visually engaging. Use proper GitHub
 The output should be complete GitHub-compatible markdown that can be copied directly into a README.md file but don't wrap the entire code in triple backtiks and markdown triple backtiks because that will distrupt the code just write the code normally.`;
 
 export async function POST(req: NextRequest) {
+  const { has } = await auth()
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' })
+  if (!hasProPlan) {
+    return NextResponse.json(
+      {
+        error: 'You need to upgrade to Pro to use this feature.',
+      },
+      { status: 403 },
+    )
+  }
   try {
     // Check API key at runtime instead of build time
     const apiKey = process.env.GEMINI_API_KEY;
