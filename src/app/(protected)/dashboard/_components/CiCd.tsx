@@ -222,7 +222,7 @@ const handleStepChange = (idx: number) => {
                 <p
                   className={`text-center ${resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"} max-w-md`}
                 >
-                  Access to Git Graph is available exclusively for{" "}
+                  Access to Ci/Cd genrator is available exclusively for{" "}
                   <span className="font-semibold text-yellow-700">
                     Dionysus Pro Pack
                   </span>{" "}
