@@ -73,3 +73,56 @@ export const generateEmbedding = async (summary: string) => {
 
   return embedding.values;
 };
+
+export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: string } | string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    return {
+      yaml: '# ❌ Error: The GEMINI_API_KEY environment variable is missing.',
+      tip: 'Set GEMINI_API_KEY in your environment to enable Gemini-powered YAML generation.'
+    };
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
+
+    const context = `
+You are a professional DevOps engineer. 
+Generate a production-ready CI/CD YAML file based on the user's request.
+Include a helpful tip at the end that starts with 'Tip:'.
+
+User request: ${prompt}
+
+Respond in this format:
+1. YAML in a markdown code block (\`\`\`yaml ... \`\`\`)
+2. Tip at the end
+`;
+
+    const result = await model.generateContent(context);
+    const text = await result.response.text();
+
+    const yamlMatch = text.match(/```ya?ml([\s\S]*?)```/i);
+    const tipMatch = text.match(/Tip:(.*)/i);
+
+    return {
+      yaml: yamlMatch?.[1]?.trim() ?? "# ⚠️ YAML block not detected in response.",
+      tip: tipMatch?.[1]?.trim() ?? "No tip found. Ensure your prompt is clear and focused on CI/CD needs."
+    };
+  } catch (error: any) {
+    console.error("Gemini Error:", error?.message || error);
+
+    if (error.message?.includes("API key not valid")) {
+      return {
+        yaml: '# ❌ Error: Invalid GEMINI_API_KEY.',
+        tip: 'Check and regenerate your API key from https://makersuite.google.com/app/apikey'
+      };
+    }
+
+    return {
+      yaml: `# ❌ Gemini API Error: ${error.message || "Unknown error occurred."}`,
+      tip: "Please try again or verify your API status."
+    };
+  }
+}
