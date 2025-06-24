@@ -46,6 +46,11 @@ const items = [
     icon: Presentation,
   },
   {
+    title: "Advanced",
+    url: "/advanced",
+    icon: Plus,
+  },
+  {
     title: "Billing",
     url: "/billing",
     icon: CreditCard,

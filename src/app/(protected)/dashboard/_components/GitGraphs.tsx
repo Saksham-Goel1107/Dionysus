@@ -109,6 +109,7 @@ const GitGraphs = () => {
               </p>
             </div>
             <Button
+            disabled={true}
               onClick={async () => {
                 const res = await fetch("/api/GitGraph", {
                   method: "POST",

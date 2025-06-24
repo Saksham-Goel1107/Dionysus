@@ -21,8 +21,8 @@ function PaymentProcessor() {
   const { toast } = useToast();
   const utils = api.useUtils();  useEffect(() => {
     const processPayment = async () => {
-      const sessionId = searchParams.get("session_id");
-      const creditsStr = searchParams.get("credits");
+      const sessionId = searchParams?.get("session_id");
+      const creditsStr = searchParams?.get("credits");
       
       if (!sessionId || !creditsStr) {
         setNoTransaction(true);
