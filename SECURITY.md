@@ -1,21 +1,36 @@
 # Security Policy
 
-## Supported Versions
-
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+Thank you for helping keep Dionysus and its users safe!
 
 ## Reporting a Vulnerability
 
-Use this section to tell people how to report a vulnerability.
+If you discover a security vulnerability in Dionysus, please **do not open a public issue**. Instead, report it directly and responsibly by following these steps:
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+1. **Email:**  
+   Please send your report to [sakshamgoel1107@gmail.com](mailto:sakshamgoel1107@gmail.com) with details of the vulnerability and steps to reproduce.
+
+2. **What to include:**  
+   - A clear description of the vulnerability.
+   - Steps to reproduce or proof of concept.
+   - Any relevant logs, screenshots, or code snippets.
+
+3. **Response:**  
+   - You will receive an acknowledgment within 2 business days.
+   - We aim to investigate and address all reports promptly.
+   - Please keep the details confidential until a fix is released and we coordinate disclosure.
+
+## Supported Versions
+
+Only the latest version of Dionysus is currently supported with security updates. Please ensure you keep your installation up-to-date.
+
+| Version | Supported          |
+| ------- | ----------------- |
+| Latest  | ✅                |
+
+## Responsible Disclosure
+
+We appreciate your help in responsibly disclosing vulnerabilities. Your effort makes the Dionysus project and the community safer!
+
+---
+
+For any security-related questions or concerns, please contact [sakshamgoel1107@gmail.com](mailto:sakshamgoel1107@gmail.com).
