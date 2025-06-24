@@ -23,7 +23,7 @@ The output should be complete GitHub-compatible markdown that can be copied dire
 
 export async function POST(req: NextRequest) {
   const { has } = await auth()
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' })
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
   if (!hasProPlan) {
     return NextResponse.json(
       {

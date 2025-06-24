@@ -3,13 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Protect } from "@clerk/nextjs";
 import { Lock } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import useProject from "@/hooks/use-project";
 
 const GitGraphs = () => {
   const { resolvedTheme } = useTheme();
   const { project } = useProject();
+  const [hasProPlan, sethasProPlan] = useState(false);
     let owner = "";
     let repo = "";
     if (project?.githubUrl) {
@@ -24,11 +25,22 @@ const GitGraphs = () => {
         console.error("Error extracting info from db",e)
       }
     }
+
+     useEffect(() => {
+        (async () => {
+          try {
+            const res = await fetch("/api/user/pro-status");
+            if (!res.ok) throw new Error("Failed to fetch pro status");
+            const data = await res.json();
+            sethasProPlan(data.pro);
+          } catch (error) {
+            sethasProPlan(false);
+          }
+        })();
+      }, []);
   return (
     <>
-      <Protect
-        plan="dionysus_pro_pack"
-        fallback={
+      {!hasProPlan ? (
           <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
               <Lock className="h-8 w-8 text-yellow-600" />
@@ -58,8 +70,7 @@ const GitGraphs = () => {
               </Button>
             </Link>
           </div>
-        }
-      >
+      ):(
         <div>
           <div className="flex flex-col items-center justify-center space-y-6 py-10">
             <div className="flex flex-col items-center space-y-2">
@@ -132,7 +143,7 @@ const GitGraphs = () => {
           </div>
 
         </div>
-      </Protect>
+      )}
     </>
   );
 };

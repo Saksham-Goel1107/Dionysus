@@ -1,6 +1,5 @@
 "use client";
-import { Protect } from "@clerk/nextjs";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import useProject from "@/hooks/use-project";
 const Code = () => {
   const { resolvedTheme } = useTheme();
   const { project } = useProject();
+  const [hasProPlan, sethasProPlan] = useState(false);
   let owner = "";
   let repo = "";
   if (project?.githubUrl) {
@@ -22,10 +22,21 @@ const Code = () => {
       }
     } catch (e) {}
   }
+  useEffect(() => {
+          (async () => {
+            try {
+              const res = await fetch("/api/user/pro-status");
+              if (!res.ok) throw new Error("Failed to fetch pro status");
+              const data = await res.json();
+              sethasProPlan(data.pro);
+            } catch (error) {
+              sethasProPlan(false);
+            }
+          })();
+        }, []);
   return (
-    <Protect
-      plan="dionysus_pro_pack"
-      fallback={
+    <>
+    {!hasProPlan ? (
         <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
             <Lock className="h-8 w-8 text-yellow-600" />
@@ -55,8 +66,7 @@ const Code = () => {
             </Button>
           </Link>
         </div>
-      }
-    >
+    ):(
     <div className="mx-auto max-w-xl rounded-lg border bg-background p-8 shadow-md">
       <h2 className="mb-4 text-2xl font-bold text-center">
         🚀 Open Your Project in CodeSandbox
@@ -115,7 +125,8 @@ const Code = () => {
         <span>So if you got in any trouble we are 24/7 available for you.</span>
       </div>
     </div>
-    </Protect>
+    )}
+    </>
   );
 };
 

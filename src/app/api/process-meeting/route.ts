@@ -14,6 +14,18 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
+
+  const { has } = await auth()
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
+  if (!hasProPlan) {
+    return NextResponse.json(
+      {
+        error: 'You need to upgrade to Pro to use this feature.',
+      },
+      { status: 403 },
+    )
+  }
+  
   if (!userId) {
     return NextResponse.json({ error: "Unatuthorized" }, { status: 401 });
   }

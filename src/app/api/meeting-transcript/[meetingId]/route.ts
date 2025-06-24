@@ -2,7 +2,6 @@ import { db } from "@/server/db";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { Prisma } from "@prisma/client";
 
 const paramsParser = z.object({
   meetingId: z.string(),

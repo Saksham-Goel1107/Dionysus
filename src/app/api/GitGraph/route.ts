@@ -3,6 +3,7 @@ import { spawn } from "child_process";
 import path from "path";
 import fs from "fs/promises";
 import fsSync from "fs";
+import { auth } from "@clerk/nextjs/server";
 
 function waitForFile(filePath: string, timeout = 7000): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -20,6 +21,16 @@ function waitForFile(filePath: string, timeout = 7000): Promise<void> {
 }
 
 export async function POST(req: Request) {
+  const { has } = await auth()
+    const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
+    if (!hasProPlan) {
+      return NextResponse.json(
+        {
+          error: 'You need to upgrade to Pro to use this feature.',
+        },
+        { status: 403 },
+      )
+    }
   try {
     const { owner, repo } = await req.json();
 

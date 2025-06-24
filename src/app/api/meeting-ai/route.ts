@@ -70,13 +70,15 @@ function formatCurrency(value: number): string {
 
 export async function POST(req: NextRequest) {
   const { has } = await auth()
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' })
-  if (!hasProPlan) {
-    return NextResponse.json(
-      { error: "Pro Plan required for this feature." },
-      { status: 403 }
-    );
-  }
+    const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
+    if (!hasProPlan) {
+      return NextResponse.json(
+        {
+          error: 'You need to upgrade to Pro to use this feature.',
+        },
+        { status: 403 },
+      )
+    }
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {

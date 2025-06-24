@@ -3,6 +3,6 @@ import ProCrownUserButton from "./_components/ProCrownUserButton";
 
 export default async function ProCrownUserButtonWrapper() {
   const { has } = await auth();
-  const isPro = has({ plan: "dionysus_pro_pack" });
+  const isPro = has({ plan: "dionysus_pro_pack" }) || has({ plan: "dionysus_advance_pack" });
   return <ProCrownUserButton isPro={isPro} />;
 }
