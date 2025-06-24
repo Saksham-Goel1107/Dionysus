@@ -91,7 +91,7 @@ const Code = () => {
         <li>
         <span className="font-semibold">Sign in to CodeSandbox</span> with your GitHub account if prompted.
         </li>
-        <li className="text-gray-200">
+        <li className={` ${resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"}`}>
             After Signin from the top right corner open the project in your gitaccount from the dropdown to properly commit changes to github
         </li>
         <li>

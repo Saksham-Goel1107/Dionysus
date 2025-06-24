@@ -1,6 +1,5 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Protect } from "@clerk/nextjs";
 import { Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -152,8 +151,10 @@ const GitGraphs = () => {
             <span className="text-xs text-gray-400 dark:text-gray-500 mt-2">
               Exclusive to <span className="font-bold text-yellow-500">Dionysus Pro Pack</span> users
             </span>
+              <div className="flex justify-center pt-0 mt-0">
+                <span className="text-red-400 text-xs">If your repo is private then you can not visualize your repo you will face errors</span>
+              </div>
           </div>
-
         </div>
       )}
     </>

@@ -3,7 +3,6 @@ import subprocess
 import os
 import sys
 
-# === Get Mermaid code ===
 def get_mermaid_code(username, repo, api_url="https://api.gitdiagram.com/generate/stream"):
     response = requests.post(api_url, json={"username": username, "repo": repo}, stream=True)
     if not response.ok:
@@ -32,7 +31,6 @@ def get_mermaid_code(username, repo, api_url="https://api.gitdiagram.com/generat
 
     return mermaid_code
 
-# === Convert to PNG ===
 def mermaid_to_png(mermaid_code, output_png_path):
     temp_dir = os.getcwd()
     mmd_path = os.path.join(temp_dir, "temp.mmd")
@@ -40,23 +38,20 @@ def mermaid_to_png(mermaid_code, output_png_path):
     with open(mmd_path, 'w', encoding='utf-8') as f:
         f.write(mermaid_code)
 
-    docker_cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{temp_dir}:/data",
-        "minlag/mermaid-cli",
-        "-i", "/data/temp.mmd",
-        "-o", f"/data/{output_png_path}",
+    mmdc_cmd = [
+        "mmdc",  # directly call the Mermaid CLI
+        "-i", mmd_path,
+        "-o", output_png_path,
         "--scale", "4",
         "--backgroundColor", "transparent"
     ]
 
     try:
-        subprocess.check_call(docker_cmd)
+        subprocess.check_call(mmdc_cmd)
     finally:
         if os.path.exists(mmd_path):
             os.remove(mmd_path)
 
-# === MAIN ENTRY ===
 if __name__ == "__main__":
     if len(sys.argv) >= 3:
         username = sys.argv[1]
