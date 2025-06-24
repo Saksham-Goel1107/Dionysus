@@ -8,19 +8,21 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ClerkProvider } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
-import Providers from "./Providers"
+import Providers from "./Providers";
 import { ThemeProvider } from "./components/theme-provider";
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import CookieBanner from "./components/CookieBanner";
+import MaintenanceScreen from "../components/updates/screen";
 
 export const metadata: Metadata = {
   title: {
     default: "Dionysus – Your AI Github Assistant",
     template: "%s | Dionysus",
   },
-  description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.",
-  metadataBase: new URL('https://dionysus-gray.vercel.app'),
+  description:
+    "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.",
+  metadataBase: new URL("https://dionysus-gray.vercel.app"),
   keywords: [
     "AI",
     "GitHub",
@@ -33,13 +35,14 @@ export const metadata: Metadata = {
     "react",
     "nextjs",
     "trpc",
-    "open source"
+    "open source",
   ],
   authors: [{ name: "Saksham Goel", url: "https://dionysus-gray.vercel.app" }],
   creator: "Saksham Goel",
   openGraph: {
     title: "Dionysus – Your AI Github Assistant",
-    description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
+    description:
+      "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
     url: "https://dionysus-gray.vercel.app",
     siteName: "Dionysus",
     images: [
@@ -56,7 +59,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Dionysus – Your AI Github Assistant",
-    description: "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
+    description:
+      "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster.",
     images: ["/logo.png"],
     creator: "@saksham",
   },
@@ -85,31 +89,46 @@ export default async function RootLayout({
   const { userId } = await auth();
 
   return (
-    <ClerkProvider>
-      <html lang="en" className={`${GeistSans.variable}`}>
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <CookieBanner/>
-          <TRPCReactProvider>
-            {userId ? (
-              <Providers>{children}</Providers>
-            ) : (
-              <>{children}</>
-            )}
-          </TRPCReactProvider>
-          <Toaster richColors />
-          </ThemeProvider>
-          <SpeedInsights/>
-          <Analytics/>
-          {/* PageClip for feedback form */}
-          <script src="https://s.pageclip.co/v1/pageclip.js" charSet="utf-8"></script>
-        </body>
-      </html>
-    </ClerkProvider>
+    <>
+      {process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === "true" ? (
+        <html lang="en" className={`${GeistSans.variable}`}>
+          <body>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+            <MaintenanceScreen />
+            </ThemeProvider>
+          </body>
+        </html>
+      ) : (
+        <ClerkProvider>
+          <html lang="en" className={`${GeistSans.variable}`}>
+            <body>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <CookieBanner />
+                <TRPCReactProvider>
+                  {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                </TRPCReactProvider>
+                <Toaster richColors />
+              </ThemeProvider>
+              <SpeedInsights />
+              <Analytics />
+              <script
+                src="https://s.pageclip.co/v1/pageclip.js"
+                charSet="utf-8"
+              ></script>
+            </body>
+          </html>
+        </ClerkProvider>
+      )}
+    </>
   );
 }

@@ -40,8 +40,26 @@ const page = ({}: Props) => {
     );
   }
 
+  const maintenanceScheduled = process.env.NEXT_PUBLIC_MAINTAINENCE_SCHEDULED
+  const maintenanceDate = process.env.NEXT_PUBLIC_MAINTAINENCE_DATE
+  const maintenanceTime = process.env.NEXT_PUBLIC_MAINTAINENCE_TIME
+
   return (
     <div>
+      {maintenanceScheduled === "true" && maintenanceDate && maintenanceTime && (
+        <div
+          className="mb-4 rounded-md px-4 py-2 text-sm font-medium bg-yellow-100 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 flex items-center"
+          role="alert"
+        >
+          <span className="mr-2">⚠️</span>
+          Scheduled maintenance on{" "}
+          <span className="mx-1 font-semibold">
+            {maintenanceTime}
+          </span>
+          . You shall be unable to access the site at that time.
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-y-4">
         {/* GITHUB LINK */}
         <div className="w-fit rounded-md bg-primary px-4 py-3">
