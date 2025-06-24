@@ -3,13 +3,14 @@ import React, { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Lock } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
 import useProject from "@/hooks/use-project";
 
 const Code = () => {
   const { resolvedTheme } = useTheme();
   const { project } = useProject();
   const [hasProPlan, sethasProPlan] = useState(false);
+  const [loading, setLoading] = useState(true);
   let owner = "";
   let repo = "";
   if (project?.githubUrl) {
@@ -31,9 +32,21 @@ const Code = () => {
               sethasProPlan(data.pro);
             } catch (error) {
               sethasProPlan(false);
+            }finally{
+              setLoading(false)
             }
           })();
         }, []);
+
+         if (loading) {
+                  return (
+                    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                      <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
+                      <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+                    </div>
+                  );
+                }
+
   return (
     <>
     {!hasProPlan ? (

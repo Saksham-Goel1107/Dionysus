@@ -13,6 +13,7 @@ import {
   ArrowDown,
   Info,
   Lock,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -129,6 +130,7 @@ const CiCd = () => {
   const [aiTip, setAiTip] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   interface Step {
     label: string;
@@ -272,9 +274,21 @@ const CiCd = () => {
         sethasProPlan(data.pro);
       } catch (error) {
         sethasProPlan(false);
+      }finally{
+        setLoading(false)
       }
     })();
   }, []);
+
+   if (loading) {
+            return (
+              <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
+                <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+              </div>
+            );
+          }
+
 
   return (
     <>

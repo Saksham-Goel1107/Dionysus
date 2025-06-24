@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Presentation, Upload } from "lucide-react";
+import { Loader2, Presentation, Upload } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
@@ -22,6 +22,7 @@ const MeetingCard = () => {
   const uploadMeeting = api.project.uploadMeeting.useMutation();
   const { project } = useProject();
   const [hasProPlan, sethasProPlan] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // MEETING AUDIO PROCESSING FUCNTION USING ASSEMBLY-AI
   const processMeeting = useMutation({
@@ -97,9 +98,20 @@ const MeetingCard = () => {
         sethasProPlan(data.pro);
       } catch (error) {
         sethasProPlan(false);
+      }finally{
+        setLoading(false)
       }
     })();
   }, []);
+
+  if (loading) {
+          return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
+              <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+            </div>
+          );
+        }
 
   return (
     <>
