@@ -1,72 +1,136 @@
+# Dionysus: AI-Powered GitHub SaaS Client
 
-**Dionysus** is an AI-powered GitHub SaaS client designed to revolutionize project collaboration and management. With Dionysus, users can seamlessly integrate their GitHub repositories, explore commit histories, interact with AI to learn more about their projects, and manage their teams effectively. This platform leverages cutting-edge AI to simplify and enhance workflows, making teamwork effortless and efficient.
+<p align="center">
+  <img src="public/logo.png" alt="Dionysus Logo" width="120" />
+</p>
 
-
-
----
-
-## Key Features
-
-### 1. **GitHub Integration**
-- Link your projects directly using your GitHub repository URL.
-- View and analyze the complete commit history of your repository.
-- Ask AI-powered questions about your repository and its functionalities to gain insights and improve understanding.
-
-### 2. **AI-Powered Audio Transcription and Summarization**
-- Upload audio files of your meetings.
-- Get a transcript of the audio file with time stamps.
-- Receive a concise AI-generated summary of the meeting, powered by **Assembly AI**.
-
-### 3. **Team Collaboration**
-- Invite team members to work on projects collaboratively.
-- Generate a unique invitation URL for each project. When another Dionysus user clicks the URL, they can join the project and start collaborating.
-- Share your project and work together seamlessly.
-
-### 4. **AI Assistance**
-- AI responses and functionalities powered by **Gemini AI** to assist with repository-related queries and insights.
-
-### 5. **Credit System for Pricing**
-- Pricing is based on a credit system:
-  - Purchase 50 credits for 75 INR.
-  - Each audio file upload deducts 1 credit.
-
-### 6. **Authentication**
-- User authentication is powered by **Clerk** for secure and seamless login and account management.
+<p align="center">
+  <a href="https://render.com/"><img src="https://img.shields.io/badge/Deployed%20on-render-black?logo=render" alt="render" /></a>
+  <a href="https://github.com/saksham-goel1107/dionysus"><img src="https://img.shields.io/github/stars/saksham-goel1107/dionysus?style=social" alt="GitHub stars" /></a>
+  <a href="https://github.com/saksham-goel1107/dionysus/issues"><img src="https://img.shields.io/github/issues/saksham-goel1107/dionysus" alt="GitHub issues" /></a> 
+  <img src="https://img.shields.io/badge/AI-Gemini%20%26%20Assembly%20AI-blueviolet" alt="AI" />
+  <img src="https://img.shields.io/badge/Auth-Clerk-orange" alt="Clerk" />
+  <img src="https://img.shields.io/badge/Frontend-Next-blue" alt="Next" />
+  <img src="https://img.shields.io/badge/Database-Prisma%20%26%20PostgreSQL-4E8EE5" alt="Prisma" />
+</p>
 
 ---
 
+## 🚀 Overview
+
+**Dionysus** is an advanced AI-powered SaaS platform for seamless GitHub project management and collaboration. Integrate your repositories, analyze commit histories, transcribe meetings, and collaborate with your team—all enhanced by state-of-the-art AI.
 
 ---
 
-## Tech Stack
+## 📂 Folder Structure
 
-### Frontend
-- Developed using **React** and deployed on **Vercel**.
-
-### Backend
-- AI transcription is handled by **Assembly AI**.
-- AI responses and interactions are powered by **Gemini AI**.
-
-### Authentication
-- User authentication is managed through **Clerk**.
+```
+├── prisma/                # Database schema & migrations
+├── public/                # Static assets (images, icons, manifest)
+├── src/
+│   ├── app/               # Next.js app directory (routing, layouts, pages)
+│   │   ├── (protected)/   # Authenticated routes & features
+│   │   ├── api/           # API route handlers
+│   │   ├── components/    # UI components (navbar, footer, etc.)
+│   │   ├── docs/          # Documentation pages
+│   │   ├── privacy/       # Privacy policy
+│   │   ├── sign-in/       # Sign-in pages
+│   │   ├── sign-up/       # Sign-up pages
+│   │   ├── sync-user/     # User sync page
+│   │   ├── terms/         # Terms of service
+│   │   ├── types/         # TypeScript types
+│   │   └── utils/         # Utility functions (e.g., redis)
+│   ├── components/        # Shared UI components (feedback, UI, updates)
+│   ├── hooks/             # Custom React hooks
+│   ├── lib/               # Library code (AI, cloudinary, stripe, etc.)
+│   ├── pages/             # (Legacy) Next.js pages
+│   ├── server/            # Server-side logic (db, API)
+│   ├── styles/            # Global styles (Tailwind, CSS)
+│   ├── trpc/              # tRPC client/server setup
+│   └── types/             # Shared types
+├── .env*                  # Environment variables (not included)
+├── package.json           # Project metadata & scripts
+├── README.md              # Project documentation
+└── ...                    # Other configs & docs
+```
 
 ---
 
-## How to Use
+## ✨ Features
 
-### Step 1: Link Your GitHub Repository
-- Copy your GitHub repository URL and paste it on the platform to link your project.
+### 🔗 GitHub Integration
+- **Connect Repositories:** Link your GitHub projects with a single URL.
+- **Commit History Explorer:** Visualize and analyze the entire commit history.
+- **AI-Powered Insights:** Ask questions about your codebase and get instant, context-aware answers.
 
-### Step 2: Explore and Interact
-- View commit histories.
-- Use AI to ask questions about your repository and understand its functionalities.
+### 📝 AI-Powered Audio Transcription & Summarization
+- **Audio Uploads:** Upload meeting recordings in various formats.
+- **Transcription:** Receive accurate, timestamped transcripts powered by Assembly AI.
+- **Summarization:** Get concise, AI-generated meeting summaries for quick review.
 
-### Step 3: Upload Audio Files
-- Upload audio recordings of your meetings.
-- Receive transcripts with timestamps and AI-generated summaries.
+### 👥 Team Collaboration
+- **Invite Members:** Add teammates via unique invitation URLs.
+- **Real-Time Collaboration:** Work together on projects, share insights, and manage tasks.
+- **Project Sharing:** Seamlessly share project access and updates.
 
-### Step 4: Collaborate with Your Team
-- Use the "Invite Team Members" feature to share your project.
-- Generate an invitation URL and share it with your team. Once they click the link and join Dionysus, they can collaborate on your project.
+### 🤖 AI Assistance
+- **Gemini AI Integration:** Leverage Gemini AI for repository Q&A, code explanations, and workflow suggestions.
+- **Smart Suggestions:** Get recommendations for code improvements and project management.
+
+### 💳 Credit-Based Pricing
+- **Transparent Pricing:** Purchase credits (e.g., 50 credits for 75 INR).
+- **Usage-Based:** Each audio upload deducts 1 credit—pay only for what you use.
+
+### 🔒 Authentication & Security
+- **Clerk Integration:** Secure, seamless authentication and account management.
+- **Role-Based Access:** Ensure only authorized users can access sensitive features.
 
 ---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React, Next.js, Tailwind CSS
+- **Backend:** Node.js, tRPC, Prisma ORM, PostgreSQL
+- **AI:** Gemini AI (Q&A, code insights), Assembly AI (audio transcription)
+- **Authentication:** Clerk
+- **Deployment:** Vercel
+
+---
+
+## 🚦 Getting Started
+
+1. **Clone the Repository**
+   ```sh
+   git clone https://github.com/saksham-goel1107/dionysus.git
+   cd dionysus
+   ```
+2. **Install Dependencies**
+   ```sh
+   npm install
+   ```
+3. **Run the Development Server**
+   ```sh
+   npm run dev
+   ```
+4. **Open in Browser**
+   Visit [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="public/undraw_developer.svg" alt="Developer" width="300" />
+</p>
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before submitting pull requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the [LICENSE FILE](LICENSE.md).

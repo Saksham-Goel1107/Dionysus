@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 
 type Props = {};
 
-const page = async ({}: Props) => {
+const Page = async ({}: Props) => {
   const { userId } = await auth();
 
   if (!userId) {
@@ -14,15 +14,13 @@ const page = async ({}: Props) => {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
 
-  console.log(user);
-  if (!user.emailAddresses[0]?.emailAddress) {
+  const email = user.emailAddresses[0]?.emailAddress;
+  if (!email) {
     return notFound();
   }
 
   await db.user.upsert({
-    where: {
-      emailAddress: user.emailAddresses[0].emailAddress ?? "",
-    },
+    where: { emailAddress: email },
     update: {
       imageUrl: user.imageUrl,
       firstName: user.firstName,
@@ -30,7 +28,7 @@ const page = async ({}: Props) => {
     },
     create: {
       id: userId,
-      emailAddress: user.emailAddresses[0].emailAddress,
+      emailAddress: email,
       imageUrl: user.imageUrl,
       firstName: user.firstName,
       lastName: user.lastName,
@@ -40,4 +38,4 @@ const page = async ({}: Props) => {
   return redirect("/dashboard");
 };
 
-export default page;
+export default Page;
