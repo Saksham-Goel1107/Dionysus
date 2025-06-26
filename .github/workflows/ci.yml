@@ -9,19 +9,43 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Doppler CLI
+        run: |
+          curl -sLf --retry 3 --retry-delay 2 https://downloads.doppler.com/install.sh | sh
+          export PATH="$HOME/.doppler/bin:$PATH"
+          echo "$HOME/.doppler/bin" >> $GITHUB_PATH
+          doppler --version
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Install dependencies
-        run: npm ci
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: doppler run --project=dionysus --config=stg -- npm ci
+
       - name: Lint
-        run: npm run lint
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: doppler run --project=dionysus --config=stg -- npm run lint
+
       - name: Type Check
-        run: npm run type-check
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: doppler run --project=dionysus --config=stg -- npm run type-check
+
       - name: Run Tests
-        run: npm test
-      - name: Build
-        run: npm run build
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: doppler run --project=dionysus --config=stg -- npm test
+
+      - name: Run Build
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        run: doppler run --project=dionysus --config=stg -- npm run build
