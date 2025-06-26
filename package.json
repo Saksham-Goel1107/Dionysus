@@ -122,7 +122,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@mermaid-js/mermaid-cli": "^10.4.0",
+    "@mermaid-js/mermaid-cli": "^11.6.0",
     "@types/eslint": "^8.56.10",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
