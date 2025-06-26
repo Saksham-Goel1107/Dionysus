@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import StressTester from "./stress";
+import CodeAnalytics from "./CodeAnalytics";
 
 const Advanced = () => {
     const {resolvedTheme} = useTheme()
@@ -42,6 +43,7 @@ const Advanced = () => {
           </div>}>
         <div>
             <StressTester/>
+            <CodeAnalytics/>
         </div>
       </Protect>
     </>
