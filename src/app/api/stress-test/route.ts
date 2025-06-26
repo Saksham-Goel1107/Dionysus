@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { Instance, Result } from "autocannon";
+import type {  Result } from "autocannon";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url, users } = await req.json();
+    const { has } = await auth()
+      const hasProPlan = has({ plan: 'dionysus_advance_pack' })
+      if (!hasProPlan) {
+        return NextResponse.json(
+          {
+            error: 'You need to upgrade to Advance to use this feature.',
+          },
+          { status: 403 },
+        )
+      }
+    const { url, users, userInfo } = await req.json();
     if (!url || !users) {
       return NextResponse.json({ error: "Missing url or users" }, { status: 400 });
     }
+    if (users > 10000) {
+      return NextResponse.json({ error: "Number of users cannot exceed 10,000." }, { status: 400 });
+    }
+
+    // Log user info for identification
+    console.log("[Stress Test Request] User Info:", userInfo);
 
     let autocannon: typeof import("autocannon");
     try {
