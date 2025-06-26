@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 
 // Helper to extract owner/repo from GitHub URL
@@ -10,6 +11,11 @@ function parseRepoUrl(repoUrl: string) {
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 export async function GET(req: NextRequest) {
+  const { has } = await auth()
+    const hasProPlan =has({ plan: 'dionysus_advance_pack' });
+     if(!hasProPlan){
+    return NextResponse.json({ error: 'Pro plan required' }, { status: 403 });
+  }
   const { searchParams } = new URL(req.url);
   const repoUrl = searchParams.get("repoUrl");
   if (!repoUrl) {
