@@ -36,6 +36,7 @@ const CodeAnalytics = () => {
         const data = await res.json();
         setAnalytics(data.analytics);
         setLastCommit(data.commit);
+        setRepoInfo(data.repo); // <-- store repo info
         // Fetch quality analysis
         setQualityLoading(true);
         setQualityError(null);
@@ -62,15 +63,17 @@ const CodeAnalytics = () => {
     return () => clearInterval(interval);
   }, [project?.githubUrl]);
 
+  const [repoInfo, setRepoInfo] = useState<any>(null);
+
   const handleShowAI = async () => {
     setActiveTab('ai');
-    if (!aiExplanation && analytics) {
+    if (!aiExplanation && analytics && repoInfo) {
       setAiLoading(true);
       try {
         const res = await fetch('/api/gemini/explain', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ analytics }),
+          body: JSON.stringify({ analytics, repo: repoInfo }),
         });
         const data = await res.json();
         setAiExplanation(data.explanation);
@@ -88,7 +91,7 @@ const CodeAnalytics = () => {
   };
 
   const handleSendChat = async () => {
-    if (!chatInput.trim() || !analytics) return;
+    if (!chatInput.trim() || !analytics || !repoInfo) return;
     setChatLoading(true);
     setChatError(null);
     const newHistory = [
@@ -104,6 +107,7 @@ const CodeAnalytics = () => {
         body: JSON.stringify({
           question: chatInput,
           analytics,
+          repo: repoInfo,
           history: newHistory.filter(m => m.role === 'user' || m.role === 'ai'),
         }),
       });
@@ -155,7 +159,7 @@ const totalFunctions = analytics ? (analytics as FileAnalytics[]).reduce((sum, a
       </div>
       {showModal && analytics && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-auto">
-          <div className="bg-white dark:bg-gray-900 rounded-xl md:rounded-xl rounded-lg shadow-xl p-2 sm:p-6 w-full max-w-full sm:max-w-4xl relative max-h-[98vh] overflow-y-auto overflow-x-hidden mx-1 sm:mx-0" style={{width: '98vw'}}>
+          <div className="bg-white dark:bg-gray-900 rounded-xl md:rounded-xl shadow-xl p-2 sm:p-6 w-full max-w-full sm:max-w-4xl relative max-h-[98vh] overflow-y-auto overflow-x-hidden mx-1 sm:mx-0" style={{width: '98vw'}}>
             <button onClick={() => setShowModal(false)} className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white text-2xl">&times;</button>
             <h3 className="font-bold text-lg mb-4 text-center flex items-center gap-2"><FaChartBar className="text-blue-600" /> Code Analytics Visualization</h3>
             <div className="flex flex-wrap gap-2 sm:gap-4 mb-4 justify-center w-full overflow-x-auto">

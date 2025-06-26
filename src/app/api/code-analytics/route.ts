@@ -58,6 +58,7 @@ export async function GET(req: NextRequest) {
 
   // Use typhonjs-escomplex for complexity analysis (JS/TS only)
   let escomplex: any;
+  // @ts-ignore
   try {
     escomplex = (await import("typhonjs-escomplex")).default;
   } catch (e) {
@@ -71,24 +72,37 @@ export async function GET(req: NextRequest) {
   const metrics = validFiles.map(f => {
     const analysis = escomplex.analyzeModule(f!.content);
     // Count exported functions (simple regex, not perfect)
-    const exportFuncCount = (f!.content.match(/export function /g) || []).length;
+    const exportFuncMatches = f!.content.match(/export function [a-zA-Z0-9_]+/g) || [];
     // Count top-level function expressions (simple regex)
-    const funcExprCount = (f!.content.match(/const [a-zA-Z0-9_]+ = (async )?\(?[a-zA-Z0-9_, ]*\)? ?=>/g) || []).length;
+    const funcExprMatches = f!.content.match(/const [a-zA-Z0-9_]+ = (async )?\(?[a-zA-Z0-9_, ]*\)? ?=>/g) || [];
     // Count class methods (simple regex)
-    const classMethodCount = (f!.content.match(/\n\s*[a-zA-Z0-9_]+\([^)]*\) ?\{/g) || []).length;
-    const totalFunctions = (analysis.functions?.length || 0) + exportFuncCount + funcExprCount + classMethodCount;
+    const classMethodMatches = f!.content.match(/\n\s*[a-zA-Z0-9_]+\([^)]*\) ?\{/g) || [];
+    // Combine all detected functions into a single array for frontend
+    const allFunctions = [
+      ...(analysis.functions || []),
+      ...exportFuncMatches.map((m: string) => ({ type: 'exported', signature: m })),
+      ...funcExprMatches.map((m: string) => ({ type: 'arrow', signature: m })),
+      ...classMethodMatches.map((m: string) => ({ type: 'classMethod', signature: m })),
+    ];
     return {
       path: f!.path,
       aggregate: analysis.aggregate,
-      functions: analysis.functions,
+      functions: allFunctions, // unified function array
       dependencies: analysis.dependencies,
-      extraFunctionCount: exportFuncCount + funcExprCount + classMethodCount,
-      totalFunctions,
+      totalFunctions: allFunctions.length,
     };
   });
 
   return NextResponse.json({
     analytics: metrics,
     commit: latestCommit,
+    repo: {
+      owner: repo.owner,
+      name: repo.repo,
+      url: repoUrl,
+      latestCommit,
+      fileCount: files.length,
+      analyzedFiles: metrics.map(m => m.path),
+    },
   });
 }
