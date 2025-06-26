@@ -4,6 +4,8 @@ import { api } from "@/trpc/react";
 import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import Image from "next/image";
+import React from "react";
 
 type Props = {};
 
@@ -11,6 +13,10 @@ const CommitLog = ({}: Props) => {
   const { projectId, project } = useProject();
   const { data: commits } = api.project.getCommits.useQuery({ projectId });
   const {resolvedTheme} = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
 
   return (
     <div className="w-full">
@@ -35,18 +41,22 @@ const CommitLog = ({}: Props) => {
             rel="noopener noreferrer"
             className="flex-shrink-0"
           >
-            <img
+            <Image
               src={commit.commitAuthorAvatar}
               alt={`${commit.commitAuthorName}'s avatar`}
+              width={32}
+              height={32}
               className="relative mt-4 h-8 w-8 flex-none rounded-full bg-gray-50"
               style={{ minWidth: "2rem", minHeight: "2rem" }}
             />
           </a>
         ) : (
           <div className="flex-shrink-0">
-            <img
+            <Image
               src={commit.commitAuthorAvatar}
               alt={`${commit.commitAuthorName}'s avatar`}
+              width={32}
+              height={32}
               className="relative mt-4 h-8 w-8 flex-none rounded-full bg-gray-50"
               style={{ minWidth: "2rem", minHeight: "2rem" }}
             />

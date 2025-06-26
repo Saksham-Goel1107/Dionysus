@@ -95,7 +95,7 @@ const AskQuestionCrad = () => {
           </DialogHeader>
           <div data-color-mode={theme} className="markdown-editor-container">
             <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
-              <div className="p-4 rounded-md bg-card text-card-foreground">
+              <div className="p-4 rounded-md bg-card text-card-foreground w-full min-w-0 max-w-full overflow-x-auto">
                 <MDEditor.Markdown 
                   source={answer}
                   className="md-preview-content"

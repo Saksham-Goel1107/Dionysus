@@ -9,6 +9,7 @@ import { FormInput } from "@/types/FormInput";
 import { FileWarning, Info } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import Image from "next/image";
 
 type Props = {};
 
@@ -102,8 +103,8 @@ const page = ({}: Props) => {
    
 
   return (
-    <div className="flex h-full items-center justify-center gap-12">
-      <img src="/undraw_developer.svg" className="h-56 w-auto" />
+    <div className="flex h-full items-center justify-center gap-12 flex-col sm:flex-row">
+      <Image height={250} width={250} src="/undraw_developer.svg" alt="Developer"/>
       <div>
         <div>
           <h1 className="text-2xl font-semibold">

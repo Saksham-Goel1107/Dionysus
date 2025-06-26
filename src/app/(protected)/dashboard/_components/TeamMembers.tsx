@@ -1,6 +1,7 @@
 "use client";
 import useProject from "@/hooks/use-project";
 import { api } from "@/trpc/react";
+import Image from "next/image";
 import React from "react";
 
 const TeamMembers = () => {
@@ -11,7 +12,7 @@ const TeamMembers = () => {
       {members?.map((member) => (
         <div key={member.id} className="relative group">
           <a href={`mailto:${member.user.emailAddress}`}>
-            <img
+            <Image
               key={member.id}
               src={member.user.imageUrl || ""}
               alt={member.user.firstName || ""}

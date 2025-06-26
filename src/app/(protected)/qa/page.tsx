@@ -18,6 +18,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 
 const NoProjectsCard = () => {
   return (
@@ -42,13 +43,13 @@ const QaPage = () => {
   const { data: questions } = api.project.getQuestions.useQuery(
     { projectId },
     {
-      enabled: !!projectId, // Only fetch if we have a projectId
+      enabled: !!projectId,
     }
   );
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const question = questions?.[questionIndex];
+  const { resolvedTheme } = useTheme();
 
-  // If there are no projects, show the create project prompt
   if (!projects || projects.length === 0) {
     return (
       <div className="container max-w-4xl py-8">
@@ -56,35 +57,45 @@ const QaPage = () => {
       </div>
     );
   }
-  const {resolvedTheme} = useTheme();
+
   return (
     <Sheet>
-      <AskQuestionCrad></AskQuestionCrad>
-      <div className="h-4"></div>
+      <AskQuestionCrad />
+      <div className="h-4" />
       <h1 className="text-xl font-semibold">Saved Questions</h1>
-      <div className="h-2"></div>
+      <div className="h-2" />
       <div className="flex flex-col gap-2">
         {questions?.map((question, index) => (
           <React.Fragment key={question.id}>
             <SheetTrigger onClick={() => setQuestionIndex(index)}>
-              <div className={`flex items-center gap-4 rounded-lg border ${resolvedTheme === "dark"?"bg-gray-900":"bg-white"} p-4 shadow-md shadow-border mb-2`}>
-                <img
+              <div
+                className={`flex items-center gap-4 rounded-lg border ${
+                  resolvedTheme === "dark" ? "bg-gray-900" : "bg-white"
+                } p-4 shadow-md shadow-border mb-2`}
+              >
+                <Image
                   className="rounded-full"
                   height={30}
                   width={30}
                   src={question.user.imageUrl ?? ""}
                   alt="User avatar"
                 />
-                <div className="flex flex-col text-left">
+                <div className="flex flex-col text-left overflow-hidden">
                   <div className="flex items-center gap-2">
-                    <p className={`line-clamp-1 text-lg font-medium ${resolvedTheme === "dark"?"text-white":"text-gray-700"}`}>
+                    <p
+                      className={`line-clamp-1 text-lg font-medium ${
+                        resolvedTheme === "dark"
+                          ? "text-white"
+                          : "text-gray-700"
+                      }`}
+                    >
                       {question.question}
                     </p>
                     <span className="whitespace-nowrap text-xs text-gray-400">
                       {question.createdAt.toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="line-clamp-1 text-sm text-gray-500">
+                  <p className="line-clamp-2 text-sm text-gray-500">
                     {question.answer}
                   </p>
                 </div>
@@ -100,13 +111,25 @@ const QaPage = () => {
       </div>
 
       {question && (
-        <SheetContent className="sm:max-w-[80vw]">
+        <SheetContent
+          side="right"
+          className="h-screen w-full sm:max-w-[80vw] sm:p-6 p-3 flex flex-col overflow-y-auto"
+        >
           <SheetHeader>
-            <SheetTitle>{question.question}</SheetTitle>
+            <SheetTitle className="text-base sm:text-xl mb-1 sm:mb-2 font-semibold tracking-tight leading-tight">
+              {question.question}
+            </SheetTitle>
           </SheetHeader>
-          <div data-color-mode={resolvedTheme} className="markdown-editor-container">
-            <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
-              <div className={`p-4 rounded-md ${resolvedTheme === "dark" ? "bg-gray-900" : "bg-card"} text-card-foreground`}>
+
+          <div
+            data-color-mode={resolvedTheme}
+            className="markdown-editor-container flex-1"
+          >
+            <ScrollArea className="flex-1 w-full max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+              <div
+                className={`p-3 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 text-card-foreground text-sm sm:text-base`}
+                style={{ minHeight: 60 }}
+              >
                 <MDEditor.Markdown
                   source={question.answer}
                   className="md-preview-content"
@@ -115,10 +138,15 @@ const QaPage = () => {
             </ScrollArea>
           </div>
 
-          <div className="h-6"></div>
+          <div className="my-1 sm:my-4 border-t border-gray-200 dark:border-gray-800 w-full" />
+
           <CodeReferences
-            filesReferences={question.filesReferences ?? ([] as any)}
-          ></CodeReferences>
+            filesReferences={
+              Array.isArray(question.filesReferences)
+                ? (question.filesReferences as { fileName: string; sourceCode: string; summary: string }[])
+                : []
+            }
+          />
         </SheetContent>
       )}
     </Sheet>

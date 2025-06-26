@@ -10,8 +10,6 @@ import { auth } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Providers from "./Providers";
 import { ThemeProvider } from "./components/theme-provider";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
 import CookieBanner from "./components/CookieBanner";
 import MaintenanceScreen from "../components/updates/screen";
 
@@ -119,8 +117,6 @@ export default async function RootLayout({
                 </TRPCReactProvider>
                 <Toaster richColors />
               </ThemeProvider>
-              <SpeedInsights />
-              <Analytics />
               <script
                 src="https://s.pageclip.co/v1/pageclip.js"
                 charSet="utf-8"

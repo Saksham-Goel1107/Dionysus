@@ -13,6 +13,13 @@ const config = {
         ignoreBuildErrors: true,
     },
     poweredByHeader: false,
+    images: {
+        domains: [
+            "avatars.githubusercontent.com",
+            "img.clerk.com",
+            "avatars.githubusercontent.com"
+        ],
+    },
 };
 
 export default config;

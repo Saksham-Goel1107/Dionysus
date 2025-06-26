@@ -3,6 +3,7 @@ import useProject from "@/hooks/use-project";
 import { useTheme } from "next-themes";
 import { api } from "@/trpc/react";
 import { useMemo } from "react";
+import Image from "next/image";
 import {
   PieChart,
   Pie,
@@ -76,14 +77,18 @@ const CustomLegend = ({ payload, contributionData }: any) => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <img
+                  <Image
+                  width={24}
+                  height={24}
                     src={contributor.avatar}
                     alt={contributor.name}
                     className="h-full w-full object-cover"
                   />
                 </a>
               ) : (
-                <img
+                <Image
+                width={24}
+                height={24}
                   src={contributor.avatar}
                   alt={contributor.name}
                   className="h-full w-full object-cover"
