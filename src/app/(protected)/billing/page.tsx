@@ -41,27 +41,25 @@ const BillingPage = () => {
   };
 
   return (
-    <div className="max-w-4xl">
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-xl font-semibold">Buy Credits</h2>
+    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0">
+      <div className="rounded-lg border bg-card p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold">Buy Credits</h2>
         <div className="h-2"></div>
         <p className="text-sm text-muted-foreground">
           You currently have {user?.credits} credits.
         </p>
         <div className="h-2"></div>
-        <div className="rounded-md border-blue-200 bg-blue-50 px-4 py-2 text-blue-700">
-          <div className="flex items-center gap-2">
+        <div className="rounded-md border-blue-200 bg-blue-50 px-2 py-2 sm:px-4 text-blue-700">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
             <Info className="size-4" />
             <p className="text-sm">
               Each credit allows you to index 1 file in a repository.
             </p>
           </div>
-          <p className="text-sm">
-            E.g. If your project has 100 files, you will need 100 credits to index
-            it.
+          <p className="text-xs sm:text-sm mt-1">
+            E.g. If your project has 100 files, you will need 100 credits to index it.
           </p>
         </div>
-
         <div className="h-4"></div>
         <Slider
           defaultValue={[100]}
@@ -75,7 +73,7 @@ const BillingPage = () => {
         <div className="h-4"></div>
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               Buy {creditsToBuyAmount} credits for ₹{price}
             </Button>
           </DialogTrigger>
@@ -99,9 +97,9 @@ const BillingPage = () => {
 
       <div className="h-8"></div>
       <div className="rounded-lg border bg-card shadow-sm">
-        <div className="flex items-center justify-between p-6 pb-4 border-b">
-          <div>
-            <h2 className="text-xl font-semibold flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 pb-2 sm:pb-4 border-b gap-2 sm:gap-0">
+          <div className="w-full">
+            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
               Purchase History
               <Dialog open={isGraphOpen} onOpenChange={setIsGraphOpen}>
                 <DialogTrigger asChild>
@@ -153,11 +151,11 @@ const BillingPage = () => {
                 </DialogContent>
               </Dialog>
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               View your credit purchase history
             </p>
           </div>
-          <div>
+          <div className="w-full sm:w-auto flex justify-end">
             <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
               {transactions?.length ?? 0} {transactions?.length === 1 ? "purchase" : "purchases"}
             </span>

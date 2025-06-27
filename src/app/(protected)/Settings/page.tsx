@@ -9,6 +9,8 @@ import BillingSettings from './_components/BillingSettings';
 import IntegrationSettings from './_components/IntegrationSettings';
 import { myAction } from './actions'
 import { useReverification } from '@clerk/nextjs';
+import {useTheme} from "next-themes"
+import { Button } from '@/components/ui/button';
 
 const sectionComponents: Record<string, React.ReactNode> = {
   profile: <ProfileSettings />,
@@ -23,6 +25,7 @@ export default function SettingsPage() {
   const performAction = useReverification(myAction)
   const [current, setCurrent] = useState('profile');
   const [verified,setVerified] = useState(false)
+  const {resolvedTheme} = useTheme()
 
   const handleClick = async () => {
     const myData = await performAction()
@@ -38,15 +41,14 @@ export default function SettingsPage() {
       <main className="flex-1 p-4 sm:p-6 md:p-8 w-full">
         {!verified ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <div className="mb-4 text-lg font-semibold text-gray-700">
+            <div className={`mb-4 text-lg font-semibold text-${resolvedTheme === "dark" ? "gray-200" : "gray-700"} text-center`}>
               Please verify your identity to access settings.
             </div>
-            <button
+            <Button
               onClick={handleClick}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
             >
               Verify Now
-            </button>
+            </Button>
           </div>
         ) : (
           sectionComponents[current]

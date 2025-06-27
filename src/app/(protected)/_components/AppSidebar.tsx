@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -12,9 +12,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import useProject from "@/hooks/use-project";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/sidebar';
+import useProject from '@/hooks/use-project';
+import { cn } from '@/lib/utils';
 import {
   Bot,
   CircleDollarSign,
@@ -23,67 +23,68 @@ import {
   LayoutDashboard,
   Plus,
   Presentation,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+} from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 type Props = {};
 
 const items = [
   {
-    title: "Dashboard",
-    url: "/dashboard",
+    title: 'Dashboard',
+    url: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    title: "Q&A",
-    url: "/qa",
+    title: 'Q&A',
+    url: '/qa',
     icon: Bot,
   },
   {
-    title: "Meetings",
-    url: "/meetings",
+    title: 'Meetings',
+    url: '/meetings',
     icon: Presentation,
   },
   {
-    title: "Advanced",
-    url: "/advanced",
+    title: 'Advanced',
+    url: '/advanced',
     icon: Plus,
   },
   {
-    title: "Billing",
-    url: "/billing",
+    title: 'Billing',
+    url: '/billing',
     icon: CreditCard,
   },
   {
-    title: "Subscriptions",
-    url: "/subscriptions",
-    icon: CircleDollarSign, 
+    title: 'Subscriptions',
+    url: '/subscriptions',
+    icon: CircleDollarSign,
   },
   {
-    title: "Settings",
-    url: "/Settings",
-    icon: Cog, 
+    title: 'Settings',
+    url: '/Settings',
+    icon: Cog,
   },
 ];
-
 
 const AppSidebar = ({}: Props) => {
   const pathname = usePathname();
 
-  const {projects, projectId, setProjectId} = useProject();
+  const { projects, projectId, setProjectId } = useProject();
 
   const { open } = useSidebar();
+
+  const [search, setSearch] = useState('');
+
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <Link href={'/'}>
           <div className="flex items-center gap-2">
             <Image src="/logo.png" alt="logo" width={40} height={40} />
-            {open && (
-              <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>
-            )}
+            {open && <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>}
           </div>
         </Link>
       </SidebarHeader>
@@ -99,7 +100,7 @@ const AppSidebar = ({}: Props) => {
                       <Link
                         href={item.url}
                         className={cn({
-                          "!bg-primary !text-white": pathname === item.url,
+                          '!bg-primary !text-white': pathname === item.url,
                         })}
                       >
                         <item.icon />
@@ -116,36 +117,50 @@ const AppSidebar = ({}: Props) => {
         <SidebarGroup>
           <SidebarGroupLabel>Your Projects</SidebarGroupLabel>
           <SidebarGroupContent>
+            {open && (
+              <div className="mb-2 px-2">
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            )}
+
             <SidebarMenu>
-              {projects?.map((project) => {
-                return (
-                  <SidebarMenuItem key={project.name}>
-                    <SidebarMenuButton asChild>
+              {projects
+                ?.filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
+                .map((project) => {
+                  return (
+                    <SidebarMenuItem key={project.name}>
+                      <SidebarMenuButton asChild>
                         <div onClick={() => setProjectId(project.id)}>
-                        <div
-                          className={cn(
-                          "cursor-pointer flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary",
-                          {
-                            "bg-primary text-white cursor-pointer": project.id === projectId,
-                            "px-2": !open, 
-                          },
-                          )}
-                        >
-                          {project.name[0]}
+                          <div
+                            className={cn(
+                              'cursor-pointer flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary',
+                              {
+                                'bg-primary text-white cursor-pointer': project.id === projectId,
+                                'px-2': !open,
+                              },
+                            )}
+                          >
+                            {project.name[0]}
+                          </div>
+                          <span className="cursor-pointer">{project.name}</span>
                         </div>
-                        <span className="cursor-pointer">{project.name}</span>
-                      </div>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
 
               <div className="h-2"></div>
 
               {open && (
                 <SidebarMenuItem>
                   <Link href="/create">
-                    <Button size="sm" variant={"outline"} className="w-fit">
+                    <Button size="sm" variant={'outline'} className="w-fit">
                       <Plus />
                       Create Project
                     </Button>
