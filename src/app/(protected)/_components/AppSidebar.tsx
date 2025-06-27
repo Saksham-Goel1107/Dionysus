@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import {
   Bot,
   CircleDollarSign,
+  Cog,
   CreditCard,
   LayoutDashboard,
   Plus,
@@ -59,6 +60,11 @@ const items = [
     title: "Subscriptions",
     url: "/subscriptions",
     icon: CircleDollarSign, 
+  },
+  {
+    title: "Settings",
+    url: "/Settings",
+    icon: Cog, 
   },
 ];
 
