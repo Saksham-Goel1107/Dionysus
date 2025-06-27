@@ -114,6 +114,8 @@ const StressTester = () => {
           <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-2">⚠️ Legal Notice</h3>
           <p className="text-sm text-yellow-800 dark:text-yellow-100">
             Stress testing a website you do not own or have explicit permission for is illegal and may result in criminal prosecution. By proceeding, you confirm you are authorized to test the specified website and accept all legal responsibility.
+            <br/>
+            Remember: We stores who used the stress test.
           </p>
         </div>
 

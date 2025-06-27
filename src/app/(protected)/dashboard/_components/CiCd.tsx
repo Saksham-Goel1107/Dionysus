@@ -293,49 +293,35 @@ const CiCd = () => {
   return (
     <>
       {!hasProPlan ? (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 px-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
             <Lock className="h-8 w-8 text-yellow-600" />
           </div>
-          <h2
-            className={`text-center text-2xl font-bold ${resolvedTheme === "dark" ? "text-white" : "text-gray-800"}`}
-          >
+          <h2 className={`text-center text-2xl font-bold ${resolvedTheme === "dark" ? "text-white" : "text-gray-800"}`}>
             Pro Plan Required
           </h2>
-          <p
-            className={`text-center ${resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"} max-w-md`}
-          >
-            Access to Ci/Cd genrator is available exclusively for{" "}
-            <span className="font-semibold text-yellow-700">
-              Dionysus Pro Pack
-            </span>{" "}
-            subscribers.
-            <br />
-            Upgrade your plan to unlock this feature.
+          <p className={`text-center ${resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"} max-w-md`}>
+            Access to Ci/Cd genrator is available exclusively for <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> subscribers.<br />Upgrade your plan to unlock this feature.
           </p>
           <Link href="/subscriptions">
-            <Button
-              size="lg"
-              className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700"
-            >
+            <Button size="lg" className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs">
               Upgrade Now
             </Button>
           </Link>
         </div>
       ) : (
         <div
-          className={`mx-auto max-w-2xl rounded-xl border p-6 shadow-xl transition duration-300 ${
+          className={`mx-auto max-w-2xl rounded-xl border p-2 xs:p-3 sm:p-6 shadow-xl transition duration-300 ${
             resolvedTheme === "dark"
               ? "border-zinc-700 bg-zinc-900 text-white"
               : "border-gray-200 bg-white text-gray-800"
-          }`}
+          } w-full`}
         >
-          <h2 className="mb-4 flex items-center gap-2 text-3xl font-bold">
-            <Wrench className="h-6 w-6 text-blue-500" /> CI/CD Pipeline
-            Generator
+          <h2 className="mb-4 flex flex-col sm:flex-row items-center gap-2 text-xl xs:text-2xl sm:text-3xl font-bold">
+            <span className="flex items-center gap-2"><Wrench className="h-6 w-6 text-blue-500" /> CI/CD Pipeline Generator</span>
             <Button
               onClick={handleAiSuggest}
-              className="ml-auto flex items-center gap-1"
+              className="sm:ml-auto flex items-center gap-1 mt-2 sm:mt-0"
               variant="outline"
               size="sm"
               disabled={aiLoading === true ? true : false}
@@ -344,13 +330,11 @@ const CiCd = () => {
             </Button>
           </h2>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 mt-4 block font-semibold">
-                CI Provider:
-              </label>
+              <label className="mb-2 mt-4 block font-semibold text-sm">CI Provider:</label>
               <select
-                className="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={provider}
                 onChange={(e) => setProvider(e.target.value)}
               >
@@ -362,9 +346,9 @@ const CiCd = () => {
               </select>
             </div>
             <div>
-              <label className="mb-2 mt-4 block font-semibold">OS:</label>
+              <label className="mb-2 mt-4 block font-semibold text-sm">OS:</label>
               <select
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded border px-3 py-2 text-sm"
                 value={os}
                 onChange={(e) => setOs(e.target.value)}
               >
@@ -376,11 +360,9 @@ const CiCd = () => {
               </select>
             </div>
             <div>
-              <label className="mb-2 mt-4 block font-semibold">
-                Node Version:
-              </label>
+              <label className="mb-2 mt-4 block font-semibold text-sm">Node Version:</label>
               <select
-                className="w-full rounded border px-3 py-2"
+                className="w-full rounded border px-3 py-2 text-sm"
                 value={nodeVersion}
                 onChange={(e) => setNodeVersion(e.target.value)}
               >
@@ -393,56 +375,64 @@ const CiCd = () => {
             </div>
           </div>
 
-          <label className="mb-2 mt-6 block font-semibold">Steps:</label>
+          <label className="mb-2 mt-6 block font-semibold text-sm">Steps:</label>
           <div className="flex flex-col gap-2">
             {steps.map((step, idx) => (
-              <div key={step.value} className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={step.checked}
-                  onChange={() => handleStepChange(idx)}
-                  className="accent-blue-600"
-                />
-                <input
-                  type="text"
-                  value={step.label}
-                  onChange={(e) => handleStepLabelChange(idx, e.target.value)}
-                  className="w-40 rounded border px-2 py-1"
-                />
+              <div key={step.value} className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full">
+                <div className="flex flex-row items-center gap-2 w-full xs:w-auto">
+                  <input
+                    type="checkbox"
+                    checked={step.checked}
+                    onChange={() => handleStepChange(idx)}
+                    className="accent-blue-600"
+                  />
+                  <input
+                    type="text"
+                    value={step.label}
+                    onChange={(e) => handleStepLabelChange(idx, e.target.value)}
+                    className="flex-1 min-w-0 rounded border px-2 py-1 text-sm"
+                    placeholder="Step label"
+                  />
+                </div>
                 <input
                   type="text"
                   value={step.script}
                   onChange={(e) => handleStepScriptChange(idx, e.target.value)}
-                  className="w-64 rounded border px-2 py-1"
+                  className="flex-1 min-w-0 rounded border px-2 py-1 text-sm"
+                  placeholder="Script"
                 />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleMoveStep(idx, -1)}
-                  disabled={idx === 0}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleMoveStep(idx, 1)}
-                  disabled={idx === steps.length - 1}
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => handleRemoveStep(idx)}
-                >
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
+                <div className="flex gap-1 justify-end xs:justify-start">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleMoveStep(idx, -1)}
+                    disabled={idx === 0}
+                    className="hidden xs:inline-flex"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleMoveStep(idx, 1)}
+                    disabled={idx === steps.length - 1}
+                    className="hidden xs:inline-flex"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => handleRemoveStep(idx)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                </div>
               </div>
             ))}
             <Button
               onClick={handleAddStep}
-              className="mt-2 flex items-center gap-2"
+              className="mt-2 flex items-center gap-2 w-full xs:w-auto"
               variant="outline"
               size="sm"
             >
@@ -450,12 +440,11 @@ const CiCd = () => {
             </Button>
           </div>
 
-          <label className="mb-2 mt-6 block font-semibold">
-            Environment Variables{" "}
-            <span className="text-sm font-normal">(e.g. FOO=bar)</span>:
+          <label className="mb-2 mt-6 block font-semibold text-sm">
+            Environment Variables <span className="text-xs font-normal">(e.g. FOO=bar)</span>:
           </label>
           <textarea
-            className="w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={4}
             placeholder="NODE_ENV=production\nAPI_KEY=your-key"
             value={envVars}
@@ -464,29 +453,27 @@ const CiCd = () => {
 
           <Button
             onClick={handleGenerate}
-            className="mt-6 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110"
+            className="mt-6 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 text-base xs:text-lg"
           >
             Generate YAML
           </Button>
 
           {yaml && (
             <div className="mt-6">
-              <label className="mb-2 block font-semibold">
-                Generated YAML:
-              </label>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-zinc-100 p-4 text-sm dark:bg-zinc-800">
+              <label className="mb-2 block font-semibold text-sm">Generated YAML:</label>
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-zinc-100 p-2 xs:p-4 text-xs xs:text-sm dark:bg-zinc-800 max-h-64 sm:max-h-96">
                 {yaml}
               </pre>
-              <div className="mt-3 flex gap-2">
+              <div className="mt-3 flex flex-col xs:flex-row gap-2">
                 <Button
                   onClick={handleCopy}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full xs:w-auto"
                 >
                   <Copy className="h-4 w-4" /> Copy
                 </Button>
                 <Button
                   onClick={handleDownload}
-                  className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700"
+                  className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 w-full xs:w-auto"
                 >
                   <Download className="h-4 w-4" /> Download
                 </Button>
@@ -495,10 +482,10 @@ const CiCd = () => {
           )}
 
           <div className="mt-8">
-            <h3 className="mb-2 flex items-center gap-2 text-lg font-bold">
+            <h3 className="mb-2 flex items-center gap-2 text-base xs:text-lg font-bold">
               <Info className="h-5 w-5 text-blue-400" /> Tips & Tricks
             </h3>
-            <ul className="ml-6 list-disc space-y-1 text-sm">
+            <ul className="ml-4 xs:ml-6 list-disc space-y-1 text-xs xs:text-sm">
               {TIPS.map((tip, i) => (
                 <li key={i}>{tip}</li>
               ))}
