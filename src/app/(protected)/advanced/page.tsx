@@ -7,6 +7,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import StressTester from "./stress";
 import CodeAnalytics from "./CodeAnalytics";
+import JWTSecretGenerator from "./Jwt";
+import Wiki from './wiki'
+import LicenseMakerPage from './license'
 
 const Advanced = () => {
     const {resolvedTheme} = useTheme()
@@ -43,7 +46,10 @@ const Advanced = () => {
           </div>}>
         <div>
             <StressTester/>
+            <LicenseMakerPage/>
+            <JWTSecretGenerator/>
             <CodeAnalytics/>
+            <Wiki/>
         </div>
       </Protect>
     </>

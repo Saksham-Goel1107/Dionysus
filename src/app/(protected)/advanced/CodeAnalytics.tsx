@@ -265,6 +265,26 @@ const totalFunctions = analytics ? (analytics as FileAnalytics[]).reduce((sum, a
                 >
                   {copied ? "Copied!" : "Copy"}
                 </Button>
+                <Button
+                  onClick={() => {
+                    if (analytics) {
+                      const blob = new Blob([JSON.stringify(analytics, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'code-analytics.json';
+                      document.body.appendChild(a);
+                      a.click();
+                      setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }, 0);
+                    }
+                  }}
+                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 text-xs"
+                >
+                  Download JSON
+                </Button>
                 <span className="text-xs text-gray-400">Copy all metrics as JSON</span>
               </div>
               <pre ref={rawRef} className="bg-gray-100 dark:bg-gray-800 rounded p-4 text-xs overflow-x-auto max-h-64">{JSON.stringify(analytics, null, 2)}</pre>
