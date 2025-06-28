@@ -15,14 +15,46 @@ export async function POST(request: NextRequest) {
     const result = await processCompletedPayment(paymentIntentId);
     
     if (result.success) {
+      // Fetch transaction and user details
+      const transaction = await db.stripeTransaction.findFirst({
+        where: { sessionId: paymentIntentId },
+        include: { user: true },
+      });
+      if (transaction && transaction.user) {
+        // Send invoice email
+        const { emailAddress } = transaction.user;
+        const credits = transaction.credits;
+        // Fetch the actual amount paid from Stripe PaymentIntent
+        let amount = ((transaction.credits / 50) * 75).toFixed(2); // fallback
+        try {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+            apiVersion: "2024-12-18.acacia",
+          });
+          const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          if (paymentIntent.amount_received) {
+            amount = (paymentIntent.amount_received / 100).toFixed(2);
+          }
+        } catch (e) {
+          console.error("Failed to fetch actual paid amount from Stripe:", e);
+        }
+        const date = new Date(transaction.createdAt).toLocaleString();
+        try {
+          const { sendPurchaseInvoice } = await import("@/lib/sendInvoice");
+          await sendPurchaseInvoice({
+            to: emailAddress,
+            credits,
+            amount,
+            date,
+          });
+        } catch (e) {
+          console.error("Failed to send invoice email:", e);
+        }
+      }
       return NextResponse.json({ 
         success: true, 
         alreadyProcessed: result.alreadyProcessed
       });
     } else {
-      // Before returning an error, let's check if this payment was already processed
-      // If it was, we should still return success to avoid showing an error to the user
-      // This handles race conditions with the webhook
       
       try {
         // Check if payment succeeded and was processed by webhook
