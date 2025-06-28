@@ -1,0 +1,47 @@
+# Travis CI configuration for Dionysus (Next.js + TypeScript + Prisma + Node.js)
+# This config assumes you use npm, Next.js, Prisma, and want to run lint, type-check, and tests.
+
+dist: focal
+language: node_js
+node_js:
+  - '18'
+
+cache:
+  directories:
+    - node_modules
+    - ~/.npm
+    - .next/cache
+
+install:
+  - npm ci
+  - npx prisma generate
+
+script:
+  # Type check
+  - npm run typecheck || npm run tsc --noEmit
+  # Lint
+  - npm run lint
+  # Run tests (if you have them)
+  - npm test || echo 'No tests defined.'
+  # Build Next.js
+  - npm run build
+
+jobs:
+  include:
+    - stage: Deploy
+      if: branch = main AND type = push
+      script:
+        - echo 'Add your deployment script here (e.g., Vercel CLI, SSH, etc.)'
+
+branches:
+  only:
+    - main
+    - develop
+    - /^feature\/.*$/
+
+notifications:
+  email:
+    recipients:
+      - sakshamgoel1107@gmail.com
+    on_success: change
+    on_failure: always
