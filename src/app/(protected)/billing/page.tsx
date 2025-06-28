@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { api } from "@/trpc/react";
 import { Info } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -15,6 +15,11 @@ import {
 import PaymentForm from "./components/PaymentForm";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BarChart2 } from "lucide-react";
+
+const india_discount = true;
+const india_discount_value = 10;
+const us_discount = true;
+const us_discount_value = 5;
 
 type Transaction = {
   id: string;
@@ -28,17 +33,75 @@ const BillingPage = () => {
   const [creditsToBuy, setCreditsToBuy] = React.useState<number[]>([100]);
   const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
   const [isGraphOpen, setIsGraphOpen] = React.useState(false);
+  const [discount, setDiscount] = React.useState<number | null>(null);
+  const [discountCountry, setDiscountCountry] = React.useState<string | null>(null);
+  const [checkingDiscount, setCheckingDiscount] = React.useState(false);
+  const [discountError, setDiscountError] = React.useState<string | null>(null);
+  const [hasProPlan, sethasProPlan] = React.useState(false);
   const creditsToBuyAmount = creditsToBuy[0]!;
-  const price = ((creditsToBuyAmount / 50) * 75).toFixed(2);
+  const basePrice = (creditsToBuyAmount / 50) * 75;
+  let totalDiscount = discount || 0;
+  if (hasProPlan) totalDiscount += 10;
+  const discountedPrice = (basePrice * (1 - totalDiscount / 100)).toFixed(2);
+  const price = basePrice.toFixed(2);
 
   const utils = api.useUtils();
   
   const handlePaymentSuccess = () => {
     setIsPaymentOpen(false);
-    // Refresh transaction history and credits
     void utils.project.getMyTransactions.invalidate();
     void utils.project.getMyCredits.invalidate();
   };
+
+  const checkDiscount = async () => {
+    setCheckingDiscount(true);
+    setDiscountError(null);
+    try {
+      if (!navigator.geolocation) {
+        setDiscountError("Geolocation is not supported by your browser.");
+        setCheckingDiscount(false);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await res.json();
+        const country = data.address?.country?.toLowerCase() || "";
+        setDiscountCountry(country.charAt(0).toUpperCase() + country.slice(1));
+        let appliedDiscount = null;
+        if (country === "india" && india_discount) {
+          appliedDiscount = india_discount_value;
+        } else if (country === "united states" && us_discount) {
+          appliedDiscount = us_discount_value;
+        }
+        // Add more countries as needed
+        if (appliedDiscount && appliedDiscount > 0) {
+          setDiscount(appliedDiscount);
+        } else {
+          setDiscount(null);
+        }
+        setCheckingDiscount(false);
+      }, (error) => {
+        setDiscountError("Location permission denied or unavailable.");
+        setCheckingDiscount(false);
+      });
+    } catch (err) {
+      setDiscountError("Could not check discount. Please try again.");
+      setCheckingDiscount(false);
+    }
+  };
+    useEffect(() => {
+      (async () => {
+        try {
+          const res = await fetch("/api/user/pro-status");
+          if (!res.ok) throw new Error("Failed to fetch pro status");
+          const data = await res.json();
+          sethasProPlan(data.pro);
+        } catch (error) {
+          sethasProPlan(false);
+        }
+      })();
+    }, []);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0">
@@ -61,6 +124,31 @@ const BillingPage = () => {
           </p>
         </div>
         <div className="h-4"></div>
+        <Button onClick={checkDiscount} disabled={checkingDiscount} variant="outline" className="mb-2">
+          {checkingDiscount ? "Checking..." : "Check for Discounts"}
+        </Button>
+        {hasProPlan && (
+          <div className="text-green-700 text-sm mt-1">
+            Pro/Advance Plan: Additional 10% discount applied!
+          </div>
+        )}
+        {discountCountry && (
+          <div className="text-sm mt-1">
+            Location: <span className="font-semibold">{discountCountry}</span>
+          </div>
+        )}
+        {totalDiscount > 0 && (
+          <div className="text-green-700 text-sm mt-1">
+            🎉 {totalDiscount}% discount applied! New price: <span className="font-bold">₹{discountedPrice}</span>
+            {hasProPlan && discount && (
+              <span className="block text-xs text-green-700 mt-1">(Includes 10% Pro/Advance Plan + {discount}% Location Discount)</span>
+            )}
+          </div>
+        )}
+        {discountError && (
+          <div className="text-red-600 text-sm mt-1">{discountError}</div>
+        )}
+        <div className="h-2"></div>
         <Slider
           defaultValue={[100]}
           max={1000}
@@ -74,7 +162,7 @@ const BillingPage = () => {
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
-              Buy {creditsToBuyAmount} credits for ₹{price}
+              Buy {creditsToBuyAmount} credits for ₹{discountedPrice}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md md:max-w-lg">
@@ -82,12 +170,19 @@ const BillingPage = () => {
               <DialogTitle>Purchase Credits</DialogTitle>
               <DialogDescription>
                 Enter your card details to purchase {creditsToBuyAmount} credits.
+                {totalDiscount > 0 && (
+                  <span className="block text-green-700 mt-1">{totalDiscount}% discount applied! New price: ₹{discountedPrice}
+                    {hasProPlan && discount && (
+                      <span className="block text-xs text-green-700 mt-1">(Includes 10% Pro/Advance Plan + {discount}% Location Discount)</span>
+                    )}
+                  </span>
+                )}
               </DialogDescription>
             </DialogHeader>
             <div className="pt-2">
               <PaymentForm 
                 creditsToBuy={creditsToBuyAmount} 
-                price={price}
+                price={discountedPrice}
                 onSuccess={handlePaymentSuccess} 
               />
             </div>
@@ -153,6 +248,9 @@ const BillingPage = () => {
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1">
               View your credit purchase history
+            </p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              It may show full price instead of discountedPrice but the price deducted was discounted if the discount got applied
             </p>
           </div>
           <div className="w-full sm:w-auto flex justify-end">
