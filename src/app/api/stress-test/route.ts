@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Log user info for identification
-    console.log("[Stress Test Request] User Info:", userInfo);
+    console.log("[Stress Test Request] User Info:", userInfo, "Target URL:", url);
 
     let autocannon: typeof import("autocannon");
     try {

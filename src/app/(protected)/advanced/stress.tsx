@@ -114,6 +114,8 @@ const StressTester = () => {
           <h3 className="text-lg font-bold text-yellow-800 dark:text-yellow-200 mb-2">⚠️ Legal Notice</h3>
           <p className="text-sm text-yellow-800 dark:text-yellow-100">
             Stress testing a website you do not own or have explicit permission for is illegal and may result in criminal prosecution. By proceeding, you confirm you are authorized to test the specified website and accept all legal responsibility.
+            <br/>
+            Remember: We stores who used the stress test.
           </p>
         </div>
 
@@ -199,16 +201,38 @@ const StressTester = () => {
               >
                 {JSON.stringify(result, null, 2)}
               </pre>
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
                 <Button
-                onClick={() => {
-                  handleCopy();
-                  setShowCopied(true);
-                  setTimeout(() => setShowCopied(false), 1500);
-                }}
-                className="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white"
+                  onClick={() => {
+                    handleCopy();
+                    setShowCopied(true);
+                    setTimeout(() => setShowCopied(false), 1500);
+                  }}
+                  className="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 text-white"
                 >
-                {showCopied ? "Copied!" : "Copy Output"}
+                  {showCopied ? "Copied!" : "Copy Output"}
                 </Button>
+                <Button
+                  onClick={() => {
+                    if (result) {
+                      const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'stress-test-output.json';
+                      document.body.appendChild(a);
+                      a.click();
+                      setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }, 0);
+                    }
+                  }}
+                  className="w-full sm:w-auto bg-green-500 hover:bg-green-600 text-white"
+                >
+                  Download JSON
+                </Button>
+              </div>
             </div>
           </div>
         )}
