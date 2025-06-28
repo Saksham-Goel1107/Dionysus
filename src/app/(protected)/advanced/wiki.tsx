@@ -49,7 +49,7 @@ const Wiki = () => {
   const [showModal, setShowModal] = useState(false);
   return (
     <>
-      <div className="w-full max-w-2xl mx-auto my-8 p-6 bg-blue-50 dark:bg-blue-900/40 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md flex flex-col items-center">
+      <div className="w-full max-w-2xl mx-auto my-2 p-6 bg-blue-50 dark:bg-blue-900/40 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md flex flex-col items-center">
         <h2 className="text-xl font-bold mb-2 text-blue-700 dark:text-blue-200">
           Wiki Generation Tips & Tricks
         </h2>
