@@ -12,6 +12,7 @@ import Wiki from './wiki';
 import LicenseMakerPage from './license';
 import GitignoreModal from './GitignoreModal';
 import MarkdownGenModal from './MarkdownGenModal';
+import PlagiarismChecker from './PlagiarismChecker'
 
 const Advanced = () => {
   const { resolvedTheme } = useTheme();
@@ -132,6 +133,7 @@ const Advanced = () => {
           <MarkdownGenModal open={showMarkdownGen} onClose={() => setShowMarkdownGen(false)} />
         </div>
       </Protect>
+      <PlagiarismChecker/>
     </>
   );
 };

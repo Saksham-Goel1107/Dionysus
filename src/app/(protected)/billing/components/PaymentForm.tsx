@@ -38,9 +38,10 @@ interface PaymentFormProps {
   creditsToBuy: number;
   price: string;
   onSuccess: () => void;
+  discountBreakdown?: string;
 }
 
-const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSuccess }) => {
+const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSuccess, discountBreakdown }) => {
   const router = useRouter();
   const stripe = useStripe();
   const elements = useElements();
@@ -240,6 +241,12 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSucce
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
+      {/* Show discount breakdown if present */}
+      {discountBreakdown && (
+        <div className="py-2 px-3 bg-green-50 rounded-md text-green-700 text-sm font-medium">
+          Discount applied: {discountBreakdown}
+        </div>
+      )}
       
       <div className="space-y-4">
         <div className="space-y-2">
@@ -306,7 +313,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({ creditsToBuy, price, onSucce
   );
 };
 
-export default function PaymentForm({ creditsToBuy, price, onSuccess }: PaymentFormProps) {
+export default function PaymentForm({ creditsToBuy, price, onSuccess, discountBreakdown }: PaymentFormProps) {
   return (
     <Elements 
       stripe={stripePromise} 
@@ -327,7 +334,7 @@ export default function PaymentForm({ creditsToBuy, price, onSuccess }: PaymentF
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CheckoutForm creditsToBuy={creditsToBuy} price={price} onSuccess={onSuccess} />
+          <CheckoutForm creditsToBuy={creditsToBuy} price={price} onSuccess={onSuccess} discountBreakdown={discountBreakdown} />
         </CardContent>
       </Card>
     </Elements>
