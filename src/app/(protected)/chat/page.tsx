@@ -1,105 +1,54 @@
-"use client"
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
-import { LiveKitRoom, VideoConference } from "@livekit/components-react";
-import "@livekit/components-styles";
-
+'use client';
+import { Protect, useAuth } from '@clerk/nextjs';
+import { MediaRoom } from '@/components/media-room';
 import useProject from '@/hooks/use-project';
+import { Lock } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import {useTheme} from 'next-themes'
 
-export default function ChatPage() {
-  const { project, projectId } = useProject();
-  const { user, isLoaded: userLoaded } = useUser();
-  const router = useRouter();
-  const [token, setToken] = useState<string | undefined>(undefined);
-  const [roomName, setRoomName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!userLoaded) return; // Wait for Clerk user to load
-    if (!project || !projectId || !user?.id) {
-      setLoading(false);
-      setError('Please make sure you are signed in with Clerk and a project is selected.');
-      return;
-    }
-    setError(null);
-    fetch("/api/livekit-token", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: user.id, projectId }),
-    })
-      .then(async (res) => {
-        const data = await res.json();
-        // Debug: log the token and roomName
-        console.log('LiveKit token API response:', data);
-        if (!res.ok || !data.token || !data.roomName) {
-          setError(data.error || 'No token returned from server.');
-          setLoading(false);
-          return;
-        }
-        setToken(data.token as string | undefined);
-        setRoomName(data.roomName);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setLoading(false);
-        setError('Could not join video chat. Please check your permissions and try again.');
-        console.error('LiveKit token fetch error:', err);
-      });
-  }, [project, projectId, user, userLoaded]);
-
-  // Handle LiveKit connection errors (UI feedback)
-  function handleRoomError(e: any) {
-    setError('Could not connect to meeting. Please check your network, permissions, or try again later.');
-    console.error('LiveKit room error:', e);
-  }
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center">
-          <svg className="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-          </svg>
-          <div className="text-lg text-gray-700 font-medium">Connecting to project chat&hellip;</div>
-          <div className="text-sm text-gray-400 mt-1">This may take a few seconds. Please wait.</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="text-2xl text-red-500 font-semibold mb-2">{error}</div>
-        <button
-          className="mt-2 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-400"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
+const ChatPage = () => {
+  const { userId } = useAuth();
+  const { projectId } = useProject();
+  const {resolvedTheme} = useTheme()
 
   return (
-    <div className="p-2 md:p-8">
-      <LiveKitRoom
-        token={token}
-        serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-        connect={true}
-        data-lk-theme="default"
-        style={{ height: "80vh", borderRadius: 16, overflow: "hidden", background: "#18181b" }}
-        onError={handleRoomError}
-      >
-        <div className="flex flex-col h-full">
-          <div className="flex-1 min-w-0 bg-zinc-900 rounded-lg shadow-lg flex flex-col justify-center items-center">
-            <VideoConference />
+    <>
+      <Protect
+        plan="dionysus_advance_pack"
+        fallback={
+          <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
+              <Lock className="h-8 w-8 text-yellow-600" />
+            </div>
+            <h2
+              className={`text-center text-2xl font-bold ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+            >
+              Advance Plan Required
+            </h2>
+            <p
+              className={`text-center ${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}
+            >
+              Access to Chat+Video Call is available exclusively for{' '}
+              <span className="font-semibold text-yellow-700">Dionysus Advance Pack</span>{' '}
+              subscribers.
+              <br />
+              Upgrade your plan to unlock this feature.
+            </p>
+            <Link href="/subscriptions">
+              <Button size="lg" className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700">
+                Upgrade Now
+              </Button>
+            </Link>
           </div>
+        }
+      >
+        <div className="h-full w-full">
+          {userId && projectId && <MediaRoom projectId={projectId} video={true} audio={true} />}
         </div>
-      </LiveKitRoom>
-    </div>
+      </Protect>
+    </>
   );
-}
+};
+
+export default ChatPage;

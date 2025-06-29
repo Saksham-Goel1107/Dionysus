@@ -1,18 +1,23 @@
-// app/api/livekit-token/route.ts
 import { NextResponse } from 'next/server';
 import { AccessToken } from 'livekit-server-sdk';
+import { auth } from '@clerk/nextjs/server';
 
 export async function POST(req: Request) {
+  const { has } = await auth()
+  const hasProPlan = has({ plan: 'dionysus_advance_pack' });
+  if(!hasProPlan){
+    return NextResponse.json({ error: 'Advance plan required for LiveKit token generation' }, { status: 403 });
+  }
   try {
     const body = await req.json();
     const userId = String(body.userId);
+    const userName = String(body.userName || '');
     const projectId = String(body.projectId);
 
-    if (!userId || !projectId) {
-      return NextResponse.json({ error: 'Missing userId or projectId' }, { status: 400 });
+    if (!userId || !projectId || !userName) {
+      return NextResponse.json({ error: 'Missing userId, userName, or projectId' }, { status: 400 });
     }
 
-    // LiveKit expects API_KEY first, then API_SECRET
     const apiKey = process.env.LIVEKIT_API_KEY;
     const apiSecret = process.env.LIVEKIT_API_SECRET;
 
@@ -21,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     const roomName = `project-${projectId}`;
-    const at = new AccessToken(apiKey, apiSecret, { identity: userId });
+    const at = new AccessToken(apiKey, apiSecret, { identity: userName });
 
     at.addGrant({
       room: roomName,
@@ -32,7 +37,6 @@ export async function POST(req: Request) {
 
     const token = await at.toJwt();
 
-    // Defensive: ensure token is a string before split
     const tokenStr = typeof token === 'string' ? token : String(token ?? '');
     if (!tokenStr || tokenStr.split('.').length !== 3) {
       return NextResponse.json({ error: 'Failed to generate valid JWT token', debug: { token: tokenStr, typeofToken: typeof token } }, { status: 500 });
