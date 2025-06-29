@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { pullCommits } from "@/lib/github";
 import { checkCredits, indexGithubRepo } from "@/lib/github-loader";
+import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 
 export const projectRouter = createTRPCRouter({
   createProject: protectedProcedure
@@ -15,7 +16,7 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const user = await ctx.db.user.findUnique({
         where: { id: ctx.user.userId! },
-        select: { credits: true },
+        select: { credits: true, emailAddress: true, firstName: true },
       });
       if (!user) {
         throw new Error("User not found");
@@ -34,7 +35,7 @@ export const projectRouter = createTRPCRouter({
       // Use a transaction for atomicity
       const result = await ctx.db.$transaction(async (prisma) => {
         // Deduct credits first
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
           where: { id: ctx.user.userId! },
           data: { credits: { decrement: fileCount } },
         });
@@ -51,13 +52,27 @@ export const projectRouter = createTRPCRouter({
           },
         });
 
-        return project;
+        return { project, updatedUser };
       });
 
-      await indexGithubRepo(result.id, input.githubUrl, input.githubToken);
-      await pullCommits(result.id);
+      // Send low credits alert if needed (outside transaction)
+      await handleUserCreditsChange({
+        userId: ctx.user.userId!,
+        userEmail: user.emailAddress,
+        userName: user.firstName ?? undefined,
+        credits: result.updatedUser.credits,
+        discounts: [
+          '10% off with Pro Plan',
+          '10% off with Multi-Factor Authentication',
+          'Location-based discounts available',
+        ],
+        prisma: ctx.db,
+      });
 
-      return result;
+      await indexGithubRepo(result.project.id, input.githubUrl, input.githubToken);
+      await pullCommits(result.project.id);
+
+      return result.project;
     }),
 
   getProjects: protectedProcedure.query(async ({ ctx }) => {

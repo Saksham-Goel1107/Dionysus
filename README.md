@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://render.com/"><img src="https://img.shields.io/badge/Deployed%20on-render-black?logo=render" alt="render" /></a>
+  <a href="https://dionysus-gray.vercel.app"><img src="https://img.shields.io/badge/Deployed%20on-vercel-black?logo=vercel" alt="vercel" /></a>
   <a href="https://github.com/saksham-goel1107/dionysus"><img src="https://img.shields.io/github/stars/saksham-goel1107/dionysus?style=social" alt="GitHub stars" /></a>
   <a href="https://github.com/saksham-goel1107/dionysus/issues"><img src="https://img.shields.io/github/issues/saksham-goel1107/dionysus" alt="GitHub issues" /></a> 
   <img src="https://img.shields.io/badge/AI-Gemini%20%26%20Assembly%20AI-blueviolet" alt="AI" />
