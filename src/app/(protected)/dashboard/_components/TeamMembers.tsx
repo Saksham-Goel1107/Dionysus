@@ -6,11 +6,12 @@ import Image from "next/image";
 import React from "react";
 
 const TeamMembers = () => {
-  const { projectId } = useProject();
+  const { projectId, project } = useProject();
   const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
+  const users = members || [];
   return (
     <div className="flex items-center gap-2">
-      {members?.map((member) => {
+      {users?.map((member) => {
         const user = (member as any).user ?? member;
         return (
           <div key={member.id} className="relative group">

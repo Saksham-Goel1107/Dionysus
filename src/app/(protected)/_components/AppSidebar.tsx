@@ -14,6 +14,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
 import { cn } from '@/lib/utils';
 import {
   Bot,
@@ -31,7 +32,14 @@ import { useState } from 'react';
 
 type Props = {};
 
-const items = [
+type SidebarItem = {
+  title: string;
+  url: string;
+  icon: React.ElementType;
+  isChat?: boolean;
+};
+
+const items: SidebarItem[] = [
   {
     title: 'Dashboard',
     url: '/dashboard',
@@ -71,12 +79,14 @@ const items = [
 
 const AppSidebar = ({}: Props) => {
   const pathname = usePathname();
-
-  const { projects, projectId, setProjectId } = useProject();
-
+  const { projects, projectId, setProjectId, project } = useProject();
+  const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
   const { open } = useSidebar();
-
   const [search, setSearch] = useState('');
+
+  const users = Array.isArray(members) ? members : [];
+  const showChat = users.length >= 2; // Show chat if 2 or more users
+  console.log('users:', users, 'showChat:', showChat)
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -93,23 +103,57 @@ const AppSidebar = ({}: Props) => {
           <SidebarGroupLabel>Application</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => {
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <Link
-                        href={item.url}
-                        className={cn({
-                          '!bg-primary !text-white': pathname === item.url,
-                        })}
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+              {(() => {
+                const settingsIdx = items.findIndex((item) => item.title === 'Settings');
+                const beforeSettings = items.slice(0, settingsIdx);
+                const settingsItem = items[settingsIdx];
+                let menuItems = [...beforeSettings];
+                if (showChat) {
+                  menuItems.push({
+                    title: 'Chat',
+                    url: '/chat',
+                    icon: Bot,
+                    isChat: true,
+                  });
+                }
+                if (settingsItem) {
+                  menuItems.push(settingsItem);
+                }
+                return menuItems.map((item) => {
+                  if (item.isChat) {
+                    return (
+                      <SidebarMenuItem key="Chat">
+                        <SidebarMenuButton asChild>
+                          <Link
+                            href="/chat"
+                            className={cn({
+                              '!bg-primary !text-white': pathname === '/chat',
+                            })}
+                          >
+                            <Bot />
+                            <span>Chat</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <Link
+                          href={item.url}
+                          className={cn({
+                            '!bg-primary !text-white': pathname === item.url,
+                          })}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                });
+              })()}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
