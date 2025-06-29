@@ -266,7 +266,7 @@ export const projectRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return await ctx.db.userToProject.findMany({
         where: { projectId: input.projectId },
-        include: { user: true },
+        include: { user: { select: { id: true, createdAt: true, updatedAt: true, emailAddress: true, imageUrl: true, firstName: true, lastName: true, credits: true, lowCreditsEmailSent: true, isPro: true } } },
       });
     }),
   getMyCredits: protectedProcedure.query(async ({ ctx }) => {

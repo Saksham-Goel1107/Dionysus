@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
+import { checkAndSyncProStatus } from "@/lib/checkAndSyncProStatus";
 
 import { ClerkProvider, GoogleOneTap } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
@@ -85,6 +86,10 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
+
+  if (userId) {
+    await checkAndSyncProStatus(userId);
+  }
 
   return (
     <>
