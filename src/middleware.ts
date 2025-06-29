@@ -14,7 +14,7 @@ export default clerkMiddleware(async (auth, request) => {
       !sessionClaims?.metadata?.onboardingComplete &&
       !isOnboardingRoute(request)
     ) {
-      const baseUrl = request.headers.get("x-url") || "http://localhost:3000";
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       const onboardingUrl = new URL("/onboarding", baseUrl);
       return NextResponse.redirect(onboardingUrl.toString());
     }
