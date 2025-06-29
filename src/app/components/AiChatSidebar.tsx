@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import VoiceButton from '../components/VoiceButton';
 import type {
   SpeechRecognition,
@@ -283,7 +284,7 @@ export default function AiChatSidebar({ isOpen, onClose }: { isOpen: boolean; on
                   <div
                     className="text-sm leading-relaxed message-content"
                     dangerouslySetInnerHTML={{
-                      __html: formatMessageContent(msg.content)
+                      __html: DOMPurify.sanitize(formatMessageContent(msg.content))
                     }}
                   />
 
