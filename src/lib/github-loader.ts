@@ -192,22 +192,21 @@ export const checkCredits = async (githubUrl: string, githubToken?: string) => {
     let githubOwner = '';
     let githubRepo = '';
     
-    if (githubUrl.includes('github.com')) {
-      try {
-        const url = new URL(githubUrl.startsWith('http') ? githubUrl : `https://${githubUrl}`);
-        const pathParts = url.pathname.split('/').filter(part => part !== '');
-        if (pathParts.length >= 2) {
-          githubOwner = pathParts[0] || '';
-          githubRepo = (pathParts[1] || '').replace(/\.git$/, '');
-        }
-      } catch (e) {
-        console.error("Error parsing GitHub URL:", e);
+    try {
+      const url = new URL(githubUrl.startsWith('http') ? githubUrl : `https://${githubUrl}`);
+      if (url.host !== 'github.com') {
+        throw new Error("Invalid GitHub URL host. Please provide a URL with the host 'github.com'.");
+      }
+      const pathParts = url.pathname.split('/').filter(part => part !== '');
+      if (pathParts.length >= 2) {
+        githubOwner = pathParts[0] || '';
+        githubRepo = (pathParts[1] || '').replace(/\.git$/, '');
+      } else {
         throw new Error("Invalid GitHub URL format. Please provide a valid GitHub repository URL.");
       }
-    } else if (githubUrl.includes('/')) {
-      const parts = githubUrl.split('/');
-      githubOwner = parts[0] || '';
-      githubRepo = (parts[1] || '').replace(/\.git$/, '');
+    } catch (e) {
+      console.error("Error parsing GitHub URL:", e);
+      throw new Error("Invalid GitHub URL format. Please provide a valid GitHub repository URL.");
     }
     
     
