@@ -5,7 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider, GoogleOneTap } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { Toaster } from "sonner";
 import Providers from "./Providers";
@@ -105,6 +105,11 @@ export default async function RootLayout({
         <ClerkProvider>
           <html lang="en" className={`${GeistSans.variable}`}>
             <body>
+              <GoogleOneTap
+                cancelOnTapOutside={true}
+                itpSupport={true}
+                fedCmSupport={true}
+              />
               <ThemeProvider
                 attribute="class"
                 defaultTheme="system"
