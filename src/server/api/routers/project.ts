@@ -264,10 +264,26 @@ export const projectRouter = createTRPCRouter({
   getTeamMembers: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.userToProject.findMany({
+      const members = await ctx.db.userToProject.findMany({
         where: { projectId: input.projectId },
-        include: { user: true },
+        include: {
+          user: {
+            select: {
+              id: true,
+              createdAt: true,
+              updatedAt: true,
+              emailAddress: true,
+              imageUrl: true,
+              firstName: true,
+              lastName: true,
+              credits: true,
+              lowCreditsEmailSent: true,
+              isPro: true,
+            },
+          },
+        },
       });
+      return members.map((m) => m.user);
     }),
   getMyCredits: protectedProcedure.query(async ({ ctx }) => {
     const user = await ctx.db.user.findUnique({

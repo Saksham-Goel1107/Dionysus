@@ -4,6 +4,7 @@ import * as React from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { markOnboardingComplete } from './completeOnboardingAction'
+import Image from 'next/image'
 
 const THEME_KEY = 'theme-preference';
 
@@ -196,11 +197,12 @@ export default function OnboardingComponent() {
         >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <div className="w-full max-w-lg p-8 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up">
+        <div className="w-full max-w-lg md:p-8 px-8 py-2 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up">
           <h1 className="text-3xl font-bold mb-4 text-blue-700 dark:text-blue-300">You're all set!</h1>
           <p className="mb-4 text-gray-700 dark:text-gray-200">You now know where to find every feature. Explore, build, and collaborate with confidence!</p>
+          <Image src="https://avatars.githubusercontent.com/u/175415316?v=4" alt="Dionysus Logo" width={128} height={128} className="mx-auto mb-4 rounded-full" />
           <div className="mb-6 text-left text-gray-700 dark:text-gray-200 text-base">
-            <h2 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300">Meet the Developer</h2>
+            <h2 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300 text-center">Meet the Developer</h2>
             <p className="mb-2">This platform was crafted with passion and care by <b>Saksham Goel</b>, a developer dedicated to building tools that empower teams and creators. If you have feedback, ideas, or just want to say hi, feel free to reach out via the Help Center or connect on GitHub!</p>
             <p className="italic text-sm text-gray-500 dark:text-gray-400">Thank you for choosing Dionysus. Wishing you productive coding and seamless collaboration!</p>
           </div>
