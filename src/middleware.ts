@@ -1,3 +1,4 @@
+import arcjet, { shield, tokenBucket, detectBot } from "@arcjet/next";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { geolocation } from '@vercel/functions';
@@ -9,7 +10,7 @@ const isPublicRoute = createRouteMatcher([
   "/docs(.*)",
   "/privacy(.*)",
   "/terms(.*)",
-  "/block(.*)", 
+  "/block(.*)",
 ]);
 
 const isOnboardingRoute = createRouteMatcher([
@@ -19,10 +20,41 @@ const isOnboardingRoute = createRouteMatcher([
 
 const notAllowedCountries = ['PK'];
 
+const aj = arcjet({
+  key: process.env.ARCJET_KEY!,
+  rules: [
+    // Protect against common attacks with Arcjet Shield
+    shield({
+      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
+    }),
+    // Block abusive bots
+    detectBot({
+      mode: "LIVE",
+      allow: [
+        "CATEGORY:SEARCH_ENGINE",
+        // "CATEGORY:MONITOR",
+        "CATEGORY:PREVIEW",
+      ],
+    }),
+    // Rate limit all requests (5 per 10 seconds per IP)
+    tokenBucket({
+      mode: "LIVE",
+      refillRate: 5,
+      interval: 10,
+      capacity: 10,
+    }),
+  ],
+});
+
 export default clerkMiddleware(async (auth, request) => {
   const { country } = geolocation(request);
   const pathname = request.nextUrl.pathname;
   const isBlockPage = pathname.startsWith("/block");
+  const decision = await aj.protect(request);
+
+   if (decision.isDenied()) {
+    return NextResponse.json({ error: "Forbidden", reason: decision.reason }, { status: 403 });
+  }
 
   if (country && notAllowedCountries.includes(country)) {
     if (!isBlockPage) {

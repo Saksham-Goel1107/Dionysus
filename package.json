@@ -19,10 +19,14 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "vercel-build": "npm install --legacy-peer-deps && next build"
+    
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.15",
+    "@arcjet/inspect": "^1.0.0-beta.8",
+    "@arcjet/next": "^1.0.0-beta.8",
     "@clerk/nextjs": "^6.22.0",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
