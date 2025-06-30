@@ -1,10 +1,23 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import { geolocation } from '@vercel/functions'
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)",  "/", "/docs(.*)", "/privacy(.*)", "/terms(.*)"]);
+const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)",  "/", "/docs(.*)", "/privacy(.*)", "/terms(.*)", "/block(.*)"]);
 const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)", "/sync-user(.*)"]);
+const isBlockRoute = createRouteMatcher(['/block(.*)'])
+
+const allowedCountries = ['US']
 
 export default clerkMiddleware(async (auth, request) => {
+
+  if (isBlockRoute(request)) {
+    return
+  }
+  const { country } = geolocation(request)
+  if (country && !allowedCountries.includes(country)) {
+    return NextResponse.redirect(new URL('/block', request.url))
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
