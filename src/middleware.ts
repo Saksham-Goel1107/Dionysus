@@ -17,7 +17,7 @@ const isOnboardingRoute = createRouteMatcher([
   "/sync-user(.*)",
 ]);
 
-const notAllowedCountries = ['IN'];
+const notAllowedCountries = ['PK'];
 
 export default clerkMiddleware(async (auth, request) => {
   const { country } = geolocation(request);
