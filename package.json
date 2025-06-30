@@ -119,6 +119,8 @@
     "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.1",
+    "stream-chat": "^9.10.0",
+    "stream-chat-react": "^13.2.1",
     "stripe": "^17.5.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.6.0",
