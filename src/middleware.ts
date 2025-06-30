@@ -1,21 +1,38 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { geolocation } from '@vercel/functions'
+import { geolocation } from '@vercel/functions';
 
-const isPublicRoute = createRouteMatcher(["/sign-in(.*)", "/sign-up(.*)",  "/", "/docs(.*)", "/privacy(.*)", "/terms(.*)", "/block(.*)"]);
-const isOnboardingRoute = createRouteMatcher(["/onboarding(.*)", "/sync-user(.*)"]);
-const isBlockRoute = createRouteMatcher(['/block(.*)'])
+const isPublicRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/",
+  "/docs(.*)",
+  "/privacy(.*)",
+  "/terms(.*)",
+  "/block(.*)", 
+]);
 
-const allowedCountries = ['US']
+const isOnboardingRoute = createRouteMatcher([
+  "/onboarding(.*)",
+  "/sync-user(.*)",
+]);
+
+const notAllowedCountries = ['IN'];
 
 export default clerkMiddleware(async (auth, request) => {
+  const { country } = geolocation(request);
+  const pathname = request.nextUrl.pathname;
+  const isBlockPage = pathname.startsWith("/block");
 
-  if (isBlockRoute(request)) {
-    return
+  if (country && notAllowedCountries.includes(country)) {
+    if (!isBlockPage) {
+      return NextResponse.redirect(new URL("/block", request.url));
+    }
+    return NextResponse.next();
   }
-  const { country } = geolocation(request)
-  if (country && !allowedCountries.includes(country)) {
-    return NextResponse.redirect(new URL('/block', request.url))
+
+  if (country && !notAllowedCountries.includes(country) && isBlockPage) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   if (!isPublicRoute(request)) {
@@ -27,26 +44,24 @@ export default clerkMiddleware(async (auth, request) => {
       !sessionClaims?.metadata?.onboardingComplete &&
       !isOnboardingRoute(request)
     ) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const onboardingUrl = new URL("/onboarding", baseUrl);
-      return NextResponse.redirect(onboardingUrl.toString());
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+      return NextResponse.redirect(new URL("/onboarding", baseUrl));
     }
 
-    if (userId && !request.nextUrl.pathname.startsWith('/sync-user')) {
+    if (userId && !pathname.startsWith("/sync-user")) {
       const referer = request.headers.get("referer") || "";
-      
       if (referer.includes("/sign-in") || referer.includes("/sign-up")) {
         return NextResponse.redirect(new URL("/sync-user", request.url));
       }
     }
   }
+
+  return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
