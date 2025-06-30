@@ -13,6 +13,7 @@ import LicenseMakerPage from './license';
 import GitignoreModal from './GitignoreModal';
 import MarkdownGenModal from './MarkdownGenModal';
 import PlagiarismChecker from './PlagiarismChecker'
+import CommitGraphModal from '@/components/ui/CommitGraphModal';
 
 const Advanced = () => {
   const { resolvedTheme } = useTheme();
@@ -133,6 +134,7 @@ const Advanced = () => {
           <MarkdownGenModal open={showMarkdownGen} onClose={() => setShowMarkdownGen(false)} />
         </div>
       <PlagiarismChecker/>
+      <CommitGraphModal />
       </Protect>
     </>
   );
