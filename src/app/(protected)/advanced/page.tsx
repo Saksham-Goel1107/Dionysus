@@ -132,8 +132,8 @@ const Advanced = () => {
           <GitignoreModal open={showGitignore} onClose={() => setShowGitignore(false)} />
           <MarkdownGenModal open={showMarkdownGen} onClose={() => setShowMarkdownGen(false)} />
         </div>
-      </Protect>
       <PlagiarismChecker/>
+      </Protect>
     </>
   );
 };

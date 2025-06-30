@@ -13,6 +13,7 @@ import Providers from "./Providers";
 import { ThemeProvider } from "./components/theme-provider";
 import CookieBanner from "./components/CookieBanner";
 import MaintenanceScreen from "../components/updates/screen";
+import ScrollToTopButton from "@/components/ui/ScrollToTopButton";
 
 export const metadata: Metadata = {
   title: {
@@ -126,6 +127,7 @@ export default async function RootLayout({
                   {userId ? <Providers>{children}</Providers> : <>{children}</>}
                 </TRPCReactProvider>
                 <Toaster richColors />
+                <ScrollToTopButton />
               </ThemeProvider>
               <script
                 src="https://s.pageclip.co/v1/pageclip.js"
