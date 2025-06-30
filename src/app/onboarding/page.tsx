@@ -5,8 +5,10 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { markOnboardingComplete } from './completeOnboardingAction'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const THEME_KEY = 'theme-preference';
+const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
 
 function useTheme() {
   const [theme, setTheme] = React.useState(() => {
@@ -150,15 +152,22 @@ export default function OnboardingComponent() {
   const router = useRouter();
   const [theme, toggleTheme] = useTheme();
   const [step, setStep] = React.useState(0);
-  const [finished, setFinished] = React.useState(false);
+  const [showMeetDev, setShowMeetDev] = React.useState(false);
   const [showSkip, setShowSkip] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState<null | 'finish' | 'skip'>(null);
-  const [pendingAction, setPendingAction] = React.useState<null | (() => void)>(null);
 
   const current = TOUR_STEPS[step];
 
+  // On mount, check if onboarding was finished/skipped but not confirmed
   React.useEffect(() => {
-    // Prevent scrolling while onboarding
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem(ONBOARDING_FINISHED_KEY) === 'true') {
+        setShowMeetDev(true);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
     document.body.style.overflow = 'hidden';
     // Show skip after 20 seconds on the first step
     let timer: NodeJS.Timeout | undefined;
@@ -177,19 +186,15 @@ export default function OnboardingComponent() {
   const handleComplete = React.useCallback(async () => {
     try {
       await markOnboardingComplete();
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(ONBOARDING_FINISHED_KEY);
+      }
     } catch {}
   }, []);
 
-  // Only call handleComplete when actually finishing onboarding (not just rendering the dev info)
-  React.useEffect(() => {
-    if (finished && showConfirm === null) {
-      handleComplete();
-    }
-  }, [finished, showConfirm, handleComplete]);
-
-  if (finished) {
+  if (showMeetDev) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex justify-center">
         <button
           aria-label="Toggle theme"
           className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform"
@@ -197,10 +202,26 @@ export default function OnboardingComponent() {
         >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <div className="w-full max-w-lg md:p-8 px-8 py-2 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up">
+        <div className="w-full max-w-lg p-8 my-8 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up overflow-y-auto scrollbar-hide max-h-[90vh]">
           <h1 className="text-3xl font-bold mb-4 text-blue-700 dark:text-blue-300">You're all set!</h1>
           <p className="mb-4 text-gray-700 dark:text-gray-200">You now know where to find every feature. Explore, build, and collaborate with confidence!</p>
-          <Image src="https://avatars.githubusercontent.com/u/175415316?v=4" alt="Dionysus Logo" width={128} height={128} className="mx-auto mb-4 rounded-full" />
+          <div className="relative w-fit mx-auto mb-4">
+            <Image
+              src="https://avatars.githubusercontent.com/u/175415316?v=4"
+              alt="Dionysus Logo"
+              width={128}
+              height={128}
+              className="rounded-full"
+            />
+            <span
+              className="absolute -top-2 right-[12px] text-2xl"
+              title="Made in India"
+              aria-label="India Flag"
+              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.15))' }}
+            >
+              <Image src={"/Flag-India.webp"} alt="India Flag" width={28} height={28} />
+            </span>
+          </div>
           <div className="mb-6 text-left text-gray-700 dark:text-gray-200 text-base">
             <h2 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300 text-center">Meet the Developer</h2>
             <p className="mb-2">This platform was crafted with passion and care by <b>Saksham Goel</b>, a developer dedicated to building tools that empower teams and creators. If you have feedback, ideas, or just want to say hi, feel free to reach out via the Help Center or connect on GitHub!</p>
@@ -208,7 +229,12 @@ export default function OnboardingComponent() {
           </div>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-4">
             <button
-              onClick={() => setFinished(false)}
+              onClick={() => {
+                setShowMeetDev(false);
+                if (typeof window !== 'undefined') {
+                  localStorage.removeItem(ONBOARDING_FINISHED_KEY);
+                }
+              }}
               className="px-6 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition-colors"
             >
               ← Back to Onboarding
@@ -227,7 +253,8 @@ export default function OnboardingComponent() {
             onConfirm={async () => {
               await handleComplete();
               setShowConfirm(null);
-              router.push('/dashboard');
+              router.replace('/dashboard')
+
             }}
             onCancel={() => setShowConfirm(null)}
           />
@@ -240,7 +267,7 @@ export default function OnboardingComponent() {
   if (!current) return null;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-900/80 dark:bg-black/90 transition-colors duration-300 relative z-50">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gray-900/80 dark:bg-black/90 transition-colors duration-300 relative z-50 scrollbar-hide">
       <button
         aria-label="Toggle theme"
         className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform z-50"
@@ -250,7 +277,7 @@ export default function OnboardingComponent() {
       </button>
       {/* Animated spotlight for the current feature */}
       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-10 animate-fade-in" />
-      <div className="relative z-20 w-full max-w-lg mx-auto p-0 sm:p-8 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="relative z-20 w-full max-w-lg mx-auto p-0 sm:p-8 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center animate-slide-up max-h-[90vh] overflow-y-auto scrollbar-hide">
         <div className="w-full flex flex-col items-center animate-fade-in p-6 sm:p-0">
           <span className="text-6xl mb-2 animate-bounce drop-shadow-lg">{FEATURE_ICONS[current.key]}</span>
           <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2 animate-fade-in-slow text-center w-full flex items-center justify-center gap-2">
@@ -320,15 +347,13 @@ export default function OnboardingComponent() {
       {showConfirm && (
         <ConfirmModal
           message={showConfirm === 'finish' ?
-            'Are you sure you want to finish onboarding and go to the dashboard?'
+            'Are you sure you want to finish onboarding and see the final page?'
             : 'Are you sure you want to skip onboarding? You will never see this again.'}
           onConfirm={async () => {
             setShowConfirm(null);
-            if (showConfirm === 'finish') {
-              await handleComplete();
-              setFinished(true);
-            } else if (showConfirm === 'skip') {
-              setFinished(true); // Show dev info, then confirm again to go to dashboard
+            setShowMeetDev(true);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(ONBOARDING_FINISHED_KEY, 'true');
             }
           }}
           onCancel={() => setShowConfirm(null)}
@@ -343,6 +368,16 @@ export default function OnboardingComponent() {
         .animate-fade-in-slow { animation: fade-in-slow 1s; }
         .animate-slide-up { animation: slide-up 0.6s cubic-bezier(.4,2,.6,1); }
         .animate-bounce { animation: bounce 1.2s infinite; }
+        .scrollbar-hide {
+          -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+          overflow: overlay !important;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none !important;
+          background: inherit;
+          background-clip: padding-box;
+        }
       `}</style>
     </div>
   );
