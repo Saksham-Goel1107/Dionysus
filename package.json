@@ -19,9 +19,7 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "start": "next start",
-    "typecheck": "tsc --noEmit",
-    "vercel-build": "npm install --legacy-peer-deps && next build"
-    
+    "typecheck": "tsc --noEmit"    
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.15",
