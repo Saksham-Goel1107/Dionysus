@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
-import arcjet, { shield, detectBot,fixedWindow } from '@arcjet/next';
+import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -28,9 +28,9 @@ const aj = arcjet({
       ],
     }),
     fixedWindow({
-      mode: "LIVE", // will block requests. Use "DRY_RUN" to log only
-      window: "60s", // 60 second fixed window
-      max: 10, // allow a maximum of 10 requests
+      mode: "LIVE",
+      window: "60s", 
+      max: 10, // Standard limit for most pages
     }),
   ],
 });
@@ -49,7 +49,48 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Apply stricter rate limits for API routes
+  const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
+  const isHighLoadApiRoute = pathname.startsWith('/api/ai-') || 
+                          pathname.startsWith('/api/git-') || 
+                          pathname.startsWith('/api/create-');
+  
+  // Default decision from Arcjet
   const decision = await aj.protect(request);
+  
+  // Apply more specific rate limits for API routes (you'll need to implement this in your backend)
+  if (isApiRoute && !isRateLimitPage) {
+    // Check if the request has authentication
+    let isAuthenticated = false;
+    try {
+      const { userId } = await auth();
+      isAuthenticated = !!userId;
+    } catch (e) {
+      // User is not authenticated
+      isAuthenticated = false;
+    }
+    
+    // Check IP-based rate limiting (you might want to implement this with Redis or similar)
+    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
+    
+    // If it's a high-load API and exceeds limits
+    if (isHighLoadApiRoute) {
+      // Stricter rate limiting for AI/Git endpoints
+      // You can implement a more sophisticated rate limiting here with Redis
+      // This is just a placeholder for your implementation
+      const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
+      if (rateLimitHeader === '0' || decision.isDenied()) {
+        const response = NextResponse.redirect(new URL('/rate-limit', request.url));
+        response.cookies.set('middleware_redirect', 'true', { 
+          maxAge: 10,
+          httpOnly: true,
+          path: '/rate-limit',
+          sameSite: 'strict'
+        });
+        return response;
+      }
+    }
+  }
 
   if (decision.isDenied()) {
     // Redirect to a custom rate limit page instead of returning JSON

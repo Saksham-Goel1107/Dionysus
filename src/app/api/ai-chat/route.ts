@@ -2,6 +2,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 import { getChat, setChat } from "../../utils/redis";
 import { v4 as uuidv4 } from 'uuid';
+import { withRateLimit } from '@/lib/rate-limit';
+import { auth } from '@clerk/nextjs/server';
 
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
@@ -89,6 +91,20 @@ interface ChatMessage {
 
 export async function POST(req: NextRequest) {
   try {
+    // Apply rate limiting - stricter for AI endpoints
+    const { userId } = await auth();
+    const isAuthenticated = !!userId;
+    
+    // Different rate limits based on authentication status
+    const rateLimitResult = await withRateLimit(req, 'api-ai-chat', {
+      limit: isAuthenticated ? 10 : 5,  // 10 requests per minute for authenticated users, 5 for guests
+      window: 60, // 60 seconds window
+      errorMessage: 'AI chat rate limit exceeded. Please try again later.'
+    });
+
+    // If rate limit exceeded, return the rate limit response
+    if (rateLimitResult) return rateLimitResult;
+    
     // Check API key at runtime instead of build time
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {

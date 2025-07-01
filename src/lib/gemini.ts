@@ -1,12 +1,105 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Document } from "@langchain/core/documents";
+import { Redis } from 'ioredis';
+
+// Initialize Redis client if REDIS_URL is available
+// Otherwise use a memory-based fallback for development
+let redis: Redis | null = null;
+const inMemoryStore: Map<string, { count: number, expires: number }> = new Map();
+let redisEnabled = false;
+
+// Only initialize Redis if URL is available (e.g., in production)
+if (process.env.REDIS_URL_NEW) {
+  try {
+    redis = new Redis(process.env.REDIS_URL_NEW, {
+      maxRetriesPerRequest: 1,
+      retryStrategy: (times) => {
+        // Only retry once, then give up
+        return times >= 1 ? null : 200;
+      }
+    });
+    
+    // Handle Redis connection errors
+    redis.on('error', (err) => {
+      console.warn('Redis connection error in gemini.ts, falling back to in-memory store:', err.message);
+      redisEnabled = false;
+    });
+    
+    // Set flag when connection is successful
+    redis.on('connect', () => {
+      console.log('Successfully connected to Redis in gemini.ts');
+      redisEnabled = true;
+    });
+  } catch (err: any) {
+    console.warn('Failed to initialize Redis in gemini.ts, using in-memory store instead:', err.message);
+    redis = null;
+    redisEnabled = false;
+  }
+}
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
   model: "gemini-2.0-flash",
 });
 
+// Internal rate limiter for library functions
+async function checkRateLimit(key: string, limit: number = 50, windowInSeconds: number = 60): Promise<boolean> {
+  const identifier = `lib:gemini:${key}`;
+  let isAllowed = true;
+  
+  try {
+    if (redis && redisEnabled) {
+      try {
+        // Use Redis if available and connected
+        const current = await redis.incr(identifier);
+        
+        // Set expiration on first request
+        if (current === 1) {
+          await redis.expire(identifier, windowInSeconds);
+        }
+        
+        isAllowed = current <= limit;
+      } catch (redisError: any) {
+        console.warn(`Redis rate limit operation failed in gemini.ts: ${redisError.message || redisError}`);
+        // Fall back to in-memory implementation
+        return useMemoryRateLimit();
+      }
+    } else {
+      // In-memory fallback
+      return useMemoryRateLimit();
+    }
+    
+    return isAllowed;
+  } catch (error: any) {
+    console.error("Rate limit check error:", error?.message || error);
+    return true; // Allow on error to prevent blocking legitimate requests
+  }
+  
+  // Helper function for in-memory rate limiting
+  function useMemoryRateLimit(): boolean {
+    const now = Date.now();
+    const record = inMemoryStore.get(identifier) || { count: 0, expires: now + (windowInSeconds * 1000) };
+    
+    // Reset if window has expired
+    if (now > record.expires) {
+      record.count = 0;
+      record.expires = now + (windowInSeconds * 1000);
+    }
+    
+    // Increment counter
+    record.count += 1;
+    inMemoryStore.set(identifier, record);
+    
+    return record.count <= limit;
+  }
+}
+
 export const aiSummariseCommit = async (diff: string, projectName: string) => {
+  const isAllowed = await checkRateLimit('commit-summary', 10, 60);
+  if (!isAllowed) {
+    throw new Error("Rate limit exceeded for commit summaries. Please try again later.");
+  }
+
   const response = await model.generateContent([
     `You are an expert programmer summarizing a git diff for the project "${projectName}". 
     Only refer to changes relevant to this project. 
@@ -45,6 +138,10 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
 };
 
 export const summariseCode = async (doc: Document) => {
+  const isAllowed = await checkRateLimit('code-summary', 10, 60);
+  if (!isAllowed) {
+    throw new Error("Rate limit exceeded for code summaries. Please try again later.");
+  }
 
   try {
     const code = doc.pageContent.slice(0, 10000);
@@ -64,6 +161,12 @@ export const summariseCode = async (doc: Document) => {
 };
 
 export const generateEmbedding = async (summary: string) => {
+  // Check rate limit (50 embeddings per minute)
+  const isAllowed = await checkRateLimit('embedding', 50, 60);
+  if (!isAllowed) {
+    throw new Error("Rate limit exceeded for embeddings generation. Please try again later.");
+  }
+  
   const model = genAI.getGenerativeModel({
     model: "text-embedding-004",
   });
@@ -75,6 +178,14 @@ export const generateEmbedding = async (summary: string) => {
 };
 
 export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: string } | string> {
+  const isAllowed = await checkRateLimit('ask-gemini', 5, 60);
+  if (!isAllowed) {
+    return {
+      yaml: '# ❌ Error: Rate limit exceeded.',
+      tip: 'Please try again after some time. There is a limit to how many requests you can make per minute.'
+    };
+  }
+  
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
