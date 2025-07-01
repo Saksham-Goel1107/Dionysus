@@ -180,18 +180,45 @@ export default function AiChatSidebar({ isOpen, onClose }: { isOpen: boolean; on
       });
 
       if (!response.ok) {
+        // Handle rate limiting explicitly
+        if (response.status === 429) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Rate limit exceeded. Please try again later.');
+        }
         throw new Error('Failed to get AI response');
-      } const data = await response.json();
+      }
+      
+      // Check for rate limit headers to show warnings
+      const remainingRequests = response.headers.get('X-RateLimit-Remaining');
+      const rateLimitTotal = response.headers.get('X-RateLimit-Limit');
+      
+      const data = await response.json();
       setChatHistory(prev => [...prev, {
         role: 'assistant',
         content: data.response,
         timestamp: Date.now()
       }]);
-    } catch (error) {
+      
+      // Show warning if user is approaching their rate limit
+      if (remainingRequests && rateLimitTotal) {
+        const remaining = parseInt(remainingRequests);
+        const total = parseInt(rateLimitTotal);
+        
+        if (remaining <= Math.max(2, Math.floor(total * 0.2))) {
+          // Add rate limit warning when less than 20% of requests remain
+          setChatHistory(prev => [...prev, {
+            role: 'assistant',
+            content: `⚠️ Rate limit warning: You have ${remaining} of ${total} requests remaining for this minute.`,
+            timestamp: Date.now()
+          }]);
+        }
+      }
+    } catch (error: any) {
       console.error('Error:', error);
       setChatHistory(prev => [...prev, {
         role: 'assistant',
-        content: "I apologize, but I encountered an error. Please try again"
+        content: error.message || "I apologize, but I encountered an error. Please try again",
+        timestamp: Date.now()
       }]);
     } finally {
       setIsLoading(false);

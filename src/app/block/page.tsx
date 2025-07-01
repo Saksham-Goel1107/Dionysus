@@ -1,6 +1,18 @@
 import React from 'react';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-export default function BlockPage() {
+// Using an async function for Server Components to properly access cookies
+export default async function BlockPage() {
+  const cookiesList = await cookies();
+  const redirectCookie = cookiesList.get('middleware_redirect');
+  
+  // If not accessed through middleware redirect, send user to homepage
+  if (!redirectCookie) {
+    redirect('/');
+    return null;
+  }
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-8">
       <div className="max-w-lg w-full bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-gray-700">
