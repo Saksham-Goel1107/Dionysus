@@ -30,7 +30,7 @@ const aj = arcjet({
     fixedWindow({
       mode: "LIVE",
       window: "60s", 
-      max: 10, // Standard limit for most pages
+      max: 50, // Standard limit for most pages
     }),
   ],
 });
