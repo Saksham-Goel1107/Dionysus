@@ -131,7 +131,7 @@ const AppSidebar = ({}: Props) => {
                             })}
                           >
                             <Bot />
-                            <span>Chat</span>
+                            <span>Video Call + Chat</span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
