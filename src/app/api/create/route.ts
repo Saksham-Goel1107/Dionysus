@@ -18,13 +18,13 @@ export async function POST(request: Request) {
 
  const slugs = ["General","Help","Showcase","Random"]
  slugs.forEach(async(item) => {
-    const channel = serverClient.channel('messaging', slug, {
+    const channel = serverClient.channel('messaging', item, {
       image: 'https://getstream.io/random_png/?name=react',
-      name: slug,
+      name: item,
       created_by_id:user.data.id
     });
     await channel.create()
-    channel.addMembers([user:user.data.id])
+    channel.addMembers([user.data.id])
  });
 
 return Response.json({message:"hi"})

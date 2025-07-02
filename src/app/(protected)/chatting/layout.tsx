@@ -31,11 +31,24 @@ export default async function ChattingLayout({ children }: { children: React.Rea
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
-      <CommunitySidebar />
-      <main className="flex-1 flex items-center justify-center">
-        {children}
-      </main>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Mobile: Sidebar on top, Chat below; Desktop: Sidebar left, Chat right */}
+      <div className="flex flex-col md:flex-row h-screen md:h-[100dvh] w-full">
+        <CommunitySidebar />
+        <main
+          className="flex-1 flex justify-center items-start md:items-center px-0 md:px-8 py-0 md:py-0 overflow-x-auto overflow-y-hidden"
+          style={{
+            height: '80vh',
+            minHeight: '80vh',
+            overflowY: 'hidden', // Prevent y-scroll on mobile
+            overflowX: 'auto',   // Allow x-scroll on mobile
+          }}
+        >
+          <div className="w-full h-full min-w-[400px] max-w-full md:max-w-2xl lg:max-w-3xl xl:max-w-4xl flex flex-col">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
