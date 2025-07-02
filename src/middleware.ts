@@ -9,7 +9,8 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/docs(.*)',
   '/privacy(.*)',
-  '/terms(.*)'
+  '/terms(.*)',
+  '/api/create(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);
@@ -18,19 +19,19 @@ const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     shield({
-      mode: 'LIVE', // will block requests. Use "DRY_RUN" to log only
+      mode: 'LIVE', 
     }),
     detectBot({
-      mode: 'LIVE', // will block requests. Use "DRY_RUN" to log only
+      mode: 'LIVE', 
       allow: [
-        'CATEGORY:SEARCH_ENGINE', // Google, Bing, etc
+        'CATEGORY:SEARCH_ENGINE', 
         'CATEGORY:PREVIEW',
       ],
     }),
     fixedWindow({
       mode: "LIVE",
       window: "60s", 
-      max: 50, // Standard limit for most pages
+      max: 50,
     }),
   ],
 });
@@ -43,41 +44,30 @@ export default clerkMiddleware(async (auth, request) => {
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
-  // Check for direct access attempts to protected pages
   if ((isBlockPage || isRateLimitPage) && !request.cookies.has('middleware_redirect')) {
-    // Redirect unauthorized direct access to home page
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Apply stricter rate limits for API routes
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
   const isHighLoadApiRoute = pathname.startsWith('/api/ai-') || 
                           pathname.startsWith('/api/git-') || 
                           pathname.startsWith('/api/create-');
   
-  // Default decision from Arcjet
   const decision = await aj.protect(request);
   
-  // Apply more specific rate limits for API routes (you'll need to implement this in your backend)
   if (isApiRoute && !isRateLimitPage) {
-    // Check if the request has authentication
     let isAuthenticated = false;
     try {
       const { userId } = await auth();
       isAuthenticated = !!userId;
     } catch (e) {
-      // User is not authenticated
       isAuthenticated = false;
     }
     
-    // Check IP-based rate limiting (you might want to implement this with Redis or similar)
     const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
     
-    // If it's a high-load API and exceeds limits
     if (isHighLoadApiRoute) {
-      // Stricter rate limiting for AI/Git endpoints
-      // You can implement a more sophisticated rate limiting here with Redis
-      // This is just a placeholder for your implementation
+
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {
         const response = NextResponse.redirect(new URL('/rate-limit', request.url));
@@ -93,12 +83,10 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   if (decision.isDenied()) {
-    // Redirect to a custom rate limit page instead of returning JSON
     if (!isRateLimitPage) {
       const response = NextResponse.redirect(new URL('/rate-limit', request.url));
-      // Set cookie to indicate this is a middleware redirect
       response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, // Short-lived cookie, just for the redirect
+        maxAge: 10, 
         httpOnly: true,
         path: '/rate-limit',
         sameSite: 'strict'
@@ -111,9 +99,8 @@ export default clerkMiddleware(async (auth, request) => {
   if (country && notAllowedCountries.includes(country)) {
     if (!isBlockPage) {
       const response = NextResponse.redirect(new URL('/block', request.url));
-      // Set cookie to indicate this is a middleware redirect
       response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, // Short-lived cookie, just for the redirect
+        maxAge: 10, 
         httpOnly: true,
         path: '/block',
         sameSite: 'strict'
@@ -130,7 +117,6 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
-
     if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
       const response = NextResponse.redirect(new URL('/onboarding', baseUrl));

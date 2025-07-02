@@ -6,10 +6,10 @@ import { usePathname } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Loader2, Lock } from 'lucide-react';
 
 const channels = [
-  { name: 'General', slug: 'general' },
-  { name: 'Help', slug: 'help' },
-  { name: 'Showcase', slug: 'showcase' },
-  { name: 'Random', slug: 'random' },
+  { name: 'General', slug: 'General' },
+  { name: 'Help', slug: 'Help' },
+  { name: 'Showcase', slug: 'Showcase' },
+  { name: 'Random', slug: 'Random' },
 ];
 
 const CommunitySidebar = () => {
