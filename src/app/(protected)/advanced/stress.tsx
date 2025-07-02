@@ -17,10 +17,9 @@ const StressTester = () => {
   const [result, setResult] = useState<null | Record<string, any>>();
   const [showCopied, setShowCopied] = useState(false);
 
-  const OFFICIAL_URL = "https://dionysus-sgun.onrender.com";
-
   const BLOCKED_DOMAINS = [
     "dionysus-sgun.onrender.com",
+    "dionysus-gray.vercel.app",
     "amazon.com",
     "google.com",
     "github.com",
