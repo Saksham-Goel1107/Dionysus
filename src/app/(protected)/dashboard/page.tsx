@@ -1,21 +1,26 @@
 "use client";
 import useProject from "@/hooks/use-project";
-import { ExternalLink, Github} from "lucide-react";
+import { ExternalLink, Github, MessageCirclePlus} from "lucide-react";
 import Link from "next/link";
 import CommitTabs from "./_components/CommitTabs";
 import AskQuestionCard from "./_components/AskQuestionCard";
 import MeetingCard from "./_components/MeetingCard";
 import ArchiveButton from "./_components/ArchiveButton";
 const InviteButton=dynamic(()=>import('./_components/InviteButton'),{ssr:false});
+import { api } from '@/trpc/react';
 
 import TeamMembers from "./_components/TeamMembers";
 import dynamic from "next/dynamic";
 import RepoMetricsCard from "./_components/RepoMetricsCard";
+import { Button } from "@/components/ui/button";
 
 type Props = {};
 
 const page = ({}: Props) => {
-  const { project, projects } = useProject();
+  const { project, projects,projectId } = useProject();
+  const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
+  const users = Array.isArray(members) ? members : [];
+  const showChat = users.length >= 2; 
 
   if (!projects || projects.length === 0) {
     return (
@@ -89,8 +94,9 @@ const page = ({}: Props) => {
           <div className="h-4"></div>
 
           {/* TEAM MEMBERS, INVITE, ARCHIVE */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
               <TeamMembers />
+              {showChat && <Link href="/chatting"><Button className="px-2 py-1"><MessageCirclePlus /></Button></Link>}
               <InviteButton />
               <ArchiveButton /> 
           </div>
