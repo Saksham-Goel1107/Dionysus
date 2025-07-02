@@ -7,7 +7,6 @@ import AskQuestionCard from "./_components/AskQuestionCard";
 import MeetingCard from "./_components/MeetingCard";
 import ArchiveButton from "./_components/ArchiveButton";
 const InviteButton=dynamic(()=>import('./_components/InviteButton'),{ssr:false});
-import { api } from '@/trpc/react';
 
 import TeamMembers from "./_components/TeamMembers";
 import dynamic from "next/dynamic";
@@ -17,10 +16,7 @@ import { Button } from "@/components/ui/button";
 type Props = {};
 
 const page = ({}: Props) => {
-  const { project, projects,projectId } = useProject();
-  const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
-  const users = Array.isArray(members) ? members : [];
-  const showChat = users.length >= 2; 
+  const { project, projects } = useProject();
 
   if (!projects || projects.length === 0) {
     return (
@@ -96,7 +92,7 @@ const page = ({}: Props) => {
           {/* TEAM MEMBERS, INVITE, ARCHIVE */}
           <div className="flex items-center gap-2">
               <TeamMembers />
-              {showChat && <Link href="/chatting"><Button className="px-2 py-1"><MessageCirclePlus /></Button></Link>}
+              <Link href="/chatting"><Button className="px-2 py-1"><MessageCirclePlus /></Button></Link>
               <InviteButton />
               <ArchiveButton /> 
           </div>
