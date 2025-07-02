@@ -12,12 +12,19 @@ import {
   Window,
 } from 'stream-chat-react';
 
+import { EmojiPicker } from 'stream-chat-react/emojis';
+
+import { init, SearchIndex } from 'emoji-mart';
+import data from '@emoji-mart/data';
+
 import 'stream-chat-react/dist/css/v2/index.css';
 
 interface ChatClientProps {
   clerkUser: { id: string; name: string; token: string };
   slug: string;
 }
+
+init({ data });
 
 const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
   const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
@@ -102,7 +109,7 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
 
   return (
     <Chat client={client}>
-      <Channel channel={channel}>
+      <Channel channel={channel} EmojiPicker={EmojiPicker} emojiSearchIndex={SearchIndex}>
         <Window>
           <ChannelHeader />
           <MessageList />

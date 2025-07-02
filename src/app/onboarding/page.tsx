@@ -155,6 +155,7 @@ export default function OnboardingComponent() {
   const [showMeetDev, setShowMeetDev] = React.useState(false);
   const [showSkip, setShowSkip] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState<null | 'finish' | 'skip'>(null);
+  const [redirecting, setRedirecting] = React.useState(false);
 
   const current = TOUR_STEPS[step];
 
@@ -241,7 +242,8 @@ export default function OnboardingComponent() {
             </button>
             <button
               onClick={() => setShowConfirm('finish')}
-              className="px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+              disabled={redirecting}
+              className={`px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors${redirecting ? ' opacity-60 cursor-not-allowed' : ''}`}
             >
               Go to Dashboard
             </button>
@@ -251,10 +253,11 @@ export default function OnboardingComponent() {
           <ConfirmModal
             message="Are you sure you want to finish onboarding and go to the dashboard?"
             onConfirm={async () => {
+              if (redirecting) return;
+              setRedirecting(true);
               await handleComplete();
               setShowConfirm(null);
-              router.replace('/dashboard')
-
+              router.replace('/dashboard');
             }}
             onCancel={() => setShowConfirm(null)}
           />
