@@ -71,7 +71,6 @@ export const metadata: Metadata = {
     { rel: "apple-touch-icon", url: "/logo.png" },
   ],
   manifest: "/site.webmanifest",
-  themeColor: "#111827",
   robots: {
     index: true,
     follow: true,
@@ -83,6 +82,10 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+};
+
+export const viewport = {
+  themeColor: "#111827",
 };
 
 export default async function RootLayout({

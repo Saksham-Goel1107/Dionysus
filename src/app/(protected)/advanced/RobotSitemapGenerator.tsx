@@ -145,7 +145,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean, onClose:
   };
   
   const addUserAgent = () => {
-    const currentRules = form.getValues('customRules');
+    const currentRules = form.getValues('customRules') ?? [];
     form.setValue('customRules', [
       ...currentRules, 
       { 
@@ -165,14 +165,20 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean, onClose:
   const addRule = (userAgentIndex: number) => {
     const currentRules = form.getValues('customRules');
     const updatedRules = [...currentRules];
-    updatedRules[userAgentIndex].rules.push({ type: 'Allow', path: '/' });
-    form.setValue('customRules', updatedRules);
+    if (updatedRules[userAgentIndex] && Array.isArray(updatedRules[userAgentIndex].rules)) {
+      updatedRules[userAgentIndex].rules.push({ type: 'Allow', path: '/' });
+      form.setValue('customRules', updatedRules);
+    }
   };
   
   const removeRule = (userAgentIndex: number, ruleIndex: number) => {
     const currentRules = form.getValues('customRules');
     const updatedRules = [...currentRules];
-    if (updatedRules[userAgentIndex].rules.length > 1) {
+    if (
+      updatedRules[userAgentIndex] &&
+      updatedRules[userAgentIndex].rules &&
+      updatedRules[userAgentIndex].rules.length > 1
+    ) {
       updatedRules[userAgentIndex].rules = updatedRules[userAgentIndex].rules.filter((_, i) => i !== ruleIndex);
       form.setValue('customRules', updatedRules);
     }
@@ -314,7 +320,12 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean, onClose:
       return;
     }
     
-    const autoPages = [
+    const autoPages: {
+      url: string;
+      priority: string;
+      changefreq: "always" | "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "never";
+      lastmod?: string;
+    }[] = [
       {
         url: generateAutoUrl(baseUrl, 0),
         priority: '1.0',

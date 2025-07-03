@@ -205,9 +205,11 @@ const CustomContextMenu = () => {
     setVisible(false);
   };
 
+  // Helper to check for client-side
+  const isClient = typeof window !== "undefined";
 
-  const canCopy = !!window.getSelection()?.toString();
-  const canPaste = !!(targetElement && (targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT") && navigator.clipboard);
+  const canCopy = isClient && !!window.getSelection()?.toString();
+  const canPaste = isClient && !!(targetElement && (targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT") && navigator.clipboard);
   const canCut = canCopy;
   const canSelectAll = !!(targetElement && ((targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT") || targetElement.isContentEditable));
 

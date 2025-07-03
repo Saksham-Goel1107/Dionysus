@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const prisma = (global as any).prisma || require('@/lib/prisma').default;
+    const prisma = (global as any).prisma || (await import('@/lib/prisma')).default;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { emailAddress: true, firstName: true, credits: true }

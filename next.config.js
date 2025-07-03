@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
     eslint: {
-        ignoreDuringBuilds: true,
+        ignoreDuringBuilds: false,
     },
     typescript: {
         ignoreBuildErrors: true,
@@ -19,6 +19,14 @@ const config = {
             "img.clerk.com",
             "avatars.githubusercontent.com"
         ],
+    },
+    webpack: (webpackConfig) => {
+        webpackConfig.module.exprContextCritical = false;
+        webpackConfig.cache = {
+            type: 'filesystem',
+            maxMemoryGenerations: 1,
+        };
+        return webpackConfig;
     },
 };
 
