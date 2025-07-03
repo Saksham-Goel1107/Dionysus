@@ -18,7 +18,7 @@ const StressTester = () => {
   const [showCopied, setShowCopied] = useState(false);
 
   const BLOCKED_DOMAINS = [
-    "dionysus-sgun.onrender.com",
+    // "dionysus-sgun.onrender.com",
     "dionysus-gray.vercel.app",
     "amazon.com",
     "google.com",

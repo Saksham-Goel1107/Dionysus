@@ -1,21 +1,46 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { useSession } from "@clerk/nextjs";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 const MultisessionAppSupport = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoaded } = useSession();
   const prevSessionId = useRef<string | null>(null);
+  const isFirstLoad = useRef(true);
+  const wasSignedOut = useRef(false);
   const [switching, setSwitching] = useState(false);
 
   useEffect(() => {
     if (!isLoaded) return;
-    if (prevSessionId.current && session?.id !== prevSessionId.current) {
+
+    if (prevSessionId.current && !session?.id) {
+      wasSignedOut.current = true;
+    }
+
+    if (isFirstLoad.current || prevSessionId.current === null) {
+      prevSessionId.current = session?.id || null;
+      isFirstLoad.current = false;
+      return;
+    }
+
+    if (wasSignedOut.current && session?.id) {
+      wasSignedOut.current = false;
+      prevSessionId.current = session?.id;
+      return;
+    }
+
+    if (prevSessionId.current && session?.id && session?.id !== prevSessionId.current) {
       setSwitching(true);
       setTimeout(() => {
-        window.history.back();
-        setTimeout(() => window.location.reload(), 300);
+        try {
+          window.history.back();
+          setTimeout(() => window.location.reload(), 300);
+        } catch (err) {
+          window.location.replace("/dashboard");
+        }
       }, 300);
     }
+    
     prevSessionId.current = session?.id || null;
   }, [session?.id, isLoaded]);
 
@@ -41,7 +66,7 @@ const MultisessionAppSupport = ({ children }: { children: React.ReactNode }) => 
     );
   }
 
-  return <React.Fragment key={session ? session.id : "no-users"}>{children}</React.Fragment>;
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 };
 
 export default MultisessionAppSupport;

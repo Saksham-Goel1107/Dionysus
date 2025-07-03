@@ -16,7 +16,10 @@ import MaintenanceScreen from "../components/updates/screen";
 import ScrollToTopButton from "@/components/ui/ScrollToTopButton";
 import CustomContextMenu from "@/components/ui/CustomContextMenu";
 import BlockInspectAndContext from "@/components/BlockInspectAndContext";
-import MultisessionAppSupport from './MultiSession'
+import MultisessionAppSupport from "./MultiSession";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +34,6 @@ export const metadata: Metadata = {
     "GitHub",
     "assistant",
     "developer tools",
-    "code assistant",
     "productivity",
     "coding",
     "typescript",
@@ -39,6 +41,22 @@ export const metadata: Metadata = {
     "nextjs",
     "trpc",
     "open source",
+    "prisma",
+    "stripe",
+    "saas",
+    "automation",
+    "chatbot",
+    "livekit",
+    "cloudinary",
+    "tailwindcss",
+    "zod",
+    "clerk",
+    "vercel",
+    "stream",
+    "web development",
+    "frontend",
+    "backend",
+    "fullstack",
   ],
   authors: [{ name: "Saksham Goel", url: "https://dionysus-gray.vercel.app" }],
   creator: "Saksham Goel",
@@ -102,51 +120,57 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <ClerkProvider>
-        <MultisessionAppSupport>
-          <body>
-            {isMaintenance ? (
-              <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <MaintenanceScreen />
-                <BlockInspectAndContext />
-                <CustomContextMenu />
-              </ThemeProvider>
-            ) : (
-              <>
-                <GoogleOneTap
-                  cancelOnTapOutside={true}
-                  itpSupport={true}
-                  fedCmSupport={true}
-                />
+      <ErrorBoundary>
+        <ClerkProvider>
+          <MultisessionAppSupport>
+            <body>
+              {isMaintenance ? (
                 <ThemeProvider
                   attribute="class"
                   defaultTheme="system"
                   enableSystem
                   disableTransitionOnChange
                 >
-                  <CookieBanner />
-                  <TRPCReactProvider>
-                    {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                  </TRPCReactProvider>
-                  <Toaster richColors />
-                  <ScrollToTopButton />
-                  <CustomContextMenu />
+                  <MaintenanceScreen />
                   <BlockInspectAndContext />
+                  <CustomContextMenu />
+                  <Analytics />
+                  <SpeedInsights />
                 </ThemeProvider>
-                <script
-                  src="https://s.pageclip.co/v1/pageclip.js"
-                  charSet="utf-8"
-                ></script>
-              </>
-            )}
-          </body>
-        </MultisessionAppSupport>
-      </ClerkProvider>
+              ) : (
+                <>
+                  <GoogleOneTap
+                    cancelOnTapOutside={true}
+                    itpSupport={true}
+                    fedCmSupport={true}
+                  />
+                  <ThemeProvider
+                    attribute="class"
+                    defaultTheme="system"
+                    enableSystem
+                    disableTransitionOnChange
+                  >
+                    <CookieBanner />
+                    <TRPCReactProvider>
+                      {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                    </TRPCReactProvider>
+                    <Toaster richColors />
+                    <ScrollToTopButton />
+                    <CustomContextMenu />
+                    <BlockInspectAndContext />
+                    <Analytics />
+                    <SpeedInsights />
+                  </ThemeProvider>
+                  <script
+                    src="https://s.pageclip.co/v1/pageclip.js"
+                    charSet="utf-8"
+                  ></script>
+                </>
+              )}
+            </body>
+          </MultisessionAppSupport>
+        </ClerkProvider>
+      </ErrorBoundary>
     </html>
   );
 }

@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { api } from '@/trpc/react';
-import { Info } from 'lucide-react';
+import { InfoIcon } from 'lucide-react';
 import React, { useEffect } from 'react';
 import { UserProfile } from '@clerk/nextjs';
 import {
@@ -148,7 +148,7 @@ const BillingPage = () => {
         <div className="h-2"></div>
         <div className="rounded-md border-blue-200 bg-blue-50 px-2 py-2 sm:px-4 text-blue-700">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Info className="size-4" />
+            <InfoIcon className="size-4" />
             <p className="text-sm">Each credit allows you to index 1 file in a repository.</p>
           </div>
           <p className="text-xs sm:text-sm mt-1">

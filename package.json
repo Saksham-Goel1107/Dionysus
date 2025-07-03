@@ -158,5 +158,63 @@
   "ct3aMetadata": {
     "initVersion": "7.38.1"
   },
-  "packageManager": "npm@11.0.0"
+  "packageManager": "npm@11.0.0",
+  "description": "Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.",
+  "author": "Saksham Goel",
+  "homepage": "https://dionysus-gray.vercel.app",
+  "keywords": [
+    "AI",
+    "GitHub",
+    "assistant",
+    "developer tools",
+    "productivity",
+    "coding",
+    "typescript",
+    "react",
+    "nextjs",
+    "trpc",
+    "open source",
+    "prisma",
+    "stripe",
+    "saas",
+    "automation",
+    "chatbot",
+    "livekit",
+    "cloudinary",
+    "tailwindcss",
+    "zod",
+    "clerk",
+    "vercel",
+    "stream",
+    "web development",
+    "frontend",
+    "backend",
+    "fullstack"
+  ],
+  "contributors": [
+    {
+      "name": "Saksham Goel",
+      "url": "https://dionysus-gray.vercel.app"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Saksham-Goel1107/dionysus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Saksham-Goel1107/dionysus/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "support": {
+    "email": "sakshamgoel1107@gmail.com"
+  },
+  "docs": "https://dionysus-gray.vercel.app",
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "sideEffects": false
 }

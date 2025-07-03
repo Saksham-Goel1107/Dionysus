@@ -27,7 +27,7 @@ const TeamMembers = () => {
                 />
                 {user.isPro && (
                   <span className="absolute -top-2.5 -right-1 text-yellow-400" title="Prenium User">
-                    <Crown className="w-5 h-5 text-yellow-400 drop-shadow" fill="#facc15" />
+                    <Crown className="md:w-5 md:h-5 w-4 h-4 text-yellow-400 drop-shadow" fill="#facc15" />
                   </span>
                 )}
               </div>

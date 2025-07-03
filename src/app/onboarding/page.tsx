@@ -5,7 +5,6 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { markOnboardingComplete } from './completeOnboardingAction'
 import Image from 'next/image'
-import Link from 'next/link'
 
 const THEME_KEY = 'theme-preference';
 const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
@@ -386,20 +385,20 @@ export default function OnboardingComponent() {
   );
 }
 
-function ConfirmModal({ message, onConfirm, onCancel }: { message: string, onConfirm: () => void, onCancel: () => void }) {
+function ConfirmModal({ message, onConfirm, onCancel }: { message: string, onConfirm: () => void | Promise<void>, onCancel: () => void | Promise<void> }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full animate-slide-up">
         <p className="mb-6 text-gray-900 dark:text-gray-100 text-center text-lg">{message}</p>
         <div className="flex justify-center gap-4">
           <button
-            onClick={onCancel}
+            onClick={async () => { await onCancel(); }}
             className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold transition-colors"
           >
             Cancel
           </button>
           <button
-            onClick={onConfirm}
+            onClick={async () => { await onConfirm(); }}
             className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
           >
             Confirm
