@@ -20,7 +20,12 @@ const JoinHandler = async (props: Props) => {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
 
-  if (!dbUser) {
+  // Check if a user with this email already exists
+  const existingUserByEmail = await db.user.findUnique({
+    where: { emailAddress: user.emailAddresses[0]!.emailAddress },
+  });
+
+  if (!dbUser && !existingUserByEmail) {
     await db.user.create({
       data: {
         id: userId,

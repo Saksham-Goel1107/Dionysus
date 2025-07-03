@@ -14,6 +14,13 @@ const ChatPage = () => {
   const { resolvedTheme } = useTheme();
   useProjectTeamGuard(projectId);
 
+  if (!projectId) {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/dashboard');
+    }
+    return null;
+  }
+
   return (
     <>
       <Protect

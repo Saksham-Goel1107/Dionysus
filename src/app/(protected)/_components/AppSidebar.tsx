@@ -85,9 +85,8 @@ const AppSidebar = ({}: Props) => {
   const [search, setSearch] = useState('');
 
   const users = Array.isArray(members) ? members : [];
-  const showChat = users.length >= 2; // Show chat if 2 or more users
-  console.log('users:', users, 'showChat:', showChat)
-
+  const showChat = users.length >= 2 && !!projectId; 
+  
   return (
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
