@@ -15,6 +15,8 @@ import MarkdownGenModal from './MarkdownGenModal';
 import PlagiarismChecker from './PlagiarismChecker'
 import CommitGraphModal from '@/components/ui/CommitGraphModal';
 import LogoGenerator from '@/components/logo-generator';
+import MetaDataGenerator from './MetaDataGenerator';
+import RobotSitemapGenerator from './RobotSitemapGenerator';
 
 const Advanced = () => {
   const { resolvedTheme } = useTheme();
@@ -156,6 +158,10 @@ const Advanced = () => {
               className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-500/90 transition-all duration-200 border-0 z-10"
             />
           </div>
+
+          <MetaDataGenerator />
+          <RobotSitemapGenerator/>
+          
         </div>
       <PlagiarismChecker/>
       <CommitGraphModal />

@@ -62,6 +62,7 @@ const SSBox = () => {
 
 const BlockInspectAndContext = () => {
   useEffect(() => {
+        if (process.env.NODE_ENV === "development") return;
     const showSSBox = () => {
       window.dispatchEvent(new Event("ss-detected"));
     };
@@ -90,16 +91,9 @@ const BlockInspectAndContext = () => {
         return false;
       }
     };
-    const blockDrag = (e: DragEvent) => {
-      e.preventDefault();
-      showSSBox();
-      return false;
-    };
     document.addEventListener("keydown", blockInspect, true);
-    document.addEventListener("dragstart", blockDrag, true);
     return () => {
       document.removeEventListener("keydown", blockInspect, true);
-      document.removeEventListener("dragstart", blockDrag, true);
     };
   }, []);
   return (
