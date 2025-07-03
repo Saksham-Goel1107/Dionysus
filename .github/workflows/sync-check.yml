@@ -11,9 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Use npm 11
+        run: npm install -g npm@11
       - name: Check for uncommitted changes after build/lint/format
         run: |
-          npm ci --force
+          npm ci --legacy-peer-deps
           npm run build || true
           npx eslint . --ext .js,.jsx,.ts,.tsx || true
           npx prettier --check . || true
