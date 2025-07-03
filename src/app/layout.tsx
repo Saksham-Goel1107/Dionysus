@@ -14,6 +14,8 @@ import { ThemeProvider } from "./components/theme-provider";
 import CookieBanner from "./components/CookieBanner";
 import MaintenanceScreen from "../components/updates/screen";
 import ScrollToTopButton from "@/components/ui/ScrollToTopButton";
+import CustomContextMenu from "@/components/ui/CustomContextMenu";
+import BlockInspectAndContext from "@/components/BlockInspectAndContext";
 
 export const metadata: Metadata = {
   title: {
@@ -128,6 +130,8 @@ export default async function RootLayout({
                 </TRPCReactProvider>
                 <Toaster richColors />
                 <ScrollToTopButton />
+                <CustomContextMenu />
+                <BlockInspectAndContext />
               </ThemeProvider>
               <script
                 src="https://s.pageclip.co/v1/pageclip.js"
