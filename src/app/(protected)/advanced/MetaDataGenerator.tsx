@@ -291,13 +291,23 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
     const title = form.getValues('title');
     const description = form.getValues('description');
     const image = form.getValues('ogImage') || '';
+    const isValidUrl = (url: string) => {
+      try {
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    };
+
+    const sanitizedImage = isValidUrl(image) ? image : '';
 
     return (
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
         <div className="flex flex-col gap-2">
-          {image && (
+          {sanitizedImage && (
             <img
-              src={image}
+              src={sanitizedImage}
               alt="Preview image"
               className="w-full h-48 object-cover rounded-lg mb-2"
               onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
