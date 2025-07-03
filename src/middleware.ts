@@ -19,18 +19,15 @@ const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     shield({
-      mode: 'LIVE', 
+      mode: 'LIVE',
     }),
     detectBot({
-      mode: 'LIVE', 
-      allow: [
-        'CATEGORY:SEARCH_ENGINE', 
-        'CATEGORY:PREVIEW',
-      ],
+      mode: 'LIVE',
+      allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
     }),
     fixedWindow({
-      mode: "LIVE",
-      window: "60s", 
+      mode: 'LIVE',
+      window: '60s',
       max: 50,
     }),
   ],
@@ -49,12 +46,13 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
-  const isHighLoadApiRoute = pathname.startsWith('/api/ai-') || 
-                          pathname.startsWith('/api/git-') || 
-                          pathname.startsWith('/api/create-');
-  
+  const isHighLoadApiRoute =
+    pathname.startsWith('/api/ai-') ||
+    pathname.startsWith('/api/git-') ||
+    pathname.startsWith('/api/create-');
+
   const decision = await aj.protect(request);
-  
+
   if (isApiRoute && !isRateLimitPage) {
     let isAuthenticated = false;
     try {
@@ -63,19 +61,18 @@ export default clerkMiddleware(async (auth, request) => {
     } catch (e) {
       isAuthenticated = false;
     }
-    
-    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
-    
-    if (isHighLoadApiRoute) {
 
+    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
+
+    if (isHighLoadApiRoute) {
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {
         const response = NextResponse.redirect(new URL('/rate-limit', request.url));
-        response.cookies.set('middleware_redirect', 'true', { 
+        response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
           path: '/rate-limit',
-          sameSite: 'strict'
+          sameSite: 'strict',
         });
         return response;
       }
@@ -85,11 +82,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (decision.isDenied()) {
     if (!isRateLimitPage) {
       const response = NextResponse.redirect(new URL('/rate-limit', request.url));
-      response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, 
+      response.cookies.set('middleware_redirect', 'true', {
+        maxAge: 10,
         httpOnly: true,
         path: '/rate-limit',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
@@ -99,11 +96,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (country && notAllowedCountries.includes(country)) {
     if (!isBlockPage) {
       const response = NextResponse.redirect(new URL('/block', request.url));
-      response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, 
+      response.cookies.set('middleware_redirect', 'true', {
+        maxAge: 10,
         httpOnly: true,
         path: '/block',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
@@ -120,11 +117,11 @@ export default clerkMiddleware(async (auth, request) => {
     if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
       const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
-      response.cookies.set('middleware_redirect', 'true', { 
+      response.cookies.set('middleware_redirect', 'true', {
         maxAge: 10,
         httpOnly: true,
         path: '/onboarding',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
@@ -133,11 +130,11 @@ export default clerkMiddleware(async (auth, request) => {
       const referer = request.headers.get('referer') || '';
       if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
         const response = NextResponse.redirect(new URL('/sync-user', request.url));
-        response.cookies.set('middleware_redirect', 'true', { 
+        response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
           path: '/sync-user',
-          sameSite: 'strict'
+          sameSite: 'strict',
         });
         return response;
       }

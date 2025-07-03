@@ -41,7 +41,7 @@ export async function sendLowCreditsEmail({
 }) {
   const subject = `Your credits are running low – Top up now and save!`;
   const discountText = discounts.length
-    ? `<ul style="margin: 8px 0 0 16px; color: #2563eb;">${discounts.map(d => `<li>${d}</li>`).join('')}</ul>`
+    ? `<ul style="margin: 8px 0 0 16px; color: #2563eb;">${discounts.map((d) => `<li>${d}</li>`).join('')}</ul>`
     : '<span style="color: #2563eb;">Check for available discounts in your dashboard!</span>';
   const html = `
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background: #f9fafb;">

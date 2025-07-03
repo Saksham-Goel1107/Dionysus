@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
@@ -24,9 +24,7 @@ export function StarRating({ rating, onRatingChange }: StarRatingProps) {
         >
           <Star
             className={`h-6 w-6 ${
-              star <= (hoverRating || rating)
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'text-gray-300'
+              star <= (hoverRating || rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
             } transition-colors`}
           />
         </button>

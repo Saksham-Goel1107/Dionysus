@@ -1,5 +1,5 @@
-import { UserButton } from "@clerk/nextjs";
-import { Crown } from "lucide-react";
+import { UserButton } from '@clerk/nextjs';
+import { Crown } from 'lucide-react';
 
 export default function ProCrownUserButton({ isPro }: { isPro: boolean }) {
   return (

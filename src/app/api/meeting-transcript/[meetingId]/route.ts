@@ -1,7 +1,7 @@
-import { db } from "@/server/db";
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { db } from '@/server/db';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 const paramsParser = z.object({
   meetingId: z.string(),
@@ -19,7 +19,10 @@ interface MeetingWithTranscript {
 }
 
 // Helper function to get meeting with transcript for a user
-async function getMeetingWithTranscript(meetingId: string, userId: string): Promise<MeetingWithTranscript | null> {
+async function getMeetingWithTranscript(
+  meetingId: string,
+  userId: string,
+): Promise<MeetingWithTranscript | null> {
   // Use raw query to overcome type issues
   const meeting = await db.$queryRaw`
     SELECT m.transcript, m.name, 
@@ -39,18 +42,18 @@ async function getMeetingWithTranscript(meetingId: string, userId: string): Prom
     transcript: result.transcript,
     name: result.name,
     project: {
-      userToProjects: result.has_access > 0 ? [{ userId }] : []
-    }
+      userToProjects: result.has_access > 0 ? [{ userId }] : [],
+    },
   };
 }
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ meetingId: string }> | { meetingId: string } }
+  { params }: { params: Promise<{ meetingId: string }> | { meetingId: string } },
 ) {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -62,20 +65,17 @@ export async function GET(
 
     // Check if meeting exists
     if (!meeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
 
     // Check if user has access to this meeting
     if (meeting.project.userToProjects.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Check if transcript exists
     if (!meeting.transcript) {
-      return NextResponse.json(
-        { error: "Transcript not available" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Transcript not available' }, { status: 404 });
     }
 
     return NextResponse.json(
@@ -83,25 +83,22 @@ export async function GET(
         transcript: meeting.transcript,
         name: meeting.name,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
-    console.error("Error fetching meeting transcript:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch transcript" },
-      { status: 500 }
-    );
+    console.error('Error fetching meeting transcript:', error);
+    return NextResponse.json({ error: 'Failed to fetch transcript' }, { status: 500 });
   }
 }
 
 // Endpoint for downloading the transcript as a text file
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ meetingId: string }> | { meetingId: string } }
+  { params }: { params: Promise<{ meetingId: string }> | { meetingId: string } },
 ) {
   const { userId } = await auth();
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -113,40 +110,34 @@ export async function POST(
 
     // Check if meeting exists
     if (!meeting) {
-      return NextResponse.json({ error: "Meeting not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
 
     // Check if user has access to this meeting
     if (meeting.project.userToProjects.length === 0) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Check if transcript exists
     if (!meeting.transcript) {
-      return NextResponse.json(
-        { error: "Transcript not available" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Transcript not available' }, { status: 404 });
     }
 
     // Return the transcript as a downloadable file
-    const fileName = `${meeting.name.replace(/\s+/g, "_")}_transcript.txt`;
-    
+    const fileName = `${meeting.name.replace(/\s+/g, '_')}_transcript.txt`;
+
     // Create a response with the transcript as plain text
     const response = new NextResponse(meeting.transcript, {
       status: 200,
       headers: {
-        "Content-Type": "text/plain",
-        "Content-Disposition": `attachment; filename="${fileName}"`,
+        'Content-Type': 'text/plain',
+        'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
 
     return response;
   } catch (error) {
-    console.error("Error downloading meeting transcript:", error);
-    return NextResponse.json(
-      { error: "Failed to download transcript" },
-      { status: 500 }
-    );
+    console.error('Error downloading meeting transcript:', error);
+    return NextResponse.json({ error: 'Failed to download transcript' }, { status: 500 });
   }
 }

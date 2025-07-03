@@ -43,9 +43,7 @@ const ChatPage = () => {
               } max-w-md`}
             >
               Access to Chat+Video Call is available exclusively for{' '}
-              <span className="font-semibold text-yellow-700">
-                Dionysus Advance Pack
-              </span>{' '}
+              <span className="font-semibold text-yellow-700">Dionysus Advance Pack</span>{' '}
               subscribers.
               <br />
               Upgrade your plan to unlock this feature.

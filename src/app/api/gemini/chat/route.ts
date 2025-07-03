@@ -8,11 +8,19 @@ interface ChatHistoryItem {
   content: string;
 }
 
-async function callGemini({ question, analytics, history }: { question: string; analytics: any; history: ChatHistoryItem[] }) {
+async function callGemini({
+  question,
+  analytics,
+  history,
+}: {
+  question: string;
+  analytics: any;
+  history: ChatHistoryItem[];
+}) {
   if (!GEMINI_API_KEY) {
     return 'AI backend not configured. Please set up Gemini API.';
   }
-  
+
   function formatAnalytics(obj: any, indent = 0) {
     if (!obj) return '';
     let result = '';
@@ -40,14 +48,21 @@ async function callGemini({ question, analytics, history }: { question: string; 
   const systemPrompt = `You are an expert codebase assistant. Here is the code analytics (formatted for readability):\n${formattedAnalytics}\nAnswer user questions about the codebase, code quality, and metrics. Use Markdown formatting (including bullet points and newlines) in your answer.`;
   const messages = [
     { role: 'user', parts: [{ text: systemPrompt }] },
-    ...history.map((m: ChatHistoryItem) => ({ role: m.role === 'ai' ? 'model' : 'user', parts: [{ text: m.content }] })),
+    ...history.map((m: ChatHistoryItem) => ({
+      role: m.role === 'ai' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    })),
     { role: 'user', parts: [{ text: question }] },
   ];
-  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_API_KEY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: messages }),
-  });
+  const res = await fetch(
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' +
+      GEMINI_API_KEY,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: messages }),
+    },
+  );
   const data = await res.json();
   if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
     return data.candidates[0].content.parts[0].text;

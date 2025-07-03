@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import { useEffect, useState } from 'react';
 import { LiveKitRoom, VideoConference } from '@livekit/components-react';
 import '@livekit/components-styles';
@@ -19,7 +19,11 @@ export const MediaRoom = ({ projectId, video, audio }: MediaRoomProps) => {
   useEffect(() => {
     if (!user?.id || !projectId) return;
     setLoading(true);
-    const userName = user.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || user.id;
+    const userName =
+      user.fullName ||
+      `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+      user.username ||
+      user.id;
     fetch('/api/livekit-token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

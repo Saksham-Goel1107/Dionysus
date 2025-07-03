@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Loader2, Download, FileText } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+} from '@/components/ui/dialog';
+import { Loader2, Download, FileText } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTheme } from 'next-themes';
 
 interface TranscriptViewerProps {
@@ -23,22 +23,23 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
   const [meetingName, setMeetingName] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);  const { resolvedTheme } = useTheme();
+  const [open, setOpen] = useState(false);
+  const { resolvedTheme } = useTheme();
 
   const fetchTranscript = async () => {
     if (!open) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await fetch(`/api/meeting-transcript/${meetingId}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch transcript');
       }
-      
+
       const data = await response.json();
       setTranscript(data.transcript);
       setMeetingName(data.name);
@@ -49,7 +50,7 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     if (open) {
       fetchTranscript();
@@ -61,14 +62,14 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
       const response = await fetch(`/api/meeting-transcript/${meetingId}`, {
         method: 'POST',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to download transcript');
       }
-      
+
       // Get the transcript content
       const transcriptText = await response.text();
-      
+
       // Create a blob and download it
       const blob = new Blob([transcriptText], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -90,7 +91,7 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
     return text.split('\n').map((line, index) => {
       // Check if line contains speaker info (e.g., "Speaker 1:", "John:")
       const speakerMatch = line.match(/^(Speaker\s*\d+|[A-Za-z]+):\s*(.*)/i);
-      
+
       if (speakerMatch) {
         const [, speaker, text] = speakerMatch;
         return (
@@ -100,8 +101,12 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
           </div>
         );
       }
-      
-      return <div key={index} className="mb-2">{line}</div>;
+
+      return (
+        <div key={index} className="mb-2">
+          {line}
+        </div>
+      );
     });
   };
 
@@ -117,9 +122,9 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Meeting Transcript: {meetingName}</span>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               onClick={downloadTranscript}
               disabled={loading || !transcript}
               className="flex items-center gap-1"
@@ -128,25 +133,21 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
               Download
             </Button>
           </DialogTitle>
-          <DialogDescription>
-            Complete transcript of the recorded meeting
-          </DialogDescription>
+          <DialogDescription>Complete transcript of the recorded meeting</DialogDescription>
         </DialogHeader>
-        
-        <div className={`mt-4 p-4 rounded-md ${resolvedTheme === "dark" ? "bg-gray-900" : "bg-gray-50"}`}>
+
+        <div
+          className={`mt-4 p-4 rounded-md ${resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}
+        >
           {loading ? (
             <div className="flex justify-center items-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="text-center text-red-500 py-8">
-              {error}
-            </div>
+            <div className="text-center text-red-500 py-8">{error}</div>
           ) : transcript ? (
             <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-1">
-                {formatTranscript(transcript)}
-              </div>
+              <div className="space-y-1">{formatTranscript(transcript)}</div>
             </ScrollArea>
           ) : (
             <div className="text-center text-muted-foreground py-8">

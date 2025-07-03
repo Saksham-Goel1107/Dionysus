@@ -1,13 +1,22 @@
-"use client";
-import React from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+'use client';
+import React from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 
 const FunctionBarChart = ({ analytics }: { analytics: any[] }) => {
-  const data = analytics.map(a => ({
-    name: a.path.split("/").pop(),
+  const data = analytics.map((a) => ({
+    name: a.path.split('/').pop(),
     functions: a.functions?.length || 0,
   }));
-  const allZero = data.every(d => d.functions === 0);
+  const allZero = data.every((d) => d.functions === 0);
   return (
     <div className="w-full h-72 relative">
       <ResponsiveContainer width="100%" height="100%">

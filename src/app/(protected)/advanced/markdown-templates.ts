@@ -2,7 +2,10 @@
 type TemplateParams = { email: string; project: string };
 
 const templates = {
-  'CODE_OF_CONDUCT.md': ({ email, project }: TemplateParams) => `# ${project || 'your-repo'} Code of Conduct
+  'CODE_OF_CONDUCT.md': ({
+    email,
+    project,
+  }: TemplateParams) => `# ${project || 'your-repo'} Code of Conduct
 
 Like the technical community as a whole, the ${project || 'your-repo'} team and community is made up of a mixture of professionals and volunteers from all over the world, working on every aspect of the mission - including mentorship, teaching, and connecting people.
 
@@ -38,10 +41,11 @@ Original text courtesy of the [Speak Up! project](http://web.archive.org/web/201
 
 If you have questions, please see . If that doesn't answer your questions, feel free to [contact us](mailto:${email || 'your-email'}).`,
 
-
-
-
-  'CONTRIBUTING.md': ({ email, project, username }: TemplateParams & { username?: string }) => `# Contributing to ${project || 'your-repo'}
+  'CONTRIBUTING.md': ({
+    email,
+    project,
+    username,
+  }: TemplateParams & { username?: string }) => `# Contributing to ${project || 'your-repo'}
 
 Thank you for your interest in contributing to ${project || 'your-repo'}! 🚀  
 Your ideas and code help make this project better for everyone. We welcome all contributions—whether it’s code, documentation, bug reports, or suggestions.
@@ -121,9 +125,8 @@ If you believe someone is violating the code of conduct, please report it by ema
 ---
 
 Thank you for helping make ${project || 'your-repo'} better! 🌟`,
-  
-  
-'SECURITY.md': ({ email, project }: TemplateParams) => `# Security Policy
+
+  'SECURITY.md': ({ email, project }: TemplateParams) => `# Security Policy
 
 Thank you for helping keep ${project || 'your-repo'} and its users safe!
 

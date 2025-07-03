@@ -1,31 +1,24 @@
-"use client";
-import useProject from "@/hooks/use-project";
-import { useTheme } from "next-themes";
-import { api } from "@/trpc/react";
-import { useMemo } from "react";
-import Image from "next/image";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from "recharts";
+'use client';
+import useProject from '@/hooks/use-project';
+import { useTheme } from 'next-themes';
+import { api } from '@/trpc/react';
+import { useMemo } from 'react';
+import Image from 'next/image';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 type Props = {};
 
 const COLORS = [
-  "#FF6384", // Pink
-  "#36A2EB", // Blue
-  "#FFCE56", // Yellow
-  "#4BC0C0", // Teal
-  "#9966FF", // Purple
-  "#FF9F40", // Orange
-  "#8CD47E", // Green
-  "#EA526F", // Salmon
-  "#23B5D3", // Cyan
-  "#A17DF9", // Lavender
+  '#FF6384', // Pink
+  '#36A2EB', // Blue
+  '#FFCE56', // Yellow
+  '#4BC0C0', // Teal
+  '#9966FF', // Purple
+  '#FF9F40', // Orange
+  '#8CD47E', // Green
+  '#EA526F', // Salmon
+  '#23B5D3', // Cyan
+  '#A17DF9', // Lavender
 ];
 
 const CustomLegend = ({ payload, contributionData }: any) => {
@@ -34,25 +27,20 @@ const CustomLegend = ({ payload, contributionData }: any) => {
   if (!payload || !contributionData) return null;
 
   const getGridCols = () => {
-    if (contributionData.length <= 3) return "grid-cols-1 md:grid-cols-3";
-    if (contributionData.length <= 6) return "grid-cols-2 md:grid-cols-3";
-    if (contributionData.length <= 12) return "grid-cols-2 md:grid-cols-4";
-    return "grid-cols-3 md:grid-cols-6";
-  };  return (
-    <div
-      className={`grid ${getGridCols()} max-h-[200px] gap-2 overflow-y-auto p-2 pt-4`}
-    >
+    if (contributionData.length <= 3) return 'grid-cols-1 md:grid-cols-3';
+    if (contributionData.length <= 6) return 'grid-cols-2 md:grid-cols-3';
+    if (contributionData.length <= 12) return 'grid-cols-2 md:grid-cols-4';
+    return 'grid-cols-3 md:grid-cols-6';
+  };
+  return (
+    <div className={`grid ${getGridCols()} max-h-[200px] gap-2 overflow-y-auto p-2 pt-4`}>
       {payload?.map((entry: any, index: number) => {
         if (!entry || !entry.value) return null;
 
-        const contributor = contributionData?.find(
-          (item: any) => item?.name === entry.value,
-        );
+        const contributor = contributionData?.find((item: any) => item?.name === entry.value);
         if (!contributor) return null;
 
-        const isGithubUsername = contributor.name.match(
-          /^[a-zA-Z0-9](?:-?[a-zA-Z0-9])*$/,
-        );
+        const isGithubUsername = contributor.name.match(/^[a-zA-Z0-9](?:-?[a-zA-Z0-9])*$/);
 
         return (
           <div
@@ -60,9 +48,7 @@ const CustomLegend = ({ payload, contributionData }: any) => {
             className="flex items-center gap-2 rounded-md p-1.5 transition-colors"
             style={{
               backgroundColor:
-                resolvedTheme === "dark"
-                  ? "rgba(31, 41, 55, 0.4)"
-                  : "rgba(255, 255, 255, 0.8)",
+                resolvedTheme === 'dark' ? 'rgba(31, 41, 55, 0.4)' : 'rgba(255, 255, 255, 0.8)',
               boxShadow: `0 0 0 1px ${entry.color}40, 0 1px 3px 0 ${entry.color}30`,
               borderLeft: `3px solid ${entry.color}`,
             }}
@@ -78,8 +64,8 @@ const CustomLegend = ({ payload, contributionData }: any) => {
                   rel="noopener noreferrer"
                 >
                   <Image
-                  width={24}
-                  height={24}
+                    width={24}
+                    height={24}
                     src={contributor.avatar}
                     alt={contributor.name}
                     className="h-full w-full object-cover"
@@ -87,8 +73,8 @@ const CustomLegend = ({ payload, contributionData }: any) => {
                 </a>
               ) : (
                 <Image
-                width={24}
-                height={24}
+                  width={24}
+                  height={24}
                   src={contributor.avatar}
                   alt={contributor.name}
                   className="h-full w-full object-cover"
@@ -96,17 +82,12 @@ const CustomLegend = ({ payload, contributionData }: any) => {
               )}
             </div>
             <div className="flex flex-col overflow-hidden">
-              <span
-                className="max-w-[120px] truncate font-medium"
-                title={contributor.name}
-              >
+              <span className="max-w-[120px] truncate font-medium" title={contributor.name}>
                 {contributor.name.length > 15
                   ? `${contributor.name.substring(0, 15)}...`
                   : contributor.name}
               </span>
-              <span className="text-xs text-muted-foreground">
-                {contributor.value} commits
-              </span>
+              <span className="text-xs text-muted-foreground">{contributor.value} commits</span>
             </div>
           </div>
         );
@@ -123,7 +104,7 @@ const CenterLabel = ({ totalCommits }: { totalCommits: number }) => {
       textAnchor="middle"
       dominantBaseline="middle"
       className="fill-current font-medium text-muted-foreground"
-      style={{ fontSize: "14px" }}
+      style={{ fontSize: '14px' }}
     >
       {totalCommits} total commits
     </text>
@@ -198,14 +179,12 @@ const ContributionChart = ({}: Props) => {
                 key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}
                 strokeWidth={1}
-                stroke={resolvedTheme === "dark" ? "#1f2937" : "#ffffff"}
+                stroke={resolvedTheme === 'dark' ? '#1f2937' : '#ffffff'}
               />
             ))}
           </Pie>
 
-          {typeof totalCommits === "number" && (
-            <CenterLabel totalCommits={totalCommits} />
-          )}
+          {typeof totalCommits === 'number' && <CenterLabel totalCommits={totalCommits} />}
 
           <Tooltip
             formatter={(value, name) => [
@@ -213,39 +192,35 @@ const ContributionChart = ({}: Props) => {
               `${name}`,
             ]}
             contentStyle={{
-              backgroundColor: resolvedTheme === "dark" ? "#1f2937" : "#ffffff",
-              borderColor: resolvedTheme === "dark" ? "#374151" : "#e5e7eb",
-              borderRadius: "0.5rem",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              color: resolvedTheme === "dark" ? "#fff" : "#111",
+              backgroundColor: resolvedTheme === 'dark' ? '#1f2937' : '#ffffff',
+              borderColor: resolvedTheme === 'dark' ? '#374151' : '#e5e7eb',
+              borderRadius: '0.5rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              color: resolvedTheme === 'dark' ? '#fff' : '#111',
             }}
             labelStyle={{
-              color: resolvedTheme === "dark" ? "#fff" : "#111",
+              color: resolvedTheme === 'dark' ? '#fff' : '#111',
             }}
             itemStyle={{
-              color: resolvedTheme === "dark" ? "#fff" : "#111",
-            }}          /><text
+              color: resolvedTheme === 'dark' ? '#fff' : '#111',
+            }}
+          />
+          <text
             x="50%"
-            y={contributionData.length > 4 ? "75%" : "70%"}
+            y={contributionData.length > 4 ? '75%' : '70%'}
             textAnchor="middle"
             dominantBaseline="middle"
             className="fill-current font-bold text-foreground"
-            style={{ fontSize: "24px" }}
+            style={{ fontSize: '24px' }}
           >
             Contributors
           </text>
-          
+
           <Legend
             content={<CustomLegend contributionData={contributionData} />}
             verticalAlign="bottom"
             layout="horizontal"
-            height={
-              contributionData.length > 8
-                ? 180
-                : contributionData.length > 4
-                  ? 120
-                  : 80
-            }
+            height={contributionData.length > 8 ? 180 : contributionData.length > 4 ? 120 : 80}
             wrapperStyle={{ paddingTop: 10 }}
           />
         </PieChart>

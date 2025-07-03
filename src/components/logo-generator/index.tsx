@@ -16,7 +16,7 @@ const LogoGenerator = ({
   className = '',
   buttonVariant = 'default',
   buttonText = 'Generate Logo',
-  buttonSize = 'default'
+  buttonSize = 'default',
 }: LogoGeneratorProps) => {
   const [isOpen, setIsOpen] = useState(false);
 

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import useProject from "@/hooks/use-project";
+import React, { useEffect, useState } from 'react';
+import useProject from '@/hooks/use-project';
 
 interface CommitNode {
   sha: string;
@@ -11,7 +11,16 @@ interface CommitNode {
 }
 
 const branchColors = [
-  "#3b82f6", "#10b981", "#f59e42", "#f43f5e", "#a78bfa", "#fbbf24", "#6366f1", "#14b8a6", "#eab308", "#ef4444"
+  '#3b82f6',
+  '#10b981',
+  '#f59e42',
+  '#f43f5e',
+  '#a78bfa',
+  '#fbbf24',
+  '#6366f1',
+  '#14b8a6',
+  '#eab308',
+  '#ef4444',
 ];
 
 function shortSha(sha: string) {
@@ -23,7 +32,7 @@ async function fetchCommits(githubUrl: string): Promise<CommitNode[]> {
     const match = githubUrl.match(/github.com[/:]([\w-]+)\/([\w.-]+)/);
     if (!match) return [];
     const owner = match[1];
-    const repo = match[2]?.replace(/\.git$/, "");
+    const repo = match[2]?.replace(/\.git$/, '');
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=30`;
     const res = await fetch(apiUrl);
     if (!res.ok) return [];
@@ -83,13 +92,13 @@ const CommitGraph: React.FC = () => {
     }
     branchAssignments[commit.sha] = col;
     commitPositions[i] = { x: leftPad + col * colWidth, y: i * rowHeight + rowHeight / 2 + 10 };
-    activeBranches[col] = commit.parents[0] || "";
+    activeBranches[col] = commit.parents[0] || '';
     for (let p = 1; p < commit.parents.length; p++) {
       activeBranches.push(commit.parents[p] || '');
     }
   });
 
-   const branchBadges: Record<string, string[]> = {};
+  const branchBadges: Record<string, string[]> = {};
   if (commits.length && commits[0]) {
     branchBadges[commits[0].sha] = ['main'];
     const lastCommit = commits[commits.length - 1];
@@ -106,7 +115,11 @@ const CommitGraph: React.FC = () => {
       {loading ? (
         <p className="text-gray-400 dark:text-gray-500 animate-pulse">Loading commit graph...</p>
       ) : (
-        <svg width={900} height={commits.length * rowHeight + 20} style={{ display: 'block', margin: '0 auto' }}>
+        <svg
+          width={900}
+          height={commits.length * rowHeight + 20}
+          style={{ display: 'block', margin: '0 auto' }}
+        >
           {commits.map((commit, i) => {
             const pos = commitPositions[i];
             if (!pos) return null;
@@ -156,11 +169,16 @@ const CommitGraph: React.FC = () => {
             if (!pos) return null;
             const { x, y } = pos;
             const color = branchColors[(branchAssignments[commit.sha] ?? 0) % branchColors.length];
-            const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+            const isDark =
+              typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#e0e7ff' : '#222';
             const shaColor = isDark ? '#a5b4fc' : '#6366f1';
             return (
-              <g key={commit.sha} className="group" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.08))' }}>
+              <g
+                key={commit.sha}
+                className="group"
+                style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.08))' }}
+              >
                 <circle
                   cx={x}
                   cy={y}
@@ -196,13 +214,33 @@ const CommitGraph: React.FC = () => {
                     </text>
                   </g>
                 ))}
-                <text x={x + shaPad} y={y + 4} fontSize={13} fontWeight="bold" fill={shaColor} style={{ textShadow: isDark ? '0 1px 2px #23272f' : '0 1px 2px #fff' }}>
+                <text
+                  x={x + shaPad}
+                  y={y + 4}
+                  fontSize={13}
+                  fontWeight="bold"
+                  fill={shaColor}
+                  style={{ textShadow: isDark ? '0 1px 2px #23272f' : '0 1px 2px #fff' }}
+                >
                   {shortSha(commit.sha)}
                 </text>
-                <text x={msgPad} y={y + 4} fontSize={15} fontWeight={600} fill={textColor} style={{ textShadow: isDark ? '0 1px 2px #23272f' : '0 1px 2px #fff' }}>
-                  {commit.message?.split("\n")?.[0]?.slice(0, 60) ?? ""}
+                <text
+                  x={msgPad}
+                  y={y + 4}
+                  fontSize={15}
+                  fontWeight={600}
+                  fill={textColor}
+                  style={{ textShadow: isDark ? '0 1px 2px #23272f' : '0 1px 2px #fff' }}
+                >
+                  {commit.message?.split('\n')?.[0]?.slice(0, 60) ?? ''}
                 </text>
-                <text x={authorPad} y={y + 4} fontSize={13} fill={isDark ? '#a3a3a3' : '#666'} textAnchor="end">
+                <text
+                  x={authorPad}
+                  y={y + 4}
+                  fontSize={13}
+                  fill={isDark ? '#a3a3a3' : '#666'}
+                  textAnchor="end"
+                >
                   {commit.author}
                 </text>
               </g>

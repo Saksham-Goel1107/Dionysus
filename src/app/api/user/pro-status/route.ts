@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import readmeGeneratorWrapper from "@/app/(protected)/dashboard/_components/readme-generator/ReadmeGeneratorFormWrapper";
+import { NextResponse } from 'next/server';
+import readmeGeneratorWrapper from '@/app/(protected)/dashboard/_components/readme-generator/ReadmeGeneratorFormWrapper';
 
 export async function GET() {
   try {

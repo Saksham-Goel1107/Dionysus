@@ -3,39 +3,39 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export default async function RateLimitPage() {
-    const cookiesList = await cookies();
-    const redirectCookie = cookiesList.get('middleware_redirect');
-    
-    // If not accessed through middleware redirect, send user to homepage
-    if (!redirectCookie) {
-        redirect('/');
-        return null;
-    }
+  const cookiesList = await cookies();
+  const redirectCookie = cookiesList.get('middleware_redirect');
 
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-8">
-            <div className="max-w-lg w-full bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-red-600">
-                <h1 className="text-4xl font-bold mb-4 text-red-500">Security Restriction</h1>
-                <p className="mb-6 text-lg text-gray-200">
-                    Access to this service has been temporarily restricted for security reasons.<br />
-                    This is not an error and will be fixed automatically in some time.<br />
-                    This may be due to unusual activity, hitting a rate limit, or automated bot detection.
-                </p>
-                <div className="mb-4 text-sm text-gray-400">
-                    Please try again after some time.<br />
-                    If you believe this is a mistake, contact our support team at{' '}
-                    <a
-                        href="mailto:sakshamgoel1107@gmail.com"
-                        className="text-blue-400 underline"
-                    >
-                        sakshamgoel1107@gmail.com
-                    </a>{' '}
-                    for assistance.
-                </div>
-                <div className="text-xs text-gray-500">
-                    Your patience is appreciated as we work to keep our platform secure.
-                </div>
-            </div>
+  // If not accessed through middleware redirect, send user to homepage
+  if (!redirectCookie) {
+    redirect('/');
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-8">
+      <div className="max-w-lg w-full bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-red-600">
+        <h1 className="text-4xl font-bold mb-4 text-red-500">Security Restriction</h1>
+        <p className="mb-6 text-lg text-gray-200">
+          Access to this service has been temporarily restricted for security reasons.
+          <br />
+          This is not an error and will be fixed automatically in some time.
+          <br />
+          This may be due to unusual activity, hitting a rate limit, or automated bot detection.
+        </p>
+        <div className="mb-4 text-sm text-gray-400">
+          Please try again after some time.
+          <br />
+          If you believe this is a mistake, contact our support team at{' '}
+          <a href="mailto:sakshamgoel1107@gmail.com" className="text-blue-400 underline">
+            sakshamgoel1107@gmail.com
+          </a>{' '}
+          for assistance.
         </div>
-    );
+        <div className="text-xs text-gray-500">
+          Your patience is appreciated as we work to keep our platform secure.
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import DOMPurify from 'dompurify';
 import * as z from 'zod';
 import { toast } from 'sonner';
 import { Globe, Share2, Twitter, Facebook, Linkedin, Instagram, Trash2 } from 'lucide-react';
@@ -300,7 +301,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
       }
     };
 
-    const sanitizedImage = isValidUrl(image) ? image : '';
+    const sanitizedImage = isValidUrl(image) ? DOMPurify.sanitize(image) : '';
 
     return (
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">

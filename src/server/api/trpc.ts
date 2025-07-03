@@ -6,12 +6,12 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC, TRPCError } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { initTRPC, TRPCError } from '@trpc/server';
+import superjson from 'superjson';
+import { ZodError } from 'zod';
 
-import { db } from "@/server/db";
-import { auth } from "@clerk/nextjs/server";
+import { db } from '@/server/db';
+import { auth } from '@clerk/nextjs/server';
 
 /**
  * 1. CONTEXT
@@ -46,8 +46,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -86,16 +85,16 @@ const isAuthenticated = t.middleware(async ({ next, ctx }) => {
   if (!user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
-      message: 'You must be logged in to perform this action'
-    })
+      message: 'You must be logged in to perform this action',
+    });
   }
 
   return next({
     ctx: {
       ...ctx,
-      user
-    }
-  })
+      user,
+    },
+  });
 });
 
 const timingMiddleware = t.middleware(async ({ next, path }) => {

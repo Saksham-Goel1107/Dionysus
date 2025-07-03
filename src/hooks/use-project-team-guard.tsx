@@ -6,7 +6,7 @@ export function useProjectTeamGuard(projectId?: string) {
   const router = useRouter();
   const { data: members, isLoading } = api.project.getTeamMembers.useQuery(
     projectId ? { projectId } : { projectId: '' },
-    { enabled: !!projectId }
+    { enabled: !!projectId },
   );
 
   useEffect(() => {

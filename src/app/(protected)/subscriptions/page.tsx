@@ -1,22 +1,29 @@
 import { PricingTable } from '@clerk/nextjs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Mail, MessageCircle } from "lucide-react";
-import Link from "next/link";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import { Mail, MessageCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function Page() {
   const faqs = [
     {
-      question: "What payment methods do you accept?",
-      answer: "We accept all major credit cards (Visa, MasterCard, American Express) and PayPal. All payments are processed securely through Clerk."
+      question: 'What payment methods do you accept?',
+      answer:
+        'We accept all major credit cards (Visa, MasterCard, American Express) and PayPal. All payments are processed securely through Clerk.',
     },
     {
-      question: "Can I cancel my subscription anytime?",
-      answer: "Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period. We don't offer refunds for partial months."
+      question: 'Can I cancel my subscription anytime?',
+      answer:
+        "Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period. We don't offer refunds for partial months.",
     },
     {
-      question: "What happens to my data if I cancel?",
-      answer: "Your data will be retained after cancellation."
+      question: 'What happens to my data if I cancel?',
+      answer: 'Your data will be retained after cancellation.',
     },
   ];
 
@@ -95,9 +102,7 @@ export default function Page() {
       {/* Trust Signals */}
       <section className="text-center">
         <div className="flex flex-col items-center gap-4">
-          <p className="text-sm text-muted-foreground">
-            Trusted by developers worldwide
-          </p>
+          <p className="text-sm text-muted-foreground">Trusted by developers worldwide</p>
           <div className="flex gap-4 items-center justify-center text-muted-foreground">
             <span>🔒 Secure payments</span>
             <span>•</span>

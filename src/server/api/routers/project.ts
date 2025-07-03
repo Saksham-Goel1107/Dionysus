@@ -1,7 +1,7 @@
-import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { pullCommits } from "@/lib/github";
-import { checkCredits, indexGithubRepo } from "@/lib/github-loader";
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { pullCommits } from '@/lib/github';
+import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 
 export const projectRouter = createTRPCRouter({
@@ -19,17 +19,19 @@ export const projectRouter = createTRPCRouter({
         select: { credits: true, emailAddress: true, firstName: true },
       });
       if (!user) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
 
       const currentCredits = user.credits || 0;
       const fileCount = await checkCredits(input.githubUrl, input.githubToken);
       if (fileCount > 80) {
-        throw new Error("Project creation is disabled for repositories requiring more than 80 credits");
+        throw new Error(
+          'Project creation is disabled for repositories requiring more than 80 credits',
+        );
       }
 
       if (fileCount > currentCredits) {
-        throw new Error("Insufficient credits");
+        throw new Error('Insufficient credits');
       }
 
       // Use a transaction for atomicity
@@ -99,7 +101,7 @@ export const projectRouter = createTRPCRouter({
         where: { projectId: input.projectId },
       });
     }),
-    
+
   getContributionStats: protectedProcedure
     .input(
       z.object({
@@ -113,25 +115,36 @@ export const projectRouter = createTRPCRouter({
           commitAuthorName: true,
           commitAuthorUsername: true,
           commitAuthorAvatar: true,
-        }
+        },
       });
-      
-      const contributionStats = commits.reduce((acc, commit) => {
-        const authorId = commit.commitAuthorUsername || commit.commitAuthorName;
-        
-        if (!acc[authorId]) {
-          acc[authorId] = {
-            authorName: commit.commitAuthorName,
-            authorUsername: commit.commitAuthorUsername,
-            authorAvatar: commit.commitAuthorAvatar,
-            commitCount: 0
-          };
-        }
-        
-        acc[authorId].commitCount += 1;
-        return acc;
-      }, {} as Record<string, { authorName: string; authorUsername: string | null; authorAvatar: string; commitCount: number }>);
-      
+
+      const contributionStats = commits.reduce(
+        (acc, commit) => {
+          const authorId = commit.commitAuthorUsername || commit.commitAuthorName;
+
+          if (!acc[authorId]) {
+            acc[authorId] = {
+              authorName: commit.commitAuthorName,
+              authorUsername: commit.commitAuthorUsername,
+              authorAvatar: commit.commitAuthorAvatar,
+              commitCount: 0,
+            };
+          }
+
+          acc[authorId].commitCount += 1;
+          return acc;
+        },
+        {} as Record<
+          string,
+          {
+            authorName: string;
+            authorUsername: string | null;
+            authorAvatar: string;
+            commitCount: number;
+          }
+        >,
+      );
+
       return Object.values(contributionStats).sort((a, b) => b.commitCount - a.commitCount);
     }),
   saveAnswer: protectedProcedure
@@ -169,7 +182,7 @@ export const projectRouter = createTRPCRouter({
           user: true,
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       });
     }),
@@ -187,7 +200,7 @@ export const projectRouter = createTRPCRouter({
           meetingUrl: input.meetingUrl,
           projectId: input.projectId,
           name: input.name,
-          status: "PROCESSING",
+          status: 'PROCESSING',
         },
       });
       return meeting;
@@ -206,8 +219,8 @@ export const projectRouter = createTRPCRouter({
           projectId: true,
           status: true,
           transcript: true,
-          issues: true
-        }
+          issues: true,
+        },
       });
     }),
   deleteMeeting: protectedProcedure
@@ -215,7 +228,7 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.meeting.delete({ where: { id: input.meetingId } });
     }),
-    
+
   getMeetingTranscript: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -226,11 +239,11 @@ export const projectRouter = createTRPCRouter({
           name: true,
         },
       });
-      
+
       if (!meeting || !meeting.transcript) {
-        throw new Error("Transcript not found");
+        throw new Error('Transcript not found');
       }
-      
+
       return {
         transcript: meeting.transcript,
         name: meeting.name,
@@ -249,8 +262,8 @@ export const projectRouter = createTRPCRouter({
           meetingUrl: true,
           projectId: true,
           status: true,
-          issues: true
-        }
+          issues: true,
+        },
       });
     }),
   archiveProject: protectedProcedure
@@ -307,19 +320,19 @@ export const projectRouter = createTRPCRouter({
           where: { id: ctx.user.userId! },
           select: { credits: true },
         });
-        
-        return { 
-          fileCount, 
+
+        return {
+          fileCount,
           userCredits: userCredits?.credits || 0,
           isValid: true,
-          error: null
+          error: null,
         };
       } catch (error: any) {
         return {
           fileCount: 0,
           userCredits: 0,
           isValid: false,
-          error: error.message || "Failed to check repository"
+          error: error.message || 'Failed to check repository',
         };
       }
     }),

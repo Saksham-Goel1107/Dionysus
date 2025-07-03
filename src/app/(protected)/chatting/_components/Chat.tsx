@@ -30,7 +30,7 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
   const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
   const [error, setError] = useState<string | null>(null);
   const [channel, setChannel] = useState<StreamChannel | undefined>();
-  
+
   if (!apiKey) {
     return (
       <div className="p-8 text-center">
@@ -63,23 +63,23 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
 
   useEffect(() => {
     if (!client) return;
-    
+
     try {
       const newChannel = client.channel('messaging', slug, {
         image: `https://getstream.io/random_png/?name=${encodeURIComponent(slug)}`,
         name: slug,
       });
-      
+
       setChannel(newChannel);
-      
+
       // Handle connection error
       const handleClientError = (event: any) => {
         console.error('Stream client error:', event);
         setError('Failed to connect to chat service. Please try again later.');
       };
-      
+
       client.on('connection.error', handleClientError);
-      
+
       return () => {
         client.off('connection.error', handleClientError);
       };

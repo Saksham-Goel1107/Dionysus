@@ -1,6 +1,6 @@
-import { db } from "@/server/db";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { notFound, redirect } from "next/navigation";
+import { db } from '@/server/db';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { notFound, redirect } from 'next/navigation';
 
 type Props = {};
 
@@ -8,7 +8,7 @@ const Page = async ({}: Props) => {
   const { userId } = await auth();
 
   if (!userId) {
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 
   const client = await clerkClient();
@@ -35,7 +35,7 @@ const Page = async ({}: Props) => {
     },
   });
 
-  return redirect("/dashboard");
+  return redirect('/dashboard');
 };
 
 export default Page;

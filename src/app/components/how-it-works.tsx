@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -6,8 +6,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Github, MessageSquare, FileAudio, ArrowRight } from "lucide-react";
+} from '@/components/ui/card';
+import { Github, MessageSquare, FileAudio, ArrowRight } from 'lucide-react';
 
 export function HowItWorks() {
   return (
@@ -18,12 +18,10 @@ export function HowItWorks() {
             <div className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
               How It Works
             </div>
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              Simple Yet Powerful
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Simple Yet Powerful</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Dionysus makes it easy to get insights from your code and meetings
-              in just a few steps.
+              Dionysus makes it easy to get insights from your code and meetings in just a few
+              steps.
             </p>
           </div>
         </div>
@@ -40,9 +38,8 @@ export function HowItWorks() {
             </CardHeader>
             <CardContent>
               <p>
-                Enter the URL of your GitHub repository to connect it to
-                Dionysus. Our AI will summarize recent commits and analyze the
-                codebase for insights.
+                Enter the URL of your GitHub repository to connect it to Dionysus. Our AI will
+                summarize recent commits and analyze the codebase for insights.
               </p>
             </CardContent>
             <CardFooter>
@@ -63,8 +60,8 @@ export function HowItWorks() {
             </CardHeader>
             <CardContent>
               <p>
-                Ask questions about your code in natural language. Our AI will
-                provide relevant and accurate answers based on your repository.
+                Ask questions about your code in natural language. Our AI will provide relevant and
+                accurate answers based on your repository.
               </p>
             </CardContent>
             <CardFooter>
@@ -85,8 +82,8 @@ export function HowItWorks() {
             </CardHeader>
             <CardContent>
               <p>
-                Upload meeting recordings to get AI-powered transcriptions and
-                summaries of key points discussed in your meetings.
+                Upload meeting recordings to get AI-powered transcriptions and summaries of key
+                points discussed in your meetings.
               </p>
             </CardContent>
             <CardFooter>

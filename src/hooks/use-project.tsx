@@ -1,13 +1,12 @@
-import { api } from "@/trpc/react";
-import { useLocalStorage } from "usehooks-ts";
+import { api } from '@/trpc/react';
+import { useLocalStorage } from 'usehooks-ts';
 
 const useProject = () => {
   const { data: projects } = api.project.getProjects.useQuery();
-  const [projectId, setProjectId] = useLocalStorage("dionysus-projectId", "");
+  const [projectId, setProjectId] = useLocalStorage('dionysus-projectId', '');
 
-  const effectiveProjectId = (!projectId && projects && projects.length > 0) 
-    ? projects[0]?.id || ""
-    : projectId;
+  const effectiveProjectId =
+    !projectId && projects && projects.length > 0 ? projects[0]?.id || '' : projectId;
 
   const project = projects?.find((project) => project.id === effectiveProjectId);
 

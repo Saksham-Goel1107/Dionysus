@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
+'use client';
+import React from 'react';
+import { useTheme } from 'next-themes';
+import { toast } from 'sonner';
 
 const CustomContextMenu = () => {
   const [visible, setVisible] = React.useState(false);
@@ -32,29 +32,29 @@ const CustomContextMenu = () => {
       setTargetElement(null);
     };
 
-    document.addEventListener("contextmenu", onContextMenu);
-    document.addEventListener("click", onClick);
-    document.addEventListener("keydown", onKeyDown);
-    window.addEventListener("scroll", onScroll, true);
+    document.addEventListener('contextmenu', onContextMenu);
+    document.addEventListener('click', onClick);
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('scroll', onScroll, true);
 
     return () => {
-      document.removeEventListener("contextmenu", onContextMenu);
-      document.removeEventListener("click", onClick);
-      document.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("scroll", onScroll, true);
+      document.removeEventListener('contextmenu', onContextMenu);
+      document.removeEventListener('click', onClick);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('scroll', onScroll, true);
     };
   }, []);
 
   const getMenuStyle = () => {
     const isMobile = window.innerWidth <= 600;
     const itemHeight = isMobile ? 36 : 40;
-    const numButtons = 7 + 1; 
+    const numButtons = 7 + 1;
     const numDividers = 2;
-    const menuHeight = numButtons * itemHeight + numDividers * 16; 
+    const menuHeight = numButtons * itemHeight + numDividers * 16;
     const menuWidth = isMobile ? 180 : 220;
     let top = pos.y + window.scrollY;
     let left = pos.x + window.scrollX;
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       if (top + menuHeight > window.scrollY + window.innerHeight) {
         top = window.scrollY + window.innerHeight - menuHeight - 8;
       }
@@ -65,20 +65,20 @@ const CustomContextMenu = () => {
       left = Math.max(left, 8);
     }
     return {
-      position: "fixed",
-      top: top + "px",
-      left: left + "px",
+      position: 'fixed',
+      top: top + 'px',
+      left: left + 'px',
       zIndex: 99999,
-      background: resolvedTheme === "dark" ? "#18181b" : "#fff",
-      color: resolvedTheme === "dark" ? "#f3f4f6" : "#222",
-      border: "1px solid #cbd5e1",
-      borderRadius: "8px",
-      boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-      minWidth: menuWidth + "px",
+      background: resolvedTheme === 'dark' ? '#18181b' : '#fff',
+      color: resolvedTheme === 'dark' ? '#f3f4f6' : '#222',
+      border: '1px solid #cbd5e1',
+      borderRadius: '8px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+      minWidth: menuWidth + 'px',
       maxWidth: '96vw',
       maxHeight: '96vh',
-      padding: "2px",
-      overflow: "auto",
+      padding: '2px',
+      overflow: 'auto',
     };
   };
 
@@ -87,12 +87,12 @@ const CustomContextMenu = () => {
       const selection = window.getSelection()?.toString();
       if (selection) {
         await navigator.clipboard.writeText(selection);
-        toast.success("Copied to clipboard.");
+        toast.success('Copied to clipboard.');
       }
     } catch (err) {
       console.error(err);
-      document.execCommand("copy");
-      toast.error("Copy failed.");
+      document.execCommand('copy');
+      toast.error('Copy failed.');
     }
     setVisible(false);
   };
@@ -102,7 +102,7 @@ const CustomContextMenu = () => {
       const text = await navigator.clipboard.readText();
       if (
         targetElement &&
-        (targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT")
+        (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT')
       ) {
         const input = targetElement as HTMLInputElement | HTMLTextAreaElement;
         const start = input.selectionStart ?? input.value.length;
@@ -110,11 +110,11 @@ const CustomContextMenu = () => {
         const value = input.value;
         input.value = value.slice(0, start) + text + value.slice(end);
         input.selectionStart = input.selectionEnd = start + text.length;
-        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event('input', { bubbles: true }));
       }
     } catch (err) {
       console.error(err);
-      toast.error("Paste failed. Clipboard access may be blocked.");
+      toast.error('Paste failed. Clipboard access may be blocked.');
     }
     setVisible(false);
   };
@@ -125,12 +125,12 @@ const CustomContextMenu = () => {
       if (selection) {
         await navigator.clipboard.writeText(selection);
         document.execCommand('cut');
-        toast.success("Cut to clipboard.");
+        toast.success('Cut to clipboard.');
       }
     } catch (err) {
       console.error(err);
       document.execCommand('cut');
-      toast.error("Cut failed.");
+      toast.error('Cut failed.');
     }
     setVisible(false);
   };
@@ -167,15 +167,16 @@ const CustomContextMenu = () => {
         const html = document.documentElement.outerHTML;
         await writable.write(html);
         await writable.close();
-        toast.success("Page saved.");
+        toast.success('Page saved.');
       } else {
         const a = document.createElement('a');
-        a.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(document.documentElement.outerHTML);
+        a.href =
+          'data:text/html;charset=utf-8,' + encodeURIComponent(document.documentElement.outerHTML);
         a.download = (document.title || 'download') + '.html';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        toast.success("Page downloaded.");
+        toast.success('Page downloaded.');
       }
     } catch (err) {
       console.error(err);
@@ -185,36 +186,51 @@ const CustomContextMenu = () => {
   };
 
   const handleShare = async () => {
-    const shareText = "I'm using Dionysus – Your AI GitHub Assistant. Try it out! https://dionysus-gray.vercel.app";
+    const shareText =
+      "I'm using Dionysus – Your AI GitHub Assistant. Try it out! https://dionysus-gray.vercel.app";
     try {
       if (navigator.share) {
         await navigator.share({
-          title: "Check out Dionysus!",
+          title: 'Check out Dionysus!',
           text: shareText,
-          url: "https://dionysus-gray.vercel.app",
+          url: 'https://dionysus-gray.vercel.app',
         });
-        toast.success("Share dialog opened.");
+        toast.success('Share dialog opened.');
       } else {
         await navigator.clipboard.writeText(shareText);
-        toast.success("Share link copied to clipboard.");
+        toast.success('Share link copied to clipboard.');
       }
     } catch (err) {
       console.error(err);
-      toast.error("Share failed.");
+      toast.error('Share failed.');
     }
     setVisible(false);
   };
 
   // Helper to check for client-side
-  const isClient = typeof window !== "undefined";
+  const isClient = typeof window !== 'undefined';
 
   const canCopy = isClient && !!window.getSelection()?.toString();
-  const canPaste = isClient && !!(targetElement && (targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT") && navigator.clipboard);
+  const canPaste =
+    isClient &&
+    !!(
+      targetElement &&
+      (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT') &&
+      navigator.clipboard
+    );
   const canCut = canCopy;
-  const canSelectAll = !!(targetElement && ((targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT") || targetElement.isContentEditable));
+  const canSelectAll = !!(
+    targetElement &&
+    (targetElement.tagName === 'TEXTAREA' ||
+      targetElement.tagName === 'INPUT' ||
+      targetElement.isContentEditable)
+  );
 
   const handleSelectAll = () => {
-    if (targetElement && (targetElement.tagName === "TEXTAREA" || targetElement.tagName === "INPUT")) {
+    if (
+      targetElement &&
+      (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT')
+    ) {
       const input = targetElement as HTMLInputElement | HTMLTextAreaElement;
       input.select();
     } else if (targetElement && targetElement.isContentEditable) {
@@ -232,61 +248,57 @@ const CustomContextMenu = () => {
   if (!visible) return null;
 
   const buttonClass =
-  "block w-full text-left px-4 py-2 text-sm rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-200 dark:focus:bg-gray-700 focus:outline-none";
+    'block w-full text-left px-4 py-2 text-sm rounded-md transition-all hover:bg-gray-100 dark:hover:bg-gray-800 focus:bg-gray-200 dark:focus:bg-gray-700 focus:outline-none';
 
-return (
-  <div
-    style={getMenuStyle() as React.CSSProperties}
-    onContextMenu={(e) => e.preventDefault()}
-    className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl"
-  >
-    {canCut && (
-      <button onClick={handleCut} className={buttonClass}>
-        Cut
-      </button>
-    )}
-    {canCopy && (
-      <button onClick={handleCopy} className={buttonClass}>
-        Copy
-      </button>
-    )}
-    {canPaste && (
-      <button onClick={handlePaste} className={buttonClass}>
-        Paste
-      </button>
-    )}
-    {canSelectAll && (
-      <button onClick={handleSelectAll} className={buttonClass}>
-        Select All
-      </button>
-    )}
-
-    <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
-
-    <button onClick={handleReload} className={buttonClass}>
-      Reload
-    </button>
-    <button onClick={handleBack} className={buttonClass}>
-      Back
-    </button>
-    <button onClick={handleForward} className={buttonClass}>
-      Forward
-    </button>
-    <button onClick={handleSaveAs} className={buttonClass}>
-      Save As
-    </button>
-
-    <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
-
-    <button
-      onClick={handleShare}
-      className={`${buttonClass} text-blue-600 dark:text-blue-400`}
+  return (
+    <div
+      style={getMenuStyle() as React.CSSProperties}
+      onContextMenu={(e) => e.preventDefault()}
+      className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl"
     >
-      Share Site
-    </button>
-  </div>
-);
+      {canCut && (
+        <button onClick={handleCut} className={buttonClass}>
+          Cut
+        </button>
+      )}
+      {canCopy && (
+        <button onClick={handleCopy} className={buttonClass}>
+          Copy
+        </button>
+      )}
+      {canPaste && (
+        <button onClick={handlePaste} className={buttonClass}>
+          Paste
+        </button>
+      )}
+      {canSelectAll && (
+        <button onClick={handleSelectAll} className={buttonClass}>
+          Select All
+        </button>
+      )}
 
+      <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
+
+      <button onClick={handleReload} className={buttonClass}>
+        Reload
+      </button>
+      <button onClick={handleBack} className={buttonClass}>
+        Back
+      </button>
+      <button onClick={handleForward} className={buttonClass}>
+        Forward
+      </button>
+      <button onClick={handleSaveAs} className={buttonClass}>
+        Save As
+      </button>
+
+      <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
+
+      <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
+        Share Site
+      </button>
+    </div>
+  );
 };
 
 export default CustomContextMenu;

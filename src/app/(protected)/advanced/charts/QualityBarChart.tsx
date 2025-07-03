@@ -1,11 +1,20 @@
-"use client";
-import React from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+'use client';
+import React from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 
 const QualityBarChart = ({ quality }: { quality: { path: string; issues: string[] }[] }) => {
   // Count number of issues per file
-  const data = quality.map(q => ({
-    name: q.path.split("/").pop(),
+  const data = quality.map((q) => ({
+    name: q.path.split('/').pop(),
     issues: q.issues.length,
   }));
   if (!data.length) {

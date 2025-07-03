@@ -1,24 +1,18 @@
-"use client";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import useProject from "@/hooks/use-project";
-import { api } from "@/trpc/react";
-import React from "react";
-import MDEditor from "@uiw/react-md-editor";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import AskQuestionCrad from "../dashboard/_components/AskQuestionCard";
-import CodeReferences from "../dashboard/_components/CodeReferences";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { useTheme } from "next-themes";
-import Image from "next/image";
+'use client';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
+import React from 'react';
+import MDEditor from '@uiw/react-md-editor';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import AskQuestionCrad from '../dashboard/_components/AskQuestionCard';
+import CodeReferences from '../dashboard/_components/CodeReferences';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
 
 const NoProjectsCard = () => {
   return (
@@ -28,8 +22,8 @@ const NoProjectsCard = () => {
       </div>
       <h2 className="mt-4 text-lg font-semibold">No Projects Yet</h2>
       <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-        Create a project first to start asking questions about your codebase.
-        This will help us provide accurate and contextual answers.
+        Create a project first to start asking questions about your codebase. This will help us
+        provide accurate and contextual answers.
       </p>
       <Button asChild className="mt-6">
         <Link href="/create">Create Your First Project</Link>
@@ -44,7 +38,7 @@ const QaPage = () => {
     { projectId },
     {
       enabled: !!projectId,
-    }
+    },
   );
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const question = questions?.[questionIndex];
@@ -70,23 +64,21 @@ const QaPage = () => {
             <SheetTrigger onClick={() => setQuestionIndex(index)}>
               <div
                 className={`flex items-center gap-4 rounded-lg border ${
-                  resolvedTheme === "dark" ? "bg-gray-900" : "bg-white"
+                  resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
                 } p-4 shadow-md shadow-border mb-2`}
               >
                 <Image
                   className="rounded-full"
                   height={30}
                   width={30}
-                  src={question.user.imageUrl ?? ""}
+                  src={question.user.imageUrl ?? ''}
                   alt="User avatar"
                 />
                 <div className="flex flex-col text-left overflow-hidden">
                   <div className="flex items-center gap-2">
                     <p
                       className={`line-clamp-1 text-lg font-medium ${
-                        resolvedTheme === "dark"
-                          ? "text-white"
-                          : "text-gray-700"
+                        resolvedTheme === 'dark' ? 'text-white' : 'text-gray-700'
                       }`}
                     >
                       {question.question}
@@ -95,9 +87,7 @@ const QaPage = () => {
                       {question.createdAt.toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="line-clamp-2 text-sm text-gray-500">
-                    {question.answer}
-                  </p>
+                  <p className="line-clamp-2 text-sm text-gray-500">{question.answer}</p>
                 </div>
               </div>
             </SheetTrigger>
@@ -121,19 +111,13 @@ const QaPage = () => {
             </SheetTitle>
           </SheetHeader>
 
-          <div
-            data-color-mode={resolvedTheme}
-            className="markdown-editor-container flex-1"
-          >
+          <div data-color-mode={resolvedTheme} className="markdown-editor-container flex-1">
             <ScrollArea className="flex-1 w-full max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
               <div
                 className={`p-3 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 text-card-foreground text-sm sm:text-base`}
                 style={{ minHeight: 60 }}
               >
-                <MDEditor.Markdown
-                  source={question.answer}
-                  className="md-preview-content"
-                />
+                <MDEditor.Markdown source={question.answer} className="md-preview-content" />
               </div>
             </ScrollArea>
           </div>
@@ -143,7 +127,11 @@ const QaPage = () => {
           <CodeReferences
             filesReferences={
               Array.isArray(question.filesReferences)
-                ? (question.filesReferences as { fileName: string; sourceCode: string; summary: string }[])
+                ? (question.filesReferences as {
+                    fileName: string;
+                    sourceCode: string;
+                    summary: string;
+                  }[])
                 : []
             }
           />

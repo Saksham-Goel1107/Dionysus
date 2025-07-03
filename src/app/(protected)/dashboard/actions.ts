@@ -1,30 +1,30 @@
 'use server';
 
-import {streamText} from 'ai';
-import {createStreamableValue} from 'ai/rsc';
-import {createGoogleGenerativeAI} from '@ai-sdk/google';
+import { streamText } from 'ai';
+import { createStreamableValue } from 'ai/rsc';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { generateEmbedding } from '@/lib/gemini';
 import { db } from '@/server/db';
 
-const google=createGoogleGenerativeAI({
-    apiKey:process.env.GEMINI_API_KEY
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
-export async function askQuestion(question:string,projectId:string){
-    const stream=createStreamableValue();
+export async function askQuestion(question: string, projectId: string) {
+  const stream = createStreamableValue();
 
-    const project = await db.project.findUnique({
-        where: { id: projectId },
-        select: { name: true, githubUrl: true }
-    });
-    
-    const projectName = project?.name || "your project";
-    const githubUrl = project?.githubUrl || "";
+  const project = await db.project.findUnique({
+    where: { id: projectId },
+    select: { name: true, githubUrl: true },
+  });
 
-    const queryVector=await generateEmbedding(question);
-    const vectorQuery=`[${queryVector.join(',')}]`;
+  const projectName = project?.name || 'your project';
+  const githubUrl = project?.githubUrl || '';
 
-    const result=await db.$queryRaw`
+  const queryVector = await generateEmbedding(question);
+  const vectorQuery = `[${queryVector.join(',')}]`;
+
+  const result = (await db.$queryRaw`
     SELECT "fileName","sourceCode","summary",
     1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
     FROM "SourceCodeEmbedding"
@@ -32,20 +32,20 @@ export async function askQuestion(question:string,projectId:string){
     AND "projectId"=${projectId}
     ORDER BY similarity DESC
     LIMIT 15
-    ` as {fileName:string;sourceCode:string;summary:string}[];
+    `) as { fileName: string; sourceCode: string; summary: string }[];
 
-    let context='';
+  let context = '';
 
-    context += `PROJECT OVERVIEW:\nName: ${projectName}\nRepository: ${githubUrl}\n\n`;
-    
-    for(const doc of result){
-        context+=`FILE: ${doc.fileName}\n---------------------\nCODE:\n${doc.sourceCode}\n\nSUMMARY:\n${doc.summary}\n\n===================================\n\n`;
-    }
+  context += `PROJECT OVERVIEW:\nName: ${projectName}\nRepository: ${githubUrl}\n\n`;
 
-    (async () => {
-        const { textStream } = streamText({
-            model: google('gemini-2.0-flash'),
-            prompt: `You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern with a basic understanding of programming and software development.
+  for (const doc of result) {
+    context += `FILE: ${doc.fileName}\n---------------------\nCODE:\n${doc.sourceCode}\n\nSUMMARY:\n${doc.summary}\n\n===================================\n\n`;
+  }
+
+  (async () => {
+    const { textStream } = streamText({
+      model: google('gemini-2.0-flash'),
+      prompt: `You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern with a basic understanding of programming and software development.
             The AI assistant is a brand new, powerful, human-like artificial intelligence.
             The traits of the AI include expert knowledge, helpfulness, cleverness, and articulateness.
             The AI is a well-behaved and well-mannered individual.
@@ -72,18 +72,17 @@ export async function askQuestion(question:string,projectId:string){
             The answer should be direct, detailed, and pin-point accurate based on the available code without unnecessary qualifiers or disclaimers.
             The AI assistant will not apologize for previous responses but will instead indicate when new information has been gained.
             The AI assistant should avoid saying things like "Based on the repository name, it's likely..." and instead focus on the actual content that's already available in the context.
-            Answer in markdown syntax, with code snippets if needed. Always provide thorough, detailed responses with in-depth explanations, logical reasoning, and when appropriate, practical examples. Never give short or superficial answers - take the time to fully explore the topic and provide educational value in every response. Use headings, bullet points, and other formatting to improve readability of longer answers.`
-        })
-        for await (const delta of textStream) {
-            stream.update(delta)
-        }
-
-        stream.done()
-    })()
-
-    return {
-        output: stream.value,
-        filesReferences: result
+            Answer in markdown syntax, with code snippets if needed. Always provide thorough, detailed responses with in-depth explanations, logical reasoning, and when appropriate, practical examples. Never give short or superficial answers - take the time to fully explore the topic and provide educational value in every response. Use headings, bullet points, and other formatting to improve readability of longer answers.`,
+    });
+    for await (const delta of textStream) {
+      stream.update(delta);
     }
 
+    stream.done();
+  })();
+
+  return {
+    output: stream.value,
+    filesReferences: result,
+  };
 }

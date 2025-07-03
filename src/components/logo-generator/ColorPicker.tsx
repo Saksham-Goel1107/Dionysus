@@ -3,11 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Check, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 interface ColorPickerProps {
@@ -33,7 +29,7 @@ const PRESET_COLORS = [
   '#a855f7', // Purple
   '#d946ef', // Fuchsia
   '#ec4899', // Pink
-  
+
   // Neutrals
   '#000000', // Black
   '#171717', // Neutral-900
@@ -50,7 +46,7 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
   const [selectedColor, setSelectedColor] = useState(color);
   const [customColor, setCustomColor] = useState(color);
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   useEffect(() => {
     setSelectedColor(color);
     setCustomColor(color);
@@ -83,10 +79,7 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn(
-            "w-full justify-between",
-            selectedColor === "#ffffff" && "border-gray-300"
-          )}
+          className={cn('w-full justify-between', selectedColor === '#ffffff' && 'border-gray-300')}
         >
           <div className="flex items-center gap-2">
             <div
@@ -104,19 +97,23 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
             <button
               key={presetColor}
               className={cn(
-                "h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center",
-                selectedColor === presetColor && "ring-2 ring-offset-2 ring-black dark:ring-white"
+                'h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center',
+                selectedColor === presetColor && 'ring-2 ring-offset-2 ring-black dark:ring-white',
               )}
               style={{ backgroundColor: presetColor }}
               onClick={() => handleColorChange(presetColor)}
             >
               {selectedColor === presetColor && (
-                <Check className={cn(
-                  "h-4 w-4",
-                  presetColor === "#ffffff" || presetColor === "#f5f5f5" || presetColor === "#e5e5e5" 
-                    ? "text-black" 
-                    : "text-white"
-                )} />
+                <Check
+                  className={cn(
+                    'h-4 w-4',
+                    presetColor === '#ffffff' ||
+                      presetColor === '#f5f5f5' ||
+                      presetColor === '#e5e5e5'
+                      ? 'text-black'
+                      : 'text-white',
+                  )}
+                />
               )}
             </button>
           ))}
@@ -134,15 +131,9 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
               className="flex-grow px-3 py-1 text-sm border-none focus:outline-none bg-background"
               placeholder="#RRGGBB"
             />
-            <div
-              className="w-10 h-full"
-              style={{ backgroundColor: customColor }}
-            />
+            <div className="w-10 h-full" style={{ backgroundColor: customColor }} />
           </div>
-          <Button 
-            size="sm" 
-            onClick={handleCustomColorSubmit}
-          >
+          <Button size="sm" onClick={handleCustomColorSubmit}>
             Apply
           </Button>
         </div>

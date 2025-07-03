@@ -1,6 +1,6 @@
-"use client";
-import React, { useEffect, useRef, useState } from "react";
-import { X } from "lucide-react";
+'use client';
+import React, { useEffect, useRef, useState } from 'react';
+import { X } from 'lucide-react';
 
 const SSBox = () => {
   const [show, setShow] = useState(false);
@@ -14,9 +14,9 @@ const SSBox = () => {
 
   useEffect(() => {
     const onCustomSSDetected = () => triggerShow();
-    window.addEventListener("ss-detected", onCustomSSDetected);
+    window.addEventListener('ss-detected', onCustomSSDetected);
     return () => {
-      window.removeEventListener("ss-detected", onCustomSSDetected);
+      window.removeEventListener('ss-detected', onCustomSSDetected);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
@@ -26,13 +26,13 @@ const SSBox = () => {
       "I'm using Dionysus – Your AI GitHub Assistant. Try it out! https://dionysus-gray.vercel.app";
     if (navigator.share) {
       navigator.share({
-        title: "Check out Dionysus!",
+        title: 'Check out Dionysus!',
         text: shareText,
-        url: "https://dionysus-gray.vercel.app",
+        url: 'https://dionysus-gray.vercel.app',
       });
     } else {
       navigator.clipboard.writeText(shareText);
-      alert("Share text copied to clipboard!");
+      alert('Share text copied to clipboard!');
     }
   };
 
@@ -62,38 +62,36 @@ const SSBox = () => {
 
 const BlockInspectAndContext = () => {
   useEffect(() => {
-        if (process.env.NODE_ENV === "development") return;
+    if (process.env.NODE_ENV === 'development') return;
     const showSSBox = () => {
-      window.dispatchEvent(new Event("ss-detected"));
+      window.dispatchEvent(new Event('ss-detected'));
     };
     const blockInspect = (e: KeyboardEvent) => {
-      if (e.key === "F12") {
+      if (e.key === 'F12') {
         e.preventDefault();
         e.stopPropagation();
         showSSBox();
         return false;
       }
       if (
-        (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
-        (e.ctrlKey && e.key.toUpperCase() === "U")
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && e.key.toUpperCase() === 'U')
       ) {
         e.preventDefault();
         e.stopPropagation();
         showSSBox();
         return false;
       }
-      if (
-        (e.metaKey && e.altKey && ["I", "J", "C"].includes(e.key.toUpperCase()))
-      ) {
+      if (e.metaKey && e.altKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) {
         e.preventDefault();
         e.stopPropagation();
         showSSBox();
         return false;
       }
     };
-    document.addEventListener("keydown", blockInspect, true);
+    document.addEventListener('keydown', blockInspect, true);
     return () => {
-      document.removeEventListener("keydown", blockInspect, true);
+      document.removeEventListener('keydown', blockInspect, true);
     };
   }, []);
   return (

@@ -1,7 +1,7 @@
-import { db } from "@/server/db";
-import { auth, clerkClient } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import React from "react";
+import { db } from '@/server/db';
+import { auth, clerkClient } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import React from 'react';
 
 type Props = {
   params: Promise<{ projectId: string }>;
@@ -10,7 +10,7 @@ type Props = {
 const JoinHandler = async (props: Props) => {
   const { projectId } = await props.params;
   const { userId } = await auth();
-  if (!userId) return redirect("/sign-in");
+  if (!userId) return redirect('/sign-in');
   const dbUser = await db.user.findUnique({
     where: {
       id: userId,
@@ -43,7 +43,7 @@ const JoinHandler = async (props: Props) => {
     },
   });
 
-  if (!project) return redirect("/dashboard");
+  if (!project) return redirect('/dashboard');
   try {
     await db.userToProject.create({
       data: {
@@ -52,10 +52,10 @@ const JoinHandler = async (props: Props) => {
       },
     });
   } catch (error) {
-    console.log("user already in project");
+    console.log('user already in project');
   }
 
-  return redirect("/dashboard");
+  return redirect('/dashboard');
 };
 
 export default JoinHandler;

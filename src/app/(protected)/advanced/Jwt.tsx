@@ -1,6 +1,6 @@
-"use client"
-import { Button } from "@/components/ui/button";
-import { useState, useRef } from "react";
+'use client';
+import { Button } from '@/components/ui/button';
+import { useState, useRef } from 'react';
 
 function generateSecret(byteLength: number) {
   const array = new Uint8Array(byteLength);
@@ -13,8 +13,8 @@ function generateSecret(byteLength: number) {
     }
   }
   return Array.from(array)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 const JWTSecretGenerator = () => {
@@ -48,10 +48,7 @@ const JWTSecretGenerator = () => {
           step={1}
           value={bytes}
           onChange={(e) => {
-            const val = Math.max(
-              16,
-              Math.min(128, Number(e.target.value))
-            );
+            const val = Math.max(16, Math.min(128, Number(e.target.value)));
             setBytes(val);
             setSecret(generateSecret(val));
             setCopied(false);
@@ -61,10 +58,7 @@ const JWTSecretGenerator = () => {
         <span className="ml-2 font-mono text-xs bg-gray-200 dark:bg-gray-700 rounded px-2 py-1">
           {bytes} bytes
         </span>
-        <Button
-          onClick={handleRegenerate}
-          className="bg-blue-600 text-white px-3 py-1 text-xs"
-        >
+        <Button onClick={handleRegenerate} className="bg-blue-600 text-white px-3 py-1 text-xs">
           Regenerate
         </Button>
       </div>
@@ -79,7 +73,7 @@ const JWTSecretGenerator = () => {
           onClick={handleCopy}
           className="bg-blue-500 text-white px-3 py-1 text-xs w-full sm:w-auto"
         >
-          {copied ? "Copied!" : "Copy Secret"}
+          {copied ? 'Copied!' : 'Copy Secret'}
         </Button>
       </div>
     </div>

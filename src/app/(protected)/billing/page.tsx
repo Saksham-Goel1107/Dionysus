@@ -167,15 +167,14 @@ const BillingPage = () => {
         {mfaEnabled && (
           <div className="text-green-700 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
             <span className="block w-full sm:w-auto text-left">
-              Multi Factor Authentication is enabled. You get additional 10% discount on every purchase.
+              Multi Factor Authentication is enabled. You get additional 10% discount on every
+              purchase.
             </span>
           </div>
         )}
 
         {!mfaEnabled && (
-          <div
-            className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full"
-          >
+          <div className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
             <span className="block w-full sm:w-auto text-left">
               Enable Multi Factor Authentication to get additional 10% discount on every purchase.
             </span>

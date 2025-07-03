@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
+import React, { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Download,
   Copy,
@@ -14,120 +14,120 @@ import {
   Info,
   Lock,
   Loader2,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const PROVIDERS = [
   {
-    name: "GitHub Actions",
-    value: "github",
+    name: 'GitHub Actions',
+    value: 'github',
     template: ({ steps, env }: { steps: string; env: string }) =>
-      `name: CI Workflow\n\non: [push, pull_request]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:${env ? `\n${env}` : ""}\n    steps:\n      - uses: actions/checkout@v4\n${steps}`,
+      `name: CI Workflow\n\non: [push, pull_request]\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n    env:${env ? `\n${env}` : ''}\n    steps:\n      - uses: actions/checkout@v4\n${steps}`,
   },
   {
-    name: "GitLab CI",
-    value: "gitlab",
+    name: 'GitLab CI',
+    value: 'gitlab',
     template: ({ steps, env }: { steps: string; env: string }) =>
-      `${env ? `${env}\n` : ""}stages:\n  - build\n\nbuild-job:\n  stage: build\n  script:${steps}`,
+      `${env ? `${env}\n` : ''}stages:\n  - build\n\nbuild-job:\n  stage: build\n  script:${steps}`,
   },
   {
-    name: "CircleCI",
-    value: "circleci",
+    name: 'CircleCI',
+    value: 'circleci',
     template: ({ steps, env }: { steps: string; env: string }) =>
-      `version: 2.1\njobs:\n  build:\n    docker:\n      - image: cimg/node:18.20\n    environment:${env ? `\n${env}` : ""}\n    steps:${steps}`,
+      `version: 2.1\njobs:\n  build:\n    docker:\n      - image: cimg/node:18.20\n    environment:${env ? `\n${env}` : ''}\n    steps:${steps}`,
   },
 ];
 
 const OS_OPTIONS = [
-  { label: "Ubuntu Latest", value: "ubuntu-latest" },
-  { label: "Windows Latest", value: "windows-latest" },
-  { label: "macOS Latest", value: "macos-latest" },
+  { label: 'Ubuntu Latest', value: 'ubuntu-latest' },
+  { label: 'Windows Latest', value: 'windows-latest' },
+  { label: 'macOS Latest', value: 'macos-latest' },
 ];
 
-const NODE_VERSIONS = ["18", "20", "22"];
+const NODE_VERSIONS = ['18', '20', '22'];
 
 const DEFAULT_STEPS = [
   {
-    label: "Install dependencies",
-    value: "install",
+    label: 'Install dependencies',
+    value: 'install',
     checked: true,
     custom: false,
-    script: "npm ci",
+    script: 'npm ci',
   },
   {
-    label: "Build",
-    value: "build",
+    label: 'Build',
+    value: 'build',
     checked: true,
     custom: false,
-    script: "npm run build",
+    script: 'npm run build',
   },
   {
-    label: "Test",
-    value: "test",
+    label: 'Test',
+    value: 'test',
     checked: true,
     custom: false,
-    script: "npm test",
+    script: 'npm test',
   },
   {
-    label: "Deploy",
-    value: "deploy",
+    label: 'Deploy',
+    value: 'deploy',
     checked: false,
     custom: false,
-    script: "npm run deploy",
+    script: 'npm run deploy',
   },
 ];
 
 const TIPS = [
-  "Use caching to speed up your builds (e.g., actions/cache for node_modules).",
-  "Run tests in parallel using matrix builds for different Node versions.",
+  'Use caching to speed up your builds (e.g., actions/cache for node_modules).',
+  'Run tests in parallel using matrix builds for different Node versions.',
   "Store secrets securely using your CI provider's secret manager.",
-  "Keep your workflows DRY by using reusable workflows or templates.",
-  "Add status badges to your README for visibility.",
-  "Use notifications (Slack, Email) for failed builds.",
+  'Keep your workflows DRY by using reusable workflows or templates.',
+  'Add status badges to your README for visibility.',
+  'Use notifications (Slack, Email) for failed builds.',
 ];
 
 function getStepsYaml(provider: string, steps: any[]) {
-  if (provider === "github") {
+  if (provider === 'github') {
     return steps
       .map((step) => `      - name: ${step.label}\n        run: ${step.script}`)
-      .join("\n");
+      .join('\n');
   }
-  if (provider === "gitlab") {
-    return steps.map((step) => `    - ${step.script}`).join("\n");
+  if (provider === 'gitlab') {
+    return steps.map((step) => `    - ${step.script}`).join('\n');
   }
-  if (provider === "circleci") {
-    return steps.map((step) => `      - run: ${step.script}`).join("\n");
+  if (provider === 'circleci') {
+    return steps.map((step) => `      - run: ${step.script}`).join('\n');
   }
-  return "";
+  return '';
 }
 
 function getEnvYaml(provider: string, envVars: string) {
-  if (!envVars.trim()) return "";
-  if (provider === "github" || provider === "circleci") {
+  if (!envVars.trim()) return '';
+  if (provider === 'github' || provider === 'circleci') {
     return envVars
-      .split("\n")
+      .split('\n')
       .map((line: string) => `      ${line}`)
-      .join("\n");
+      .join('\n');
   }
-  if (provider === "gitlab") {
+  if (provider === 'gitlab') {
     return envVars
-      .split("\n")
+      .split('\n')
       .map((line) => `${line}`)
-      .join("\n");
+      .join('\n');
   }
-  return "";
+  return '';
 }
 
 const CiCd = () => {
   const { resolvedTheme } = useTheme();
-  const [provider, setProvider] = useState("github");
-  const [os, setOs] = useState(OS_OPTIONS[0]?.value ?? "");
+  const [provider, setProvider] = useState('github');
+  const [os, setOs] = useState(OS_OPTIONS[0]?.value ?? '');
   const [nodeVersion, setNodeVersion] = useState(NODE_VERSIONS[0]);
   const [steps, setSteps] = useState(DEFAULT_STEPS);
-  const [envVars, setEnvVars] = useState("");
-  const [yaml, setYaml] = useState("");
-  const [aiTip, setAiTip] = useState("");
+  const [envVars, setEnvVars] = useState('');
+  const [yaml, setYaml] = useState('');
+  const [aiTip, setAiTip] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -142,9 +142,7 @@ const CiCd = () => {
 
   const handleStepChange = (idx: number) => {
     setSteps((prev: Step[]) =>
-      prev.map((step: Step, i: number) =>
-        i === idx ? { ...step, checked: !step.checked } : step,
-      ),
+      prev.map((step: Step, i: number) => (i === idx ? { ...step, checked: !step.checked } : step)),
     );
   };
 
@@ -152,7 +150,7 @@ const CiCd = () => {
     setSteps((prev) => [
       ...prev,
       {
-        label: "Custom Step",
+        label: 'Custom Step',
         value: `custom${prev.length + 1}`,
         checked: true,
         custom: true,
@@ -166,15 +164,11 @@ const CiCd = () => {
   };
 
   const handleStepLabelChange = (idx: number, label: string) => {
-    setSteps((prev) =>
-      prev.map((step, i) => (i === idx ? { ...step, label } : step)),
-    );
+    setSteps((prev) => prev.map((step, i) => (i === idx ? { ...step, label } : step)));
   };
 
   const handleStepScriptChange = (idx: number, script: string) => {
-    setSteps((prev) =>
-      prev.map((step, i) => (i === idx ? { ...step, script } : step)),
-    );
+    setSteps((prev) => prev.map((step, i) => (i === idx ? { ...step, script } : step)));
   };
 
   const handleMoveStep = (idx: number, dir: number) => {
@@ -195,27 +189,27 @@ const CiCd = () => {
         .filter((s) => s.checked)
         .map((s) => s.label)
         .join(
-          ", ",
+          ', ',
         )}, OS: ${os}, Node: ${nodeVersion}, env: ${envVars}. Give a tip for best practices.`;
-      const res = await fetch("/api/gemini", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       });
       if (!res.ok) {
-        setAiTip("AI request failed. Please try again.");
+        setAiTip('AI request failed. Please try again.');
         setAiLoading(false);
         return;
       }
       const result = await res.json();
-      if (typeof result === "string") {
+      if (typeof result === 'string') {
         setAiTip(result);
       } else {
-        setAiTip(result.tip || "");
+        setAiTip(result.tip || '');
         if (result.yaml) setYaml(result.yaml);
       }
     } catch (err) {
-      setAiTip("AI request failed. Please check your connection or try again.");
+      setAiTip('AI request failed. Please check your connection or try again.');
     } finally {
       setAiLoading(false);
     }
@@ -227,13 +221,13 @@ const CiCd = () => {
     const envYaml = getEnvYaml(provider, envVars);
     const providerObj = PROVIDERS.find((p) => p.value === provider);
     if (!providerObj) {
-      setYaml("");
+      setYaml('');
       return;
     }
     let template = providerObj.template;
     let finalYaml = template({ steps: stepsYaml, env: envYaml });
     // Add OS and Node version for GitHub Actions
-    if (provider === "github") {
+    if (provider === 'github') {
       finalYaml = finalYaml.replace(
         /runs-on: [^\n]+/,
         `runs-on: ${os}\n    strategy:\n      matrix:\n        node-version: [${nodeVersion}]`,
@@ -250,15 +244,15 @@ const CiCd = () => {
   const handleCopy = async () => {
     if (yaml) {
       await navigator.clipboard.writeText(yaml);
-      alert("✅ YAML copied to clipboard!");
+      alert('✅ YAML copied to clipboard!');
     }
   };
 
   const handleDownload = () => {
     if (!yaml) return;
-    const blob = new Blob([yaml], { type: "text/yaml" });
+    const blob = new Blob([yaml], { type: 'text/yaml' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = `${provider}-ci-cd.yaml`;
     a.click();
@@ -268,27 +262,26 @@ const CiCd = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/user/pro-status");
-        if (!res.ok) throw new Error("Failed to fetch pro status");
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
       } catch (error) {
         sethasProPlan(false);
-      }finally{
-        setLoading(false)
+      } finally {
+        setLoading(false);
       }
     })();
   }, []);
 
-   if (loading) {
-            return (
-              <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-                <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
-              </div>
-            );
-          }
-
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -297,14 +290,24 @@ const CiCd = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
             <Lock className="h-8 w-8 text-yellow-600" />
           </div>
-          <h2 className={`text-center text-2xl font-bold ${resolvedTheme === "dark" ? "text-white" : "text-gray-800"}`}>
+          <h2
+            className={`text-center text-2xl font-bold ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+          >
             Pro Plan Required
           </h2>
-          <p className={`text-center ${resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"} max-w-md`}>
-            Access to Ci/Cd genrator is available exclusively for <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> subscribers.<br />Upgrade your plan to unlock this feature.
+          <p
+            className={`text-center ${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}
+          >
+            Access to Ci/Cd genrator is available exclusively for{' '}
+            <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> subscribers.
+            <br />
+            Upgrade your plan to unlock this feature.
           </p>
           <Link href="/subscriptions">
-            <Button size="lg" className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs">
+            <Button
+              size="lg"
+              className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs"
+            >
               Upgrade Now
             </Button>
           </Link>
@@ -312,13 +315,15 @@ const CiCd = () => {
       ) : (
         <div
           className={`mx-auto max-w-2xl rounded-xl border p-2 xs:p-3 sm:p-6 shadow-xl transition duration-300 ${
-            resolvedTheme === "dark"
-              ? "border-zinc-700 bg-zinc-900 text-white"
-              : "border-gray-200 bg-white text-gray-800"
+            resolvedTheme === 'dark'
+              ? 'border-zinc-700 bg-zinc-900 text-white'
+              : 'border-gray-200 bg-white text-gray-800'
           } w-full`}
         >
           <h2 className="mb-4 flex flex-col sm:flex-row items-center gap-2 text-xl xs:text-2xl sm:text-3xl font-bold">
-            <span className="flex items-center gap-2"><Wrench className="h-6 w-6 text-blue-500" /> CI/CD Pipeline Generator</span>
+            <span className="flex items-center gap-2">
+              <Wrench className="h-6 w-6 text-blue-500" /> CI/CD Pipeline Generator
+            </span>
             <Button
               onClick={handleAiSuggest}
               className="sm:ml-auto flex items-center gap-1 mt-2 sm:mt-0"
@@ -378,7 +383,10 @@ const CiCd = () => {
           <label className="mb-2 mt-6 block font-semibold text-sm">Steps:</label>
           <div className="flex flex-col gap-2">
             {steps.map((step, idx) => (
-              <div key={step.value} className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full">
+              <div
+                key={step.value}
+                className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full"
+              >
                 <div className="flex flex-row items-center gap-2 w-full xs:w-auto">
                   <input
                     type="checkbox"
@@ -420,11 +428,7 @@ const CiCd = () => {
                   >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleRemoveStep(idx)}
-                  >
+                  <Button size="icon" variant="ghost" onClick={() => handleRemoveStep(idx)}>
                     <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 </div>
@@ -489,9 +493,7 @@ const CiCd = () => {
               {TIPS.map((tip, i) => (
                 <li key={i}>{tip}</li>
               ))}
-              {aiTip && (
-                <li className="font-semibold text-purple-500">💡 {aiTip}</li>
-              )}
+              {aiTip && <li className="font-semibold text-purple-500">💡 {aiTip}</li>}
             </ul>
           </div>
         </div>

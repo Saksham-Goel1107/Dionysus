@@ -1,4 +1,3 @@
-
 // const SERVER_URL = 'https://dionysus-sgun.onrender.com';
 
 // if (typeof window === 'undefined') {

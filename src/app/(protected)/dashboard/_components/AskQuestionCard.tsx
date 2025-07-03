@@ -1,41 +1,36 @@
-"use client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import useProject from "@/hooks/use-project";
-import React from "react";
-import { readStreamableValue } from "ai/rsc";
-import MDEditor from "@uiw/react-md-editor";
-import { useTheme } from "next-themes";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { api } from "@/trpc/react";
-import { toast } from "sonner";
-import useRefetch from "@/hooks/use-refetch";
-import { askQuestion } from "../actions";
-import CodeReferences from "./CodeReferences";
-import Image from "next/image";
+'use client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import useProject from '@/hooks/use-project';
+import React from 'react';
+import { readStreamableValue } from 'ai/rsc';
+import MDEditor from '@uiw/react-md-editor';
+import { useTheme } from 'next-themes';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { api } from '@/trpc/react';
+import { toast } from 'sonner';
+import useRefetch from '@/hooks/use-refetch';
+import { askQuestion } from '../actions';
+import CodeReferences from './CodeReferences';
+import Image from 'next/image';
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
   const { theme } = useTheme();
-  const [question, setQuestion] = React.useState("");
+  const [question, setQuestion] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [filesReferences, setFilesReferences] = React.useState<
     { fileName: string; sourceCode: string; summary: string }[]
   >([]);
-  const [answer, setAnswer] = React.useState("");
+  const [answer, setAnswer] = React.useState('');
   const saveAnswer = api.project.saveAnswer.useMutation();
   const refetch = useRefetch();
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setAnswer("");
+    setAnswer('');
     setFilesReferences([]);
     e.preventDefault();
     if (!project?.id) return;
@@ -62,12 +57,11 @@ const AskQuestionCrad = () => {
           <DialogHeader>
             <div className="flex items-center gap-2">
               <DialogTitle className="flex items-center cursor-default">
-                <Image src='/logo.png' alt='Logo' width="40" height="40"/>
+                <Image src="/logo.png" alt="Logo" width="40" height="40" />
                 Dionysus
-                
               </DialogTitle>
               <Button
-                variant={"outline"}
+                variant={'outline'}
                 disabled={saveAnswer.isPending}
                 onClick={() => {
                   saveAnswer.mutate(
@@ -79,11 +73,11 @@ const AskQuestionCrad = () => {
                     },
                     {
                       onSuccess: () => {
-                        toast.success("Answer saved!");
+                        toast.success('Answer saved!');
                         refetch();
                       },
                       onError: () => {
-                        toast.error("Failed to save answer!");
+                        toast.error('Failed to save answer!');
                       },
                     },
                   );
@@ -96,10 +90,7 @@ const AskQuestionCrad = () => {
           <div data-color-mode={theme} className="markdown-editor-container">
             <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
               <div className="p-4 rounded-md bg-card text-card-foreground w-full min-w-0 max-w-full overflow-x-auto">
-                <MDEditor.Markdown 
-                  source={answer}
-                  className="md-preview-content"
-                />
+                <MDEditor.Markdown source={answer} className="md-preview-content" />
               </div>
             </ScrollArea>
           </div>

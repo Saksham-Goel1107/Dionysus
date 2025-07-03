@@ -1,23 +1,18 @@
-import { Github, Code, Headphones, Zap, Moon, Smartphone } from "lucide-react";
+import { Github, Code, Headphones, Zap, Moon, Smartphone } from 'lucide-react';
 
 export function Features() {
   return (
-    <section
-      id="features"
-      className="w-full bg-muted/50 p-12 md:py-24 lg:py-32"
-    >
+    <section id="features" className="w-full bg-muted/50 p-12 md:py-24 lg:py-32">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="space-y-2">
             <div className="inline-block rounded-lg bg-primary px-3 py-1 text-sm text-primary-foreground">
               Features
             </div>
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              Everything You Need
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Everything You Need</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Dionysus combines powerful AI capabilities with a seamless user
-              experience to enhance your development workflow.
+              Dionysus combines powerful AI capabilities with a seamless user experience to enhance
+              your development workflow.
             </p>
           </div>
         </div>
@@ -28,8 +23,8 @@ export function Features() {
             </div>
             <h3 className="text-xl font-bold">GitHub Integration</h3>
             <p className="text-center text-muted-foreground">
-              Connect to any GitHub repository and get AI-powered summaries of
-              recent commits and codebase insights.
+              Connect to any GitHub repository and get AI-powered summaries of recent commits and
+              codebase insights.
             </p>
           </div>
           <div className="flex flex-col items-center space-y-4 rounded-lg border p-6 shadow-sm">
@@ -38,8 +33,7 @@ export function Features() {
             </div>
             <h3 className="text-xl font-bold">Code Analysis</h3>
             <p className="text-center text-muted-foreground">
-              Ask questions about your code and get intelligent answers from our
-              AI.
+              Ask questions about your code and get intelligent answers from our AI.
             </p>
           </div>
           <div className="flex flex-col items-center space-y-4 rounded-lg border p-6 shadow-sm">
@@ -48,8 +42,7 @@ export function Features() {
             </div>
             <h3 className="text-xl font-bold">Audio Transcription</h3>
             <p className="text-center text-muted-foreground">
-              Upload meeting recordings and get AI-powered summaries of key
-              points.
+              Upload meeting recordings and get AI-powered summaries of key points.
             </p>
           </div>
           <div className="flex flex-col items-center space-y-4 rounded-lg border p-6 shadow-sm">
