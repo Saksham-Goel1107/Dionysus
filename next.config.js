@@ -14,19 +14,20 @@ const config = {
     },
     poweredByHeader: false,
     images: {
-        domains: [
-            "avatars.githubusercontent.com",
-            "img.clerk.com",
-            "avatars.githubusercontent.com"
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "avatars.githubusercontent.com",
+            },
+            {
+                protocol: "https",
+                hostname: "img.clerk.com",
+            },
+            {
+                protocol: "https",
+                hostname: "avatars.githubusercontent.com",
+            }
         ],
-    },
-    webpack: (webpackConfig) => {
-        webpackConfig.module.exprContextCritical = false;
-        webpackConfig.cache = {
-            type: 'filesystem',
-            maxMemoryGenerations: 1,
-        };
-        return webpackConfig;
     },
 };
 

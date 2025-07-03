@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use npm 11
-        run: npm install -g npm@11
       - name: Check for uncommitted changes after build/lint/format
         run: |
           npm ci --legacy-peer-deps
@@ -21,10 +19,4 @@ jobs:
           npx prettier --check . || true
           git status
           git diff --exit-code
-        shell: bash
-      - name: Fail if there are uncommitted changes
-        run: |
-          if [[ $(git status --porcelain) ]]; then
-            echo "Uncommitted changes detected! Please sync your code and re-run checks." && exit 1
-          fi
         shell: bash

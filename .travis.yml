@@ -13,8 +13,6 @@ cache:
     - .next/cache
 
 install:
-  - npm install -g npm@11
-  - npm ci --legacy-peer-deps
   - npx prisma generate
 
 script:
