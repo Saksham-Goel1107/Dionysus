@@ -16,6 +16,7 @@ import MaintenanceScreen from "../components/updates/screen";
 import ScrollToTopButton from "@/components/ui/ScrollToTopButton";
 import CustomContextMenu from "@/components/ui/CustomContextMenu";
 import BlockInspectAndContext from "@/components/BlockInspectAndContext";
+import MultisessionAppSupport from './MultiSession'
 
 export const metadata: Metadata = {
   title: {
@@ -97,53 +98,55 @@ export default async function RootLayout({
     await checkAndSyncProStatus(userId);
   }
 
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === "true";
+
   return (
-    <>
-      {process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === "true" ? (
-        <html lang="en" className={`${GeistSans.variable}`}>
+    <html lang="en" className={`${GeistSans.variable}`}>
+      <ClerkProvider>
+        <MultisessionAppSupport>
           <body>
-            <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-            <MaintenanceScreen />
-            </ThemeProvider>
-          </body>
-        </html>
-      ) : (
-        <ClerkProvider>
-          <html lang="en" className={`${GeistSans.variable}`}>
-            <body>
-              <GoogleOneTap
-                cancelOnTapOutside={true}
-                itpSupport={true}
-                fedCmSupport={true}
-              />
+            {isMaintenance ? (
               <ThemeProvider
                 attribute="class"
                 defaultTheme="system"
                 enableSystem
                 disableTransitionOnChange
               >
-                <CookieBanner />
-                <TRPCReactProvider>
-                  {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                </TRPCReactProvider>
-                <Toaster richColors />
-                <ScrollToTopButton />
-                <CustomContextMenu />
+                <MaintenanceScreen />
                 <BlockInspectAndContext />
+                <CustomContextMenu />
               </ThemeProvider>
-              <script
-                src="https://s.pageclip.co/v1/pageclip.js"
-                charSet="utf-8"
-              ></script>
-            </body>
-          </html>
-        </ClerkProvider>
-      )}
-    </>
+            ) : (
+              <>
+                <GoogleOneTap
+                  cancelOnTapOutside={true}
+                  itpSupport={true}
+                  fedCmSupport={true}
+                />
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme="system"
+                  enableSystem
+                  disableTransitionOnChange
+                >
+                  <CookieBanner />
+                  <TRPCReactProvider>
+                    {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                  </TRPCReactProvider>
+                  <Toaster richColors />
+                  <ScrollToTopButton />
+                  <CustomContextMenu />
+                  <BlockInspectAndContext />
+                </ThemeProvider>
+                <script
+                  src="https://s.pageclip.co/v1/pageclip.js"
+                  charSet="utf-8"
+                ></script>
+              </>
+            )}
+          </body>
+        </MultisessionAppSupport>
+      </ClerkProvider>
+    </html>
   );
 }
