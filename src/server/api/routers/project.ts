@@ -4,7 +4,60 @@ import { pullCommits } from '@/lib/github';
 import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 
+interface ProjectWithCreatorId {
+  id: string;
+  creatorId: string;
+  name: string;
+  [key: string]: any;
+}
+
 export const projectRouter = createTRPCRouter({
+  isProjectCreator: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Use type assertion to access creatorId
+      return (project as unknown as ProjectWithCreatorId).creatorId === ctx.user.userId;
+    }),
+  removeProjectMember: protectedProcedure
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if the current user is the creator of the project
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      const projectWithCreator = project as unknown as ProjectWithCreatorId;
+
+      if (projectWithCreator.creatorId !== ctx.user.userId) {
+        throw new Error('Only the project creator can remove members');
+      }
+
+      // Don't allow removing the creator (self)
+      if (input.userId === projectWithCreator.creatorId) {
+        throw new Error('The project creator cannot be removed');
+      }
+
+      // Remove the user from the project
+      return await ctx.db.userToProject.deleteMany({
+        where: {
+          projectId: input.projectId,
+          userId: input.userId,
+        },
+      });
+    }),
+
   createProject: protectedProcedure
     .input(
       z.object({
@@ -54,7 +107,15 @@ export const projectRouter = createTRPCRouter({
           },
         });
 
-        return { project, updatedUser };
+        // Set the creatorId field with a raw SQL query
+        await prisma.$executeRaw`UPDATE "Project" SET "creatorId" = ${ctx.user.userId!} WHERE id = ${project.id}`;
+
+        // Refetch the project to get the updated data
+        const updatedProject = await prisma.project.findUnique({
+          where: { id: project.id },
+        });
+
+        return { project: updatedProject || project, updatedUser };
       });
 
       // Send low credits alert if needed (outside transaction)
@@ -226,6 +287,32 @@ export const projectRouter = createTRPCRouter({
   deleteMeeting: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      // First, get the meeting to find its projectId
+      const meeting = await ctx.db.meeting.findUnique({
+        where: { id: input.meetingId },
+        select: { projectId: true },
+      });
+
+      if (!meeting) {
+        throw new Error('Meeting not found');
+      }
+
+      // Check if the current user is the project creator
+      const project = await ctx.db.project.findUnique({
+        where: { id: meeting.projectId },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Use type assertion to access creatorId
+      const projectWithCreator = project as unknown as ProjectWithCreatorId;
+
+      if (projectWithCreator.creatorId !== ctx.user.userId) {
+        throw new Error('Only the project creator can delete meetings');
+      }
+
       return await ctx.db.meeting.delete({ where: { id: input.meetingId } });
     }),
 
@@ -269,6 +356,22 @@ export const projectRouter = createTRPCRouter({
   archiveProject: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      // Check if the current user is the creator of the project
+      const project = await ctx.db.project.findUnique({
+        where: { id: input.projectId },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Use type assertion to access creatorId
+      const projectWithCreator = project as unknown as ProjectWithCreatorId;
+
+      if (projectWithCreator.creatorId !== ctx.user.userId) {
+        throw new Error('Only the project creator can archive this project');
+      }
+
       return await ctx.db.project.update({
         where: { id: input.projectId },
         data: { deletedAt: new Date() },

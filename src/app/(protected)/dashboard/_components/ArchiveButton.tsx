@@ -21,6 +21,10 @@ import { toast } from 'sonner';
 const ArchiveButton = () => {
   const archiveProject = api.project.archiveProject.useMutation();
   const { projectId } = useProject();
+  const { data: isCreator, isLoading } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
   const refetch = useRefetch();
   const handleDelete = () => {
     archiveProject.mutate(
@@ -30,12 +34,16 @@ const ArchiveButton = () => {
           toast.success('Project deleted successfully');
           refetch();
         },
-        onError: () => {
-          toast.error('Failed to deleted project');
+        onError: (error) => {
+          toast.error(error.message || 'Failed to delete project');
         },
       },
     );
   };
+
+  // Only render the button if the user is the creator
+  if (!isCreator && !isLoading) return null;
+  if (isLoading) return null;
 
   return (
     <AlertDialog>

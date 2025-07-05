@@ -11,6 +11,15 @@ import MeetingCard from '../dashboard/_components/MeetingCard';
 import TranscriptViewer from './_components/TranscriptViewer';
 import { Loader2, Lock } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useUser } from '@clerk/nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -20,8 +29,14 @@ const MeetingsPage = () => {
       refetchInterval: 4000,
     },
   );
+  const { data: isCreator } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
   const deleteMeeting = api.project.deleteMeeting.useMutation();
   const refetch = useRefetch();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const [hasProPlan, sethasProPlan] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -120,29 +135,68 @@ const MeetingsPage = () => {
 
                   {meeting.status === 'COMPLETED' && <TranscriptViewer meetingId={meeting.id} />}
 
-                  <Button
-                    size="sm"
-                    disabled={deleteMeeting.isPending}
-                    variant="destructive"
-                    onClick={() =>
-                      deleteMeeting.mutate(
-                        { meetingId: meeting.id },
-                        {
-                          onSuccess: () => {
-                            toast.success('Meeting deleted successfully');
-                            refetch();
-                          },
-                        },
-                      )
-                    }
-                    className="w-full sm:w-auto"
-                  >
-                    Delete
-                  </Button>
+                  {/* Only show delete button to project creator */}
+                  {isCreator && (
+                    <Button
+                      size="sm"
+                      disabled={deleteMeeting.isPending}
+                      variant="destructive"
+                      onClick={() => {
+                        setMeetingToDelete(meeting.id);
+                        setDialogOpen(true);
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
           </ul>
+
+          {/* Confirmation Dialog for Meeting Deletion */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Meeting</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this meeting? This action cannot be undone. All
+                  meeting data, including transcripts and issues, will be permanently removed.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={deleteMeeting.isPending}
+                  onClick={() => {
+                    if (meetingToDelete) {
+                      deleteMeeting.mutate(
+                        { meetingId: meetingToDelete },
+                        {
+                          onSuccess: () => {
+                            toast.success('Meeting deleted successfully');
+                            refetch();
+                            setDialogOpen(false);
+                            setMeetingToDelete(null);
+                          },
+                          onError: (error) => {
+                            toast.error(error.message || 'Failed to delete meeting');
+                            setDialogOpen(false);
+                          },
+                        },
+                      );
+                    }
+                  }}
+                >
+                  {deleteMeeting.isPending ? 'Deleting...' : 'Delete Meeting'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </>

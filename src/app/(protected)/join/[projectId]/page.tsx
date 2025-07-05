@@ -43,19 +43,35 @@ const JoinHandler = async (props: Props) => {
     },
   });
 
-  if (!project) return redirect('/dashboard');
+  if (!project) return redirect('/dashboard?error=Project+not+found');
+
+  // Check if the user is already a member of this project
+  const existingUserProject = await db.userToProject.findFirst({
+    where: {
+      userId,
+      projectId,
+    },
+  });
+
+  // If already a member, just redirect to dashboard
+  if (existingUserProject) {
+    return redirect('/dashboard');
+  }
+
   try {
+    // Add user to the project
     await db.userToProject.create({
       data: {
         userId,
         projectId,
       },
     });
-  } catch (error) {
-    console.log('user already in project');
-  }
 
-  return redirect('/dashboard');
+    return redirect('/dashboard');
+  } catch (error) {
+    console.error('Error adding user to project:', error);
+    return redirect('/dashboard?error=Failed+to+join+project');
+  }
 };
 
 export default JoinHandler;

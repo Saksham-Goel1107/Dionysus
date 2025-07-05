@@ -4,12 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
 import React from 'react';
 import { toast } from 'sonner';
 
 const InviteButton = () => {
   const { projectId } = useProject();
+  const { data: isCreator, isLoading } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
   const [open, setOpen] = React.useState(false);
+
+  // If not creator or still loading, don't render the button
+  if (!isCreator && !isLoading) return null;
+  if (isLoading) return null;
+
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>

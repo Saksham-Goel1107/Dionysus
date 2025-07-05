@@ -31,6 +31,7 @@ model Project {
   updatedAt            DateTime              @updatedAt
   name                 String
   githubUrl            String
+  creatorId            String                
   deletedAt            DateTime?
   commits              Commit[]
   meetings             Meeting[]
