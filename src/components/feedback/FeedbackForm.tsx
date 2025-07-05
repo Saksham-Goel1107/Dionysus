@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast as useToast } from 'sonner';
+import { toast } from 'sonner';
 import { StarRating } from './StarRating';
 
 const FEEDBACK_SHOWN_KEY = 'dionysus_feedback_shown';
@@ -67,7 +67,7 @@ export default function FeedbackForm() {
     e.preventDefault();
 
     if (rating === 0) {
-      useToast('Please provide a rating', {
+      toast('Please provide a rating', {
         description: 'Your rating helps us improve our service',
         position: 'top-center',
       });
@@ -93,7 +93,7 @@ export default function FeedbackForm() {
         const errorMessage = errorData?.error || 'Failed to submit feedback';
 
         if (response.status === 400) {
-          useToast.error('Invalid input', {
+          toast.error('Invalid input', {
             description: errorMessage,
             position: 'top-center',
           });
@@ -104,7 +104,7 @@ export default function FeedbackForm() {
         console.log('Feedback API error (continuing anyway):', errorMessage);
       }
 
-      useToast('Thank you for your feedback!', {
+      toast('Thank you for your feedback!', {
         description: 'Your input helps us improve Dionysus.',
       });
 
@@ -117,8 +117,9 @@ export default function FeedbackForm() {
     } catch (error) {
       console.log('Unexpected error in feedback form:', error);
 
-      useToast('Thank you for your feedback!', {
+      toast('Thank you for your feedback!', {
         description: 'Your input helps us improve Dionysus.',
+        position: 'top-center',
       });
 
       setOpen(false);
@@ -185,4 +186,10 @@ export default function FeedbackForm() {
       </DialogContent>
     </Dialog>
   );
+}
+function useToast(message: string, options: { description: string }) {
+  toast(message, {
+    description: options.description,
+    position: 'top-center',
+  });
 }

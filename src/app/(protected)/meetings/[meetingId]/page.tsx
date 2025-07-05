@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, use } from 'react';
 import IssueList from './_components/IssueList';
 import TranscriptViewer from '../_components/TranscriptViewer';
 import Link from 'next/link';
@@ -8,11 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
 type Props = {
-  params: { meetingId: string };
+  params: Promise<{ meetingId: string }>;
 };
 
 const MeetingDetailsPage = ({ params }: Props) => {
-  const { meetingId } = params;
+  const paramsObj = use(params);
+  const [meetingId, setMeetingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMeetingId(paramsObj.meetingId);
+  }, [paramsObj.meetingId]);
   const [hasProPlan, sethasProPlan] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -72,9 +77,9 @@ const MeetingDetailsPage = ({ params }: Props) => {
         <div>
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-xl font-semibold">Meeting Summary</h1>
-            <TranscriptViewer meetingId={meetingId} />
+            <TranscriptViewer meetingId={meetingId ?? ''} />
           </div>
-          <IssueList meetingId={meetingId} />
+          <IssueList meetingId={meetingId ?? ''} />
         </div>
       )}
     </>

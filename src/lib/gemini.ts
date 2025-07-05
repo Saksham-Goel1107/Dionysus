@@ -74,11 +74,11 @@ async function checkRateLimit(
           `Redis rate limit operation failed in gemini.ts: ${redisError.message || redisError}`,
         );
         // Fall back to in-memory implementation
-        return useMemoryRateLimit();
+        return memoryRateLimit();
       }
     } else {
       // In-memory fallback
-      return useMemoryRateLimit();
+      return memoryRateLimit();
     }
 
     return isAllowed;
@@ -88,7 +88,7 @@ async function checkRateLimit(
   }
 
   // Helper function for in-memory rate limiting
-  function useMemoryRateLimit(): boolean {
+  function memoryRateLimit(): boolean {
     const now = Date.now();
     const record = inMemoryStore.get(identifier) || {
       count: 0,

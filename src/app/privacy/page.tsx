@@ -61,9 +61,9 @@ export default function PrivacyPage() {
               </p>
               <p>
                 We reserve the right to make changes to this Privacy Policy at any time and for any
-                reason. We will alert you about any changes by updating the "Last Updated" date of
-                this privacy policy. You are encouraged to periodically review this privacy policy
-                to stay informed of updates.
+                reason. We will alert you about any changes by updating the &quot;Last Updated&quot;
+                date of this privacy policy. You are encouraged to periodically review this privacy
+                policy to stay informed of updates.
               </p>
 
               <h2>Information We Collect</h2>
@@ -397,8 +397,8 @@ export default function PrivacyPage() {
               </p>
 
               <p>
-                You can manage browser cookies through your browser settings. Here's how to remove
-                cookies from popular browsers:
+                You can manage browser cookies through your browser settings. Here&apos;s how to
+                remove cookies from popular browsers:
               </p>
 
               <ul>
@@ -425,8 +425,8 @@ export default function PrivacyPage() {
 
               <h3>Do Not Track</h3>
               <p>
-                We respect your choice if you enable the "Do Not Track" setting in your browser.
-                When DNT is enabled, we do not use analytics or advertising cookies.
+                We respect your choice if you enable the &quot;Do Not Track&quot; setting in your
+                browser. When DNT is enabled, we do not use analytics or advertising cookies.
               </p>
 
               <h3>Other Tracking Technologies</h3>
@@ -553,7 +553,7 @@ export default function PrivacyPage() {
                 before processing your request.
               </p>
 
-              <h3>Children's Privacy</h3>
+              <h3>Children&apos;s Privacy</h3>
               <p>
                 Our services are not intended for use by children under the age of 13, and we do not
                 knowingly collect personal information from children under 13. If we discover that a
@@ -568,9 +568,9 @@ export default function PrivacyPage() {
               <h3>Changes to This Privacy Policy</h3>
               <p>
                 We may update our Privacy Policy from time to time. We will notify you of any
-                changes by posting the new Privacy Policy on this page and updating the "Last
-                Updated" date at the top of this page. You are advised to review this Privacy Policy
-                periodically for any changes.
+                changes by posting the new Privacy Policy on this page and updating the &quot;Last
+                Updated&quot; date at the top of this page. You are advised to review this Privacy
+                Policy periodically for any changes.
               </p>
               <p>
                 Changes to this Privacy Policy are effective when they are posted on this page. If

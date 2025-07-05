@@ -1,0 +1,12 @@
+set -e
+
+echo "🔒 [Husky] Loading secrets with Doppler..."
+doppler run -- true
+
+echo "🔍 [Husky] Running TypeScript type check..."
+doppler run -- npm run typecheck
+
+echo "🔧 [Husky] Building the project..."
+doppler run -- npm run build
+
+echo "✅ [Husky] Pre-push checks passed. Push allowed."

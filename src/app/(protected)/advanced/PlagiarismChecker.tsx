@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
+import Image from 'next/image';
 
 // List of config files to skip
 const CONFIG_FILES = [
@@ -262,7 +263,7 @@ const PlagiarismChecker: React.FC = () => {
     return () => {
       if (scanAbort) scanAbort.abort();
     };
-  }, [repoUrl]);
+  }, [repoUrl, scanAbort]);
 
   // Ensure modal always shows cached results for current URL, even during/after pagination
   React.useEffect(() => {
@@ -295,7 +296,7 @@ const PlagiarismChecker: React.FC = () => {
       </Button>
       {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
       <div className="dark:text-gray-300 text-gray-500 text-xs mt-3">
-        This Process Takes Significant Time so Please don't leave this page. Till then have a
+        This Process Takes Significant Time so Please don&apos;t leave this page. Till then have a
         coffee🍵
       </div>
       <Dialog open={modalOpen} onOpenChange={(open) => setModalOpen(open)}>
@@ -344,7 +345,7 @@ const PlagiarismChecker: React.FC = () => {
                             target="_blank"
                             className="ml-2 inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300"
                           >
-                            <img
+                            <Image
                               src={match.avatar_url}
                               alt={match.user}
                               className="w-4 h-4 rounded-full"

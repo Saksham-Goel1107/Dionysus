@@ -277,7 +277,7 @@ const CommitGraphModal: React.FC = () => {
           </span>
         </div>
         <p className="text-base dark:text-indigo-100/90 text-gray-500 font-medium text-center max-w-xl">
-          Visualize your repository's commit history and get instant AI-powered insights. Click
+          Visualize your repository&apos;s commit history and get instant AI-powered insights. Click
           below to open the interactive commit graph and ask questions about your codebase.
         </p>
         <Button

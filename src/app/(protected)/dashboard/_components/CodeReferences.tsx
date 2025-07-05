@@ -17,10 +17,10 @@ type Props = {
 };
 
 const CodeReferences = ({ filesReferences }: Props) => {
-  if (filesReferences.length === 0) return null;
-
   const { theme } = useTheme();
   const [tab, setTab] = React.useState(filesReferences[0]?.fileName);
+
+  if (filesReferences.length === 0) return null;
 
   return (
     <div className={`m-auto max-w-[70vw] ${theme}`}>

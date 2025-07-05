@@ -204,7 +204,7 @@ export default function OnboardingComponent() {
         </button>
         <div className="w-full max-w-lg p-8 my-8 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up overflow-y-auto scrollbar-hide max-h-[90vh]">
           <h1 className="text-3xl font-bold mb-4 text-blue-700 dark:text-blue-300">
-            You're all set!
+            You&apos;re all set!
           </h1>
           <p className="mb-4 text-gray-700 dark:text-gray-200">
             You now know where to find every feature. Explore, build, and collaborate with

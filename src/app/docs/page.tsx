@@ -137,20 +137,21 @@ export default function DocsPage() {
                 </p>
                 <h3>Creating Your Account</h3>
                 <p>
-                  To start using Dionysus, you'll need to create an account. Click the "Sign Up"
-                  button in the top right corner of our homepage and follow the instructions. You
-                  can sign up using your email, Google account, or GitHub account.
+                  To start using Dionysus, you&apos;ll need to create an account. Click the
+                  &quot;Sign Up&quot; button in the top right corner of our homepage and follow the
+                  instructions. You can sign up using your email, Google account, or GitHub account.
                 </p>
                 <h3>Your First Meeting</h3>
                 <p>
-                  Once you've created your account, you can start your first meeting right away.
-                  Navigate to the dashboard and click "Create Meeting". Give your meeting a name,
-                  set a time, and invite participants if desired. When it's time for your meeting,
-                  click "Join" and allow microphone access when prompted.
+                  Once you&apos;ve created your account, you can start your first meeting right
+                  away. Navigate to the dashboard and click &quot;Create Meeting&quot;. Give your
+                  meeting a name, set a time, and invite participants if desired. When it&apos;s
+                  time for your meeting, click &quot;Join&quot; and allow microphone access when
+                  prompted.
                 </p>
                 <p>
-                  Alternatively, you can join a meeting you've been invited to by clicking the link
-                  in the invitation email or entering the meeting code on the dashboard.
+                  Alternatively, you can join a meeting you&apos;ve been invited to by clicking the
+                  link in the invitation email or entering the meeting code on the dashboard.
                 </p>
               </div>
             </TabsContent>
@@ -217,14 +218,15 @@ export default function DocsPage() {
               <div className="prose dark:prose-invert max-w-none">
                 <h2>Managing Your Meetings</h2>
                 <p>
-                  Dionysus makes it easy to create, join, and manage your meetings. Here's
+                  Dionysus makes it easy to create, join, and manage your meetings. Here&apos;s
                   everything you need to know about working with meetings in the platform.
                 </p>
 
                 <h3>Creating a New Meeting</h3>
                 <p>
-                  To create a new meeting, navigate to the "Meetings" tab in your dashboard and
-                  click the "Create Meeting" button. You'll need to provide:
+                  To create a new meeting, navigate to the &quot;Meetings&quot; tab in your
+                  dashboard and click the &quot;Create Meeting&quot; button. You&apos;ll need to
+                  provide:
                 </p>
                 <ul>
                   <li>
@@ -250,7 +252,7 @@ export default function DocsPage() {
                 <ul>
                   <li>Transcribe everything said in real-time</li>
                   <li>Identify speakers automatically</li>
-                  <li>Highlight key points as they're mentioned</li>
+                  <li>Highlight key points as they&apos;re mentioned</li>
                   <li>Suggest follow-up questions or clarifications</li>
                   <li>Track action items as they arise</li>
                 </ul>
@@ -265,9 +267,9 @@ export default function DocsPage() {
                   <li>Follow-up suggestions</li>
                 </ul>
                 <p>
-                  All this information will be available in your dashboard under "Past Meetings".
-                  You can share these summaries with participants or export them to your preferred
-                  format.
+                  All this information will be available in your dashboard under &quot;Past
+                  Meetings&quot;. You can share these summaries with participants or export them to
+                  your preferred format.
                 </p>
               </div>
             </TabsContent>
@@ -276,8 +278,8 @@ export default function DocsPage() {
               <div className="prose dark:prose-invert max-w-none">
                 <h2>AI-Powered Features</h2>
                 <p>
-                  Dionysus leverages advanced AI to make your meetings more productive. Here's how
-                  our AI features work:
+                  Dionysus leverages advanced AI to make your meetings more productive. Here&apos;s
+                  how our AI features work:
                 </p>
 
                 <h3>Real-time Transcription</h3>
@@ -306,17 +308,17 @@ export default function DocsPage() {
                   meeting content. For example:
                 </p>
                 <ul>
-                  <li>"What did Alice say about the Q3 projections?"</li>
-                  <li>"Summarize the discussion about the new product launch"</li>
-                  <li>"What action items were assigned to me?"</li>
-                  <li>"List all the decisions we made today"</li>
+                  <li>&quot;What did Alice say about the Q3 projections?&quot;</li>
+                  <li>&quot;Summarize the discussion about the new product launch&quot;</li>
+                  <li>&quot;What action items were assigned to me?&quot;</li>
+                  <li>&quot;List all the decisions we made today&quot;</li>
                 </ul>
 
                 <h3>Smart Notifications</h3>
                 <p>
-                  Our AI can identify when you've been mentioned in a meeting or when an action item
-                  has been assigned to you, even if you weren't present. The system will send you
-                  smart notifications with the relevant context so you stay informed.
+                  Our AI can identify when you&apos;ve been mentioned in a meeting or when an action
+                  item has been assigned to you, even if you weren&apos;t present. The system will
+                  send you smart notifications with the relevant context so you stay informed.
                 </p>
 
                 <h3>Data Privacy & AI Training</h3>
@@ -343,9 +345,9 @@ export default function DocsPage() {
 
                 <h3>API Keys</h3>
                 <p>
-                  To use the Dionysus API, you'll need an API key. API keys can be generated from
-                  your account dashboard under "Developer Settings". Each API key has specific
-                  permissions that you can configure.
+                  To use the Dionysus API, you&apos;ll need an API key. API keys can be generated
+                  from your account dashboard under &quot;Developer Settings&quot;. Each API key has
+                  specific permissions that you can configure.
                 </p>
                 <p>
                   Keep your API keys secure and do not expose them in client-side code. We recommend
@@ -458,8 +460,8 @@ export default function DocsPage() {
                 <h4>How accurate is the transcription?</h4>
                 <p>
                   Our transcription accuracy typically ranges from 85-95% depending on audio
-                  quality, speakers' accents, and background noise. The system improves over time as
-                  it learns from corrections.
+                  quality, speaker&apos;s accents, and background noise. The system improves over
+                  time as it learns from corrections.
                 </p>
 
                 <h4>Can I export my meeting data?</h4>
@@ -472,8 +474,9 @@ export default function DocsPage() {
 
                 <h4>How do I change my password?</h4>
                 <p>
-                  Go to your account settings and select "Security" to change your password. If
-                  you've forgotten your password, use the "Forgot Password" link on the login page.
+                  Go to your account settings and select &quot;Security&quot; to change your
+                  password. If you&apos;ve forgotten your password, use the &quot;Forgot
+                  Password&quot; link on the login page.
                 </p>
 
                 <h4>Can I transfer my subscription to another user?</h4>
@@ -484,15 +487,15 @@ export default function DocsPage() {
 
                 <h4>How do I cancel my subscription?</h4>
                 <p>
-                  You can cancel your subscription from your account settings under "Billing". When
-                  you cancel, your plan benefits will continue until the end of the current billing
-                  period.
+                  You can cancel your subscription from your account settings under
+                  &quot;Billing&quot;. When you cancel, your plan benefits will continue until the
+                  end of the current billing period.
                 </p>
 
                 <h4>Still have questions?</h4>
                 <p>
-                  If you couldn't find an answer to your question, please contact our support team
-                  at
+                  If you couldn&apos;t find an answer to your question, please contact our support
+                  team at
                   <a href="mailto:sakshamgoel1107@gmail.com" className="text-primary underline">
                     sakshamgoel1107@gmail.com
                   </a>{' '}

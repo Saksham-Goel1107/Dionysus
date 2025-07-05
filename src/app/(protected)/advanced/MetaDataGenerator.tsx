@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import Image from 'next/image';
 
 // Form schema definition
 const metaDataFormSchema = z.object({
@@ -307,7 +308,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
         <div className="flex flex-col gap-2">
           {sanitizedImage && (
-            <img
+            <Image
               src={sanitizedImage}
               alt="Preview image"
               className="w-full h-48 object-cover rounded-lg mb-2"
@@ -723,7 +724,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
                                 <FormLabel>No Archive</FormLabel>
-                                <FormDescription>Don't show cached version</FormDescription>
+                                <FormDescription>Don&apos;t show cached version</FormDescription>
                               </div>
                               <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -739,7 +740,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
                                 <FormLabel>No Snippet</FormLabel>
-                                <FormDescription>Don't show a text snippet</FormDescription>
+                                <FormDescription>Don&apos;t show a text snippet</FormDescription>
                               </div>
                               <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -755,7 +756,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                               <div className="space-y-0.5">
                                 <FormLabel>No Translate</FormLabel>
-                                <FormDescription>Don't offer translation</FormDescription>
+                                <FormDescription>Don&apos;t offer translation</FormDescription>
                               </div>
                               <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -817,7 +818,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                           <FormControl>
                             <Input placeholder="https://yourdomain.com/favicon.ico" {...field} />
                           </FormControl>
-                          <FormDescription>URL to your site's favicon</FormDescription>
+                          <FormDescription>URL to your site&apos;s favicon</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

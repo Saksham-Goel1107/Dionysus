@@ -187,8 +187,8 @@ function PaymentProcessor() {
             <div className="text-center space-y-2">
               <h2 className="text-xl font-semibold">Processing your payment...</h2>
               <p className="text-muted-foreground max-w-md">
-                Please don't close this page. We're confirming your payment and adding credits to
-                your account.
+                Please don&apos;t close this page. We&apos;re confirming your payment and adding
+                credits to your account.
               </p>
             </div>
           </div>
@@ -234,8 +234,8 @@ function PaymentProcessor() {
             <div className="space-y-2 max-w-md">
               <h2 className="text-xl font-bold">No Transaction Found</h2>
               <p className="text-muted-foreground">
-                We couldn't find any transaction details. If you were attempting to make a payment,
-                please go back to the billing page and try again.
+                We couldn&apos;t find any transaction details. If you were attempting to make a
+                payment, please go back to the billing page and try again.
               </p>
             </div>
           </div>

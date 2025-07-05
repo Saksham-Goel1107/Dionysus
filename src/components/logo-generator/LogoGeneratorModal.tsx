@@ -349,8 +349,8 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     )}
 
                     {/* Logo image */}
-                    <img
-                      src={logoImages[currentImageIndex]}
+                    <Image
+                      src={logoImages[currentImageIndex] ?? ''}
                       alt={`Generated logo ${currentImageIndex + 1}`}
                       className="max-h-[300px] max-w-full object-contain rounded-md shadow-md"
                     />
@@ -411,7 +411,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                 </div>
                 <p className="text-lg font-medium">Your logo will appear here</p>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                  Fill in the details on the left and click 'Generate Logo'
+                  Fill in the details on the left and click &apos;Generate Logo&apos;
                 </p>
               </div>
             )}

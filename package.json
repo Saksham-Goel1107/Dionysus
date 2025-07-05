@@ -21,6 +21,13 @@
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,md,css}": "prettier --write"
+  },
   "dependencies": {
     "@ai-sdk/google": "^1.0.15",
     "@arcjet/next": "^1.0.0-beta.8",
@@ -146,14 +153,16 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.1.0",
     "@typescript-eslint/parser": "^8.1.0",
-    "eslint": "^8.57.0",
+    "eslint": "^8.57.1",
     "eslint-config-next": "^15.0.1",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.1.2",
     "postcss": "^8.4.39",
-    "prettier": "^3.3.2",
+    "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.5",
     "prisma": "^6.11.0",
     "tailwindcss": "^3.4.3",
-    "typescript": "^5.5.3"
+    "typescript": "^5.8.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.38.1"

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -26,7 +26,7 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
   const [open, setOpen] = useState(false);
   const { resolvedTheme } = useTheme();
 
-  const fetchTranscript = async () => {
+  const fetchTranscript = useCallback(async () => {
     if (!open) return;
 
     setLoading(true);
@@ -49,13 +49,13 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [open, meetingId]);
 
   useEffect(() => {
     if (open) {
       fetchTranscript();
     }
-  }, [open, meetingId]);
+  }, [open, meetingId, fetchTranscript]);
 
   const downloadTranscript = async () => {
     try {

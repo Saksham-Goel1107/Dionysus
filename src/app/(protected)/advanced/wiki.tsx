@@ -109,8 +109,8 @@ const Wiki = () => {
                     >
                       GitHub Copilot
                     </a>{' '}
-                    and subscribe if you haven't already. Else you can use it for free as everyone
-                    has 50 free requests per month.
+                    and subscribe if you haven&apos;t already. Else you can use it for free as
+                    everyone has 50 free requests per month.
                   </li>
                   <li>
                     Install the <b>GitHub Copilot</b> browser extension (if available) or use
@@ -168,8 +168,8 @@ const Wiki = () => {
                     prompting Copilot. This increases the chance Copilot will use the code context.
                   </li>
                   <li>
-                    Be explicit in your prompt: say "based on the code in this file" or "analyze the
-                    codebase and...".
+                    Be explicit in your prompt: say &quot;based on the code in this file&quot; or
+                    &quot;analyze the codebase and...&quot;.
                   </li>
                   <li>
                     If Copilot generates generic or off-topic content, refine your prompt to mention
@@ -189,8 +189,8 @@ const Wiki = () => {
                 <b>Pro Tips for Premium Users:</b>
                 <ul className="list-disc pl-5 mt-1">
                   <li>
-                    Always review and edit Copilot's suggestions for accuracy and project-specific
-                    details.
+                    Always review and edit Copilot&apos;s suggestions for accuracy and
+                    project-specific details.
                   </li>
                   <li>
                     Use markdown formatting for clarity: <code># Headings</code>,{' '}

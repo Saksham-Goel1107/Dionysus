@@ -20,6 +20,7 @@ import MultisessionAppSupport from './MultiSession';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: {
@@ -157,7 +158,11 @@ export default async function RootLayout({
                     <Analytics />
                     <SpeedInsights />
                   </ThemeProvider>
-                  <script src="https://s.pageclip.co/v1/pageclip.js" charSet="utf-8"></script>
+                  <Script
+                    src="https://s.pageclip.co/v1/pageclip.js"
+                    charSet="utf-8"
+                    strategy="afterInteractive"
+                  ></Script>
                 </>
               )}
             </body>

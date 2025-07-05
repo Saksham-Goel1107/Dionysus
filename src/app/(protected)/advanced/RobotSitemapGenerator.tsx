@@ -442,7 +442,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                           <Input placeholder="https://example.com" {...field} />
                         </FormControl>
                         <FormDescription>
-                          Your website's root URL (e.g., https://example.com)
+                          Your website&apos;s root URL (e.g., https://example.com)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>

@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 
 export default function ProfileSettings() {
@@ -5,7 +6,7 @@ export default function ProfileSettings() {
     <section className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4 sm:p-6 md:p-10 flex flex-col gap-8">
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         <div className="flex-shrink-0 flex flex-col items-center gap-2 w-full md:w-auto">
-          <img
+          <Image
             src="/gemini.png"
             alt="Avatar"
             className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-200 shadow"

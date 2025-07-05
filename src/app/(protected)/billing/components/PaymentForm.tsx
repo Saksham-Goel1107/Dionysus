@@ -358,7 +358,7 @@ export default function PaymentForm({
         <CardHeader>
           <CardTitle>Complete your purchase</CardTitle>
           <CardDescription>
-            You're buying {creditsToBuy} credits for ₹{price}
+            You&apos;re buying {creditsToBuy} credits for ₹{price}
           </CardDescription>
         </CardHeader>
         <CardContent>

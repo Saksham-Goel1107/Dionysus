@@ -27,13 +27,13 @@ const LockIndicator = () => (
       <path d="M12 15v2m0-6v2m0-6v2M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18Z" />
     </svg>
     <div className="absolute bottom-full mb-2 right-0 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-black/80 text-white text-xs whitespace-nowrap rounded pointer-events-none">
-      Click "Recheck" button to unlock
+      Click &quot;Recheck&quot; button to unlock
     </div>
   </div>
 );
 
-const page = ({}: Props) => {
-  const { register, handleSubmit, reset, watch, setValue } = useForm<FormInput>();
+const Page = ({}: Props) => {
+  const { register, handleSubmit, reset, watch } = useForm<FormInput>();
   const createProject = api.project.createProject.useMutation();
   const checkCredits = api.project.checkCredits.useMutation();
   const [urlLocked, setUrlLocked] = React.useState(false);
@@ -140,8 +140,8 @@ const page = ({}: Props) => {
                 <div>
                   <p className="text-sm font-medium">All fields are locked after validation</p>
                   <p className="text-xs">
-                    To make changes to your project details, click the "Recheck" or "Change Repo"
-                    button.
+                    To make changes to your project details, click the &quot;Recheck&quot; or
+                    &quot;Change Repo&quot; button.
                   </p>
                 </div>
               </div>
@@ -189,7 +189,7 @@ const page = ({}: Props) => {
                 />
                 {urlLocked && <LockIndicator />}
                 <p className="text-xs text-muted-foreground mt-1">
-                  Create a token with 'repo' scope at{' '}
+                  Create a token with &quot;repo&quot; scope at{' '}
                   <a
                     href="https://github.com/settings/tokens"
                     target="_blank"
@@ -248,7 +248,7 @@ const page = ({}: Props) => {
 
                       {checkCredits.data.error?.toLowerCase().includes('not found') && (
                         <p className="mt-2 text-sm">
-                          This repository doesn't exist or is private. Please verify the URL is
+                          This repository doesn&apos;t exist or is private. Please verify the URL is
                           correct.
                         </p>
                       )}
@@ -346,4 +346,4 @@ const page = ({}: Props) => {
     </div>
   );
 };
-export default page;
+export default Page;

@@ -82,29 +82,31 @@ export default function TermsPage() {
               <div className="prose dark:prose-invert max-w-none">
                 <h2>1. Terms of Service Agreement</h2>
                 <p>
-                  These Terms of Service ("Terms") govern your access to and use of Dionysus's
-                  services, including our website, AI features, and any other software or services
-                  offered by us in connection with any of the foregoing ("Services").
+                  These Terms of Service (&quot;Terms&quot;) govern your access to and use of
+                  Dionysus&apos;s services, including our website, AI features, and any other
+                  software or services offered by us in connection with any of the foregoing
+                  (&quot;Services&quot;).
                 </p>
 
                 <h3>1.1 Accepting these Terms</h3>
                 <p>
                   By registering for an account or using any of our Services, you agree to be bound
-                  by these Terms. If you don't agree to these Terms, do not use the Services.
+                  by these Terms. If you don&apos;t agree to these Terms, do not use the Services.
                 </p>
 
                 <h3>1.2 Changes to these Terms</h3>
                 <p>
-                  We may modify the Terms at any time, at our sole discretion. If we do so, we'll
-                  let you know either by posting the modified Terms on the Site or through other
-                  communications. If you continue to use the Services after we've let you know about
-                  changes to the Terms, you're indicating that you agree to the modified Terms.
+                  We may modify the Terms at any time, at our sole discretion. If we do so,
+                  we&apos;ll let you know either by posting the modified Terms on the Site or
+                  through other communications. If you continue to use the Services after we&apos;ve
+                  let you know about changes to the Terms, you&apos;re indicating that you agree to
+                  the modified Terms.
                 </p>
 
                 <h2>2. Using our Services</h2>
                 <p>
-                  You must follow any policies made available to you within the Services. Don't
-                  misuse our Services. For example, don't interfere with our Services or try to
+                  You must follow any policies made available to you within the Services. Don&apos;t
+                  misuse our Services. For example, don&apos;t interfere with our Services or try to
                   access them using a method other than the interface and the instructions that we
                   provide.
                 </p>
@@ -122,8 +124,8 @@ export default function TermsPage() {
                   We are constantly updating and improving our Services. We may add, alter, or
                   remove functionality from a Service at any time without prior notice. We may also
                   limit, suspend, or discontinue a Service at our discretion. If we discontinue a
-                  Service, where appropriate, we'll give you reasonable advance notice and a chance
-                  to get your information out of the Service.
+                  Service, where appropriate, we&apos;ll give you reasonable advance notice and a
+                  chance to get your information out of the Service.
                 </p>
               </div>
             </TabsContent>
@@ -177,8 +179,8 @@ export default function TermsPage() {
 
                 <h3>3.1 Intellectual Property Rights</h3>
                 <p>
-                  The Services and all rights therein are and shall remain Dionysus's property or
-                  the property of our licensors. Neither these Terms nor your use of the Services
+                  The Services and all rights therein are and shall remain Dionysus&apos;s property
+                  or the property of our licensors. Neither these Terms nor your use of the Services
                   convey or grant to you any rights:
                 </p>
                 <ul>
@@ -186,16 +188,16 @@ export default function TermsPage() {
                     in or related to the Services except for the limited license granted above; or
                   </li>
                   <li>
-                    to use or reference in any manner Dionysus's company names, logos, product and
-                    service names, trademarks, or services marks.
+                    to use or reference in any manner Dionysus&apos;s company names, logos, product
+                    and service names, trademarks, or services marks.
                   </li>
                 </ul>
 
                 <h3>3.2 Feedback</h3>
                 <p>
                   If you provide feedback to us, we may use and share such feedback without
-                  restriction or obligation to you, as long as we don't identify you as the source
-                  of the feedback without your permission.
+                  restriction or obligation to you, as long as we don&apos;t identify you as the
+                  source of the feedback without your permission.
                 </p>
               </div>
             </TabsContent>
@@ -318,8 +320,8 @@ export default function TermsPage() {
                   </CardHeader>
                   <CardContent>
                     <p>
-                      Services are provided "as is" without any warranties, either express or
-                      implied.
+                      Services are provided &quot;as is&quot; without any warranties, either express
+                      or implied.
                     </p>
                   </CardContent>
                 </CardWithGradient>
@@ -359,8 +361,8 @@ export default function TermsPage() {
 
                 <h3>5.2 Warranty Disclaimer</h3>
                 <p>
-                  The services are provided "as is" and "as available" without warranties of any
-                  kind, whether express or implied, including, but not limited to:
+                  The services are provided &quot;as is&quot; and &quot;as available&quot; without
+                  warranties of any kind, whether express or implied, including, but not limited to:
                 </p>
                 <ul>
                   <li>Merchantability</li>
@@ -377,8 +379,8 @@ export default function TermsPage() {
                 <p>
                   You agree to indemnify, defend, and hold harmless Dionysus and its officers,
                   directors, employees, and agents from and against any claims, liabilities,
-                  damages, losses, and expenses, including reasonable attorneys' fees, arising from
-                  or relating to:
+                  damages, losses, and expenses, including reasonable attorneys&apos; fees, arising
+                  from or relating to:
                 </p>
                 <ul>
                   <li>Your use of the services</li>

@@ -27,27 +27,9 @@ interface ChatClientProps {
 init({ data });
 
 const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
-  const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
+  const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY ?? '';
   const [error, setError] = useState<string | null>(null);
   const [channel, setChannel] = useState<StreamChannel | undefined>();
-
-  if (!apiKey) {
-    return (
-      <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
-        <p>Chat service is not properly configured. Please contact support.</p>
-      </div>
-    );
-  }
-
-  if (!clerkUser.token) {
-    return (
-      <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Authentication Error</h2>
-        <p>Could not authenticate with chat service. Missing user token.</p>
-      </div>
-    );
-  }
 
   const user: User = {
     id: clerkUser.id,
@@ -88,6 +70,24 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
       setError('Failed to set up chat channel.');
     }
   }, [client, slug]);
+
+  if (!apiKey) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
+        <p>Chat service is not properly configured. Please contact support.</p>
+      </div>
+    );
+  }
+
+  if (!clerkUser.token) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold mb-4">Authentication Error</h2>
+        <p>Could not authenticate with chat service. Missing user token.</p>
+      </div>
+    );
+  }
 
   if (error) {
     return (
