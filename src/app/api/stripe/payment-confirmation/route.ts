@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
         let amount = ((transaction.credits / 50) * 75).toFixed(2); // fallback
         try {
           const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-            apiVersion: '2024-12-18.acacia',
+            apiVersion: '2025-02-24.acacia',
           });
           const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
           if (paymentIntent.amount_received) {
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       try {
         // Check if payment succeeded and was processed by webhook
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-          apiVersion: '2024-12-18.acacia',
+          apiVersion: '2025-02-24.acacia',
         });
 
         const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);

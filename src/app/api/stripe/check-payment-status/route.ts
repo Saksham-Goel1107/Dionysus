@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 
 // Initialize Stripe instance
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-02-24.acacia',
 });
 
 export async function GET(req: NextRequest) {
@@ -16,18 +16,21 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const sessionId = url.searchParams.get('payment_intent_id');
+    // Support both session_id and payment_intent_id
+    const sessionId = url.searchParams.get('session_id');
+    const paymentIntentId = url.searchParams.get('payment_intent_id');
+    let referenceId = sessionId || paymentIntentId;
 
-    if (!sessionId) {
+    if (!referenceId) {
       return NextResponse.json(
         { error: 'Session or payment intent ID is required' },
         { status: 400 },
       );
-    } // First check our database to see if this payment was already processed
-    // Using a raw query since sessionId has type issues
+    }
+    // First check our database to see if this payment was already processed
     const result = await db.$queryRaw`
       SELECT * FROM "StripeTransaction" 
-      WHERE "sessionId" = ${sessionId} 
+      WHERE "sessionId" = ${referenceId} 
       AND "userId" = ${userId.toString()} 
       AND "isCompleted" = true
       LIMIT 1
@@ -51,30 +54,44 @@ export async function GET(req: NextRequest) {
     let isSuccessful = false;
     let paymentStatus = '';
 
-    // First try as a checkout session ID
-    try {
-      const session = await stripe.checkout.sessions.retrieve(sessionId);
-      isSuccessful = session.payment_status === 'paid';
-      paymentStatus = session.payment_status;
-    } catch (checkoutError) {
-      console.log('Not a valid checkout session, trying payment intent');
-
-      // If it's not a checkout session, try as a payment intent
+    // Only try to retrieve the correct type based on the ID prefix
+    if (sessionId && sessionId.startsWith('cs_')) {
       try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(sessionId);
-        isSuccessful =
-          paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing';
-        paymentStatus = paymentIntent.status;
-      } catch (paymentIntentError) {
-        console.error('Failed to retrieve payment details:', paymentIntentError);
-        // Neither a valid checkout session nor payment intent
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        isSuccessful = session.payment_status === 'paid';
+        paymentStatus = session.payment_status;
+      } catch (checkoutError) {
+        console.error('Failed to retrieve checkout session:', checkoutError);
         return NextResponse.json({
           success: false,
           processed: false,
           status: 'invalid',
-          error: 'Invalid payment reference',
+          error: 'Invalid checkout session reference',
         });
       }
+    } else if (paymentIntentId && paymentIntentId.startsWith('pi_')) {
+      try {
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        isSuccessful =
+          paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing';
+        paymentStatus = paymentIntent.status;
+      } catch (paymentIntentError) {
+        console.error('Failed to retrieve payment intent:', paymentIntentError);
+        return NextResponse.json({
+          success: false,
+          processed: false,
+          status: 'invalid',
+          error: 'Invalid payment intent reference',
+        });
+      }
+    } else {
+      // Unknown or invalid reference
+      return NextResponse.json({
+        success: false,
+        processed: false,
+        status: 'invalid',
+        error: 'Invalid payment reference',
+      });
     }
 
     return NextResponse.json({

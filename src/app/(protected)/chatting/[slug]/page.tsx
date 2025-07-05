@@ -73,12 +73,12 @@ export default async function Page({ params }: { params: { slug: string } }) {
         }
       }
     } catch (error) {
-      // If channel doesn't exist, create it and add the user
-      await channel.create({
+      channel.data = {
         name: slug,
-        members: [user.id],
         created_by_id: user.id,
-      });
+      };
+      await channel.create();
+      await channel.addMembers([user.id]);
       console.log(`Created new channel ${slug} with user ${user.id}`);
     }
   } catch (error) {
