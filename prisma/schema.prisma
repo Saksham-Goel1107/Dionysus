@@ -33,11 +33,14 @@ model Project {
   githubUrl            String
   creatorId            String                
   deletedAt            DateTime?
+  inviteToken          String
   commits              Commit[]
   meetings             Meeting[]
   savedQuestions       Question[]
   sourceCodeEmbeddings SourceCodeEmbedding[]
   userToProjects       UserToProject[]
+  
+  @@index([inviteToken])
 }
 
 model UserToProject {

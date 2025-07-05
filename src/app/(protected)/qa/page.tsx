@@ -54,6 +54,10 @@ const QaPage = () => {
     { projectId },
     { enabled: !!projectId },
   );
+  const { data: hasAccess } = api.project.checkProjectAccess.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
   const deleteQuestion = api.project.deleteQuestion.useMutation();
   const refetch = useRefetch();
 
@@ -135,7 +139,6 @@ const QaPage = () => {
                   <p className="line-clamp-2 text-sm text-gray-500">{question.answer}</p>
                 </div>
 
-                {/* Delete button - only visible to creator */}
                 {isCreator && (
                   <Button
                     size="icon"

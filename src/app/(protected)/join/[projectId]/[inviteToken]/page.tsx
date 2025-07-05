@@ -3,23 +3,23 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
 type Props = {
-  params: { projectId: string };
-  searchParams?: { inviteToken?: string };
+  params: { projectId: string; inviteToken: string };
 };
 
-const JoinHandler = async (props: Props) => {
-  const { projectId } = props.params;
-  const inviteToken = props.searchParams?.inviteToken;
+const JoinHandlerWithToken = async (props: Props) => {
+  const { projectId, inviteToken } = await props.params;
   const { userId } = await auth();
+
   if (!userId) return redirect('/sign-in');
-  const dbUser = await db.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
+  if (!projectId) return redirect('/dashboard?error=Missing+project+ID');
+  if (!inviteToken) return redirect('/dashboard?error=Missing+invite+token');
 
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
+
+  const dbUser = await db.user.findUnique({
+    where: { id: userId },
+  });
 
   const existingUserByEmail = await db.user.findUnique({
     where: { emailAddress: user.emailAddresses[0]!.emailAddress },
@@ -38,9 +38,7 @@ const JoinHandler = async (props: Props) => {
   }
 
   const project = await db.project.findUnique({
-    where: {
-      id: projectId,
-    },
+    where: { id: projectId },
     select: {
       id: true,
       name: true,
@@ -50,25 +48,26 @@ const JoinHandler = async (props: Props) => {
 
   if (!project) return redirect('/dashboard?error=Project+not+found');
 
-  if (!inviteToken || project.inviteToken !== inviteToken) {
+  if (project.inviteToken !== inviteToken) {
     return redirect(
-      '/dashboard?error=Invalid+or+missing+invite+token.+The+link+may+have+been+regenerated+by+the+project+creator.',
+      '/dashboard?error=Invalid+invite+link.+The+link+may+have+been+regenerated+by+the+project+creator.',
     );
   }
 
+  let existingUserProject = null;
   try {
-    const existingUserProject = await db.userToProject.findFirst({
+    existingUserProject = await db.userToProject.findFirst({
       where: {
         userId,
         projectId,
       },
     });
-
-    if (existingUserProject) {
-      return redirect('/dashboard');
-    }
   } catch (findError) {
     console.error('Error checking existing membership:', findError);
+  }
+
+  if (existingUserProject) {
+    return redirect('/dashboard?successAlready+a+member+of+this+project');
   }
 
   try {
@@ -78,27 +77,24 @@ const JoinHandler = async (props: Props) => {
         projectId,
       },
     });
-
-    return redirect('/dashboard?success=Joined+project+successfully');
-  } catch (error) {
-    console.error('Error adding user to project:', error);
-
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error details:', errorMessage);
-
+  } catch (error: any) {
+    console.error('Failed to join project:', {
+      userId,
+      projectId,
+      error,
+    });
     if (
-      errorMessage.includes('Unique constraint') ||
-      errorMessage.includes('duplicate key') ||
-      errorMessage.includes('already exists')
+      error.code === 'P2002' ||
+      (typeof error.message === 'string' &&
+        (error.message.includes('Unique constraint') ||
+          error.message.includes('duplicate key') ||
+          error.message.includes('already exists')))
     ) {
       return redirect('/dashboard?info=Already+a+member+of+this+project');
     }
-
-    // Add the user ID and project ID to the error for debugging
-    console.error(`Failed to add user ${userId} to project ${projectId}`);
-
     return redirect('/dashboard?error=Failed+to+join+project');
   }
+  return redirect('/dashboard?success=Joined+project+successfully');
 };
 
-export default JoinHandler;
+export default JoinHandlerWithToken;

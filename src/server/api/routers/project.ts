@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { pullCommits } from '@/lib/github';
 import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
+import crypto from 'crypto';
 
 interface ProjectWithCreatorId {
   id: string;
@@ -15,16 +16,19 @@ export const projectRouter = createTRPCRouter({
   isProjectCreator: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const project = await ctx.db.project.findUnique({
-        where: { id: input.projectId },
-      });
+      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+        SELECT id, "creatorId" FROM "Project" WHERE id = ${input.projectId}
+      `;
 
-      if (!project) {
+      if (!projects || !projects.length) {
         throw new Error('Project not found');
       }
 
-      // Use type assertion to access creatorId
-      return (project as unknown as ProjectWithCreatorId).creatorId === ctx.user.userId;
+      const project = projects[0];
+      if (!project) {
+        return false;
+      }
+      return project.creatorId === ctx.user.userId;
     }),
   removeProjectMember: protectedProcedure
     .input(z.object({ projectId: z.string(), userId: z.string() }))
@@ -99,6 +103,8 @@ export const projectRouter = createTRPCRouter({
           data: {
             githubUrl: input.githubUrl,
             name: input.name,
+            creatorId: ctx.user.userId!,
+            inviteToken: crypto.randomBytes(16).toString('hex'),
             userToProjects: {
               create: {
                 userId: ctx.user.userId!,
@@ -138,17 +144,30 @@ export const projectRouter = createTRPCRouter({
       return result.project;
     }),
 
-  getProjects: protectedProcedure.query(async ({ ctx }) => {
-    return await ctx.db.project.findMany({
-      where: {
-        userToProjects: {
-          some: {
-            userId: ctx.user.userId!,
-          },
+  checkProjectAccess: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Check if the user has access to this project
+      const userToProject = await ctx.db.userToProject.findFirst({
+        where: {
+          projectId: input.projectId,
+          userId: ctx.user.userId!,
         },
-        deletedAt: null,
-      },
-    });
+      });
+
+      return !!userToProject; // Return true if user has access, false otherwise
+    }),
+  getProjects: protectedProcedure.query(async ({ ctx }) => {
+    // Use raw SQL query to avoid schema validation issues with missing columns
+    const projects = await ctx.db.$queryRaw`
+      SELECT p.id, p."createdAt", p."updatedAt", p.name, p."githubUrl", p."creatorId", p."deletedAt"
+      FROM "Project" p
+      JOIN "UserToProject" up ON p.id = up."projectId"
+      WHERE up."userId" = ${ctx.user.userId}
+      AND p."deletedAt" IS NULL
+    `;
+
+    return projects;
   }),
   getCommits: protectedProcedure
     .input(
@@ -258,21 +277,18 @@ export const projectRouter = createTRPCRouter({
 
       if (!question) {
         throw new Error('Question not found');
-      }
+      } // Check if the current user is the project creator using raw query
+      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+        SELECT id, "creatorId" FROM "Project" WHERE id = ${question.projectId}
+      `;
 
-      // Check if the current user is the project creator
-      const project = await ctx.db.project.findUnique({
-        where: { id: question.projectId },
-      });
-
-      if (!project) {
+      if (!projects || !projects.length) {
         throw new Error('Project not found');
       }
 
-      // Use type assertion to access creatorId
-      const projectWithCreator = project as unknown as ProjectWithCreatorId;
+      const project = projects[0];
 
-      if (projectWithCreator.creatorId !== ctx.user.userId) {
+      if (!project || project.creatorId !== ctx.user.userId) {
         throw new Error('Only the project creator can delete questions');
       }
 
@@ -471,5 +487,97 @@ export const projectRouter = createTRPCRouter({
           error: error.message || 'Failed to check repository',
         };
       }
+    }),
+  regenerateInviteLink: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if the current user is the project creator using raw query
+      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+        SELECT id, "creatorId" FROM "Project" WHERE id = ${input.projectId}
+      `;
+
+      if (!projects || !projects.length) {
+        throw new Error('Project not found');
+      }
+
+      const project = projects[0];
+
+      if (!project || project.creatorId !== ctx.user.userId) {
+        throw new Error('Only the project creator can regenerate invite links');
+      }
+
+      // Generate a new random token with timestamp to ensure uniqueness
+      const timestamp = Date.now().toString();
+      const randomBytes = crypto.randomBytes(16).toString('hex');
+      const newToken = `${randomBytes}-${timestamp}`;
+
+      console.log(
+        `Regenerating invite token for project ${input.projectId}. New token: ${newToken}`,
+      );
+
+      // Update the project with the new token using raw SQL to avoid schema validation issues
+      await ctx.db.$executeRaw`
+        UPDATE "Project" 
+        SET "inviteToken" = ${newToken}
+        WHERE id = ${input.projectId}
+      `;
+
+      return { inviteToken: newToken };
+    }),
+  hasProjectAccess: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Check if the user has access to this project
+      const membership = await ctx.db.userToProject.findFirst({
+        where: {
+          userId: ctx.user.userId!,
+          projectId: input.projectId,
+        },
+      });
+
+      return !!membership;
+    }),
+  verifyInviteToken: protectedProcedure
+    .input(z.object({ projectId: z.string(), token: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // Check if the provided token matches the project's invite token
+      const result = await ctx.db.$queryRaw<Array<{ inviteToken: string }>>`
+        SELECT "inviteToken" FROM "Project" WHERE id = ${input.projectId}
+      `;
+
+      if (!result || !result.length) {
+        throw new Error('Project not found');
+      }
+
+      const project = result[0];
+      return !!project && project.inviteToken === input.token;
+    }),
+  getProjectById: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      // First check if user has access to this project
+      const userToProject = await ctx.db.userToProject.findFirst({
+        where: {
+          projectId: input.projectId,
+          userId: ctx.user.userId!,
+        },
+      });
+
+      if (!userToProject) {
+        throw new Error('You do not have access to this project');
+      }
+
+      // Get project with inviteToken using raw query
+      const projects = await ctx.db.$queryRaw<
+        Array<{ id: string; name: string; inviteToken: string }>
+      >`
+        SELECT id, name, "inviteToken" FROM "Project" WHERE id = ${input.projectId}
+      `;
+
+      if (!projects || !projects.length) {
+        throw new Error('Project not found');
+      }
+
+      return projects[0];
     }),
 });
