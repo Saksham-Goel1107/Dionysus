@@ -441,22 +441,21 @@ const IssueList = ({ meetingId }: Props) => {
                         {msg.role === 'assistant' ? (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: msg.content
-                                .replace(/^•\s+/gm, '• ') // Format bullet points
-                                .replace(/\n\n/g, '</p><p>') // Convert double newlines to paragraphs
-                                .replace(/^([^•].+?)$/gm, '$1') // Regular lines
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-                                .replace(/\*([^\*]+)\*/g, '<em>$1</em>') // Italic text
-                                .split('\n')
-                                .map((line) => {
-                                  if (line.startsWith('•')) {
-                                    return `<div class="flex gap-2 items-start"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
-                                  }
-                                  return line;
-                                })
-                                .join(''),
-                            }}
-                          />
+                              __html: DOMPurify.sanitize(
+                                msg.content
+                                  .replace(/^•\s+/gm, '• ') // Format bullet points
+                                  .replace(/\n\n/g, '</p><p>') // Convert double newlines to paragraphs
+                                  .replace(/^([^•].+?)$/gm, '$1') // Regular lines
+                                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
+                                  .replace(/\*([^\*]+)\*/g, '<em>$1</em>') // Italic text
+                                  .split('\n')
+                                  .map((line) => {
+                                    if (line.startsWith('•')) {
+                                      return `<div class="flex gap-2 items-start"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
+                                    }
+                                    return line;
+                                  })
+                                  .join(''),
                         ) : (
                           <p className="text-foreground/80">{msg.content}</p>
                         )}
