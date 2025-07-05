@@ -247,6 +247,39 @@ export const projectRouter = createTRPCRouter({
         },
       });
     }),
+  deleteQuestion: protectedProcedure
+    .input(z.object({ questionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // First, get the question to find its projectId
+      const question = await ctx.db.question.findUnique({
+        where: { id: input.questionId },
+        select: { projectId: true },
+      });
+
+      if (!question) {
+        throw new Error('Question not found');
+      }
+
+      // Check if the current user is the project creator
+      const project = await ctx.db.project.findUnique({
+        where: { id: question.projectId },
+      });
+
+      if (!project) {
+        throw new Error('Project not found');
+      }
+
+      // Use type assertion to access creatorId
+      const projectWithCreator = project as unknown as ProjectWithCreatorId;
+
+      if (projectWithCreator.creatorId !== ctx.user.userId) {
+        throw new Error('Only the project creator can delete questions');
+      }
+
+      return await ctx.db.question.delete({
+        where: { id: input.questionId },
+      });
+    }),
   uploadMeeting: protectedProcedure
     .input(
       z.object({
