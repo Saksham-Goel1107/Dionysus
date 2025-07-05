@@ -11,12 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set dummy env vars for build
+        run: |
+          echo "STRIPE_SECRET_KEY=dummy" >> .env
+          echo "NEXT_PUBLIC_SKIP_ENV_VALIDATION=true" >> .env
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Build
+        run: npm run build
+      - name: Lint
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx
+      - name: Prettier check
+        run: npx prettier --check .
+      - name: Type check
+        run: npm run typecheck
       - name: Check for uncommitted changes after build/lint/format
         run: |
-          npm ci --legacy-peer-deps
-          npm run build || true
-          npx eslint . --ext .js,.jsx,.ts,.tsx || true
-          npx prettier --check . || true
           git status
           git diff --exit-code
         shell: bash
