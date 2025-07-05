@@ -17,6 +17,7 @@ jobs:
           echo "NEXT_PUBLIC_SKIP_ENV_VALIDATION=true" >> .env
           echo "DATABASE_URL=postgres://user:pass@localhost:5432/db" >> .env
           echo "NODE_ENV=development" >> .env
+          echo "HUGGINGFACE_API_KEY=dummy" >> .env
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       - name: Build

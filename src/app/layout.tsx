@@ -21,7 +21,7 @@ import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
-import { dark } from '@clerk/themes';
+import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 
 export const metadata: Metadata = {
   title: {
@@ -105,10 +105,6 @@ export const metadata: Metadata = {
   },
 };
 
-export const viewport = {
-  themeColor: '#111827',
-};
-
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
@@ -123,35 +119,27 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <ErrorBoundary>
-        <ClerkProvider
-          appearance={{
-            baseTheme: dark,
-          }}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
         >
-          <MultisessionAppSupport>
-            <body>
-              {isMaintenance ? (
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="system"
-                  enableSystem
-                  disableTransitionOnChange
-                >
-                  <MaintenanceScreen />
-                  <BlockInspectAndContext />
-                  <CustomContextMenu />
-                  <Analytics />
-                  <SpeedInsights />
-                </ThemeProvider>
-              ) : (
-                <>
-                  <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                  <ThemeProvider
-                    attribute="class"
-                    defaultTheme="system"
-                    enableSystem
-                    disableTransitionOnChange
-                  >
+          <ClerkProviderWithTheme>
+            <MultisessionAppSupport>
+              <body>
+                {isMaintenance ? (
+                  <>
+                    <MaintenanceScreen />
+                    <BlockInspectAndContext />
+                    <CustomContextMenu />
+                    <Analytics />
+                    <SpeedInsights />
+                  </>
+                ) : (
+                  <>
+                    <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
+
                     <CookieBanner />
                     <TRPCReactProvider>
                       {userId ? <Providers>{children}</Providers> : <>{children}</>}
@@ -162,17 +150,17 @@ export default async function RootLayout({
                     <BlockInspectAndContext />
                     <Analytics />
                     <SpeedInsights />
-                  </ThemeProvider>
-                  <Script
-                    src="https://s.pageclip.co/v1/pageclip.js"
-                    charSet="utf-8"
-                    strategy="afterInteractive"
-                  ></Script>
-                </>
-              )}
-            </body>
-          </MultisessionAppSupport>
-        </ClerkProvider>
+                    <Script
+                      src="https://s.pageclip.co/v1/pageclip.js"
+                      charSet="utf-8"
+                      strategy="afterInteractive"
+                    ></Script>
+                  </>
+                )}
+              </body>
+            </MultisessionAppSupport>
+          </ClerkProviderWithTheme>
+        </ThemeProvider>
       </ErrorBoundary>
     </html>
   );
