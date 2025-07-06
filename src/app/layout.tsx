@@ -118,16 +118,16 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <ErrorBoundary>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <ClerkProviderWithTheme>
-            <MultisessionAppSupport>
-              <body>
+      <body>
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ClerkProviderWithTheme>
+              <MultisessionAppSupport>
                 {isMaintenance ? (
                   <>
                     <MaintenanceScreen />
@@ -139,7 +139,6 @@ export default async function RootLayout({
                 ) : (
                   <>
                     <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-
                     <CookieBanner />
                     <TRPCReactProvider>
                       {userId ? <Providers>{children}</Providers> : <>{children}</>}
@@ -157,11 +156,11 @@ export default async function RootLayout({
                     ></Script>
                   </>
                 )}
-              </body>
-            </MultisessionAppSupport>
-          </ClerkProviderWithTheme>
-        </ThemeProvider>
-      </ErrorBoundary>
+              </MultisessionAppSupport>
+            </ClerkProviderWithTheme>
+          </ThemeProvider>
+        </ErrorBoundary>
+      </body>
     </html>
   );
 }
