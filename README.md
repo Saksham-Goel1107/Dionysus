@@ -19,6 +19,18 @@
 
 ---
 
+## 🏆 Why Dionysus?
+
+Dionysus is designed for modern, fast-moving engineering teams who need:
+
+- **Deep, actionable insights** into their codebase and team activity
+- **AI-powered automation** for code reviews, documentation, and knowledge sharing
+- **Enterprise security** and compliance out-of-the-box
+- **Seamless collaboration** across distributed teams
+- **Scalable, robust infrastructure** for mission-critical projects
+
+---
+
 ## 🚀 Enterprise Overview
 
 **Dionysus** is a comprehensive, enterprise-grade GitHub analytics and collaboration platform built for modern development teams. Leveraging state-of-the-art AI technologies, Dionysus transforms how teams interact with their repositories by providing:
@@ -28,7 +40,12 @@
 - **Team Collaboration Hub**: Centralized meeting transcription, project management, and asynchronous knowledge sharing
 - **Enterprise Security**: Role-based access control, comprehensive audit logs, and secure metadata management
 
-Built for scale, security, and seamless integration, Dionysus enhances every aspect of the GitHub workflow while maintaining enterprise-level data protection standards.
+**Key Differentiators:**
+
+- **AI-Driven Everything:** From code search to documentation, Dionysus leverages Gemini Pro and Assembly AI for deep, contextual understanding.
+- **Admin & Compliance:** Advanced admin suite with user management, audit logging, and compliance tools.
+- **DevOps-Ready:** Built-in CI/CD, rate limiting, and monitoring for production-grade reliability.
+- **Customizable & Extensible:** Modular architecture, API-first design, and support for custom integrations.
 
 ---
 
@@ -283,6 +300,15 @@ Built for scale, security, and seamless integration, Dionysus enhances every asp
 
 <p align="center">
   <img src="public/undraw_developer.svg" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image9.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image2.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image3.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image4.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image5.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image6.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image7.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image8.png" alt="Dionysus Platform" width="400" />
 </p>
 
 ---
@@ -338,4 +364,6 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 
 This project is protected by a proprietary license. The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
 
+<div align="center">
 Copyright © 2025 Dionysus. All Rights Reserved.
+</div>
