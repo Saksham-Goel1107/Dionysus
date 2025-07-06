@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
 import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
+import { redirect } from 'next/navigation';
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -14,6 +15,11 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);
+
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
+const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
+const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -40,6 +46,34 @@ export default clerkMiddleware(async (auth, request) => {
   const pathname = request.nextUrl.pathname;
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
+
+  if (isAdminRoute(request)) {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+    let userEmail = undefined;
+    const emailAddresses = Array.isArray(sessionClaims?.email_addresses)
+      ? sessionClaims.email_addresses
+      : [];
+    const primaryEmailAddressId = sessionClaims?.primary_email_address_id || '';
+    if (emailAddresses.length > 0 && primaryEmailAddressId) {
+      userEmail = emailAddresses.find(
+        (email: { id: string; emailAddress: string }) => email.id === primaryEmailAddressId,
+      )?.emailAddress;
+    }
+    if (!userEmail && emailAddresses.length > 0) {
+      userEmail = emailAddresses.find(
+        (email: { emailAddress: string }) => email.emailAddress === ADMIN_EMAIL,
+      )?.emailAddress;
+    }
+    if (!userEmail && sessionClaims?.email) {
+      userEmail = sessionClaims.email;
+    }
+    if (userEmail !== ADMIN_EMAIL && userId !== ADMIN_USER_ID) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
 
   if ((isBlockPage || isRateLimitPage) && !request.cookies.has('middleware_redirect')) {
     return NextResponse.redirect(new URL('/', request.url));
