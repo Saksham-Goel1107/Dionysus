@@ -8,6 +8,7 @@ const CustomContextMenu = () => {
   const [pos, setPos] = React.useState({ x: 0, y: 0 });
   const [targetElement, setTargetElement] = React.useState<HTMLElement | null>(null);
   const { resolvedTheme } = useTheme();
+  const [isReading, setIsReading] = React.useState(false);
 
   React.useEffect(() => {
     const onContextMenu = (e: MouseEvent) => {
@@ -245,6 +246,61 @@ const CustomContextMenu = () => {
     setVisible(false);
   };
 
+  const isSpeechRecognitionSupported =
+    typeof window !== 'undefined' &&
+    ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+  const isSpeechSynthesisSupported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+
+  const startVoiceTyping = (input: HTMLInputElement | HTMLTextAreaElement) => {
+    if (!isSpeechRecognitionSupported)
+      return toast.error('Voice typing not supported in this browser.');
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      const start = input.selectionStart ?? input.value.length;
+      const end = input.selectionEnd ?? input.value.length;
+      const value = input.value;
+      input.value = value.slice(0, start) + transcript + value.slice(end);
+      input.selectionStart = input.selectionEnd = start + transcript.length;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      toast.success('Voice input added.');
+    };
+    recognition.onerror = (event: any) => {
+      toast.error('Voice typing error: ' + event.error);
+    };
+    recognition.start();
+    toast.info('Voice typing started. Speak now...');
+  };
+
+  const handleReadAloud = (text: string) => {
+    if (!isSpeechSynthesisSupported)
+      return toast.error('Read aloud not supported in this browser.');
+    window.speechSynthesis.cancel();
+    const utter = new window.SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    utter.rate = 1;
+    utter.pitch = 1;
+    utter.volume = 1;
+    utter.onend = () => setIsReading(false);
+    utter.onerror = () => setIsReading(false);
+    setIsReading(true);
+    window.speechSynthesis.speak(utter);
+    toast.info('Reading aloud...');
+  };
+
+  const handleStopReading = () => {
+    if (isSpeechSynthesisSupported) {
+      window.speechSynthesis.cancel();
+      setIsReading(false);
+      toast.info('Stopped reading.');
+    }
+  };
+
   if (!visible) return null;
 
   const buttonClass =
@@ -274,6 +330,58 @@ const CustomContextMenu = () => {
       {canSelectAll && (
         <button onClick={handleSelectAll} className={buttonClass}>
           Select All
+        </button>
+      )}
+      {canPaste &&
+        isSpeechRecognitionSupported &&
+        targetElement &&
+        (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT') && (
+          <button
+            onClick={() => {
+              startVoiceTyping(targetElement as HTMLInputElement | HTMLTextAreaElement);
+              setVisible(false);
+            }}
+            className={buttonClass}
+          >
+            Voice Typing
+          </button>
+        )}
+      {isSpeechSynthesisSupported &&
+        (() => {
+          let text = '';
+          if (window.getSelection && window.getSelection()?.toString()) {
+            text = window.getSelection()!.toString();
+          } else if (targetElement) {
+            if (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT') {
+              text = (targetElement as HTMLInputElement | HTMLTextAreaElement).value;
+            } else if (targetElement.isContentEditable) {
+              text = targetElement.innerText;
+            } else {
+              text = targetElement.textContent || '';
+            }
+          }
+          text = text.trim();
+          return text ? (
+            <button
+              onClick={() => {
+                handleReadAloud(text);
+                setVisible(false);
+              }}
+              className={buttonClass}
+            >
+              Read Aloud
+            </button>
+          ) : null;
+        })()}
+      {isSpeechSynthesisSupported && isReading && (
+        <button
+          onClick={() => {
+            handleStopReading();
+            setVisible(false);
+          }}
+          className={buttonClass + ' text-red-600 dark:text-red-400'}
+        >
+          Stop Reading
         </button>
       )}
 
