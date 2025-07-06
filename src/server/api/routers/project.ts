@@ -72,12 +72,21 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Backend project limit validation
       const user = await ctx.db.user.findUnique({
         where: { id: ctx.user.userId! },
-        select: { credits: true, emailAddress: true, firstName: true },
+        select: { credits: true, emailAddress: true, firstName: true, isPro: true },
       });
       if (!user) {
         throw new Error('User not found');
+      }
+      const userProjectsCount = await ctx.db.userToProject.count({
+        where: { userId: ctx.user.userId! },
+      });
+      if (!user.isPro && userProjectsCount >= 5) {
+        throw new Error(
+          'You have reached the free project limit. Upgrade to create more projects.',
+        );
       }
 
       const currentCredits = user.credits || 0;
@@ -578,5 +587,17 @@ export const projectRouter = createTRPCRouter({
       }
 
       return projects[0];
+    }),
+  leaveProject: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Remove the current user from the project
+      await ctx.db.userToProject.deleteMany({
+        where: {
+          projectId: input.projectId,
+          userId: ctx.user.userId!,
+        },
+      });
+      return { success: true };
     }),
 });

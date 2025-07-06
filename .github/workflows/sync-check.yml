@@ -9,30 +9,57 @@ on:
 jobs:
   check-sync:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set dummy env vars for build
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dummy environment
         run: |
           echo "STRIPE_SECRET_KEY=dummy" >> .env
           echo "NEXT_PUBLIC_SKIP_ENV_VALIDATION=true" >> .env
           echo "DATABASE_URL=postgres://user:pass@localhost:5432/db" >> .env
           echo "NODE_ENV=development" >> .env
           echo "HUGGINGFACE_API_KEY=dummy" >> .env
-      - name: Clear Next.js cache
+
+      - name: Clear .next build and types cache
         run: rm -rf .next
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # or match your `.nvmrc` / package.json engines
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-      - name: Build
+
+      - name: Type Check (Clean)
+        run: tsc --noEmit
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Build Project
         run: npm run build
-      - name: Lint
+
+      - name: Lint Code
         run: npx eslint . --ext .js,.jsx,.ts,.tsx
-      - name: Prettier check
-        run: npx prettier --write .
-      - name: Type check
-        run: npm run typecheck
+
+      - name: Check Formatting with Prettier
+        run: npx prettier --check .
+
       - name: Check for uncommitted changes after build/lint/format
         run: |
+          echo "::group::Git Status"
           git status
+          echo "::endgroup::"
+          
+          echo "::group::Git Diff"
           git diff
-        shell: bash
+          echo "::endgroup::"
+
+      - name: Fail if changes are found
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Found uncommitted changes after running checks."
+            exit 1
+          fi

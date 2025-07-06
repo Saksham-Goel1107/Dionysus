@@ -5,6 +5,7 @@ import Link from 'next/link';
 import CommitTabs from './_components/CommitTabs';
 import AskQuestionCard from './_components/AskQuestionCard';
 import MeetingCard from './_components/MeetingCard';
+import { api } from '@/trpc/react';
 import ArchiveButton from './_components/ArchiveButton';
 const InviteButton = dynamic(() => import('./_components/InviteButton'), { ssr: false });
 
@@ -12,11 +13,51 @@ import TeamMembers from './_components/TeamMembers';
 import dynamic from 'next/dynamic';
 import RepoMetricsCard from './_components/RepoMetricsCard';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = {};
 
 const Page = ({}: Props) => {
-  const { project, projects } = useProject();
+  const { project, projects, projectId } = useProject();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isLeavingLoading, setisLeavingLoading] = useState(false);
+  const utils = api.useContext();
+  const { data: isCreator } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
+
+  const leaveMutation = api.project.leaveProject.useMutation({
+    onSuccess: async () => {
+      setShowConfirm(false);
+      setisLeavingLoading(false);
+      await utils.project.invalidate();
+      toast.success('You have left the project.');
+    },
+    onError: (error) => {
+      setShowConfirm(false);
+      setisLeavingLoading(false);
+      toast.error(error?.message || 'Failed to leave project.');
+    },
+  });
+
+  const handleLeaveProject = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmLeaveProject = async () => {
+    if (!projectId) {
+      setisLeavingLoading(false);
+      return;
+    }
+    setisLeavingLoading(true);
+    leaveMutation.mutate({ projectId });
+  };
+
+  const cancelLeaveProject = () => {
+    setShowConfirm(false);
+  };
 
   if (!projects || projects.length === 0) {
     return (
@@ -96,6 +137,43 @@ const Page = ({}: Props) => {
             </Link>
             <InviteButton />
             <ArchiveButton />
+            {!isCreator && (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleLeaveProject}
+                  className="font-bold"
+                >
+                  Leave Project
+                </Button>
+                {showConfirm && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                      <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Leave Project?
+                      </h3>
+                      <p className="mb-6 text-sm text-gray-700 dark:text-gray-300">
+                        Are you sure you want to leave this project? You will lose access to all its
+                        resources.
+                      </p>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={cancelLeaveProject}>
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={confirmLeaveProject}
+                          disabled={isLeavingLoading}
+                        >
+                          {isLeavingLoading ? 'Leaving...' : 'Yes, Leave'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 

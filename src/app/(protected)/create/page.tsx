@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/input';
 import useRefetch from '@/hooks/use-refetch';
 import { api } from '@/trpc/react';
 import { FormInput } from '@/types/FormInput';
-import { FileWarning, Info } from 'lucide-react';
+import { FileWarning, Info, Loader2, Lock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import useProject from '@/hooks/use-project';
+import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 type Props = {};
 
-// Reusable lock indicator component
 const LockIndicator = () => (
   <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-muted-foreground cursor-help group">
     <span>Locked</span>
@@ -33,10 +35,14 @@ const LockIndicator = () => (
 );
 
 const Page = ({}: Props) => {
+  const { projects } = useProject();
+  const [hasProPlan, setHasProPlan] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const { register, handleSubmit, reset, watch } = useForm<FormInput>();
   const createProject = api.project.createProject.useMutation();
   const checkCredits = api.project.checkCredits.useMutation();
   const [urlLocked, setUrlLocked] = React.useState(false);
+  const { resolvedTheme } = useTheme();
 
   const refetch = useRefetch();
 
@@ -48,9 +54,27 @@ const Page = ({}: Props) => {
       ? checkCredits.data.fileCount <= checkCredits.data.userCredits
       : true;
 
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
+        const data = await res.json();
+        setHasProPlan(data.pro);
+      } catch (error) {
+        setHasProPlan(false);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
   function onSubmit(data: FormInput) {
+    if (!hasProPlan && projects?.length >= 5) {
+      toast.error('You have reached the free project limit. Upgrade to create more projects.');
+      return;
+    }
     if (!!checkCredits.data) {
-      // Only proceed if repository is valid
       if (checkCredits.data.isValid) {
         createProject.mutate(
           {
@@ -103,11 +127,53 @@ const Page = ({}: Props) => {
   }
 
   const handleRecheck = () => {
-    // Reset the validation state
     checkCredits.reset();
     setUrlLocked(false);
     toast.info('Fields unlocked. You can now edit your project details.');
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      </div>
+    );
+  }
+
+  if (!hasProPlan && (projects?.length || 0) >= 5) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-6 px-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900/30">
+          <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
+        </div>
+        <h2
+          className={`text-center text-2xl font-bold tracking-tight ${
+            resolvedTheme === 'dark' ? 'text-yellow-100' : 'text-yellow-700'
+          }`}
+        >
+          Upgrade to Premium
+        </h2>
+        <p
+          className={`text-center text-base ${
+            resolvedTheme === 'dark' ? 'text-yellow-200' : 'text-yellow-700'
+          } max-w-md`}
+        >
+          You&apos;ve reached the free project limit.
+          <br />
+          Upgrade your plan to create unlimited projects and unlock all features.
+        </p>
+        <Link href="/subscriptions" passHref legacyBehavior>
+          <Button
+            size="lg"
+            className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs shadow-lg"
+          >
+            Upgrade Now
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full items-center justify-center gap-12 flex-col sm:flex-row">
