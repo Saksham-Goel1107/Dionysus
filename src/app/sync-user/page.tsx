@@ -8,7 +8,12 @@ const Page = async ({}: Props) => {
   const { userId } = await auth();
 
   if (!userId) {
-    throw new Error('User not found');
+    return redirect('/sign-in');
+  }
+
+  if (typeof window !== 'undefined') {
+    window.location.href = '/dashboard';
+    return null;
   }
 
   const client = await clerkClient();

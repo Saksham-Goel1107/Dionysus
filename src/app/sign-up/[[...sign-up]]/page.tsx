@@ -18,18 +18,13 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
               You are already signed in
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-center text-base max-w-xs">
-              Would you like to go to your dashboard or sign up or sign in with another account?
+              Would you like to go to your dashboard or sign in with another account?
             </p>
           </div>
           <div className="w-full flex flex-col items-center gap-3">
             <Link href="/dashboard" className="w-full">
               <button className="w-full py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">
                 Go to Dashboard
-              </button>
-            </Link>
-            <Link href="/sign-up?__clerk_add_account=true" className="w-full">
-              <button className="w-full py-2 px-4 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold border border-gray-300 dark:border-gray-700">
-                Sign up for another account
               </button>
             </Link>
             <Link href="/sign-in?__clerk_add_account=true" className="w-full">
@@ -49,7 +44,7 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
       <div className="absolute top-1/2 left-1/2 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-tr from-blue-400 via-purple-400 to-pink-400 opacity-10 rounded-full blur-2xl z-0" />
       <div className="relative w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-2xl bg-white/90 dark:bg-gray-950/90 border border-gray-200 dark:border-gray-800 flex flex-col items-center animate-fade-in z-10 backdrop-blur-md">
         <div className="mb-6 flex flex-col items-center">
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 dark:text-blue-300 tracking-tight mb-1">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 dark:text-blue-300 tracking-tight mb-1 text-center">
             Welcome To Dionysus
           </h1>
           <p className="text-gray-500 dark:text-gray-400 text-center text-base max-w-xs">

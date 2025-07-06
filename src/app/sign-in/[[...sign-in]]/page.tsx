@@ -8,7 +8,6 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
   const isAddingAccount = Boolean(sparams?.__clerk_add_account);
 
   if (userId && !isAddingAccount) {
-    // Show dashboard and add account options instead of redirecting
     return (
       <div className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-black via-gray-900 to-gray-800 overflow-hidden">
         <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-600 opacity-30 rounded-full blur-3xl z-0 animate-pulse" />
@@ -20,7 +19,7 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
               You are already signed in
             </h1>
             <p className="text-gray-500 dark:text-gray-400 text-center text-base max-w-xs">
-              Would you like to go to your dashboard or sign in or sign up with another account?
+              Would you like to go to your dashboard or sign in with another account?
             </p>
           </div>
           <div className="w-full flex flex-col items-center gap-3">
@@ -32,11 +31,6 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
             <Link href="/sign-in?__clerk_add_account=true" className="w-full">
               <button className="w-full py-2 px-4 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold border border-gray-300 dark:border-gray-700">
                 Sign in with another account
-              </button>
-            </Link>
-            <Link href="/sign-up?__clerk_add_account=true" className="w-full">
-              <button className="w-full py-2 px-4 rounded-lg bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-semibold border border-gray-300 dark:border-gray-700">
-                Sign up for another account
               </button>
             </Link>
           </div>

@@ -304,6 +304,7 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
   <img src="Demo/image.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image2.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image3.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image10.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image4.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image5.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image6.png" alt="Dionysus Platform" width="400" />

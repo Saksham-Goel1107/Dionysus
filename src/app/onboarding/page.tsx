@@ -188,6 +188,7 @@ export default function OnboardingComponent() {
       await markOnboardingComplete();
       if (typeof window !== 'undefined') {
         localStorage.removeItem(ONBOARDING_FINISHED_KEY);
+        window.location.href = '/dashboard';
       }
     } catch {}
   }, []);
@@ -271,7 +272,7 @@ export default function OnboardingComponent() {
               setRedirecting(true);
               await handleComplete();
               setShowConfirm(null);
-              router.replace('/dashboard');
+              // router.replace('/dashboard'); // removed, handled in handleComplete
             }}
             onCancel={() => setShowConfirm(null)}
           />

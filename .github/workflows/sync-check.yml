@@ -45,7 +45,7 @@ jobs:
         run: npx eslint . --ext .js,.jsx,.ts,.tsx
 
       - name: Check Formatting with Prettier
-        run: npx prettier --check .
+        run: npx prettier --write .
 
       - name: Check for uncommitted changes after build/lint/format
         run: |
