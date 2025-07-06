@@ -391,13 +391,23 @@ const CustomContextMenu = () => {
         Reload
       </button>
       <button onClick={handleBack} className={buttonClass}>
-        Back
+        Back <span className="ml-[76px] text-slate-500 text-[10px]">Alt + ←</span>
       </button>
       <button onClick={handleForward} className={buttonClass}>
-        Forward
+        Forward <span className="ml-[57px] text-slate-500 text-[10px]">Alt + →</span>
       </button>
       <button onClick={handleSaveAs} className={buttonClass}>
-        Save As
+        Save As <span className="ml-[60px] text-slate-500 text-[10px]">Ctrl + S</span>
+      </button>
+      <button
+        onClick={() => {
+          setVisible(false);
+          window.print();
+          setVisible(false);
+        }}
+        className={buttonClass}
+      >
+        Print Screen <span className="ml-[36px] text-slate-500 text-[10px]">Ctrl + P</span>
       </button>
 
       <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
@@ -405,6 +415,14 @@ const CustomContextMenu = () => {
       <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
         Share Site
       </button>
+      <a
+        target="_blank"
+        rel="noopener noreferrer"
+        href="https://github.com/Saksham-Goel1107/dionysus/issues"
+        className={`${buttonClass} text-blue-600 dark:text-red-500`}
+      >
+        Report an issue
+      </a>
     </div>
   );
 };

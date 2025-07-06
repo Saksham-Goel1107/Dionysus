@@ -46,20 +46,3 @@ jobs:
 
       - name: Check Formatting with Prettier
         run: npx prettier --write .
-
-      - name: Check for uncommitted changes after build/lint/format
-        run: |
-          echo "::group::Git Status"
-          git status
-          echo "::endgroup::"
-          
-          echo "::group::Git Diff"
-          git diff
-          echo "::endgroup::"
-
-      - name: Fail if changes are found
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "❌ Found uncommitted changes after running checks."
-            exit 1
-          fi

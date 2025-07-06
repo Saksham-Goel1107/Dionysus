@@ -146,9 +146,14 @@ const FEATURE_ICONS = {
   help: '🆘',
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare global {
+  interface Window {
+    Clerk?: any;
+  }
+}
+
 export default function OnboardingComponent() {
-  const { user } = useUser();
-  const router = useRouter();
   const [theme, toggleTheme] = useTheme();
   const [step, setStep] = React.useState(0);
   const [showMeetDev, setShowMeetDev] = React.useState(false);
@@ -188,7 +193,26 @@ export default function OnboardingComponent() {
       await markOnboardingComplete();
       if (typeof window !== 'undefined') {
         localStorage.removeItem(ONBOARDING_FINISHED_KEY);
-        window.location.href = '/dashboard';
+        setRedirecting(true);
+        const pollForOnboarding = async (maxTries = 15, interval = 800) => {
+          for (let i = 0; i < maxTries; i++) {
+            // @ts-ignore
+            if (window.Clerk && window.Clerk.user) {
+              // @ts-ignore
+              await window.Clerk.user.reload();
+            }
+            // Use useUser hook to get latest user
+            const user = window.Clerk?.user || null;
+            if (user && user.publicMetadata && user.publicMetadata.onboardingComplete) {
+              window.location.href = '/dashboard';
+              return;
+            }
+            await new Promise((res) => setTimeout(res, interval));
+          }
+          // Fallback: force reload to get new session
+          window.location.reload();
+        };
+        pollForOnboarding();
       }
     } catch {}
   }, []);
@@ -260,7 +284,7 @@ export default function OnboardingComponent() {
               disabled={redirecting}
               className={`px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors${redirecting ? ' opacity-60 cursor-not-allowed' : ''}`}
             >
-              Go to Dashboard
+              {redirecting ? 'Redirecting...' : 'Go to Dashboard'}
             </button>
           </div>
         </div>
