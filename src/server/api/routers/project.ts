@@ -4,6 +4,7 @@ import { pullCommits } from '@/lib/github';
 import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 import crypto from 'crypto';
+import type { Project } from '@/types/Project';
 
 interface ProjectWithCreatorId {
   id: string;
@@ -159,7 +160,7 @@ export const projectRouter = createTRPCRouter({
     }),
   getProjects: protectedProcedure.query(async ({ ctx }) => {
     // Use raw SQL query to avoid schema validation issues with missing columns
-    const projects = await ctx.db.$queryRaw`
+    const projects = await ctx.db.$queryRaw<Project[]>`
       SELECT p.id, p."createdAt", p."updatedAt", p.name, p."githubUrl", p."creatorId", p."deletedAt"
       FROM "Project" p
       JOIN "UserToProject" up ON p.id = up."projectId"
@@ -568,10 +569,8 @@ export const projectRouter = createTRPCRouter({
       }
 
       // Get project with inviteToken using raw query
-      const projects = await ctx.db.$queryRaw<
-        Array<{ id: string; name: string; inviteToken: string }>
-      >`
-        SELECT id, name, "inviteToken" FROM "Project" WHERE id = ${input.projectId}
+      const projects = await ctx.db.$queryRaw<Project[]>`
+        SELECT id, name, "githubUrl", "creatorId", "deletedAt", "createdAt", "updatedAt", "inviteToken" FROM "Project" WHERE id = ${input.projectId}
       `;
 
       if (!projects || !projects.length) {

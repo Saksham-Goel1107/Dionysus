@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const useProject = () => {
   const { data: projectsRaw, isLoading } = api.project.getProjects.useQuery();
-  const projects: Project[] = React.useMemo(
+  const projects = React.useMemo(
     () => (Array.isArray(projectsRaw) ? projectsRaw : []),
     [projectsRaw],
   );
@@ -14,10 +14,7 @@ const useProject = () => {
   const pathname = usePathname();
   const router = useRouter();
 
-  interface Project {
-    id: string;
-  }
-  const projectExists: boolean = projects.some((project: Project) => project.id === projectId);
+  const projectExists: boolean = projects.some((project) => project.id === projectId);
 
   useEffect(() => {
     if (!isLoading && projects && projectId && !projectExists) {

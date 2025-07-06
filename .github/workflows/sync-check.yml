@@ -18,6 +18,9 @@ jobs:
           echo "DATABASE_URL=postgres://user:pass@localhost:5432/db" >> .env
           echo "NODE_ENV=development" >> .env
           echo "HUGGINGFACE_API_KEY=dummy" >> .env
+      - name: Clear Next.js cache
+        run: rm -rf .next
+
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       - name: Build
@@ -27,7 +30,7 @@ jobs:
       - name: Prettier check
         run: npx prettier --write .
       - name: Type check
-        run: npm run typecheck || true      # Will fix this in some time. Till then we have to live with this.
+        run: npm run typecheck
       - name: Check for uncommitted changes after build/lint/format
         run: |
           git status
