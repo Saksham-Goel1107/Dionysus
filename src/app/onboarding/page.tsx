@@ -1,12 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
 import { markOnboardingComplete } from './completeOnboardingAction';
 import Image from 'next/image';
 
-const THEME_KEY = 'theme-preference';
+const THEME_KEY = 'theme';
 const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
 
 function useTheme() {

@@ -12,6 +12,12 @@ type Props = {};
 const CommitLog = ({}: Props) => {
   const { projectId, project } = useProject();
   const { data: commits } = api.project.getCommits.useQuery({ projectId });
+  const sortedCommits = React.useMemo(() => {
+    if (!commits) return [];
+    return [...commits]
+      .sort((a, b) => new Date(b.commitDate).getTime() - new Date(a.commitDate).getTime())
+      .slice(0, 10);
+  }, [commits]);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
@@ -21,11 +27,11 @@ const CommitLog = ({}: Props) => {
   return (
     <div className="w-full">
       <ul className="space-y-6 overflow-x-hidden">
-        {commits?.map((commit, commitIdx) => (
+        {sortedCommits.map((commit, commitIdx) => (
           <li key={commit.id} className="relative flex items-start gap-x-4">
             <div
               className={cn(
-                commitIdx === commits.length - 1 ? 'h-6' : '-bottom-6',
+                commitIdx === (commits?.length ?? 0) - 1 ? 'h-6' : '-bottom-6',
                 'absolute left-0 top-0 flex justify-center',
               )}
             >
@@ -35,7 +41,6 @@ const CommitLog = ({}: Props) => {
             </div>
 
             <>
-              {/* Always show the same image component, but wrap in a link only if username exists */}
               {commit.commitAuthorUsername ? (
                 <a
                   href={`https://github.com/${commit.commitAuthorUsername}`}
@@ -91,6 +96,15 @@ const CommitLog = ({}: Props) => {
                 >
                   {commit.commitMessage}
                 </span>
+                <div className="text-xs text-gray-400 mt-1">
+                  {new Date(commit.commitDate).toLocaleString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
                 <pre className="leadinng-6 mt-2 whitespace-pre-wrap text-sm text-gray-500">
                   {commit.summary}
                 </pre>

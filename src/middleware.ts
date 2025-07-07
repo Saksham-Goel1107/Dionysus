@@ -179,7 +179,28 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set(
+    'Content-Security-Policy',
+    [
+      "default-src 'self';",
+      "img-src 'self' https: data:;",
+      "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com;",
+      "style-src 'self' 'unsafe-inline' https:;",
+      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com;",
+      "font-src 'self' https: data:;",
+      "frame-src 'self' https://js.stripe.com https://*.stripe.com;",
+      "object-src 'none';",
+      "frame-ancestors 'none';",
+      "base-uri 'self';",
+      "form-action 'self';",
+      'upgrade-insecure-requests;',
+    ].join(' '),
+  );
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  return response;
 });
 
 export const config = {

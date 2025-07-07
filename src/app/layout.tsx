@@ -118,6 +118,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
+      <head>
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
+      </head>
       <body>
         <ErrorBoundary>
           <ThemeProvider
