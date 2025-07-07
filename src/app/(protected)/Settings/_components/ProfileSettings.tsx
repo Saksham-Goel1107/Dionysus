@@ -9,6 +9,8 @@ export default function ProfileSettings() {
           <Image
             src="/gemini.png"
             alt="Avatar"
+            width={100}
+            height={100}
             className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-200 shadow"
           />
           <button className="btn btn-outline w-full md:w-auto text-xs sm:text-sm" disabled>
