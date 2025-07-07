@@ -12,6 +12,7 @@ const isPublicRoute = createRouteMatcher([
   '/privacy(.*)',
   '/terms(.*)',
   '/api/create(.*)',
+  '/support(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);

@@ -35,28 +35,41 @@ export function Footer() {
           <Link href="/terms" className="text-sm font-medium transition-colors hover:text-primary">
             Terms & Conditions
           </Link>
+          <Link
+            href="/support"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            Support
+          </Link>
         </div>
         <div className="flex items-center gap-4">
-          <Link
+          <a
+            rel="noopener noreferrer"
             href="https://github.com/Saksham-Goel1107/Dionysus"
             target="_blank"
             className="hover:text-primary"
           >
             <Github className="h-5 w-5" />
             <span className="sr-only">GitHub</span>
-          </Link>
-          <Link href="https://x.com/Saksham1199805" target="_blank" className="hover:text-primary">
+          </a>
+          <a
+            rel="noopener noreferrer"
+            href="https://x.com/Saksham1199805"
+            target="_blank"
+            className="hover:text-primary"
+          >
             <Twitter className="h-5 w-5" />
             <span className="sr-only">Twitter</span>
-          </Link>
-          <Link
+          </a>
+          <a
+            rel="noopener noreferrer"
             href="https://www.linkedin.com/in/saksham-goel-88b74b33a"
             target="_blank"
             className="hover:text-primary"
           >
             <Linkedin className="h-5 w-5" />
             <span className="sr-only">LinkedIn</span>
-          </Link>
+          </a>
         </div>
       </div>
       <div className="container py-4 text-center text-sm text-muted-foreground md:py-2">

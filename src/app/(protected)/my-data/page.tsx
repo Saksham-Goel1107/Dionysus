@@ -9,6 +9,7 @@ import { useUser } from '@clerk/nextjs';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { myAction } from '../Settings/actions';
 import { useReverification } from '@clerk/nextjs';
+import { sendDataExportWarningEmail } from '@/lib/email';
 
 export default function MyDataPage() {
   const { user, isLoaded } = useUser();
@@ -59,7 +60,6 @@ export default function MyDataPage() {
   };
 
   const doExport = async () => {
-    
     setIsExporting(true);
     setExportConfirmOpen(false);
     const res = await fetch('/api/export-user-data');
@@ -84,6 +84,19 @@ export default function MyDataPage() {
     toast.success('Your data has been exported and password-protected.');
     setIsExporting(false);
     setStep(3);
+    try {
+      await fetch('/api/send-export-warning', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: userInfo.email,
+          name: userInfo.firstName,
+        }),
+      });
+    } catch (err) {
+      toast.error('Warning Email Sending Failed');
+      console.error('Failed to send export warning email', err);
+    }
   };
 
   // Step 3: Decrypt handler
@@ -158,7 +171,8 @@ export default function MyDataPage() {
           <p className="mb-2 text-sm">
             For your security, please type{' '}
             <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1">CONFIRM EXPORT</span>{' '}
-            below to proceed. You may also be prompted to re-verify yourself before exporting you data.
+            below to proceed. You may also be prompted to re-verify yourself before exporting you
+            data.
           </p>
           <input
             className="border p-2 rounded w-full mb-2"
