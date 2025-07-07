@@ -150,7 +150,9 @@
   "devDependencies": {
     "@mermaid-js/mermaid-cli": "^11.6.0",
     "@prisma/client": "^6.11.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/eslint": "^8.56.10",
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20.14.10",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^18.3.3",

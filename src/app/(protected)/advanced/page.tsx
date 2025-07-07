@@ -17,6 +17,7 @@ import CommitGraphModal from '@/components/ui/CommitGraphModal';
 import LogoGenerator from '@/components/logo-generator';
 import MetaDataGenerator from './MetaDataGenerator';
 import RobotSitemapGenerator from './RobotSitemapGenerator';
+import MediaOptimizer from './MediaOptimizer';
 
 const Advanced = () => {
   const { resolvedTheme } = useTheme();
@@ -59,6 +60,10 @@ const Advanced = () => {
           <JWTSecretGenerator />
           <CodeAnalytics />
           <Wiki />
+          
+          {/* Media Optimizer Component */}
+          <MediaOptimizer />
+          
           <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-blue-900/60 dark:via-blue-950/80 dark:to-blue-900/60 rounded-2xl border border-blue-300 dark:border-blue-700 shadow-xl flex flex-col items-center relative overflow-hidden">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-200 dark:bg-blue-800 rounded-full opacity-30 blur-2xl z-0" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-100 dark:bg-blue-900 rounded-full opacity-20 blur-2xl z-0" />

@@ -7,6 +7,8 @@ import JSZip from 'jszip';
 import CryptoJS from 'crypto-js';
 import { useUser } from '@clerk/nextjs';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { myAction } from '../Settings/actions';
+import { useReverification } from '@clerk/nextjs';
 
 export default function MyDataPage() {
   const { user, isLoaded } = useUser();
@@ -21,8 +23,16 @@ export default function MyDataPage() {
   const [exportConfirmText, setExportConfirmText] = useState('');
   const [showDecrypted, setShowDecrypted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [verified, setVerified] = useState(false);
+  const performAction = useReverification(myAction);
 
-  // Step 1: Fetch user info
+  const handleClick = async () => {
+    const myData = await performAction();
+    if (!myData) return;
+    setVerified(true);
+    doExport();
+  };
+
   const handleFetchUserInfo = () => {
     if (!isLoaded || !user) {
       toast.error('User info not loaded. Please try again.');
@@ -49,6 +59,7 @@ export default function MyDataPage() {
   };
 
   const doExport = async () => {
+    
     setIsExporting(true);
     setExportConfirmOpen(false);
     const res = await fetch('/api/export-user-data');
@@ -147,7 +158,7 @@ export default function MyDataPage() {
           <p className="mb-2 text-sm">
             For your security, please type{' '}
             <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1">CONFIRM EXPORT</span>{' '}
-            below to proceed.
+            below to proceed. You may also be prompted to re-verify yourself before exporting you data.
           </p>
           <input
             className="border p-2 rounded w-full mb-2"
@@ -164,7 +175,7 @@ export default function MyDataPage() {
               onClick={() => {
                 if (exportConfirmText === 'CONFIRM EXPORT') {
                   setExportConfirmText('');
-                  doExport();
+                  handleClick();
                 } else {
                   toast.error('You must type CONFIRM EXPORT exactly.');
                 }
