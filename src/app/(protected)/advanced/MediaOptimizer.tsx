@@ -6,11 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
-import { Download, FileVideo, Folders, Github, Image as ImageIcon, RefreshCw, Search, Upload, X } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Download,
+  FileVideo,
+  Folders,
+  Github,
+  Image as ImageIcon,
+  RefreshCw,
+  Search,
+  Upload,
+  X,
+} from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import Image from 'next/image';
 
 interface GitHubRepoFile {
@@ -42,13 +63,13 @@ const IMAGE_FORMATS = [
   { label: 'WebP', value: 'webp' },
   { label: 'GIF', value: 'gif' },
   { label: 'SVG', value: 'svg' },
-  { label: 'AVIF', value: 'avif' }
+  { label: 'AVIF', value: 'avif' },
 ];
 
 const VIDEO_FORMATS = [
   { label: 'MP4', value: 'mp4' },
   { label: 'WebM', value: 'webm' },
-  { label: 'GIF', value: 'gif' }
+  { label: 'GIF', value: 'gif' },
 ];
 
 // Dynamically load imagetracerjs if needed
@@ -58,11 +79,42 @@ const loadImageTracer = async () => {
       const script = document.createElement('script');
       script.src = '/imagetracer.min.js';
       script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Failed to load ImageTracer"));
+      script.onload = () => {
+        // Give a brief delay for the script to initialize
+        setTimeout(() => {
+          if (!(window as any).ImageTracer) {
+            console.error('ImageTracer loaded but not available as window.ImageTracer');
+            reject(new Error('ImageTracer not found after loading'));
+          } else {
+            console.log('ImageTracer loaded successfully');
+            resolve();
+          }
+        }, 100);
+      };
+      script.onerror = (error) => {
+        console.error('Failed to load ImageTracer:', error);
+        reject(new Error('Failed to load ImageTracer'));
+      };
       document.body.appendChild(script);
     });
   }
+
+  return Promise.resolve();
+};
+
+// Pre-load GIF.js for better GIF conversion
+const loadGifJs = async () => {
+  if (typeof window !== 'undefined' && !(window as any).GIF) {
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Failed to load GIF.js'));
+      document.body.appendChild(script);
+    });
+  }
+  return Promise.resolve();
 };
 
 const MediaOptimizer: React.FC = () => {
@@ -92,9 +144,13 @@ const MediaOptimizer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const previewVideoRef = useRef<HTMLVideoElement>(null);
 
-  // Pre-load ImageTracer for SVG conversion
+  // Pre-load ImageTracer and GIF.js for SVG and GIF conversion
   useEffect(() => {
-    loadImageTracer().catch(console.error);
+    // Load both libraries in parallel
+    Promise.all([
+      loadImageTracer().catch((err) => console.warn('ImageTracer preload warning:', err)),
+      loadGifJs().catch((err) => console.warn('GIF.js preload warning:', err)),
+    ]).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -178,15 +234,15 @@ const MediaOptimizer: React.FC = () => {
     if (selectedFile?.type.startsWith('video/') && videoRef.current && previewUrl) {
       const video = videoRef.current;
       video.src = previewUrl;
-      
+
       video.onloadedmetadata = () => {
         setOriginalDimensions({ width: video.videoWidth, height: video.videoHeight });
         setWidth(video.videoWidth);
         setHeight(video.videoHeight);
       };
-      
+
       video.onerror = () => {
-        toast.error("Video failed to load");
+        toast.error('Video failed to load');
         setSelectedFile(null);
       };
     }
@@ -200,7 +256,7 @@ const MediaOptimizer: React.FC = () => {
         setOptimizedUrl(null);
         setProcessedBlob(null);
       }
-      
+
       const file = e.target.files[0];
       setSelectedFile(file);
     }
@@ -209,11 +265,11 @@ const MediaOptimizer: React.FC = () => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       const fileType = file.type.split('/')[0];
-      
+
       if (fileType === 'image' || fileType === 'video') {
         // Clean up previous resources
         if (optimizedUrl) {
@@ -221,7 +277,7 @@ const MediaOptimizer: React.FC = () => {
           setOptimizedUrl(null);
           setProcessedBlob(null);
         }
-        
+
         setSelectedFile(file);
       } else {
         toast.error('Please select an image or video file');
@@ -235,17 +291,25 @@ const MediaOptimizer: React.FC = () => {
   };
 
   const updateDimension = (dimension: 'width' | 'height', value: number) => {
+    // Don't allow negative values
+    if (value < 0) value = 0;
+
     if (maintainAspectRatio && originalDimensions.width && originalDimensions.height) {
+      const aspectRatio = originalDimensions.width / originalDimensions.height;
+
       if (dimension === 'width') {
-        const aspectHeight = Math.round(value * (originalDimensions.height / originalDimensions.width));
         setWidth(value);
-        setHeight(aspectHeight);
+        // Calculate new height based on aspect ratio
+        const newHeight = Math.round(value / aspectRatio);
+        setHeight(newHeight);
       } else {
-        const aspectWidth = Math.round(value * (originalDimensions.width / originalDimensions.height));
         setHeight(value);
-        setWidth(aspectWidth);
+        // Calculate new width based on aspect ratio
+        const newWidth = Math.round(value * aspectRatio);
+        setWidth(newWidth);
       }
     } else {
+      // Just update the one dimension
       if (dimension === 'width') {
         setWidth(value);
       } else {
@@ -254,104 +318,158 @@ const MediaOptimizer: React.FC = () => {
     }
   };
 
+  const resetDimensions = () => {
+    // Reset to original dimensions
+    setWidth(originalDimensions.width);
+    setHeight(originalDimensions.height);
+  };
+
   const processImage = async () => {
     if (!selectedFile || !canvasRef.current) return;
     setProcessing(true);
-    
+
     try {
       const img = new window.Image();
       img.src = previewUrl || '';
-      
+
       await new Promise<void>((resolve, reject) => {
         img.onload = () => resolve();
-        img.onerror = () => reject(new Error("Failed to load image for processing"));
+        img.onerror = () => reject(new Error('Failed to load image for processing'));
       });
-      
+
       const canvas = canvasRef.current;
       canvas.width = width;
       canvas.height = height;
-      
+
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Could not get canvas context');
-      
+
       // Apply quality settings
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       // Convert to the selected format
       let processedImage: Blob | null = null;
       let mimeType = `image/${outputFormat}`;
       if (outputFormat === 'jpg') mimeType = 'image/jpeg';
       if (outputFormat === 'svg') mimeType = 'image/svg+xml';
-      
+
       if (outputFormat === 'svg') {
         try {
-          await loadImageTracer();
-          
+          await loadImageTracer(); // Make sure ImageTracer is loaded
+
+          // Check if ImageTracer is properly loaded
           if (!(window as any).ImageTracer) {
-            throw new Error("ImageTracer not loaded");
+            throw new Error('ImageTracer not available');
           }
-          
-          const dataUrl = canvas.toDataURL('image/png');
-          
-          // Use ImageTracer to convert to SVG
-          processedImage = await new Promise<Blob>((resolve, reject) => {
-            try {
-              (window as any).ImageTracer.imageToSVG(
-                dataUrl,
-                (svgString: string) => {
-                  // Only accept valid SVG strings
-                  if (typeof svgString === 'string' && svgString.startsWith('<svg')) {
-                    const blob = new Blob([svgString], { type: 'image/svg+xml' });
-                    resolve(blob);
-                  } else {
-                    reject(new Error("Invalid SVG output"));
-                  }
-                },
-                { // Custom options for better tracing
+
+          // Check if the imageToSVG method exists
+          if (typeof (window as any).ImageTracer.imageToSVG !== 'function') {
+            throw new Error('ImageTracer.imageToSVG is not available');
+          }
+
+          // Convert to PNG first to ensure compatibility
+          const pngBlob = await new Promise<Blob | null>((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+          });
+
+          if (!pngBlob) {
+            throw new Error('Failed to create PNG from canvas');
+          }
+
+          // Convert the PNG blob to an Image object
+          const tempImage = new window.Image();
+          const tempUrl = URL.createObjectURL(pngBlob);
+
+          const svgString = await new Promise<string>((resolve, reject) => {
+            tempImage.onload = () => {
+              try {
+                // Prepare a temporary canvas with the image
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = tempImage.width;
+                tempCanvas.height = tempImage.height;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                if (!tempCtx) {
+                  reject(new Error('Could not get temporary canvas context'));
+                  return;
+                }
+
+                // Draw the image to the temporary canvas
+                tempCtx.drawImage(tempImage, 0, 0);
+
+                // Get the image data
+                const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+
+                // Use ImageTracer's imageToSVG function
+                const ImageTracer = (window as any).ImageTracer;
+                const svgResult = ImageTracer.imageDataToSVG(imageData, {
                   ltres: 1,
                   qtres: 1,
                   pathomit: 8,
-                  colorsampling: 1
+                  colorsampling: 1,
+                });
+
+                if (!svgResult) {
+                  reject(new Error('SVG conversion returned empty result'));
+                  return;
                 }
-              );
-            } catch (err) {
-              reject(err);
-            }
+
+                resolve(svgResult);
+              } catch (error) {
+                reject(error);
+              } finally {
+                // Clean up
+                URL.revokeObjectURL(tempUrl);
+              }
+            };
+            tempImage.onerror = () => {
+              URL.revokeObjectURL(tempUrl);
+              reject(new Error('Failed to load image for SVG conversion'));
+            };
+            tempImage.src = tempUrl;
           });
+
+          // Create a blob from the SVG string
+          processedImage = new Blob([svgString], { type: 'image/svg+xml' });
         } catch (err) {
+          console.error('SVG conversion error:', err);
           toast.error('SVG conversion failed: ' + (err as Error).message);
-          setProcessing(false);
-          return;
+
+          // Fallback to PNG if SVG conversion fails
+          toast.info('Falling back to PNG format');
+          processedImage = await new Promise<Blob | null>((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), 'image/png', quality / 100);
+          });
+
+          if (!processedImage) {
+            throw new Error('Failed to process image with fallback to PNG');
+          }
         }
       } else {
         processedImage = await new Promise<Blob | null>((resolve) => {
-          canvas.toBlob(
-            (blob) => resolve(blob),
-            mimeType,
-            quality / 100
-          );
+          canvas.toBlob((blob) => resolve(blob), mimeType, quality / 100);
         });
       }
-      
+
       if (!processedImage) {
         toast.error('Failed to process image');
         return;
       }
-      
+
       // Clean up previous optimized URL if it exists
       if (optimizedUrl) {
         URL.revokeObjectURL(optimizedUrl);
       }
-      
+
       // Store the blob for later use
       setProcessedBlob(processedImage);
-      
+
       // Create a new optimized URL
       const newOptimizedUrl = URL.createObjectURL(processedImage);
       setOptimizedUrl(newOptimizedUrl);
-      
+
       toast.success('Image processed successfully');
     } catch (error) {
       console.error('Error processing image:', error);
@@ -373,149 +491,233 @@ const MediaOptimizer: React.FC = () => {
 
   const processVideo = async () => {
     if (!selectedFile) return;
-    
+
     if (outputFormat === '') {
       toast.error('Please select an output format');
       return;
     }
-    
+
     try {
       setProcessing(true);
-      
+
+      // Pause any playing video first
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
+
       // Get dimensions for the processed video
+      // Validate dimensions to ensure they're reasonable
+      if (width <= 0 || height <= 0) {
+        // Use original dimensions if invalid values were provided
+        setWidth(originalDimensions.width);
+        setHeight(originalDimensions.height);
+      }
+
+      // Calculate dimensions ensuring aspect ratio if needed
       const dimensions = calculateDimensions();
-      const targetWidth = dimensions.width;
-      const targetHeight = dimensions.height;
-      
-      // Use the canvas to create a processed frame for thumbnails or GIF output
+      const targetWidth = dimensions.width || originalDimensions.width;
+      const targetHeight = dimensions.height || originalDimensions.height;
+
+      // Apply minimum dimensions to prevent issues
+      const finalWidth = Math.max(targetWidth, 32);
+      const finalHeight = Math.max(targetHeight, 32);
+
+      // Use the canvas to create a processed frame
       const canvas = canvasRef.current;
       if (!canvas) throw new Error('Canvas not available');
-      
-      canvas.width = targetWidth;
-      canvas.height = targetHeight;
-      
+
+      canvas.width = finalWidth;
+      canvas.height = finalHeight;
+
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('Could not get canvas context');
-      
+
       // Create a processed video using the HTML5 video element and canvas
       const videoElement = videoRef.current;
       if (!videoElement) throw new Error('Video element not available');
-      
+
       // For GIF conversion
       if (outputFormat === 'gif') {
-        // Use canvas to create frames
-        const frames: ImageData[] = [];
-        
-        // Calculate optimal frame count based on video duration
-        // Shorter videos get more frames per second for smoother result
-        let fps = 10;
-        if (videoElement.duration < 3) {
-          fps = 15; // More frames for very short videos
-        } else if (videoElement.duration > 10) {
-          fps = 8; // Fewer frames for longer videos to manage size
-        }
-        
-        const frameCount = Math.min(100, Math.floor(videoElement.duration * fps));
-        const interval = videoElement.duration / frameCount;
-        
-        // Show progress toast for longer videos
-        let progressToastId: string | undefined;
-        if (frameCount > 30) {
-          progressToastId = String(toast.loading(`Creating GIF: 0/${frameCount} frames`));
-        }
-        
-        // Capture frames
-        for (let i = 0; i < frameCount; i++) {
-          // Update progress for longer conversions
-          if (progressToastId && i > 0 && i % 10 === 0) {
-            toast.loading(`Creating GIF: ${i}/${frameCount} frames`, {
-              id: progressToastId
+        // Load GIF.js and worker
+        const loadGifJs = async () => {
+          if (typeof window !== 'undefined' && !(window as any).GIF) {
+            return new Promise<void>((resolve, reject) => {
+              // First load the main gif.js script
+              const script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js';
+              script.async = true;
+
+              script.onload = () => {
+                console.log('GIF.js loaded successfully');
+                // Check if GIF constructor is available
+                if (typeof (window as any).GIF === 'function') {
+                  resolve();
+                } else {
+                  console.error('GIF.js loaded but GIF constructor is not available');
+                  reject(new Error('GIF.js loaded incorrectly'));
+                }
+              };
+
+              script.onerror = () => {
+                console.error('Failed to load GIF.js');
+                reject(new Error('Failed to load GIF.js'));
+              };
+
+              document.body.appendChild(script);
             });
           }
-          
-          videoElement.currentTime = i * interval;
-          
-          // Wait for video to update to new time
-          await new Promise<void>(resolve => {
-            const timeUpdate = () => {
-              videoElement.removeEventListener('timeupdate', timeUpdate);
-              resolve();
-            };
-            videoElement.addEventListener('timeupdate', timeUpdate);
-          });
-          
-          ctx.drawImage(videoElement, 0, 0, targetWidth, targetHeight);
-          frames.push(ctx.getImageData(0, 0, targetWidth, targetHeight));
-        }
-        
-        if (progressToastId) {
-          toast.loading('Encoding GIF...', { id: progressToastId });
-        }
-        
-        // Create optimized GIF from frames
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = targetWidth;
-        tempCanvas.height = targetHeight;
-        const tempCtx = tempCanvas.getContext('2d');
-        if (!tempCtx) throw new Error('Could not get temp canvas context');
-        
-        // Reset video position
-        videoElement.currentTime = 0;
-        
-        // Create a binary GIF from frames using a more efficient approach
-        // This creates a proper animated GIF with good quality/size balance
-        const gifFrames = frames.map(frame => {
-          tempCtx.putImageData(frame, 0, 0);
-          return tempCanvas.toDataURL('image/png', quality / 100);
-        });
-        
-        // Generate the GIF
-        const gifBlob = await new Promise<Blob>((resolve) => {
-          // We'll create a multi-frame GIF using canvas frames
-          // This is a basic but efficient approach for browser-side GIF generation
-          const processedFrames = gifFrames.map(dataUrl => {
-            const binary = atob(dataUrl.split(',')[1] ?? '');
-            const array = new Uint8Array(binary.length);
-            for (let i = 0; i < binary.length; i++) {
-              array[i] = binary.charCodeAt(i);
+          return Promise.resolve();
+        };
+
+        try {
+          // First try to load GIF.js library
+          await loadGifJs();
+
+          if (typeof (window as any).GIF !== 'function') {
+            throw new Error('GIF.js library not loaded properly');
+          }
+
+          // Capture frames
+          const frames: HTMLCanvasElement[] = [];
+          const frameCount = Math.min(100, Math.floor(videoElement.duration * 10));
+          const interval = videoElement.duration / frameCount;
+
+          // Show progress toast for longer videos
+          let progressToastId: string | undefined;
+          if (frameCount > 30) {
+            progressToastId = String(toast.loading(`Creating GIF: 0/${frameCount} frames`));
+          }
+
+          // Setup temporary canvas for capturing frames
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = finalWidth;
+          tempCanvas.height = finalHeight;
+          const tempCtx = tempCanvas.getContext('2d');
+          if (!tempCtx) throw new Error('Could not get temporary canvas context');
+
+          // Reset video position
+          videoElement.currentTime = 0;
+
+          // Capture frames
+          for (let i = 0; i < frameCount; i++) {
+            // Update progress for longer conversions
+            if (progressToastId && i > 0 && i % 10 === 0) {
+              toast.loading(`Creating GIF: ${i}/${frameCount} frames`, {
+                id: progressToastId,
+              });
             }
-            return array;
+
+            videoElement.currentTime = i * interval;
+
+            // Wait for video to update to new time
+            await new Promise<void>((resolve) => {
+              const timeUpdate = () => {
+                videoElement.removeEventListener('timeupdate', timeUpdate);
+                resolve();
+              };
+              videoElement.addEventListener('timeupdate', timeUpdate);
+            });
+
+            // Draw frame to canvas
+            ctx.drawImage(videoElement, 0, 0, finalWidth, finalHeight);
+
+            // Clone the canvas for this frame
+            const frameCanvas = document.createElement('canvas');
+            frameCanvas.width = finalWidth;
+            frameCanvas.height = finalHeight;
+            const frameCtx = frameCanvas.getContext('2d');
+            if (frameCtx) {
+              frameCtx.drawImage(canvas, 0, 0);
+              frames.push(frameCanvas);
+            }
+          }
+
+          if (progressToastId) {
+            toast.loading('Encoding GIF...', { id: progressToastId });
+          }
+
+          // Create GIF using GIF.js
+          const gif = new (window as any).GIF({
+            workers: 2,
+            quality: Math.max(1, Math.min(30, 31 - Math.floor(quality / 3.3))), // Convert quality (0-100) to GIF quality (30-1)
+            width: finalWidth,
+            height: finalHeight,
+            workerScript: '/gif.worker.js',
+            dither: true, // Enable dithering for better quality
+            debug: false, // Set to true for troubleshooting
           });
-          
-          // Create a GIF blob with appropriate mime type
-          // This can be further enhanced with a dedicated GIF encoder library if needed
-          const blob = new Blob(processedFrames, { type: 'image/gif' });
-          resolve(blob);
-        });
-        
-        if (progressToastId) {
-          toast.dismiss(progressToastId);
+
+          // Add frames to GIF
+          frames.forEach((frame) => {
+            gif.addFrame(frame, { delay: 100, copy: true });
+          });
+
+          // Render GIF
+          const gifBlob = await new Promise<Blob>((resolve, reject) => {
+            gif.on('finished', (blob: Blob) => {
+              resolve(blob);
+            });
+
+            gif.on('progress', (progress: number) => {
+              if (progressToastId && progress > 0) {
+                toast.loading(`Encoding GIF: ${Math.round(progress * 100)}%`, {
+                  id: progressToastId,
+                });
+              }
+            });
+
+            gif.on('error', reject);
+            gif.render();
+          });
+
+          if (progressToastId) {
+            toast.dismiss(progressToastId);
+          }
+
+          // Store the processed GIF
+          setProcessedBlob(gifBlob);
+
+          // Create preview URL
+          if (optimizedUrl) {
+            URL.revokeObjectURL(optimizedUrl);
+          }
+          const newUrl = URL.createObjectURL(gifBlob);
+          setOptimizedUrl(newUrl);
+
+          toast.success('GIF created successfully');
+        } catch (error) {
+          console.error('GIF creation error:', error);
+          toast.error('Failed to create GIF: ' + (error as Error).message);
+
+          // Fallback to a still image if GIF creation fails
+          try {
+            toast.info('Falling back to creating a still image');
+            ctx.drawImage(videoElement, 0, 0, finalWidth, finalHeight);
+            const stillImage = await new Promise<Blob | null>((resolve) => {
+              canvas.toBlob((blob) => resolve(blob), 'image/png', quality / 100);
+            });
+
+            if (stillImage) {
+              setProcessedBlob(stillImage);
+              if (optimizedUrl) URL.revokeObjectURL(optimizedUrl);
+              setOptimizedUrl(URL.createObjectURL(stillImage));
+            }
+          } catch (fallbackError) {
+            console.error('Fallback image creation failed:', fallbackError);
+          }
         }
-        
-        // Store the processed GIF
-        setProcessedBlob(gifBlob);
-        
-        // Create preview URL
-        if (optimizedUrl) {
-          URL.revokeObjectURL(optimizedUrl);
-        }
-        const newUrl = URL.createObjectURL(gifBlob);
-        setOptimizedUrl(newUrl);
-        
-        toast.success('GIF created successfully');
       } else {
         // For MP4, WebM video conversion
         // Use MediaRecorder API for proper video encoding
         const stream = canvas.captureStream();
-        
+
         // Set optimal codec options for the target format
         const options: MediaRecorderOptions = {
-          mimeType: outputFormat === 'mp4' 
-            ? 'video/mp4; codecs=h264' 
-            : 'video/webm; codecs=vp9',
-          videoBitsPerSecond: quality * 100000 // Quality setting affects bitrate
+          mimeType: outputFormat === 'mp4' ? 'video/mp4; codecs=h264' : 'video/webm; codecs=vp9',
+          videoBitsPerSecond: quality * 200000, // Higher bitrate for better quality
+          audioBitsPerSecond: 128000, // Include audio with decent bitrate // Quality setting affects bitrate
         };
-        
+
         // Fallback if preferred codec isn't supported
         if (!MediaRecorder.isTypeSupported(options.mimeType ?? '')) {
           if (outputFormat === 'mp4') {
@@ -523,92 +725,104 @@ const MediaOptimizer: React.FC = () => {
           } else {
             options.mimeType = 'video/webm';
           }
-          
+
           if (!MediaRecorder.isTypeSupported(options.mimeType ?? '')) {
             delete options.mimeType; // Let browser choose best supported format
           }
         }
-        
+
         const recorder = new MediaRecorder(stream, options);
         const chunks: BlobPart[] = [];
-        
+
         recorder.ondataavailable = (e) => {
           if (e.data.size > 0) {
             chunks.push(e.data);
           }
         };
-        
+
         recorder.onstop = () => {
-          // Create the final video blob with proper MIME type
-          const videoBlob = new Blob(chunks, { 
-            type: outputFormat === 'mp4' ? 'video/mp4' : 'video/webm' 
+          // Create the final video blob with proper MIME type and audio
+          const videoBlob = new Blob(chunks, {
+            type: outputFormat === 'mp4' ? 'video/mp4' : 'video/webm',
           });
-          
+
+          // Validate the processed video
+          if (videoBlob.size < 100) {
+            throw new Error('Video processing failed - output file is too small');
+          }
+
           // Clean up previous URL if it exists
           if (optimizedUrl) {
             URL.revokeObjectURL(optimizedUrl);
           }
-          
+
           // Create and set new URL
           const newUrl = URL.createObjectURL(videoBlob);
           setOptimizedUrl(newUrl);
           setProcessedBlob(videoBlob);
-          
+
           toast.success('Video processed successfully');
         };
-        
+
         // Show a progress toast for longer videos
         let progressToastId: string | undefined;
         if (videoElement.duration > 5) {
           progressToastId = String(toast.loading(`Processing video: 0%`));
         }
-        
+
         // Start recording
         recorder.start();
-        
-        // Begin playback
+
+        // Set to beginning but don't auto-play
         videoElement.currentTime = 0;
-        videoElement.play();
-        
+        // Use a muted version for processing to avoid audio playback during processing
+        videoElement.muted = true;
+
         // Draw video frames to canvas at a smooth rate
         const renderFrame = () => {
           if (!videoElement || videoElement.paused || videoElement.ended) return;
-          
+
           // Draw the current frame to the canvas
-          ctx.drawImage(videoElement, 0, 0, targetWidth, targetHeight);
-          
+          ctx.drawImage(videoElement, 0, 0, finalWidth, finalHeight);
+
           // Update progress indicator for longer videos
           if (progressToastId && videoElement.duration > 0) {
             const progress = Math.round((videoElement.currentTime / videoElement.duration) * 100);
-            if (progress % 10 === 0) { // Update every 10%
+            if (progress % 10 === 0) {
+              // Update every 10%
               toast.loading(`Processing video: ${progress}%`, {
-                id: progressToastId
+                id: progressToastId,
               });
             }
           }
-          
+
           // Schedule next frame
           requestAnimationFrame(renderFrame);
         };
-        
+
         // Handle video completion
         const handleEnded = () => {
           // Add a small delay to ensure the last frame is captured
           setTimeout(() => {
             recorder.stop();
-            stream.getTracks().forEach(track => track.stop());
-            
+            stream.getTracks().forEach((track) => track.stop());
+
             if (progressToastId) {
               toast.dismiss(progressToastId);
             }
-            
+
             videoElement.removeEventListener('ended', handleEnded);
           }, 100);
         };
-        
+
         videoElement.addEventListener('ended', handleEnded);
-        
-        // Start rendering frames
+
+        // Start playback and rendering frames
+        videoElement.play().catch((err) => {
+          console.error('Error playing video for processing:', err);
+          toast.error('Failed to process video');
+          setProcessing(false);
+        });
         renderFrame();
       }
     } catch (error) {
@@ -624,7 +838,7 @@ const MediaOptimizer: React.FC = () => {
       toast.error('Please select a file first');
       return;
     }
-    
+
     const fileType = selectedFile.type.split('/')[0];
     if (fileType === 'image') {
       processImage();
@@ -635,29 +849,34 @@ const MediaOptimizer: React.FC = () => {
 
   const handleDownload = async () => {
     if (!processedBlob || !selectedFile) return;
-    
+
     try {
       const originalName = selectedFile.name;
-      const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.') || originalName.length);
+      const nameWithoutExt = originalName.substring(
+        0,
+        originalName.lastIndexOf('.') || originalName.length,
+      );
       const suggestedName = `${nameWithoutExt}-optimized.${outputFormat}`;
-      
+
       // Try File System Access API for modern browsers
       if ('showSaveFilePicker' in window) {
         try {
           const opts = {
             suggestedName,
-            types: [{
-              description: outputFormat.toUpperCase(),
-              accept: { [processedBlob.type]: [`.${outputFormat}`] },
-            }],
+            types: [
+              {
+                description: outputFormat.toUpperCase(),
+                accept: { [processedBlob.type]: [`.${outputFormat}`] },
+              },
+            ],
           };
-          
+
           // @ts-ignore - TypeScript doesn't know about showSaveFilePicker yet
           const fileHandle = await window.showSaveFilePicker(opts);
           const writable = await fileHandle.createWritable();
           await writable.write(processedBlob);
           await writable.close();
-          
+
           toast.success('File saved successfully!');
           return;
         } catch (e) {
@@ -666,7 +885,7 @@ const MediaOptimizer: React.FC = () => {
           console.log('File picker error, falling back to download:', e);
         }
       }
-      
+
       // Fallback download method
       const downloadUrl = optimizedUrl || URL.createObjectURL(processedBlob);
       const link = document.createElement('a');
@@ -675,7 +894,7 @@ const MediaOptimizer: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
+
       // Don't revoke URL here if it's the one we're using for preview
       if (downloadUrl !== optimizedUrl) {
         URL.revokeObjectURL(downloadUrl);
@@ -691,47 +910,55 @@ const MediaOptimizer: React.FC = () => {
       toast.error('Please enter a GitHub username');
       return;
     }
-    
+
     try {
       // Show loading state
       const loadingToast = toast.loading(`Fetching repositories for ${githubUsername}...`);
-      
+
       // Setup headers - token is optional for public repos
       const headers: HeadersInit = {
-        'Accept': 'application/vnd.github.v3+json'
+        Accept: 'application/vnd.github.v3+json',
       };
-      
+
       if (githubToken && githubToken.trim()) {
         headers['Authorization'] = `token ${githubToken}`;
       }
-      
+
       // Add cache busting to prevent stale data
       const timestamp = new Date().getTime();
-      const response = await fetch(`https://api.github.com/users/${githubUsername}/repos?per_page=100&sort=updated&timestamp=${timestamp}`, {
-        headers,
-        // Add timeout
-        signal: AbortSignal.timeout(15000) // 15 second timeout
-      });
-      
+      const response = await fetch(
+        `https://api.github.com/users/${githubUsername}/repos?per_page=100&sort=updated&timestamp=${timestamp}`,
+        {
+          headers,
+          // Add timeout
+          signal: AbortSignal.timeout(15000), // 15 second timeout
+        },
+      );
+
       toast.dismiss(loadingToast);
-      
+
       // Handle common error responses
       if (!response.ok) {
         // Check rate limit info
         const remaining = response.headers.get('x-ratelimit-remaining');
         const resetTime = response.headers.get('x-ratelimit-reset');
-        
+
         if (response.status === 404) {
-          toast.error(`User "${githubUsername}" not found. Please check the username and try again.`);
+          toast.error(
+            `User "${githubUsername}" not found. Please check the username and try again.`,
+          );
           return;
         } else if (response.status === 403 && remaining === '0') {
           // Format reset time
           const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : null;
           const resetFormatted = resetDate ? resetDate.toLocaleTimeString() : 'unknown time';
-          
-          toast.error(`GitHub API rate limit exceeded. Limit will reset at ${resetFormatted}. Adding a Personal Access Token will increase your rate limit.`, {
-            duration: 6000,
-          });
+
+          toast.error(
+            `GitHub API rate limit exceeded. Limit will reset at ${resetFormatted}. Adding a Personal Access Token will increase your rate limit.`,
+            {
+              duration: 6000,
+            },
+          );
           return;
         } else if (response.status === 401) {
           toast.error('Invalid GitHub token. Please check your token and try again.', {
@@ -739,29 +966,29 @@ const MediaOptimizer: React.FC = () => {
           });
           return;
         }
-        
+
         throw new Error(`Failed to fetch repositories: ${response.status}`);
       }
-      
+
       const repos = await response.json();
-      
+
       // Filter out forks and sort by recently updated
       const filteredRepos = repos
-        .filter((repo: GitHubRepo) => !repo.fork)  // Exclude forks
+        .filter((repo: GitHubRepo) => !repo.fork) // Exclude forks
         .sort((a: GitHubRepo, b: GitHubRepo) => {
           // Sort by recently updated
           return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
         });
-      
+
       if (filteredRepos.length === 0) {
         toast.info(`No public repositories found for ${githubUsername}`);
         return;
       }
-      
+
       setGithubRepos(filteredRepos);
       localStorage.setItem('githubUsername', githubUsername);
       if (githubToken) localStorage.setItem('githubToken', githubToken);
-      
+
       toast.success(`Found ${filteredRepos.length} repositories`);
     } catch (error) {
       console.error('Error fetching GitHub repos:', error);
@@ -776,50 +1003,53 @@ const MediaOptimizer: React.FC = () => {
 
   const fetchRepoContents = async (repo: string, path: string = '') => {
     if (!githubUsername) return;
-    
+
     try {
       const loadingToast = toast.loading(`Loading ${path || 'repository root'}...`);
-      
+
       // Set up headers - token is optional for public repos
       const headers: HeadersInit = {
-        'Accept': 'application/vnd.github.v3+json'
+        Accept: 'application/vnd.github.v3+json',
       };
-      
+
       if (githubToken && githubToken.trim()) {
         headers['Authorization'] = `token ${githubToken}`;
       }
-      
+
       // Add cache control and timeout
       const timestamp = new Date().getTime();
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-      
+
       const response = await fetch(
         `https://api.github.com/repos/${githubUsername}/${repo}/contents/${path}?timestamp=${timestamp}`,
-        { 
+        {
           headers,
-          signal: controller.signal
-        }
+          signal: controller.signal,
+        },
       );
-      
+
       clearTimeout(timeoutId);
       toast.dismiss(loadingToast);
-      
+
       if (!response.ok) {
         // Check rate limit info
         const remaining = response.headers.get('x-ratelimit-remaining');
         const resetTime = response.headers.get('x-ratelimit-reset');
-        
+
         if (response.status === 404) {
           toast.error('Repository or path not found');
           return;
         } else if (response.status === 403 && remaining === '0') {
           const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : null;
           const resetFormatted = resetDate ? resetDate.toLocaleTimeString() : 'unknown time';
-          
-          toast.error(`GitHub API rate limit exceeded. Limit will reset at ${resetFormatted}. Adding a Personal Access Token will increase your rate limit.`, {
-            duration: 6000,
-          });
+
+          toast.error(
+            `GitHub API rate limit exceeded. Limit will reset at ${resetFormatted}. Adding a Personal Access Token will increase your rate limit.`,
+            {
+              duration: 6000,
+            },
+          );
           return;
         } else if (response.status === 401) {
           toast.error('Invalid GitHub token. Please check your token and try again.', {
@@ -827,12 +1057,12 @@ const MediaOptimizer: React.FC = () => {
           });
           return;
         }
-        
+
         throw new Error(`Failed to fetch repository contents: ${response.status}`);
       }
-      
+
       const contents = await response.json();
-      
+
       // If contents is an array, it's a directory
       if (Array.isArray(contents)) {
         // Sort contents: directories first, then files, both alphabetically
@@ -840,31 +1070,33 @@ const MediaOptimizer: React.FC = () => {
           // Directories first
           if (a.type === 'dir' && b.type !== 'dir') return -1;
           if (a.type !== 'dir' && b.type === 'dir') return 1;
-          
+
           // Then alphabetically by name
           return a.name.localeCompare(b.name);
         });
-        
+
         setRepoFiles(sortedContents);
       } else {
         // It's a single file, wrap it in an array
         setRepoFiles([contents]);
       }
-      
+
       setCurrentPath(path);
       setSelectedRepo(repo);
-      
+
       // Update breadcrumb info
       setBreadcrumbs([
         { name: repo, path: '' },
-        ...path.split('/').filter(Boolean).map((segment, index, segments) => {
-          return {
-            name: segment,
-            path: segments.slice(0, index + 1).join('/')
-          };
-        })
+        ...path
+          .split('/')
+          .filter(Boolean)
+          .map((segment, index, segments) => {
+            return {
+              name: segment,
+              path: segments.slice(0, index + 1).join('/'),
+            };
+          }),
       ]);
-      
     } catch (error) {
       console.error('Error fetching repo contents:', error);
       const err = error as Error;
@@ -884,7 +1116,7 @@ const MediaOptimizer: React.FC = () => {
 
   const navigateUp = () => {
     if (!currentPath) return;
-    
+
     const pathParts = currentPath.split('/');
     pathParts.pop();
     const newPath = pathParts.join('/');
@@ -896,40 +1128,43 @@ const MediaOptimizer: React.FC = () => {
       toast.error('No download URL available for this file');
       return;
     }
-    
+
     try {
       // Check if it's an image or video
       const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
       const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExt);
       const isVideo = ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(fileExt);
-      
+
       if (!isImage && !isVideo) {
         toast.error('Please select an image or video file');
         return;
       }
-      
+
       // Check file size for potential browser memory issues
-      if (file.size && file.size > 100 * 1024 * 1024) { // 100MB
-        toast.error(`File is too large (${Math.round(file.size / 1024 / 1024)}MB). Maximum size is 100MB.`);
+      if (file.size && file.size > 100 * 1024 * 1024) {
+        // 100MB
+        toast.error(
+          `File is too large (${Math.round(file.size / 1024 / 1024)}MB). Maximum size is 100MB.`,
+        );
         return;
       }
-      
+
       const loadingToastId = toast.loading(`Downloading ${file.name}...`);
-      
+
       // Add timeout to handle very slow downloads
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
+
       try {
-        const response = await fetch(file.download_url, { 
+        const response = await fetch(file.download_url, {
           signal: controller.signal,
           headers: {
-            'Accept': '*/*', // Accept any content type
-          }
+            Accept: '*/*', // Accept any content type
+          },
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         if (!response.ok) {
           toast.dismiss(loadingToastId);
           if (response.status === 404) {
@@ -939,19 +1174,30 @@ const MediaOptimizer: React.FC = () => {
           }
           return;
         }
-        
+
         const blob = await response.blob();
         if (blob.size === 0) {
           toast.dismiss(loadingToastId);
           toast.error(`File is empty: ${file.name}`);
           return;
         }
-        
+
         // Validate file type based on actual content
         const actualType = blob.type;
-        const expectedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
-        const expectedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
-        
+        const expectedImageTypes = [
+          'image/jpeg',
+          'image/png',
+          'image/gif',
+          'image/webp',
+          'image/svg+xml',
+        ];
+        const expectedVideoTypes = [
+          'video/mp4',
+          'video/webm',
+          'video/quicktime',
+          'video/x-msvideo',
+        ];
+
         // Determine proper MIME type
         let mimeType;
         if (isImage) {
@@ -971,34 +1217,39 @@ const MediaOptimizer: React.FC = () => {
             mimeType = `video/${fileExt}`;
           }
         }
-        
+
         // If blob doesn't have a type but we expect it should, assign our determined type
         const finalType = actualType || mimeType;
-        
+
         // Create a File object from the blob
         const fileFromGithub = new File([blob], file.name, { type: finalType });
-        
+
         // Clean up previous resources
         if (optimizedUrl) {
           URL.revokeObjectURL(optimizedUrl);
           setOptimizedUrl(null);
           setProcessedBlob(null);
         }
-        
+
         if (previewUrl) {
           URL.revokeObjectURL(previewUrl);
           setPreviewUrl(null);
         }
-        
+
         setSelectedFile(fileFromGithub);
         setShowGithubModal(false);
-        
+
         toast.dismiss(loadingToastId);
         toast.success(`Selected ${file.name} from GitHub`);
       } catch (fetchError) {
         clearTimeout(timeoutId);
         toast.dismiss(loadingToastId);
-        if (typeof fetchError === 'object' && fetchError !== null && 'name' in fetchError && (fetchError as any).name === 'AbortError') {
+        if (
+          typeof fetchError === 'object' &&
+          fetchError !== null &&
+          'name' in fetchError &&
+          (fetchError as any).name === 'AbortError'
+        ) {
           toast.error(`Download timed out for ${file.name}. The file might be too large.`);
         } else {
           throw fetchError;
@@ -1010,31 +1261,41 @@ const MediaOptimizer: React.FC = () => {
     }
   };
 
-  const filteredFiles = searchTerm 
-    ? repoFiles.filter(file => file.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredFiles = searchTerm
+    ? repoFiles.filter((file) => file.name.toLowerCase().includes(searchTerm.toLowerCase()))
     : repoFiles;
 
   return (
     <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-indigo-50 via-white to-indigo-100 dark:from-indigo-900/60 dark:via-indigo-950/80 dark:to-indigo-900/60 rounded-2xl border border-indigo-300 dark:border-indigo-700 shadow-xl flex flex-col items-center relative overflow-hidden">
       <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-200 dark:bg-indigo-800 rounded-full opacity-30 blur-2xl z-0" />
       <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-100 dark:bg-indigo-900 rounded-full opacity-20 blur-2xl z-0" />
-      
+
       <h2 className="text-2xl font-extrabold mb-3 text-indigo-800 dark:text-indigo-100 drop-shadow-lg z-10 tracking-tight">
         <span className="inline-block align-middle mr-2">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-            className="inline-block text-indigo-500 dark:text-indigo-300">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" 
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            className="inline-block text-indigo-500 dark:text-indigo-300"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
         </span>
         Media Optimizer & Converter
       </h2>
-      
+
       <p className="mb-6 text-indigo-700/80 dark:text-indigo-200/80 text-center max-w-lg z-10 text-sm md:text-base">
-        Optimize images and videos, convert between formats, and reduce file size without losing quality.
-        Upload from your device or fetch directly from your GitHub repositories!
+        Optimize images and videos, convert between formats, and reduce file size without losing
+        quality. Upload from your device or fetch directly from your GitHub repositories!
       </p>
-      
+
       <div className="w-full z-10">
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -1045,9 +1306,9 @@ const MediaOptimizer: React.FC = () => {
               <FileVideo size={16} /> Videos
             </TabsTrigger>
           </TabsList>
-          
+
           {/* File Selection Area */}
-          <div 
+          <div
             className="w-full mb-6 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center transition-colors hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -1055,7 +1316,16 @@ const MediaOptimizer: React.FC = () => {
             {!selectedFile ? (
               <>
                 <div className="text-indigo-500 dark:text-indigo-300 mb-4">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="48"
+                    height="48"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
                     <path d="M12 12v9"></path>
                     <path d="m16 16-4-4-4 4"></path>
@@ -1070,15 +1340,15 @@ const MediaOptimizer: React.FC = () => {
                     className="hidden"
                     ref={fileInputRef}
                     onChange={handleFileChange}
-                    accept={activeTab === 'images' ? "image/*" : "video/*"}
+                    accept={activeTab === 'images' ? 'image/*' : 'video/*'}
                   />
-                  <Button 
+                  <Button
                     onClick={() => fileInputRef.current?.click()}
                     className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600"
                   >
                     <Upload size={16} /> Upload from device
                   </Button>
-                  <Button 
+                  <Button
                     variant="outline"
                     onClick={() => setShowGithubModal(true)}
                     className="flex items-center gap-2"
@@ -1094,19 +1364,19 @@ const MediaOptimizer: React.FC = () => {
                     <Image
                       width={width || 300}
                       height={height || 300}
-                      src={previewUrl} 
-                      alt="Preview" 
+                      src={previewUrl}
+                      alt="Preview"
                       className="w-full h-auto rounded-lg border border-indigo-200 dark:border-indigo-700 object-contain max-h-64"
                       unoptimized={true}
                     />
                   )}
                   {activeTab === 'videos' && previewUrl && (
-                    <video 
+                    <video
                       ref={videoRef}
                       className="w-full h-auto rounded-lg border border-indigo-200 dark:border-indigo-700 object-contain max-h-64"
                       controls
                       playsInline
-                      muted
+                      muted={false} // Enable sound
                     >
                       <source src={previewUrl} type={selectedFile.type} />
                       Your browser does not support the video tag.
@@ -1132,7 +1402,9 @@ const MediaOptimizer: React.FC = () => {
           <TabsContent value="images" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Output Format</label>
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Output Format
+                </label>
                 <Select
                   value={outputFormat}
                   onValueChange={setOutputFormat}
@@ -1150,9 +1422,11 @@ const MediaOptimizer: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Quality</label>
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Quality
+                </label>
                 <div className="flex items-center gap-4">
                   <Slider
                     defaultValue={[80]}
@@ -1167,26 +1441,37 @@ const MediaOptimizer: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Dimensions</label>
-                <div className="flex items-center">
-                  <Checkbox 
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Dimensions
+                </label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
                     id="aspectRatio"
                     checked={maintainAspectRatio}
                     onCheckedChange={(checked) => setMaintainAspectRatio(checked as boolean)}
                     disabled={!selectedFile}
                   />
-                  <label 
-                    htmlFor="aspectRatio" 
-                    className="ml-2 text-xs text-indigo-600 dark:text-indigo-400"
+                  <label
+                    htmlFor="aspectRatio"
+                    className="mr-2 text-xs text-indigo-600 dark:text-indigo-400"
                   >
                     Maintain aspect ratio
                   </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetDimensions}
+                    disabled={!selectedFile}
+                    className="h-6 text-xs"
+                  >
+                    Reset
+                  </Button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs text-indigo-600 dark:text-indigo-400">Width</label>
@@ -1207,17 +1492,18 @@ const MediaOptimizer: React.FC = () => {
                     onChange={(e) => updateDimension('height', parseInt(e.target.value) || 0)}
                     disabled={!selectedFile}
                     className="text-sm"
-                    min={1}
                   />
                 </div>
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="videos" className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Output Format</label>
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Output Format
+                </label>
                 <Select
                   value={outputFormat}
                   onValueChange={setOutputFormat}
@@ -1235,9 +1521,11 @@ const MediaOptimizer: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Quality</label>
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Quality
+                </label>
                 <div className="flex items-center gap-4">
                   <Slider
                     defaultValue={[80]}
@@ -1252,26 +1540,37 @@ const MediaOptimizer: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Dimensions</label>
-                <div className="flex items-center">
-                  <Checkbox 
+                <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  Dimensions
+                </label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
                     id="aspectRatioVideo"
                     checked={maintainAspectRatio}
                     onCheckedChange={(checked) => setMaintainAspectRatio(checked as boolean)}
                     disabled={!selectedFile}
                   />
-                  <label 
-                    htmlFor="aspectRatioVideo" 
-                    className="ml-2 text-xs text-indigo-600 dark:text-indigo-400"
+                  <label
+                    htmlFor="aspectRatioVideo"
+                    className="mr-2 text-xs text-indigo-600 dark:text-indigo-400"
                   >
                     Maintain aspect ratio
                   </label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={resetDimensions}
+                    disabled={!selectedFile}
+                    className="h-6 text-xs"
+                  >
+                    Reset
+                  </Button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs text-indigo-600 dark:text-indigo-400">Width</label>
@@ -1298,7 +1597,7 @@ const MediaOptimizer: React.FC = () => {
               </div>
             </div>
           </TabsContent>
-          
+
           <div className="mt-6 flex justify-center gap-4">
             <Button
               onClick={handleProcess}
@@ -1317,7 +1616,7 @@ const MediaOptimizer: React.FC = () => {
                 </>
               )}
             </Button>
-            
+
             <Button
               onClick={handleDownload}
               disabled={!optimizedUrl || !processedBlob}
@@ -1328,11 +1627,13 @@ const MediaOptimizer: React.FC = () => {
               Download Result
             </Button>
           </div>
-          
+
           {/* Result Preview */}
           {optimizedUrl && (
             <div className="mt-6 border rounded-lg p-4 bg-white/50 dark:bg-gray-800/50">
-              <h3 className="text-sm font-medium mb-2 text-indigo-700 dark:text-indigo-300">Result Preview</h3>
+              <h3 className="text-sm font-medium mb-2 text-indigo-700 dark:text-indigo-300">
+                Result Preview
+              </h3>
               <div className="flex justify-center">
                 {activeTab === 'images' && (
                   <Image
@@ -1350,9 +1651,12 @@ const MediaOptimizer: React.FC = () => {
                     className="max-h-64 object-contain rounded border border-indigo-200 dark:border-indigo-700"
                     controls
                     playsInline
-                    muted
+                    muted={false} // Enable sound
                   >
-                    <source src={optimizedUrl} type={selectedFile?.type || `video/${outputFormat}`} />
+                    <source
+                      src={optimizedUrl}
+                      type={selectedFile?.type || `video/${outputFormat}`}
+                    />
                     Your browser does not support the video tag.
                   </video>
                 )}
@@ -1361,13 +1665,16 @@ const MediaOptimizer: React.FC = () => {
           )}
         </Tabs>
       </div>
-      
+
       {/* Hidden canvas for image processing */}
       <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
-      
+
       {/* GitHub Modal */}
       <Dialog open={showGithubModal} onOpenChange={setShowGithubModal}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col" aria-describedby={undefined}>
+        <DialogContent
+          className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col"
+          aria-describedby={undefined}
+        >
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Github size={18} /> Select from GitHub Repository
@@ -1391,7 +1698,10 @@ const MediaOptimizer: React.FC = () => {
 
             <div className="flex flex-col md:flex-row md:justify-between gap-3">
               <div>
-                <Button onClick={fetchGithubRepos} className="bg-indigo-500 hover:bg-indigo-600 flex items-center gap-2 w-full">
+                <Button
+                  onClick={fetchGithubRepos}
+                  className="bg-indigo-500 hover:bg-indigo-600 flex items-center gap-2 w-full"
+                >
                   <Search size={16} /> Find Repositories
                 </Button>
                 <p className="text-xs text-gray-500 mt-1">
@@ -1401,16 +1711,17 @@ const MediaOptimizer: React.FC = () => {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" disabled={githubRepos.length === 0} className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    disabled={githubRepos.length === 0}
+                    className="flex items-center gap-2"
+                  >
                     <Folders size={16} /> Select Repository
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="max-h-64 overflow-y-auto">
                   {githubRepos.map((repo) => (
-                    <DropdownMenuItem
-                      key={repo.name}
-                      onClick={() => fetchRepoContents(repo.name)}
-                    >
+                    <DropdownMenuItem key={repo.name} onClick={() => fetchRepoContents(repo.name)}>
                       {repo.name}
                     </DropdownMenuItem>
                   ))}
@@ -1424,18 +1735,28 @@ const MediaOptimizer: React.FC = () => {
                   {/* Breadcrumb navigation */}
                   <div className="flex flex-wrap items-center text-sm bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-md overflow-x-auto">
                     <span className="flex items-center gap-1 text-indigo-800 dark:text-indigo-300 font-medium">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
                       </svg>
-                      {selectedRepo ?
+                      {selectedRepo ? (
                         <button
                           onClick={() => fetchRepoContents(selectedRepo, '')}
                           className="hover:underline"
                         >
                           {selectedRepo}
-                        </button> :
+                        </button>
+                      ) : (
                         'Repository'
-                      }
+                      )}
                     </span>
 
                     {breadcrumbs.slice(1).map((crumb, i) => (
@@ -1461,7 +1782,17 @@ const MediaOptimizer: React.FC = () => {
                         className="h-8"
                         title="Go up one directory"
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="mr-1"
+                        >
                           <path d="m15 18-6-6 6-6" />
                         </svg>
                         Up
@@ -1485,36 +1816,70 @@ const MediaOptimizer: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                       {filteredFiles.map((file) => {
                         const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
-                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileExt);
+                        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(
+                          fileExt,
+                        );
                         const isVideo = ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(fileExt);
                         const isMedia = isImage || isVideo;
 
                         // Format file size
                         let fileSize = '';
                         if (file.size) {
-                          fileSize = file.size < 1024
-                            ? `${file.size} B`
-                            : file.size < 1024 * 1024
-                              ? `${(file.size / 1024).toFixed(1)} KB`
-                              : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+                          fileSize =
+                            file.size < 1024
+                              ? `${file.size} B`
+                              : file.size < 1024 * 1024
+                                ? `${(file.size / 1024).toFixed(1)} KB`
+                                : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
                         }
 
                         return (
                           <div
                             key={file.sha}
                             className={`flex justify-between p-2 text-sm rounded-md cursor-pointer ${isMedia ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : ''} hover:bg-indigo-100 dark:hover:bg-indigo-900/50`}
-                            onClick={() => file.type === 'dir' ? navigateFolder(file) : isMedia ? selectGithubFile(file) : null}
-                            title={isMedia ? `Click to select ${file.name}` : file.type === 'dir' ? `Open ${file.name} folder` : `Cannot select this file type`}
+                            onClick={() =>
+                              file.type === 'dir'
+                                ? navigateFolder(file)
+                                : isMedia
+                                  ? selectGithubFile(file)
+                                  : null
+                            }
+                            title={
+                              isMedia
+                                ? `Click to select ${file.name}`
+                                : file.type === 'dir'
+                                  ? `Open ${file.name} folder`
+                                  : `Cannot select this file type`
+                            }
                           >
                             <div className="flex items-center overflow-hidden">
                               {file.type === 'dir' ? (
-                                <Folders size={16} className="mr-2 flex-shrink-0 text-indigo-500 dark:text-indigo-400" />
+                                <Folders
+                                  size={16}
+                                  className="mr-2 flex-shrink-0 text-indigo-500 dark:text-indigo-400"
+                                />
                               ) : isImage ? (
-                                <ImageIcon size={16} className="mr-2 flex-shrink-0 text-green-500 dark:text-green-400" />
+                                <ImageIcon
+                                  size={16}
+                                  className="mr-2 flex-shrink-0 text-green-500 dark:text-green-400"
+                                />
                               ) : isVideo ? (
-                                <FileVideo size={16} className="mr-2 flex-shrink-0 text-amber-500 dark:text-amber-400" />
+                                <FileVideo
+                                  size={16}
+                                  className="mr-2 flex-shrink-0 text-amber-500 dark:text-amber-400"
+                                />
                               ) : (
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 flex-shrink-0 text-gray-500 dark:text-gray-400">
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="mr-2 flex-shrink-0 text-gray-500 dark:text-gray-400"
+                                >
                                   <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
                                   <polyline points="14 2 14 8 20 8" />
                                 </svg>
@@ -1522,7 +1887,9 @@ const MediaOptimizer: React.FC = () => {
                               <span className="truncate">{file.name}</span>
                             </div>
                             {file.size && !file.type.includes('dir') && (
-                              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">{fileSize}</span>
+                              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                                {fileSize}
+                              </span>
                             )}
                           </div>
                         );
