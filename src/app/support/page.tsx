@@ -1,12 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useUser } from '@clerk/nextjs';
 
 export default function SupportPage() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const { user, isSignedIn, isLoaded } = useUser();
+  const [form, setForm] = useState({ name: '', email: user?.primaryEmailAddress?.emailAddress || '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.primaryEmailAddress?.emailAddress) {
+      setForm((prev) => ({
+        ...prev,
+        name: user?.firstName ?? '',
+        email: user.primaryEmailAddress?.emailAddress ?? ''
+      }));
+    }
+  }, [user?.primaryEmailAddress?.emailAddress, user?.firstName]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -14,8 +26,10 @@ export default function SupportPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isSignedIn) return;
+    // Prevent submission if message is only spaces or empty after trimming
+    if (form.message.trim().length < 30) return;
     setLoading(true);
-    // TODO: Replace with your support API endpoint
     await new Promise((r) => setTimeout(r, 1200));
     setSubmitted(true);
     setLoading(false);
@@ -67,7 +81,7 @@ export default function SupportPage() {
                   Thank you! We&apos;ll get back to you soon.
                 </div>
               ) : (
-                <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+                <form action={`https://send.pageclip.co/${process.env.PAGECLIP_KEY_2}`} className="pageclip-form flex flex-col gap-3" method='POST' onSubmit={handleSubmit}>
                   <input
                     type="text"
                     name="name"
@@ -76,6 +90,8 @@ export default function SupportPage() {
                     value={form.name}
                     onChange={handleChange}
                     required
+                    readOnly={!!user?.firstName}
+                    disabled={!isSignedIn}
                   />
                   <input
                     type="email"
@@ -85,18 +101,34 @@ export default function SupportPage() {
                     value={form.email}
                     onChange={handleChange}
                     required
+                    readOnly={!!user?.primaryEmailAddress?.emailAddress}
+                    disabled={!isSignedIn}
                   />
                   <textarea
                     name="message"
                     placeholder="How can we help you?"
                     className="border p-2 rounded bg-white dark:bg-gray-900 min-h-[80px]"
                     value={form.message}
+                    minLength={30}
+                    maxLength={150}
                     onChange={handleChange}
                     required
+                    disabled={!isSignedIn}
                   />
-                  <Button type="submit" disabled={loading} className="w-full max-w-xs">
-                    {loading ? 'Sending...' : 'Send Message'}
+                  <div className="flex justify-between items-center text-xs mt-[-4px] mb-[-4px]">
+                    <span className={form.message.trim().length < 30 ? 'text-red-500' : 'text-green-600 dark:text-green-400'}>
+                      Minimum of 30 characters
+                    </span>
+                    <span className={form.message.trim().length < 30 ? 'text-red-500' : 'text-gray-500'}>
+                      {form.message.trim().length}/30
+                    </span>
+                  </div>
+                  <Button type="submit" disabled={loading || !isSignedIn} className="w-full max-w-xs">
+                    {isSignedIn ? (loading ? 'Sending...' : 'Send Message') : 'Sign in to contact support'}
                   </Button>
+                  {!isSignedIn && (
+                    <div className="text-red-600 dark:text-red-400 text-sm mt-2 text-center">You must be signed in to contact support.</div>
+                  )}
                 </form>
               )}
             </div>

@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+// Extend Window interface for SpeechRecognition types
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition;
+  }
+}
+
 export default function Home() {
   const SYSTEM_PROMPT = {
     role: 'system',
@@ -12,7 +20,7 @@ export default function Home() {
   const [speakingNow, setSpeakingNow] = useState('');
   const [assistantSpeaking, setAssistantSpeaking] = useState(false);
   const [voicePitch, setVoicePitch] = useState(1);
-  const [messages, setMessages] = useState([SYSTEM_PROMPT]);
+  const [messages, setMessages] = useState<Message[]>([SYSTEM_PROMPT as Message]);
   const speechRef = useRef<any>(null);
   const recognitionRef = useRef<any>(null);
   const [active, setActive] = useState(false);
@@ -96,10 +104,10 @@ export default function Home() {
     setMessages((prev) => {
       let updated;
       if (clearContextNext.current) {
-        updated = [SYSTEM_PROMPT, { role: 'user', content: text }];
+        updated = [SYSTEM_PROMPT as Message, { role: 'user', content: text } as Message];
         clearContextNext.current = false;
       } else {
-        updated = [...prev, { role: 'user', content: text }];
+        updated = [...prev, { role: 'user', content: text } as Message];
       }
       doFetch(updated);
       return updated;
@@ -107,12 +115,23 @@ export default function Home() {
   };
 
   // Actually fetch and stream LLM response
-  const doFetch = async (contextMessages) => {
+  interface Message {
+    role: 'system' | 'user' | 'assistant';
+    content: string;
+  }
+
+  interface LLMResponseChunk {
+    message?: {
+      content?: string;
+    };
+  }
+
+  const doFetch = async (contextMessages: Message[]): Promise<void> => {
     let fullResponse = '';
     let speaking = '';
     let spoken = false; // Only allow one utterance per response
     try {
-      const res = await fetch('https://maiden-pounds-contacted-pct.trycloudflare.com/api/chat', {
+      const res: Response = await fetch('https://maiden-pounds-contacted-pct.trycloudflare.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -122,12 +141,12 @@ export default function Home() {
         }),
       });
       if (!res.ok || !res.body) throw new Error('LLM service unavailable. Please try again later.');
-      const reader = res.body.getReader();
+      const reader: ReadableStreamDefaultReader<Uint8Array> = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
       while (true) {
         if (stoppedByUser.current) break;
-        const { done, value } = await reader.read();
+        const { done, value }: { done: boolean; value?: Uint8Array } = await reader.read();
         if (done) break;
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
@@ -136,8 +155,8 @@ export default function Home() {
           if (!line.trim()) continue;
           try {
             if (stoppedByUser.current) break;
-            const json = JSON.parse(line);
-            const chunk = json?.message?.content;
+            const json: LLMResponseChunk = JSON.parse(line);
+            const chunk: string | undefined = json?.message?.content;
             if (!chunk) continue;
             fullResponse += chunk;
             speaking += chunk;
@@ -168,7 +187,7 @@ export default function Home() {
         setSpeakingNow(fullResponse);
         speakingActive.current = true;
       }
-      setMessages((prev) => [...prev, { role: 'assistant', content: fullResponse }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: fullResponse } as Message]);
     } catch (e) {
       const errorMsg = 'Sorry, the AI service is currently unavailable. Please try again later.';
       setSpeakingNow(errorMsg);
