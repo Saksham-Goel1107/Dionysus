@@ -178,6 +178,25 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
+  const isRecaptchaVerifyApi = pathname.startsWith('/api/recaptcha-verify');
+  const isApiRouteGlobal = pathname.startsWith('/api/');
+  const recaptchaFailed = request.cookies.get('recaptcha_failed')?.value === 'true';
+  if (recaptchaFailed && isApiRouteGlobal && !isRecaptchaVerifyApi) {
+    return new NextResponse(
+      JSON.stringify({
+        success: false,
+        error: 'Blocked by reCAPTCHA. Please complete the security check.',
+      }),
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      },
+    );
+  }
+
   const response = NextResponse.next();
   response.headers.set(
     'Content-Security-Policy',
