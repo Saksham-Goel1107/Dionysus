@@ -4,6 +4,7 @@ import { useTheme } from 'next-themes';
 import { myAction } from '../Settings/actions';
 import { useReverification } from '@clerk/nextjs';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 async function checkPasswordPwned(password: string): Promise<boolean> {
   const sha1 = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(password));
@@ -17,9 +18,9 @@ async function checkPasswordPwned(password: string): Promise<boolean> {
   const text = await res.text();
   return text.includes(suffix);
 }
-
 export default function LockPage() {
   const { resolvedTheme } = useTheme();
+  const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -97,9 +98,12 @@ export default function LockPage() {
       });
       const data = await res.json();
       if (data.success) {
-        setSuccess('Password set successfully! You can now use your account.');
+        setSuccess('Password set successfully! You can now use your account. Redirecting...');
         setPassword('');
         setConfirmPassword('');
+        setInterval(() => {
+          router.replace('/');
+        }, 1000);
       } else {
         setError(data.error || 'Failed to set password.');
       }

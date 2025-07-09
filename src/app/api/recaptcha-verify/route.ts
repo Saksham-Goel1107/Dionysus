@@ -24,7 +24,6 @@ export async function POST(req: Request) {
   });
 
   const data = await verifyRes.json();
-  data.score = 1;
   if (data.success && data.score && data.score > 0.5) {
     const jwt = await signRecaptchaJWT({ verified: true });
     const res = NextResponse.json({ success: true });

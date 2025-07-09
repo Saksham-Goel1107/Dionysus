@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { compare, hash } from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { rateLimit, resetRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,6 +11,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
     const { currentPassword, newPassword, disable } = await req.json();
+    const rateKey = `unlock-attempt:${userId}`;
+    const rate = await rateLimit(req, rateKey, {
+      limit: 5,
+      window: 60 * 60, 
+      errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
+    });
+    if (!rate.success) {
+      return NextResponse.json(
+        { success: false, error: 'Too many unlock attempts. Please try again in 1 hour.' },
+        { status: 429 },
+      );
+    }
     // @ts-ignore
     const user = await prisma.user.findUnique({ where: { id: userId } });
     // @ts-ignore
@@ -25,13 +38,13 @@ export async function POST(req: NextRequest) {
         { status: 401 },
       );
     }
+    await resetRateLimit(rateKey);
     if (disable) {
-      // Remove password
       await prisma.user.update({ where: { id: userId }, data: { passwordHash: null } });
+      localStorage.setItem('unlockToken', '');
       return NextResponse.json({ success: true });
     }
     if (!newPassword && !disable) {
-      // Only password check, not update/disable
       return NextResponse.json({ success: true });
     }
     if (newPassword && (typeof newPassword !== 'string' || newPassword.length < 8)) {

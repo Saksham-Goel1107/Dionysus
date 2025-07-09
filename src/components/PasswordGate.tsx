@@ -16,6 +16,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [resetTime, setResetTime] = useState<number | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     fetch('/api/has-password')
@@ -26,11 +27,6 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (window.location.pathname.startsWith('/lock')) {
-      setUnlocked(false);
-      setShowPrompt(false);
-      return;
-    }
     const token = localStorage.getItem('unlockToken');
     if (token) {
       fetch('/api/verify-password', {
@@ -91,7 +87,6 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     };
   }, [router]);
 
-  // Password verify handler
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -136,9 +131,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     return min === 1 ? 'in 1 minute' : `in ${min} minutes`;
   }
 
-  // If hasPassword is null (loading), render nothing
   if (hasPassword === null) return null;
-  // If no password is set, render children directly
   if (!hasPassword) return <>{children}</>;
 
   if (unlocked) return <>{children}</>;
@@ -209,23 +202,45 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           >
             For your security, please re-enter your password to unlock your account.
           </p>
-          <input
-            ref={passwordRef}
-            type="password"
-            placeholder="Password"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              borderRadius: 8,
-              border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd',
-              background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc',
-              color: resolvedTheme === 'dark' ? '#fff' : '#222',
-              fontSize: '1rem',
-              outline: 'none',
-              marginBottom: 14,
-            }}
-            disabled={verifying}
-          />
+          <div style={{ width: '100%', position: 'relative', marginBottom: 14 }}>
+            <input
+              ref={passwordRef}
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Password"
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                borderRadius: 8,
+                border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd',
+                background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc',
+                color: resolvedTheme === 'dark' ? '#fff' : '#222',
+                fontSize: '1rem',
+                outline: 'none',
+                paddingRight: 38,
+              }}
+              disabled={verifying}
+            />
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              onClick={() => setShowPassword((v) => !v)}
+              style={{
+                position: 'absolute',
+                right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: resolvedTheme === 'dark' ? '#aaa' : '#555',
+                fontSize: 20,
+                padding: 0,
+              }}
+            >
+              {showPassword ? '🙈' : '👁️'}
+            </button>
+          </div>
           <div style={{ width: '100%', marginBottom: 16 }}>
             <label
               htmlFor="remember-slider"
@@ -305,6 +320,9 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           >
             {verifying ? 'Verifying...' : 'Unlock'}
           </button>
+          <div style={{ marginTop: 18, color: resolvedTheme === 'dark' ? '#aaa' : '#555', fontSize: 14, textAlign: 'center' }}>
+            Forgot password? Contact <a href="mailto:sakshamgoel1107@gmail.com" style={{ color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff', textDecoration: 'underline' }}>support</a>.
+          </div>
         </form>
       </div>
     </>

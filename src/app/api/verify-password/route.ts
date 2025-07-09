@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
       );
     }
     const { password, unlockToken, rememberMinutes } = await req.json();
-    // If unlockToken is present, just verify it (do not rate limit)
     if (unlockToken) {
       const payload = await verifyRecaptchaJWT(unlockToken);
       if (payload && payload.userId === userId && payload.exp && Date.now() < payload.exp * 1000) {
@@ -48,27 +47,57 @@ export async function POST(req: NextRequest) {
           reset: Date.now() + 60 * 60 * 1000,
         });
       } else {
+        const rateKey = `unlock-attempt:${userId}`;
+        const rate = await rateLimit(req, rateKey, {
+          limit: 5,
+          window: 60 * 60, 
+          errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
+        });
+        const reset = parseRateLimitMeta(rate);
         return NextResponse.json(
           {
             success: false,
             error: 'Invalid or expired unlock token.',
             limit: 5,
-            remaining: 5,
-            reset: Date.now() + 60 * 60 * 1000,
+            remaining: rate.remaining,
+            reset,
           },
           { status: 401 },
         );
       }
     }
-    // Otherwise, verify password and issue unlockToken
+    const rateKey = `unlock-attempt:${userId}`;
+    const rate = await rateLimit(req, rateKey, {
+      limit: 5,
+      window: 60 * 60, // 1 hour in seconds
+      errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
+    });
+    const reset = parseRateLimitMeta(rate);
+    if (!rate.success) {
+      return new NextResponse(
+        JSON.stringify({
+          success: false,
+          message: rate.response.body
+            ? JSON.parse(await rate.response.text()).message
+            : 'Too many attempts.',
+          limit: 5,
+          remaining: 0,
+          reset,
+        }),
+        {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+    }
     if (!password || typeof password !== 'string') {
       return NextResponse.json(
         {
           success: false,
           error: 'Invalid password',
           limit: 5,
-          remaining: 5,
-          reset: Date.now() + 60 * 60 * 1000,
+          remaining: rate.remaining,
+          reset,
         },
         { status: 400 },
       );
@@ -82,52 +111,26 @@ export async function POST(req: NextRequest) {
           success: false,
           error: 'No password set.',
           limit: 5,
-          remaining: 5,
-          reset: Date.now() + 60 * 60 * 1000,
+          remaining: rate.remaining,
+          reset,
         },
         { status: 400 },
       );
     }
     // @ts-ignore
     const valid = await compare(password, user.passwordHash);
-    const rateKey = `unlock-attempt:${userId}`;
     if (!valid) {
-      // Only rate limit on failed password
-      const rate = await rateLimit(req, rateKey, {
-        limit: 5,
-        window: 60 * 60, // 1 hour in seconds
-        errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
-      });
-      const reset = parseRateLimitMeta(rate);
-      if (!rate.success) {
-        return new NextResponse(
-          JSON.stringify({
-            success: false,
-            message: rate.response.body
-              ? JSON.parse(await rate.response.text()).message
-              : 'Too many attempts.',
-            limit: 5,
-            remaining: 0,
-            reset,
-          }),
-          {
-            status: 429,
-            headers: { 'Content-Type': 'application/json' },
-          },
-        );
-      }
       return NextResponse.json(
         {
           success: false,
           error: 'Incorrect password.',
           limit: 5,
-          remaining: rate.remaining,
+          remaining: rate.remaining - 1,
           reset,
         },
         { status: 401 },
       );
     }
-    // On success, reset the rate limit for this user
     await resetRateLimit(rateKey);
     const exp = Math.floor(Date.now() / 1000) + rememberMinutes * 60;
     const issuedUnlockToken = await signRecaptchaJWT({ userId, exp });
