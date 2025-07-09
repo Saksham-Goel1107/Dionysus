@@ -92,6 +92,7 @@
     "assemblyai": "^4.8.0",
     "autocannon": "^8.0.0",
     "axios": "^1.7.9",
+    "bcryptjs": "^3.0.2",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",

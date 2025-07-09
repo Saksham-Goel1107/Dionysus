@@ -10,19 +10,20 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  imageUrl           String?
-  firstName          String?
-  lastName           String?
-  emailAddress       String              @unique
-  credits            Int                 @default(150)
-  isPro              Boolean             @default(false)
-  lowCreditsEmailSent Boolean            @default(false)
-  questionsAsked     Question[]
-  stripeTransactions StripeTransaction[]
-  userToProjects     UserToProject[]
+  id                  String              @id @default(cuid())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  imageUrl            String?
+  firstName           String?
+  lastName            String?
+  emailAddress        String              @unique
+  credits             Int                 @default(150)
+  isPro               Boolean             @default(false)
+  lowCreditsEmailSent Boolean?            @default(false)
+  passwordHash        String?             @db.VarChar(256)
+  questionsAsked      Question[]
+  stripeTransactions  StripeTransaction[]
+  userToProjects      UserToProject[]
 }
 
 model Project {
@@ -31,16 +32,14 @@ model Project {
   updatedAt            DateTime              @updatedAt
   name                 String
   githubUrl            String
-  creatorId            String                
   deletedAt            DateTime?
-  inviteToken          String
+  creatorId            String?               @db.VarChar(256)
+  inviteToken          String?
   commits              Commit[]
   meetings             Meeting[]
   savedQuestions       Question[]
   sourceCodeEmbeddings SourceCodeEmbedding[]
   userToProjects       UserToProject[]
-  
-  @@index([inviteToken])
 }
 
 model UserToProject {
@@ -101,7 +100,7 @@ model Meeting {
   meetingUrl String
   projectId  String
   status     MeetingStatus @default(PROCESSING)
-  transcript String?       @db.Text
+  transcript String?
   issues     Issue[]
   project    Project       @relation(fields: [projectId], references: [id])
 }
@@ -133,4 +132,9 @@ model StripeTransaction {
 enum MeetingStatus {
   PROCESSING
   COMPLETED
+}
+
+enum PlanType {
+  FREE
+  PRO
 }

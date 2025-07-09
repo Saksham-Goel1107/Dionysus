@@ -6,8 +6,17 @@ import { UserButton } from '@clerk/nextjs';
 
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
+  const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Fetch if user has set a password
+  useEffect(() => {
+    fetch('/api/has-password')
+      .then((res) => res.json())
+      .then((data) => setHasPassword(!!data.hasPassword))
+      .catch(() => setHasPassword(null));
+  }, []);
 
   // Hide menu on click outside or escape
   useEffect(() => {
@@ -54,6 +63,23 @@ export default function UserAvatarMenu() {
             }}
           >
             See your data with us
+          </Button>
+          <Button
+            className="w-full justify-start rounded-lg text-base font-semibold py-3 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
+            variant="ghost"
+            onClick={() => {
+              setShowMenu(false);
+              if (hasPassword) {
+                router.push('/unlock');
+              } else {
+                router.push('/lock');
+              }
+            }}
+          >
+            <span role="img" aria-label="Lock">
+              {hasPassword === false ? '🔒' : '🔓'}
+            </span>
+            {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
           </Button>
         </div>
       )}
