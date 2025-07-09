@@ -22,6 +22,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
+import RecaptchaGate from './components/RecaptchaGate';
 
 export const metadata: Metadata = {
   title: {
@@ -124,45 +125,47 @@ export default async function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ClerkProviderWithTheme>
-              <MultisessionAppSupport>
-                {isMaintenance ? (
-                  <>
-                    <MaintenanceScreen />
-                    <BlockInspectAndContext />
-                    <CustomContextMenu />
-                    <Analytics />
-                    <SpeedInsights />
-                  </>
-                ) : (
-                  <>
-                    <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                    <CookieBanner />
-                    <TRPCReactProvider>
-                      {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                    </TRPCReactProvider>
-                    <Toaster richColors />
-                    <ScrollToTopButton />
-                    <CustomContextMenu />
-                    <BlockInspectAndContext />
-                    <Analytics />
-                    <SpeedInsights />
-                    <Script
-                      src="https://s.pageclip.co/v1/pageclip.js"
-                      charSet="utf-8"
-                      strategy="afterInteractive"
-                    ></Script>
-                  </>
-                )}
-              </MultisessionAppSupport>
-            </ClerkProviderWithTheme>
-          </ThemeProvider>
+          <RecaptchaGate>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <ClerkProviderWithTheme>
+                <MultisessionAppSupport>
+                  {isMaintenance ? (
+                    <>
+                      <MaintenanceScreen />
+                      <BlockInspectAndContext />
+                      <CustomContextMenu />
+                      <Analytics />
+                      <SpeedInsights />
+                    </>
+                  ) : (
+                    <>
+                      <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
+                      <CookieBanner />
+                      <TRPCReactProvider>
+                        {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                      </TRPCReactProvider>
+                      <Toaster richColors />
+                      <ScrollToTopButton />
+                      <CustomContextMenu />
+                      <BlockInspectAndContext />
+                      <Analytics />
+                      <SpeedInsights />
+                      <Script
+                        src="https://s.pageclip.co/v1/pageclip.js"
+                        charSet="utf-8"
+                        strategy="afterInteractive"
+                      ></Script>
+                    </>
+                  )}
+                </MultisessionAppSupport>
+              </ClerkProviderWithTheme>
+            </ThemeProvider>
+          </RecaptchaGate>
         </ErrorBoundary>
       </body>
     </html>

@@ -97,8 +97,6 @@ export default clerkMiddleware(async (auth, request) => {
       isAuthenticated = false;
     }
 
-    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
-
     if (isHighLoadApiRoute) {
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {
@@ -187,11 +185,11 @@ export default clerkMiddleware(async (auth, request) => {
       "default-src 'self';",
       "media-src 'self' blob:;",
       "img-src 'self' https: data: blob: https://huggingface.co https://cdn-lfs.huggingface.co https://github.com https://avatars.githubusercontent.com;",
-      "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co;",
+      "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
       "style-src 'self' 'unsafe-inline' https:;",
-      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com;",
+      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
       "font-src 'self' https: data:;",
-      "frame-src 'self' https://js.stripe.com https://*.stripe.com;",
+      "frame-src 'self' https://js.stripe.com https://*.stripe.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
       "object-src 'none';",
       "frame-ancestors 'none';",
       "base-uri 'self';",
