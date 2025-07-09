@@ -6,7 +6,7 @@ import { type Metadata } from 'next';
 import { TRPCReactProvider } from '@/trpc/react';
 import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
-import { ClerkProvider, GoogleOneTap } from '@clerk/nextjs';
+import { GoogleOneTap } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
@@ -23,6 +23,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import RecaptchaGate from './components/RecaptchaGate';
+import Offline from './offline';
 
 export const metadata: Metadata = {
   title: {
@@ -147,7 +148,9 @@ export default async function RootLayout({
                       <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
                       <CookieBanner />
                       <TRPCReactProvider>
+                        <Offline>
                         {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                        </Offline>
                       </TRPCReactProvider>
                       <Toaster richColors />
                       <ScrollToTopButton />
