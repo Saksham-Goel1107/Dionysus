@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { X, Download, Loader2, Image as ImageIcon, RefreshCw } from 'lucide-react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
@@ -13,12 +13,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -149,14 +149,14 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
     document.body.removeChild(link);
     toast.success('Logo downloaded!');
   };
-  
+
   // Navigation functions for the image carousel
   const nextImage = () => {
     if (logoImages.length > 1) {
       setCurrentImageIndex((prev) => (prev + 1) % logoImages.length);
     }
   };
-  
+
   const prevImage = () => {
     if (logoImages.length > 1) {
       setCurrentImageIndex((prev) => (prev === 0 ? logoImages.length - 1 : prev - 1));
@@ -168,15 +168,15 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
       <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
-            <div className='flex items-center gap-3 pr-3'>
-            <Image src={'/logo.png'} height={40} width={40} alt='Logo' />
-            <span className='font-extrabold '>Dionysus</span>
+            <div className="flex items-center gap-3 pr-3">
+              <Image src={'/logo.png'} height={40} width={40} alt="Logo" />
+              <span className="font-extrabold ">Dionysus</span>
             </div>
             Logo Generator
           </DialogTitle>
           <DialogDescription>
             Create a professional logo for your brand with AI. Customize style, colors, and more.
-            <br/>
+            <br />
             Each Logo Genration Costs <strong>5 Credits</strong>.
           </DialogDescription>
         </DialogHeader>
@@ -190,7 +190,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                 <TabsTrigger value="style">Style</TabsTrigger>
                 <TabsTrigger value="colors">Colors</TabsTrigger>
               </TabsList>
-              
+
               {/* Basics Tab */}
               <TabsContent value="basics" className="space-y-4">
                 <div className="space-y-2">
@@ -204,7 +204,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     required
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="industry">Industry</Label>
                   <Input
@@ -215,7 +215,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     placeholder="E.g., Technology, Restaurant, Fashion"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="description">Brand Description</Label>
                   <Textarea
@@ -228,13 +228,13 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                   />
                 </div>
               </TabsContent>
-              
+
               {/* Style Tab */}
               <TabsContent value="style" className="space-y-4">
                 <div className="space-y-2">
                   <Label>Logo Type</Label>
-                  <Select 
-                    value={formState.type} 
+                  <Select
+                    value={formState.type}
                     onValueChange={(value) => handleSelectChange('type', value)}
                   >
                     <SelectTrigger>
@@ -249,10 +249,10 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-3">
                   <Label>Visual Style</Label>
-                  <RadioGroup 
+                  <RadioGroup
                     value={formState.style}
                     onValueChange={(value) => handleSelectChange('style', value)}
                     className="grid grid-cols-2 gap-2"
@@ -266,7 +266,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                   </RadioGroup>
                 </div>
               </TabsContent>
-              
+
               {/* Colors Tab */}
               <TabsContent value="colors" className="space-y-4">
                 <div className="space-y-3">
@@ -276,7 +276,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     onChange={(color) => handleColorChange('primaryColor', color)}
                   />
                 </div>
-                
+
                 <div className="space-y-3">
                   <Label>Secondary Color</Label>
                   <ColorPicker
@@ -284,7 +284,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     onChange={(color) => handleColorChange('secondaryColor', color)}
                   />
                 </div>
-                
+
                 <div className="space-y-3">
                   <Label>Accent Color</Label>
                   <ColorPicker
@@ -295,11 +295,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
               </TabsContent>
             </Tabs>
 
-            <Button 
-              onClick={generateLogo}
-              disabled={isGenerating} 
-              className="w-full"
-            >
+            <Button onClick={generateLogo} disabled={isGenerating} className="w-full">
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -312,7 +308,8 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
           </div>
 
           {/* Right side - Preview */}
-          <div className={`flex flex-col items-center justify-center rounded-lg border border-dashed p-6 h-[400px]
+          <div
+            className={`flex flex-col items-center justify-center rounded-lg border border-dashed p-6 h-[400px]
             ${resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900/50' : 'border-gray-300 bg-gray-50'}`}
           >
             {isGenerating ? (
@@ -328,42 +325,62 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                   <div className="flex justify-center items-center">
                     {/* Navigation arrows */}
                     {logoImages.length > 1 && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="absolute left-0 z-10 bg-background/80 hover:bg-background/90"
                         onClick={prevImage}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M15 18l-6-6 6-6" />
                         </svg>
                         <span className="sr-only">Previous</span>
                       </Button>
                     )}
-                    
+
                     {/* Logo image */}
-                    <img 
-                      src={logoImages[currentImageIndex]} 
-                      alt={`Generated logo ${currentImageIndex + 1}`} 
+                    <Image
+                      src={logoImages[currentImageIndex] ?? ''}
+                      alt={`Generated logo ${currentImageIndex + 1}`}
                       className="max-h-[300px] max-w-full object-contain rounded-md shadow-md"
                     />
-                    
+
                     {/* Navigation arrows */}
                     {logoImages.length > 1 && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="absolute right-0 z-10 bg-background/80 hover:bg-background/90"
                         onClick={nextImage}
                       >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
                           <path d="M9 18l6-6-6-6" />
                         </svg>
                         <span className="sr-only">Next</span>
                       </Button>
                     )}
                   </div>
-                  
+
                   {/* Image counter if multiple images */}
                   {logoImages.length > 1 && (
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center">
@@ -373,7 +390,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex gap-2 mt-2">
                   <Button size="sm" variant="outline" onClick={generateLogo}>
                     <RefreshCw className="mr-2 h-4 w-4" />
@@ -387,12 +404,14 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center text-center">
-                <div className={`rounded-full p-4 mb-4 ${resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}>
+                <div
+                  className={`rounded-full p-4 mb-4 ${resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}
+                >
                   <ImageIcon className="h-8 w-8 opacity-50" />
                 </div>
                 <p className="text-lg font-medium">Your logo will appear here</p>
                 <p className="text-sm text-muted-foreground mt-2 max-w-xs">
-                  Fill in the details on the left and click 'Generate Logo'
+                  Fill in the details on the left and click &apos;Generate Logo&apos;
                 </p>
               </div>
             )}

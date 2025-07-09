@@ -8,8 +8,8 @@ export async function checkAndSyncProStatus(userId: string) {
   const { has } = await auth();
   const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
 
-    await db.user.update({
-      where: { id: userId },
-      data: { isPro: hasProPlan },
-    });
-  }
+  await db.user.update({
+    where: { id: userId },
+    data: { isPro: hasProPlan },
+  });
+}

@@ -1,12 +1,12 @@
-"use client";
-import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import oneLight from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
-import lucario from "react-syntax-highlighter/dist/esm/styles/prism/lucario";
-import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+'use client';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import oneLight from 'react-syntax-highlighter/dist/esm/styles/prism/one-light';
+import lucario from 'react-syntax-highlighter/dist/esm/styles/prism/lucario';
+import { useTheme } from 'next-themes';
+import { cn } from '@/lib/utils';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type Props = {
   filesReferences: {
@@ -17,10 +17,10 @@ type Props = {
 };
 
 const CodeReferences = ({ filesReferences }: Props) => {
-  if (filesReferences.length === 0) return null;
-
   const { theme } = useTheme();
   const [tab, setTab] = React.useState(filesReferences[0]?.fileName);
+
+  if (filesReferences.length === 0) return null;
 
   return (
     <div className={`m-auto max-w-[70vw] ${theme}`}>
@@ -32,9 +32,9 @@ const CodeReferences = ({ filesReferences }: Props) => {
                 onClick={() => setTab(file.fileName)}
                 key={file.fileName}
                 className={cn(
-                  "max-w-[80vw] whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium file-name",
+                  'max-w-[80vw] whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium file-name',
                   {
-                    "bg-primary": tab === file.fileName,
+                    'bg-primary': tab === file.fileName,
                   },
                 )}
               >
@@ -46,11 +46,7 @@ const CodeReferences = ({ filesReferences }: Props) => {
         </ScrollArea>
 
         {filesReferences.map((file) => (
-          <TabsContent
-            key={file.fileName}
-            value={file.fileName}
-            className="max-w-7xl rounded-md"
-          >
+          <TabsContent key={file.fileName} value={file.fileName} className="max-w-7xl rounded-md">
             <div className="max-h-[25vh] w-full overflow-auto">
               <SyntaxHighlighter
                 language="typescript"

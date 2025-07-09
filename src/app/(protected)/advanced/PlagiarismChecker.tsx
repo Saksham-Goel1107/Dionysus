@@ -1,15 +1,49 @@
 'use client';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
+import Image from 'next/image';
 
 // List of config files to skip
 const CONFIG_FILES = [
-  'next.config.js', 'next-env.d.ts', 'tsconfig.json', 'tailwind.config.ts', 'postcss.config.js', 'prettier.config.js',
-  'package.json', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'vite.config.js', 'vite.config.ts', 'webpack.config.js',
-  'babel.config.js', 'jest.config.js', 'cypress.config.js', 'playwright.config.js', 'eslint.config.js', 'eslintrc.js',
-  'commitlint.config.js', 'prisma/schema.prisma', 'prisma/migrations', 'README.md', 'LICENSE.md', 'CODE_OF_CONDUCT.md',
-  'CONTRIBUTING.md', 'SECURITY.md', 'public/robots.txt', 'public/site.webmanifest', 'public/favicon.ico', 'public/logo.png',
+  'next.config.js',
+  'next-env.d.ts',
+  'tsconfig.json',
+  'tailwind.config.ts',
+  'postcss.config.js',
+  'prettier.config.js',
+  'package.json',
+  'package-lock.json',
+  'yarn.lock',
+  'pnpm-lock.yaml',
+  'vite.config.js',
+  'vite.config.ts',
+  'webpack.config.js',
+  'babel.config.js',
+  'jest.config.js',
+  'cypress.config.js',
+  'playwright.config.js',
+  'eslint.config.js',
+  'eslintrc.js',
+  'commitlint.config.js',
+  'prisma/schema.prisma',
+  'prisma/migrations',
+  'README.md',
+  'LICENSE.md',
+  'CODE_OF_CONDUCT.md',
+  'CONTRIBUTING.md',
+  'SECURITY.md',
+  'public/robots.txt',
+  'public/site.webmanifest',
+  'public/favicon.ico',
+  'public/logo.png',
 ];
 
 async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
@@ -23,19 +57,26 @@ async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
     ...(GITHUB_PAT && { Authorization: `Bearer ${GITHUB_PAT}` }),
   };
 
-  const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`, { headers });
+  const treeRes = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
+    { headers },
+  );
   if (!treeRes.ok) throw new Error('Failed to fetch file list. Ensure the repo is public.');
   const { tree } = await treeRes.json();
 
   // Filter out only non-blob, config, shadcn/ui, node_modules, and duplicate files
   const seenFiles = new Set();
-  const codeFiles = tree.filter((f: any) =>
-    f.type === 'blob' &&
-    /\.(js|ts|py|java|cpp|c|cs|rb|php|rs|swift|kt|m|scala|sh|pl|rb|dart|jsx|tsx)$/i.test(f.path) &&
-    !CONFIG_FILES.some((cfg) => f.path.endsWith(cfg)) &&
-    !/components[\\\/]ui[\\\/]/i.test(f.path) && // skip shadcn/ui components
-    !/node_modules[\\\/]/i.test(f.path) && // skip node_modules just in case
-    !seenFiles.has(f.path) && seenFiles.add(f.path)
+  const codeFiles = tree.filter(
+    (f: any) =>
+      f.type === 'blob' &&
+      /\.(js|ts|py|java|cpp|c|cs|rb|php|rs|swift|kt|m|scala|sh|pl|rb|dart|jsx|tsx)$/i.test(
+        f.path,
+      ) &&
+      !CONFIG_FILES.some((cfg) => f.path.endsWith(cfg)) &&
+      !/components[\\\/]ui[\\\/]/i.test(f.path) && // skip shadcn/ui components
+      !/node_modules[\\\/]/i.test(f.path) && // skip node_modules just in case
+      !seenFiles.has(f.path) &&
+      seenFiles.add(f.path),
   );
 
   const results: any[] = [];
@@ -55,8 +96,23 @@ async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
     // Try to extract a short, single-line snippet for the search query
     let searchSnippet = '';
     // Prefer a non-empty, non-comment, non-import line (for code files)
-    const lines = snippet.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    searchSnippet = lines.find(l => l && !l.startsWith('//') && !l.startsWith('/*') && !l.startsWith('*') && !l.startsWith('import') && !l.startsWith('export') && l.length > 10) || lines[0] || '';
+    const lines = snippet
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    searchSnippet =
+      lines.find(
+        (l) =>
+          l &&
+          !l.startsWith('//') &&
+          !l.startsWith('/*') &&
+          !l.startsWith('*') &&
+          !l.startsWith('import') &&
+          !l.startsWith('export') &&
+          l.length > 10,
+      ) ||
+      lines[0] ||
+      '';
     // Fallback: use up to 100 chars of the snippet
     if (searchSnippet.length > 100) searchSnippet = searchSnippet.slice(0, 100);
     // Fallback: if still too long or empty, use up to 50 chars
@@ -67,7 +123,9 @@ async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
     let searchRes = await fetch(searchUrl, { headers });
     // If 403 error, throw a rate limit error
     if (searchRes.status === 403) {
-      throw new Error('GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.');
+      throw new Error(
+        'GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.',
+      );
     }
     // If 422 error, retry with a shorter snippet (first 30 chars)
     if (searchRes.status === 422 && searchSnippet.length > 30) {
@@ -75,7 +133,9 @@ async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
       searchUrl = `https://api.github.com/search/code?q=${encodeURIComponent(searchSnippet)}+in:file`;
       searchRes = await fetch(searchUrl, { headers });
       if (searchRes.status === 403) {
-        throw new Error('GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.');
+        throw new Error(
+          'GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.',
+        );
       }
     }
     if (!searchRes.ok) continue;
@@ -84,7 +144,7 @@ async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
     // Show up to 5 unique file matches (by repo+path) that are not the same repo
     const uniqueMatches: any[] = [];
     const seen = new Set();
-    for (const item of (searchData.items || [])) {
+    for (const item of searchData.items || []) {
       const key = item.repository.full_name + '/' + item.path;
       if (
         item.repository.full_name !== `${owner}/${repo}` &&
@@ -203,7 +263,7 @@ const PlagiarismChecker: React.FC = () => {
     return () => {
       if (scanAbort) scanAbort.abort();
     };
-  }, [repoUrl]);
+  }, [repoUrl, scanAbort]);
 
   // Ensure modal always shows cached results for current URL, even during/after pagination
   React.useEffect(() => {
@@ -218,7 +278,9 @@ const PlagiarismChecker: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto my-10 p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-2">🔍 GitHub Plagiarism Checker</h2>
+      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-2">
+        🔍 GitHub Plagiarism Checker
+      </h2>
       <p className="text-sm text-blue-600 dark:text-blue-300 mb-4">
         Check for code similarity in public GitHub repositories using GitHub Code Search.
       </p>
@@ -233,7 +295,10 @@ const PlagiarismChecker: React.FC = () => {
         {loading ? 'Checking...' : 'Check Plagiarism'}
       </Button>
       {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-      <div className='dark:text-gray-300 text-gray-500 text-xs mt-3'>This Process Takes Significant Time so Please don't leave this page. Till then have a coffee🍵</div>
+      <div className="dark:text-gray-300 text-gray-500 text-xs mt-3">
+        This Process Takes Significant Time so Please don&apos;t leave this page. Till then have a
+        coffee🍵
+      </div>
       <Dialog open={modalOpen} onOpenChange={(open) => setModalOpen(open)}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -245,20 +310,46 @@ const PlagiarismChecker: React.FC = () => {
           {results && (
             <div className="mt-2 space-y-4">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                <p><strong>Files checked:</strong> {results.length}</p>
-                <p><strong>Total matches found:</strong> {results.reduce((acc, file) => acc + file.matches.length, 0)}</p>
+                <p>
+                  <strong>Files checked:</strong> {results.length}
+                </p>
+                <p>
+                  <strong>Total matches found:</strong>{' '}
+                  {results.reduce((acc, file) => acc + file.matches.length, 0)}
+                </p>
               </div>
               {results.map((file, i) => (
-                <div key={i} className="p-4 bg-gray-50 dark:bg-gray-800 rounded border dark:border-gray-600">
-                  <div className="font-semibold mb-1 text-gray-900 dark:text-white">{file.file}</div>
-                  <div className="text-xs text-gray-500 mb-2">Snippet: <code>{file.snippet.slice(0, 100)}...</code></div>
+                <div
+                  key={i}
+                  className="p-4 bg-gray-50 dark:bg-gray-800 rounded border dark:border-gray-600"
+                >
+                  <div className="font-semibold mb-1 text-gray-900 dark:text-white">
+                    {file.file}
+                  </div>
+                  <div className="text-xs text-gray-500 mb-2">
+                    Snippet: <code>{file.snippet.slice(0, 100)}...</code>
+                  </div>
                   {file.matches.length > 0 ? (
                     <ul className="list-disc ml-5 space-y-1 text-sm">
                       {file.matches.map((match: any, j: number) => (
                         <li key={j}>
-                          <a href={match.html_url} target="_blank" className="text-blue-600 underline">{match.repo}/{match.path}</a>
-                          <a href={match.user_url} target="_blank" className="ml-2 inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300">
-                            <img src={match.avatar_url} alt={match.user} className="w-4 h-4 rounded-full" />
+                          <a
+                            href={match.html_url}
+                            target="_blank"
+                            className="text-blue-600 underline"
+                          >
+                            {match.repo}/{match.path}
+                          </a>
+                          <a
+                            href={match.user_url}
+                            target="_blank"
+                            className="ml-2 inline-flex items-center gap-1 text-xs text-gray-600 dark:text-gray-300"
+                          >
+                            <Image
+                              src={match.avatar_url}
+                              alt={match.user}
+                              className="w-4 h-4 rounded-full"
+                            />
                             {match.user}
                           </a>
                         </li>
@@ -281,11 +372,21 @@ const PlagiarismChecker: React.FC = () => {
             </div>
           )}
           <p className="mt-6 text-xs text-gray-500">
-            Uses the <a href="https://docs.github.com/en/rest/search?apiVersion=2022-11-28#search-code" target="_blank" rel="noopener noreferrer" className="underline">GitHub Code Search API</a>.
-            To avoid rate limits, only the first few code files are checked.
+            Uses the{' '}
+            <a
+              href="https://docs.github.com/en/rest/search?apiVersion=2022-11-28#search-code"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              GitHub Code Search API
+            </a>
+            . To avoid rate limits, only the first few code files are checked.
           </p>
           <DialogClose asChild>
-            <Button className="mt-4 w-full" variant="secondary">Close</Button>
+            <Button className="mt-4 w-full" variant="secondary">
+              Close
+            </Button>
           </DialogClose>
         </DialogContent>
       </Dialog>

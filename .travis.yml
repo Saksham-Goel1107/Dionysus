@@ -13,7 +13,6 @@ cache:
     - .next/cache
 
 install:
-  - npm ci
   - npx prisma generate
 
 script:

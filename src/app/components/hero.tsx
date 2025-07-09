@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Github, Headphones, Code } from "lucide-react"
-import Link from "next/link"
+import { Button } from '@/components/ui/button';
+import { ArrowRight, Github, Headphones, Code } from 'lucide-react';
+import Link from 'next/link';
 
 export function Hero() {
   return (
@@ -13,8 +13,8 @@ export function Hero() {
                 Enhance Your Development Workflow with AI
               </h1>
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                Dionysus is an AI-powered development assistant that helps you understand codebases, analyze
-                repositories, and transcribe meetings.
+                Dionysus is an AI-powered development assistant that helps you understand codebases,
+                analyze repositories, and transcribe meetings.
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -38,19 +38,23 @@ export function Hero() {
                     <h3 className="text-lg font-semibold text-white">Repository Analysis</h3>
                   </div>
                   <p className="text-white/90">
-                  Input a GitHub repository URL to get AI-powered summaries of recent commits and insights about the
-                  codebase.
+                    Input a GitHub repository URL to get AI-powered summaries of recent commits and
+                    insights about the codebase.
                   </p>
                   <div className="flex items-center gap-2">
                     <Code className="h-6 w-6 text-white" />
                     <h3 className="text-lg font-semibold text-white">Code Q&A</h3>
                   </div>
-                  <p className="text-white/90">Ask questions about your code and get intelligent answers.</p>
+                  <p className="text-white/90">
+                    Ask questions about your code and get intelligent answers.
+                  </p>
                   <div className="flex items-center gap-2">
                     <Headphones className="h-6 w-6 text-white" />
                     <h3 className="text-lg font-semibold text-white">Audio Transcription</h3>
                   </div>
-                  <p className="text-white/90">Upload meeting recordings and get AI-powered summaries of key points.</p>
+                  <p className="text-white/90">
+                    Upload meeting recordings and get AI-powered summaries of key points.
+                  </p>
                 </div>
               </div>
             </div>
@@ -58,5 +62,5 @@ export function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }

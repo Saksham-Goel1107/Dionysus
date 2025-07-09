@@ -1,24 +1,28 @@
-"use client";
+'use client';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
+import React, { useState } from 'react';
+import MDEditor from '@uiw/react-md-editor';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import AskQuestionCrad from '../dashboard/_components/AskQuestionCard';
+import CodeReferences from '../dashboard/_components/CodeReferences';
+import { Button } from '@/components/ui/button';
+import { Plus, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import { toast } from 'sonner';
+import useRefetch from '@/hooks/use-refetch';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import useProject from "@/hooks/use-project";
-import { api } from "@/trpc/react";
-import React from "react";
-import MDEditor from "@uiw/react-md-editor";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import AskQuestionCrad from "../dashboard/_components/AskQuestionCard";
-import CodeReferences from "../dashboard/_components/CodeReferences";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import Link from "next/link";
-import { Card } from "@/components/ui/card";
-import { useTheme } from "next-themes";
-import Image from "next/image";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const NoProjectsCard = () => {
   return (
@@ -28,8 +32,8 @@ const NoProjectsCard = () => {
       </div>
       <h2 className="mt-4 text-lg font-semibold">No Projects Yet</h2>
       <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-        Create a project first to start asking questions about your codebase.
-        This will help us provide accurate and contextual answers.
+        Create a project first to start asking questions about your codebase. This will help us
+        provide accurate and contextual answers.
       </p>
       <Button asChild className="mt-6">
         <Link href="/create">Create Your First Project</Link>
@@ -44,11 +48,50 @@ const QaPage = () => {
     { projectId },
     {
       enabled: !!projectId,
-    }
+    },
   );
+  const { data: isCreator } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
+  const { data: hasAccess } = api.project.checkProjectAccess.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
+  const deleteQuestion = api.project.deleteQuestion.useMutation();
+  const refetch = useRefetch();
+
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const question = questions?.[questionIndex];
   const { resolvedTheme } = useTheme();
+
+  // State for confirmation dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<string | null>(null);
+
+  const handleDeleteQuestion = (questionId: string) => {
+    deleteQuestion.mutate(
+      { questionId },
+      {
+        onSuccess: () => {
+          toast.success('Question deleted successfully');
+          refetch();
+          setDialogOpen(false);
+          setQuestionToDelete(null);
+        },
+        onError: (error) => {
+          toast.error(error.message || 'Failed to delete question');
+          setDialogOpen(false);
+        },
+      },
+    );
+  };
+
+  const openDeleteDialog = (e: React.MouseEvent, questionId: string) => {
+    e.stopPropagation();
+    setQuestionToDelete(questionId);
+    setDialogOpen(true);
+  };
 
   if (!projects || projects.length === 0) {
     return (
@@ -70,23 +113,21 @@ const QaPage = () => {
             <SheetTrigger onClick={() => setQuestionIndex(index)}>
               <div
                 className={`flex items-center gap-4 rounded-lg border ${
-                  resolvedTheme === "dark" ? "bg-gray-900" : "bg-white"
-                } p-4 shadow-md shadow-border mb-2`}
+                  resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
+                } p-4 shadow-md shadow-border mb-2 relative`}
               >
                 <Image
                   className="rounded-full"
                   height={30}
                   width={30}
-                  src={question.user.imageUrl ?? ""}
+                  src={question.user.imageUrl ?? ''}
                   alt="User avatar"
                 />
                 <div className="flex flex-col text-left overflow-hidden">
                   <div className="flex items-center gap-2">
                     <p
                       className={`line-clamp-1 text-lg font-medium ${
-                        resolvedTheme === "dark"
-                          ? "text-white"
-                          : "text-gray-700"
+                        resolvedTheme === 'dark' ? 'text-white' : 'text-gray-700'
                       }`}
                     >
                       {question.question}
@@ -95,10 +136,19 @@ const QaPage = () => {
                       {question.createdAt.toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="line-clamp-2 text-sm text-gray-500">
-                    {question.answer}
-                  </p>
+                  <p className="line-clamp-2 text-sm text-gray-500">{question.answer}</p>
                 </div>
+
+                {isCreator && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="absolute top-2 right-2  group-hover:opacity-100  h-6 w-6"
+                    onClick={(e) => openDeleteDialog(e, question.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-red-500" />
+                  </Button>
+                )}
               </div>
             </SheetTrigger>
           </React.Fragment>
@@ -109,6 +159,30 @@ const QaPage = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog for Question Deletion */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Question</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this question? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteQuestion.isPending}
+              onClick={() => questionToDelete && handleDeleteQuestion(questionToDelete)}
+            >
+              {deleteQuestion.isPending ? 'Deleting...' : 'Delete Question'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {question && (
         <SheetContent
@@ -121,19 +195,13 @@ const QaPage = () => {
             </SheetTitle>
           </SheetHeader>
 
-          <div
-            data-color-mode={resolvedTheme}
-            className="markdown-editor-container flex-1"
-          >
+          <div data-color-mode={resolvedTheme} className="markdown-editor-container flex-1">
             <ScrollArea className="flex-1 w-full max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
               <div
                 className={`p-3 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 text-card-foreground text-sm sm:text-base`}
                 style={{ minHeight: 60 }}
               >
-                <MDEditor.Markdown
-                  source={question.answer}
-                  className="md-preview-content"
-                />
+                <MDEditor.Markdown source={question.answer} className="md-preview-content" />
               </div>
             </ScrollArea>
           </div>
@@ -143,7 +211,11 @@ const QaPage = () => {
           <CodeReferences
             filesReferences={
               Array.isArray(question.filesReferences)
-                ? (question.filesReferences as { fileName: string; sourceCode: string; summary: string }[])
+                ? (question.filesReferences as {
+                    fileName: string;
+                    sourceCode: string;
+                    summary: string;
+                  }[])
                 : []
             }
           />

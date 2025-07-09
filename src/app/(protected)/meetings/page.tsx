@@ -1,16 +1,25 @@
-"use client";
-import useProject from "@/hooks/use-project";
-import { api } from "@/trpc/react";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import useRefetch from "@/hooks/use-refetch";
-import MeetingCard from "../dashboard/_components/MeetingCard";
-import TranscriptViewer from "./_components/TranscriptViewer";
-import { Loader2, Lock } from "lucide-react";
-import { useTheme } from "next-themes";
+'use client';
+import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import useRefetch from '@/hooks/use-refetch';
+import MeetingCard from '../dashboard/_components/MeetingCard';
+import TranscriptViewer from './_components/TranscriptViewer';
+import { Loader2, Lock } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useUser } from '@clerk/nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -20,8 +29,14 @@ const MeetingsPage = () => {
       refetchInterval: 4000,
     },
   );
+  const { data: isCreator } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
   const deleteMeeting = api.project.deleteMeeting.useMutation();
   const refetch = useRefetch();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [meetingToDelete, setMeetingToDelete] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const [hasProPlan, sethasProPlan] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,8 +44,8 @@ const MeetingsPage = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/user/pro-status");
-        if (!res.ok) throw new Error("Failed to fetch pro status");
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
       } catch (error) {
@@ -45,9 +60,7 @@ const MeetingsPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">
-          Checking your plan...
-        </p>
+        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
       </div>
     );
   }
@@ -61,28 +74,23 @@ const MeetingsPage = () => {
           </div>
           <h2
             className={`text-2xl font-bold ${
-              resolvedTheme === "dark" ? "text-white" : "text-gray-800"
+              resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'
             }`}
           >
             Pro Plan Required
           </h2>
           <p
             className={`${
-              resolvedTheme === "dark" ? "text-gray-200" : "text-gray-600"
+              resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'
             } max-w-md text-sm sm:text-base`}
           >
-            Access to meetings is available exclusively for{" "}
-            <span className="font-semibold text-yellow-700">
-              Dionysus Pro Pack
-            </span>{" "}
-            subscribers. <br />
+            Access to meetings is available exclusively for{' '}
+            <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> subscribers.{' '}
+            <br />
             Upgrade your plan to unlock this feature.
           </p>
           <Link href="/subscriptions">
-            <Button
-              size="lg"
-              className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700"
-            >
+            <Button size="lg" className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700">
               Upgrade Now
             </Button>
           </Link>
@@ -106,16 +114,14 @@ const MeetingsPage = () => {
                     >
                       {meeting.name}
                     </Link>
-                    {meeting.status === "PROCESSING" && (
+                    {meeting.status === 'PROCESSING' && (
                       <Badge className="bg-yellow-500 text-white w-fit mt-1 sm:mt-0">
                         Processing...
                       </Badge>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-x-2 text-xs text-gray-500 mt-1">
-                    <p className="whitespace-nowrap">
-                      {meeting.createdAt.toLocaleDateString()}
-                    </p>
+                    <p className="whitespace-nowrap">{meeting.createdAt.toLocaleDateString()}</p>
                     <p className="truncate">{meeting.issues.length} issues</p>
                   </div>
                 </div>
@@ -127,33 +133,70 @@ const MeetingsPage = () => {
                     </Button>
                   </Link>
 
-                  {meeting.status === "COMPLETED" && (
-                    <TranscriptViewer meetingId={meeting.id} />
-                  )}
+                  {meeting.status === 'COMPLETED' && <TranscriptViewer meetingId={meeting.id} />}
 
-                  <Button
-                    size="sm"
-                    disabled={deleteMeeting.isPending}
-                    variant="destructive"
-                    onClick={() =>
-                      deleteMeeting.mutate(
-                        { meetingId: meeting.id },
-                        {
-                          onSuccess: () => {
-                            toast.success("Meeting deleted successfully");
-                            refetch();
-                          },
-                        },
-                      )
-                    }
-                    className="w-full sm:w-auto"
-                  >
-                    Delete
-                  </Button>
+                  {/* Only show delete button to project creator */}
+                  {isCreator && (
+                    <Button
+                      size="sm"
+                      disabled={deleteMeeting.isPending}
+                      variant="destructive"
+                      onClick={() => {
+                        setMeetingToDelete(meeting.id);
+                        setDialogOpen(true);
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Delete
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
           </ul>
+
+          {/* Confirmation Dialog for Meeting Deletion */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Meeting</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this meeting? This action cannot be undone. All
+                  meeting data, including transcripts and issues, will be permanently removed.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  disabled={deleteMeeting.isPending}
+                  onClick={() => {
+                    if (meetingToDelete) {
+                      deleteMeeting.mutate(
+                        { meetingId: meetingToDelete },
+                        {
+                          onSuccess: () => {
+                            toast.success('Meeting deleted successfully');
+                            refetch();
+                            setDialogOpen(false);
+                            setMeetingToDelete(null);
+                          },
+                          onError: (error) => {
+                            toast.error(error.message || 'Failed to delete meeting');
+                            setDialogOpen(false);
+                          },
+                        },
+                      );
+                    }
+                  }}
+                >
+                  {deleteMeeting.isPending ? 'Deleting...' : 'Delete Meeting'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </>

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import Link from 'next/link';
 
-import { useState } from "react";
-import { Logo } from "./logo";
-import { ModeToggle } from "./ThemeToggle"
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { Logo } from './logo';
+import { ModeToggle } from './ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,7 +37,7 @@ export function Navbar() {
             Docs
           </Link>
           <ModeToggle />
-          <Button onClick={() => router.push("/sign-in")}>Get Started</Button>
+          <Button onClick={() => router.push('/sign-in')}>Get Started</Button>
         </nav>
       </div>
     </header>

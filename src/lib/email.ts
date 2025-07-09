@@ -41,7 +41,7 @@ export async function sendLowCreditsEmail({
 }) {
   const subject = `Your credits are running low – Top up now and save!`;
   const discountText = discounts.length
-    ? `<ul style="margin: 8px 0 0 16px; color: #2563eb;">${discounts.map(d => `<li>${d}</li>`).join('')}</ul>`
+    ? `<ul style="margin: 8px 0 0 16px; color: #2563eb;">${discounts.map((d) => `<li>${d}</li>`).join('')}</ul>`
     : '<span style="color: #2563eb;">Check for available discounts in your dashboard!</span>';
   const html = `
     <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background: #f9fafb;">
@@ -59,6 +59,43 @@ export async function sendLowCreditsEmail({
       <p style="font-size: 12px; color: #888; margin-top: 30px; text-align:center;">&copy; ${new Date().getFullYear()} Dionysus</p>
     </div>
   `;
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}
+
+export async function sendDataExportWarningEmail({ to, name }: { to: string; name?: string }) {
+  const subject = '⚠️ Your Dionysus Data Was Exported';
+
+  const html = `
+  <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; color: #1f2937;">
+    <h2 style="color: #dc2626; text-align: center; margin-top: 0; margin-bottom: 8px;">⚠️ Data Export Alert</h2>
+    <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 24px;">
+      Hi${name ? ' ' + name : ''}, your account data was recently exported from Dionysus.
+    </p>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    
+    <p style="font-size: 16px; margin-bottom: 16px;">
+      If you initiated this export, no further action is needed.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 24px;">
+      If you <strong>did not</strong> perform this action, please <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: none;">contact support immediately</a>.
+    </p>
+
+    <p style="font-size: 15px; color: #6b7280; margin-bottom: 32px;">
+      This is a security notification sent to help protect your account.
+    </p>
+
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+      &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+    </p>
+  </div>
+`;
+
   return transporter.sendMail({
     from: process.env.SMTP_FROM || 'no-reply@example.com',
     to,

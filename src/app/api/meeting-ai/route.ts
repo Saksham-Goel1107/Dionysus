@@ -1,8 +1,8 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextRequest, NextResponse } from "next/server";
-import { getChat, setChat } from "../../utils/redis";
-import { db } from "@/server/db";
-import { auth } from '@clerk/nextjs/server'
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { NextRequest, NextResponse } from 'next/server';
+import { getChat, setChat } from '../../utils/redis';
+import { db } from '@/server/db';
+import { auth } from '@clerk/nextjs/server';
 
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
@@ -69,23 +69,23 @@ function formatCurrency(value: number): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { has } = await auth()
-    const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
-    if (!hasProPlan) {
-      return NextResponse.json(
-        {
-          error: 'You need to upgrade to Pro to use this feature.',
-        },
-        { status: 403 },
-      )
-    }
+  const { has } = await auth();
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
+  if (!hasProPlan) {
+    return NextResponse.json(
+      {
+        error: 'You need to upgrade to Pro to use this feature.',
+      },
+      { status: 403 },
+    );
+  }
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
       console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
-        { error: "Invalid API configuration. Please contact the administrator." },
-        { status: 500 }
+        { error: 'Invalid API configuration. Please contact the administrator.' },
+        { status: 500 },
       );
     }
 
@@ -93,47 +93,44 @@ export async function POST(req: NextRequest) {
     if (!genAI) {
       genAI = new GoogleGenerativeAI(apiKey);
     }
-    
-    const { message, meetingId, meetingName, meetingDate, sessionId = meetingId } = await req.json();
-    
+
+    const {
+      message,
+      meetingId,
+      meetingName,
+      meetingDate,
+      sessionId = meetingId,
+    } = await req.json();
+
     if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
-    
+
     if (!meetingId) {
-      return NextResponse.json(
-        { error: "Meeting ID is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Meeting ID is required' }, { status: 400 });
     }
 
     // Fetch meeting details from database
     const meeting = await db.meeting.findUnique({
       where: { id: meetingId },
-      include: { issues: true }
+      include: { issues: true },
     });
 
     if (!meeting) {
-      return NextResponse.json(
-        { error: "Meeting not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
 
     // Get chat history
-    const history = await getChat(sessionId) as ChatMessage[];    // Create meeting context from all issues
+    const history = (await getChat(sessionId)) as ChatMessage[]; // Create meeting context from all issues
     const issueValue = 214.29; // Value per issue in dollars
     const totalValue = meeting.issues.length * issueValue;
-      let meetingContext = `**Meeting Summary**\n`;
+    let meetingContext = `**Meeting Summary**\n`;
     meetingContext += `Meeting Name: ${meetingName || meeting.name}\n`;
     meetingContext += `Date: ${new Date(meetingDate || meeting.createdAt).toLocaleDateString()}\n`;
     meetingContext += `Issues: ${meeting.issues.length}\n`;
     meetingContext += `Total Value: ${formatCurrency(totalValue)}\n\n`;
     meetingContext += `**Issue Details**\n\n`;
-    
+
     meeting.issues.forEach((issue, index) => {
       meetingContext += `ISSUE ${index + 1}: ${issue.gist}\n`;
       meetingContext += `Time Period: ${issue.start} - ${issue.end}\n`;
@@ -141,20 +138,21 @@ export async function POST(req: NextRequest) {
       meetingContext += `Summary: ${issue.summary}\n\n`;
     });
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-2.0-flash",
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
       generationConfig: {
         temperature: 0.7,
         topP: 0.8,
         topK: 40,
         maxOutputTokens: 1000,
-      }
-    });   
+      },
+    });
 
-    const conversationContext: string = history.length > 0 
-      ? history.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n\n')
-      : '';
-    
+    const conversationContext: string =
+      history.length > 0
+        ? history.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n\n')
+        : '';
+
     // Create a chat with history
     const chat = model.startChat({
       history: [],
@@ -165,72 +163,77 @@ export async function POST(req: NextRequest) {
 
     const result = await chat.sendMessage(
       `${SYSTEM_CONTEXT}\n\n` +
-      `Meeting Context:\n${meetingContext}\n\n` +
-      `${conversationContext}\n\n` +
-      `User: ${message}`
+        `Meeting Context:\n${meetingContext}\n\n` +
+        `${conversationContext}\n\n` +
+        `User: ${message}`,
     );
-    
+
     const response = await result.response;
     let responseText = response.text();
-    
+
     if (!responseText) {
       return NextResponse.json(
-        { error: "No response generated. Please try again." },
-        { status: 500 }
+        { error: 'No response generated. Please try again.' },
+        { status: 500 },
       );
     }
-    
+
     responseText = responseText
       .replace(/\n{3,}/g, '\n\n')
       .replace(/([.!?])\s*(\w)/g, '$1 $2')
-      
+
       .replace(/^[-*]\s/gm, '• ')
-      .replace(/^\t[-*]\s/gm, '    • ') 
-      .replace(/^\d+\.\s/gm, (match) => match.trim() + ' ')      .replace(/\*\*(.*?)\*\*/g, (_, text) => `<strong>${text.trim()}</strong>`) 
-      .replace(/\*(.*?)\*/g, (_, text) => `<em>${text.trim()}</em>`)       
-      .replace(/`(.*?)`/g, (_, text) => `<code>${text.trim()}</code>`) 
+      .replace(/^\t[-*]\s/gm, '    • ')
+      .replace(/^\d+\.\s/gm, (match) => match.trim() + ' ')
+      .replace(/\*\*(.*?)\*\*/g, (_, text) => `<strong>${text.trim()}</strong>`)
+      .replace(/\*(.*?)\*/g, (_, text) => `<em>${text.trim()}</em>`)
+      .replace(/`(.*?)`/g, (_, text) => `<code>${text.trim()}</code>`)
       .replace(/^##\s*(.*?)$/gm, (_, heading) => `<h2>${heading.trim()}</h2>`)
       .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang: string | undefined, code: string) => {
-        const formattedCode = code.split('\n')
+        const formattedCode = code
+          .split('\n')
           .map((line: string) => line.trim())
-          .join('\n    '); 
+          .join('\n    ');
         return `\`\`\`${lang || ''}\n    ${formattedCode}\n\`\`\``;
       })
-      
+
       .replace(/^(•|\d+\.)\s*/gm, '$1 ')
-      
+
       .replace(/^(\s{2,})/gm, '    ')
-      
+
       .trim();
 
     const updatedHistory = [
       ...history,
       { role: 'user', content: message },
-      { role: 'assistant', content: responseText }
+      { role: 'assistant', content: responseText },
     ];
-    
+
     await setChat(sessionId, updatedHistory);
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       response: responseText,
       timestamp: new Date().toISOString(),
-      sessionId
+      sessionId,
     });
   } catch (err) {
     const error = err as Error; // cast to Error type
 
     console.error('Meeting AI Error:', error);
 
-    if (error.message?.includes('API_KEY_INVALID') || error.message?.includes('API key not valid')) {
+    if (
+      error.message?.includes('API_KEY_INVALID') ||
+      error.message?.includes('API key not valid')
+    ) {
       return NextResponse.json(
-        { error: "Invalid API configuration. Please contact the administrator." },
-        { status: 500 }
+        { error: 'Invalid API configuration. Please contact the administrator.' },
+        { status: 500 },
       );
     }
 
     return NextResponse.json(
-      { error: "Failed to generate response, please try again later." },
-      { status: 500 }
+      { error: 'Failed to generate response, please try again later.' },
+      { status: 500 },
     );
   }
 }

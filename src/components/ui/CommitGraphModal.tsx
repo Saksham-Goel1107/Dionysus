@@ -272,12 +272,12 @@ const CommitGraphModal: React.FC = () => {
             <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="2" fill="#3b82f6" />
             <circle cx="12" cy="12" r="4" fill="#6366f1" />
           </svg>
-          <span className="text-2xl font-extrabold tracking-tight text-white drop-shadow-lg">
+          <span className="text-2xl font-extrabold tracking-tight dark:text-white text-black drop-shadow-lg">
             Commit Graph & Repo AI
           </span>
         </div>
-        <p className="text-base text-indigo-100/90 font-medium text-center max-w-xl">
-          Visualize your repository's commit history and get instant AI-powered insights. Click
+        <p className="text-base dark:text-indigo-100/90 text-gray-500 font-medium text-center max-w-xl">
+          Visualize your repository&apos;s commit history and get instant AI-powered insights. Click
           below to open the interactive commit graph and ask questions about your codebase.
         </p>
         <Button

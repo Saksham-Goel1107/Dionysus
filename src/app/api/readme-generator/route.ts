@@ -1,6 +1,6 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from '@clerk/nextjs/server'
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
@@ -22,24 +22,24 @@ Make the README thorough, professional, and visually engaging. Use proper GitHub
 The output should be complete GitHub-compatible markdown that can be copied directly into a README.md file but don't wrap the entire code in triple backtiks and markdown triple backtiks because that will distrupt the code just write the code normally.`;
 
 export async function POST(req: NextRequest) {
-  const { has } = await auth()
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
+  const { has } = await auth();
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
   if (!hasProPlan) {
     return NextResponse.json(
       {
         error: 'You need to upgrade to Pro to use this feature.',
       },
       { status: 403 },
-    )
+    );
   }
   try {
     // Check API key at runtime instead of build time
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || typeof apiKey !== "string" || apiKey.trim() === "") {
-      console.error("GEMINI_API_KEY is not properly configured");
+    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+      console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
         {
-          error: "Invalid API configuration. Please contact the administrator.",
+          error: 'Invalid API configuration. Please contact the administrator.',
         },
         { status: 500 },
       );
@@ -53,14 +53,11 @@ export async function POST(req: NextRequest) {
     const formData = await req.json();
 
     if (!formData) {
-      return NextResponse.json(
-        { error: "Form data is required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Form data is required' }, { status: 400 });
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: 'gemini-2.0-flash',
       generationConfig: {
         temperature: 0.7,
         topP: 0.95,
@@ -78,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     if (!readmeContent) {
       return NextResponse.json(
-        { error: "Failed to generate README content. Please try again." },
+        { error: 'Failed to generate README content. Please try again.' },
         { status: 500 },
       );
     }
@@ -89,22 +86,22 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     const error = err as Error;
-    console.error("README Generator Error:", error);
+    console.error('README Generator Error:', error);
 
     if (
-      error.message?.includes("API_KEY_INVALID") ||
-      error.message?.includes("API key not valid")
+      error.message?.includes('API_KEY_INVALID') ||
+      error.message?.includes('API key not valid')
     ) {
       return NextResponse.json(
         {
-          error: "Invalid API configuration. Please contact the administrator.",
+          error: 'Invalid API configuration. Please contact the administrator.',
         },
         { status: 500 },
       );
     }
 
     return NextResponse.json(
-      { error: "Failed to generate README, please try again later." },
+      { error: 'Failed to generate README, please try again later.' },
       { status: 500 },
     );
   }
@@ -152,27 +149,27 @@ function buildPrompt(formData: FormData): string {
   } = formData;
 
   const tagsArray: string[] = projectTags
-    .split(",")
+    .split(',')
     .map((tag: string) => tag.trim())
     .filter(Boolean);
   const featuresArray: string[] = features
-    .split("\n")
+    .split('\n')
     .map((feature: string) => feature.trim())
     .filter(Boolean);
   const technologiesArray: string[] = technologies
-    .split(",")
+    .split(',')
     .map((tech: string) => tech.trim())
     .filter(Boolean);
   const installationStepsArray: string[] = installationSteps
-    .split("\n")
+    .split('\n')
     .map((step: string) => step.trim())
     .filter(Boolean);
   const usageInstructionsArray: string[] = usageInstructions
-    .split("\n")
+    .split('\n')
     .map((instruction: string) => instruction.trim())
     .filter(Boolean);
   const screenshotLinksArray: string[] = screenshotLinks
-    .split("\n")
+    .split('\n')
     .map((link: string) => link.trim())
     .filter(Boolean);
 
@@ -183,29 +180,29 @@ Please create a comprehensive GitHub README for a project with the following det
 - Project Name: ${projectName}
 - Project Description: ${projectDescription}
 - License: ${projectLicense}
-${projectLink ? `- GitHub Repository Link: ${projectLink}` : ""}
-${projectDemoLink ? `- Live Demo Link: ${projectDemoLink}` : ""}
+${projectLink ? `- GitHub Repository Link: ${projectLink}` : ''}
+${projectDemoLink ? `- Live Demo Link: ${projectDemoLink}` : ''}
 
 # Tags/Keywords
-${tagsArray.length > 0 ? tagsArray.map((tag: string) => `- ${tag}`).join("\n") : "- None provided"}
+${tagsArray.length > 0 ? tagsArray.map((tag: string) => `- ${tag}`).join('\n') : '- None provided'}
 
 # Technologies Used
-${technologiesArray.length > 0 ? technologiesArray.map((tech) => `- ${tech}`).join("\n") : "- None specifically mentioned"}
+${technologiesArray.length > 0 ? technologiesArray.map((tech) => `- ${tech}`).join('\n') : '- None specifically mentioned'}
 
 # Features
-${featuresArray.length > 0 ? featuresArray.map((feature) => `- ${feature}`).join("\n") : "- None specified"}
+${featuresArray.length > 0 ? featuresArray.map((feature) => `- ${feature}`).join('\n') : '- None specified'}
 
 # Installation Steps
-${installationStepsArray.length > 0 ? installationStepsArray.map((step) => `- ${step}`).join("\n") : "- None provided"}
+${installationStepsArray.length > 0 ? installationStepsArray.map((step) => `- ${step}`).join('\n') : '- None provided'}
 
 # Usage Instructions
-${usageInstructionsArray.length > 0 ? usageInstructionsArray.map((instruction) => `- ${instruction}`).join("\n") : "- None provided"}
+${usageInstructionsArray.length > 0 ? usageInstructionsArray.map((instruction) => `- ${instruction}`).join('\n') : '- None provided'}
 
 # Additional Components to Include
-${includeContributing ? "- Include a CONTRIBUTING section" : ""}
-${includeTwitter ? `- Include Twitter contact: ${twitterUsername}` : ""}
-${includeLinkedIn ? `- Include LinkedIn contact: ${linkedInUsername}` : ""}
-${includeScreenshots && screenshotLinksArray.length > 0 ? "- Include Screenshots section with the following links:\n" + screenshotLinksArray.map((link) => `  - ${link}`).join("\n") : ""}
+${includeContributing ? '- Include a CONTRIBUTING section' : ''}
+${includeTwitter ? `- Include Twitter contact: ${twitterUsername}` : ''}
+${includeLinkedIn ? `- Include LinkedIn contact: ${linkedInUsername}` : ''}
+${includeScreenshots && screenshotLinksArray.length > 0 ? '- Include Screenshots section with the following links:\n' + screenshotLinksArray.map((link) => `  - ${link}`).join('\n') : ''}
 
 Please create an attractive, professional README with proper markdown formatting, badges for technologies (using shields.io), license badges, and GitHub stats badges. Make it visually engaging and comprehensive, ready to be used in a GitHub repository.
 `;

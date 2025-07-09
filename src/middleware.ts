@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
 import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
+import { redirect } from 'next/navigation';
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -11,26 +12,29 @@ const isPublicRoute = createRouteMatcher([
   '/privacy(.*)',
   '/terms(.*)',
   '/api/create(.*)',
+  '/support(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);
+
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
+const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
+const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
     shield({
-      mode: 'LIVE', 
+      mode: 'LIVE',
     }),
     detectBot({
-      mode: 'LIVE', 
-      allow: [
-        'CATEGORY:SEARCH_ENGINE', 
-        'CATEGORY:PREVIEW',
-      ],
+      mode: 'LIVE',
+      allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
     }),
     fixedWindow({
-      mode: "LIVE",
-      window: "60s", 
+      mode: 'LIVE',
+      window: '60s',
       max: 50,
     }),
   ],
@@ -44,17 +48,46 @@ export default clerkMiddleware(async (auth, request) => {
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
+  if (isAdminRoute(request)) {
+    const { userId, sessionClaims } = await auth();
+    if (!userId) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+    let userEmail = undefined;
+    const emailAddresses = Array.isArray(sessionClaims?.email_addresses)
+      ? sessionClaims.email_addresses
+      : [];
+    const primaryEmailAddressId = sessionClaims?.primary_email_address_id || '';
+    if (emailAddresses.length > 0 && primaryEmailAddressId) {
+      userEmail = emailAddresses.find(
+        (email: { id: string; emailAddress: string }) => email.id === primaryEmailAddressId,
+      )?.emailAddress;
+    }
+    if (!userEmail && emailAddresses.length > 0) {
+      userEmail = emailAddresses.find(
+        (email: { emailAddress: string }) => email.emailAddress === ADMIN_EMAIL,
+      )?.emailAddress;
+    }
+    if (!userEmail && sessionClaims?.email) {
+      userEmail = sessionClaims.email;
+    }
+    if (userEmail !== ADMIN_EMAIL && userId !== ADMIN_USER_ID) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
   if ((isBlockPage || isRateLimitPage) && !request.cookies.has('middleware_redirect')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
-  const isHighLoadApiRoute = pathname.startsWith('/api/ai-') || 
-                          pathname.startsWith('/api/git-') || 
-                          pathname.startsWith('/api/create-');
-  
+  const isHighLoadApiRoute =
+    pathname.startsWith('/api/ai-') ||
+    pathname.startsWith('/api/git-') ||
+    pathname.startsWith('/api/create-');
+
   const decision = await aj.protect(request);
-  
+
   if (isApiRoute && !isRateLimitPage) {
     let isAuthenticated = false;
     try {
@@ -63,19 +96,16 @@ export default clerkMiddleware(async (auth, request) => {
     } catch (e) {
       isAuthenticated = false;
     }
-    
-    const clientIp = request.headers.get('x-forwarded-for') || 'unknown';
-    
-    if (isHighLoadApiRoute) {
 
+    if (isHighLoadApiRoute) {
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {
         const response = NextResponse.redirect(new URL('/rate-limit', request.url));
-        response.cookies.set('middleware_redirect', 'true', { 
+        response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
           path: '/rate-limit',
-          sameSite: 'strict'
+          sameSite: 'strict',
         });
         return response;
       }
@@ -85,11 +115,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (decision.isDenied()) {
     if (!isRateLimitPage) {
       const response = NextResponse.redirect(new URL('/rate-limit', request.url));
-      response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, 
+      response.cookies.set('middleware_redirect', 'true', {
+        maxAge: 10,
         httpOnly: true,
         path: '/rate-limit',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
@@ -99,11 +129,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (country && notAllowedCountries.includes(country)) {
     if (!isBlockPage) {
       const response = NextResponse.redirect(new URL('/block', request.url));
-      response.cookies.set('middleware_redirect', 'true', { 
-        maxAge: 10, 
+      response.cookies.set('middleware_redirect', 'true', {
+        maxAge: 10,
         httpOnly: true,
         path: '/block',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
@@ -120,36 +150,62 @@ export default clerkMiddleware(async (auth, request) => {
     if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
       const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
-      response.cookies.set('middleware_redirect', 'true', { 
+      response.cookies.set('middleware_redirect', 'true', {
         maxAge: 10,
         httpOnly: true,
         path: '/onboarding',
-        sameSite: 'strict'
+        sameSite: 'strict',
       });
       return response;
     }
 
+    if (userId && sessionClaims?.metadata?.onboardingComplete && pathname === '/onboarding') {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+    }
     if (userId && !pathname.startsWith('/sync-user')) {
       const referer = request.headers.get('referer') || '';
       if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
         const response = NextResponse.redirect(new URL('/sync-user', request.url));
-        response.cookies.set('middleware_redirect', 'true', { 
+        response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
           path: '/sync-user',
-          sameSite: 'strict'
+          sameSite: 'strict',
         });
         return response;
       }
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set(
+    'Content-Security-Policy',
+    [
+      "default-src 'self';",
+      "media-src 'self' blob:;",
+      "img-src 'self' https: data: blob: https://huggingface.co https://cdn-lfs.huggingface.co https://github.com https://avatars.githubusercontent.com;",
+      "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
+      "style-src 'self' 'unsafe-inline' https:;",
+      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
+      "font-src 'self' https: data:;",
+      "frame-src 'self' https://js.stripe.com https://*.stripe.com https://www.google.com https://www.gstatic.com https://www.recaptcha.net;",
+      "object-src 'none';",
+      "frame-ancestors 'none';",
+      "base-uri 'self';",
+      "form-action 'self';",
+      'upgrade-insecure-requests;',
+    ].join(' '),
+  );
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  return response;
 });
 
 export const config = {
   matcher: [
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/((?!_next|robots\\.txt|sitemap\\.xml|favicon\\.ico|site\\.webmanifest|Flag-India\\.webp|logo\\.png|gemini\\.png|undraw_developer\\.svg|success\\.mp3|public/|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     '/(api|trpc)(.*)',
   ],
 };

@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const messages = [
-  "Authenticating...",
-  "Fetching user details...",
-  "Saving to database...",
-  "Redirecting to dashboard...",
+  'Authenticating...',
+  'Fetching user details...',
+  'Saving to database...',
+  'Redirecting to dashboard...',
 ];
 
 const Loading = () => {

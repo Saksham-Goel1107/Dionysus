@@ -1,43 +1,34 @@
-// api/stripe/webhook
-
-import { db } from "@/server/db";
-import { headers } from "next/headers";
-import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { db } from '@/server/db';
+import { headers } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+  apiVersion: '2025-02-24.acacia',
 });
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
-  const signature = (await headers()).get("Stripe-Signature") as string;
+  const signature = (await headers()).get('Stripe-Signature') as string;
 
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET!,
-    );
+    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
   } catch (err) {
-    console.error("Webhook signature verification failed", err);
-    return NextResponse.json({ error: "Invalid Signature" }, { status: 400 });
+    console.error('Webhook signature verification failed', err);
+    return NextResponse.json({ error: 'Invalid Signature' }, { status: 400 });
   }
 
   const session = event.data.object as Stripe.Checkout.Session;
 
-  if (event.type === "checkout.session.completed") {
-    const credits = Number(session.metadata?.["credits"]);
+  if (event.type === 'checkout.session.completed') {
+    const credits = Number(session.metadata?.['credits']);
     const userId = session.client_reference_id;
 
     if (!userId || !credits) {
-      console.error("Missing userId or credits in webhook", { userId, credits });
-      return NextResponse.json(
-        { error: "Missing userId or credits" },
-        { status: 400 },
-      );
+      console.error('Missing userId or credits in webhook', { userId, credits });
+      return NextResponse.json({ error: 'Missing userId or credits' }, { status: 400 });
     }
 
     try {
@@ -51,10 +42,7 @@ export async function POST(request: NextRequest) {
 
       // If already processed via success page, don't duplicate
       if (existingTransaction) {
-        return NextResponse.json(
-          { message: "Transaction already processed" },
-          { status: 200 }
-        );
+        return NextResponse.json({ message: 'Transaction already processed' }, { status: 200 });
       }
 
       // Create the transaction record first
@@ -76,24 +64,18 @@ export async function POST(request: NextRequest) {
           },
         },
       });
-      
+
       // Mark as completed after credits are added
       await db.stripeTransaction.update({
         where: { id: transaction.id },
-        data: { isCompleted: true }
+        data: { isCompleted: true },
       });
 
-      return NextResponse.json(
-        { message: "Credits added successfully!" },
-        { status: 200 },
-      );
+      return NextResponse.json({ message: 'Credits added successfully!' }, { status: 200 });
     } catch (error) {
-      console.error("Error processing webhook payment", error);
-      return NextResponse.json(
-        { error: "Error processing payment" },
-        { status: 500 }
-      );
+      console.error('Error processing webhook payment', error);
+      return NextResponse.json({ error: 'Error processing payment' }, { status: 500 });
     }
   }
-  return NextResponse.json({ message: "ok" });
+  return NextResponse.json({ message: 'ok' });
 }

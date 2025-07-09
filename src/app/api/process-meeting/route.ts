@@ -1,8 +1,8 @@
-import { processMeeting } from "@/lib/assembly";
-import { db } from "@/server/db";
-import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { processMeeting } from '@/lib/assembly';
+import { db } from '@/server/db';
+import { auth } from '@clerk/nextjs/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 
 const bodyParser = z.object({
   meetingUrl: z.string(),
@@ -15,19 +15,19 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
 
-  const { has } = await auth()
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' })
+  const { has } = await auth();
+  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
   if (!hasProPlan) {
     return NextResponse.json(
       {
         error: 'You need to upgrade to Pro to use this feature.',
       },
       { status: 403 },
-    )
+    );
   }
-  
+
   if (!userId) {
-    return NextResponse.json({ error: "Unatuthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unatuthorized' }, { status: 401 });
   }
 
   try {
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     await db.meeting.update({
       where: { id: meetingId },
       data: {
-        status: "COMPLETED",
+        status: 'COMPLETED',
         name: summaries[0]!.headline,
         transcript: transcript, // Store the transcript in the database
       },
@@ -59,9 +59,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

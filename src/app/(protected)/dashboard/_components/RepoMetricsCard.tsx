@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
 
 interface RepoMetrics {
   size: number;
@@ -13,7 +13,7 @@ interface RepoMetrics {
 function getRepoInfoFromUrl(url: string) {
   const match = url.match(/github.com\/([^/]+)\/([^/?#]+)/);
   if (!match) return null;
-  let repo = match[2] ?? "";
+  let repo = match[2] ?? '';
   if (repo.endsWith('.git')) repo = repo.slice(0, -4);
   return { owner: match[1], repo };
 }
@@ -29,8 +29,12 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
     setLoading(true);
     setError(null);
     Promise.all([
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`).then(r => r.ok ? r.json() : Promise.reject()),
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`).then(r => r.ok ? r.json() : Promise.reject()),
+      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`).then((r) =>
+        r.ok ? r.json() : Promise.reject(),
+      ),
+      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`).then((r) =>
+        r.ok ? r.json() : Promise.reject(),
+      ),
     ])
       .then(([repoData, prs]) => {
         setMetrics({
@@ -42,7 +46,7 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
           watchers: repoData.watchers_count ?? 0,
         });
       })
-      .catch(() => setError("Failed to fetch repo metrics."))
+      .catch(() => setError('Failed to fetch repo metrics.'))
       .finally(() => setLoading(false));
   }, [githubUrl]);
 
@@ -51,12 +55,24 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
   return (
     <div className="mx-auto w-full max-w-2xl mt-2 mb-2 flex justify-center">
       <div className="bg-white/90 dark:bg-black/80 rounded px-2 py-1 shadow text-[11px] flex flex-wrap gap-x-2 gap-y-1 border border-muted-foreground/10">
-        <span>🔢 <b>{metrics.size}</b> KB</span>
-        <span>🐞 <b>{metrics.openIssues}</b> Issues</span>
-        <span>🔀 <b>{metrics.openPRs}</b> PRs</span>
-        <span>🍴 <b>{metrics.forks}</b></span>
-        <span>⭐ <b>{metrics.stars}</b></span>
-        <span>👀 <b>{metrics.watchers}</b></span>
+        <span>
+          🔢 <b>{metrics.size}</b> KB
+        </span>
+        <span>
+          🐞 <b>{metrics.openIssues}</b> Issues
+        </span>
+        <span>
+          🔀 <b>{metrics.openPRs}</b> PRs
+        </span>
+        <span>
+          🍴 <b>{metrics.forks}</b>
+        </span>
+        <span>
+          ⭐ <b>{metrics.stars}</b>
+        </span>
+        <span>
+          👀 <b>{metrics.watchers}</b>
+        </span>
       </div>
     </div>
   );

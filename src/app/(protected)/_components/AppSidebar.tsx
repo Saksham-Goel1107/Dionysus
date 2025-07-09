@@ -22,13 +22,14 @@ import {
   Cog,
   CreditCard,
   LayoutDashboard,
+  Loader2,
   Plus,
   Presentation,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type Props = {};
 
@@ -83,10 +84,31 @@ const AppSidebar = ({}: Props) => {
   const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
   const { open } = useSidebar();
   const [search, setSearch] = useState('');
+  const [hasProPlan, sethasProPlan] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
 
   const users = Array.isArray(members) ? members : [];
-  const showChat = users.length >= 2; // Show chat if 2 or more users
-  console.log('users:', users, 'showChat:', showChat)
+  const showChat = users.length >= 2 && !!projectId;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
+        const data = await res.json();
+        sethasProPlan(data.pro);
+      } catch (error) {
+        sethasProPlan(false);
+      }
+    })();
+  }, []);
+
+  const handleCreateProjectClick = (e: React.MouseEvent) => {
+    if (!hasProPlan && (projects?.length || 0) >= 5) {
+      e.preventDefault();
+      setShowProModal(true);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -203,13 +225,45 @@ const AppSidebar = ({}: Props) => {
 
               {open && (
                 <SidebarMenuItem>
-                  <Link href="/create">
+                  <Link href="/create" onClick={handleCreateProjectClick}>
                     <Button size="sm" variant={'outline'} className="w-fit">
                       <Plus />
                       Create Project
                     </Button>
                   </Link>
                 </SidebarMenuItem>
+              )}
+              {open && (
+                <SidebarMenuItem>
+                  <div
+                    className={`text-xs px-2 py-1 ${!hasProPlan && projects.length >= 3 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
+                  >
+                    {hasProPlan
+                      ? `${projects?.length || 0}/Unlimited projects`
+                      : `${projects?.length || 0} / 5 projects`}
+                  </div>
+                </SidebarMenuItem>
+              )}
+              {showProModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                  <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Premium Required
+                    </h3>
+                    <p className="mb-6 text-sm text-gray-700 dark:text-gray-300">
+                      You have reached the free projects limit. Please upgrade to Premium for
+                      unlimited projects.
+                    </p>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowProModal(false)}>
+                        Cancel
+                      </Button>
+                      <Link href="/subscriptions">
+                        <Button variant="destructive">Go Premium</Button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               )}
             </SidebarMenu>
           </SidebarGroupContent>

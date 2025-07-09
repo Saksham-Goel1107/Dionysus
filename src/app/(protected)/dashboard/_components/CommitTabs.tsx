@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Clock, PieChart, FileText } from "lucide-react";
-import CommitLog from "./CommitLog";
-import ContributionChart from "./ContributionChart";
-import ReadmeGeneratorForm from "./readme-generator/ReadmeGeneratorForm";
-import Code from './Code'
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import GitGraphs from "./GitGraphs";
-import CiCd from "./CiCd"
-import { Listbox } from "@headlessui/react";
+import { useState } from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Clock, PieChart, FileText } from 'lucide-react';
+import CommitLog from './CommitLog';
+import ContributionChart from './ContributionChart';
+import ReadmeGeneratorForm from './readme-generator/ReadmeGeneratorForm';
+import Code from './Code';
+import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
+import GitGraphs from './GitGraphs';
+import CiCd from './CiCd';
+import { Listbox } from '@headlessui/react';
 
 type TabOption = {
   value: string;
@@ -21,18 +21,18 @@ type TabOption = {
 
 const tabOptions: TabOption[] = [
   {
-    value: "commits",
-    label: "Commits",
+    value: 'commits',
+    label: 'Commits',
     icon: <Clock className="h-4 w-4" />,
   },
   {
-    value: "contributions",
-    label: "Contributions",
+    value: 'contributions',
+    label: 'Contributions',
     icon: <PieChart className="h-4 w-4" />,
   },
   {
-    value: "git-graph",
-    label: "Git Graph",
+    value: 'git-graph',
+    label: 'Git Graph',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -51,13 +51,13 @@ const tabOptions: TabOption[] = [
     ),
   },
   {
-    value: "readme",
-    label: "README",
+    value: 'readme',
+    label: 'README',
     icon: <FileText className="h-4 w-4" />,
   },
   {
-    value: "Code",
-    label: "Code",
+    value: 'Code',
+    label: 'Code',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -73,8 +73,8 @@ const tabOptions: TabOption[] = [
     ),
   },
   {
-    value: "Ci/Cd",
-    label: "Ci/Cd generator",
+    value: 'Ci/Cd',
+    label: 'Ci/Cd generator',
     icon: (
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -96,21 +96,17 @@ const tabOptions: TabOption[] = [
 type Props = {};
 
 const CommitTabs = ({}: Props) => {
-  const [activeTab, setActiveTab] = useState("commits");
+  const [activeTab, setActiveTab] = useState('commits');
   const { resolvedTheme } = useTheme();
 
   return (
     <div className="w-full">
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) => setActiveTab(value)}
-        className="w-full"
-      >
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="w-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
           <h2
             className={cn(
-              "text-xl font-semibold",
-              resolvedTheme === "dark" ? "text-gray-100" : "text-gray-800"
+              'text-xl font-semibold',
+              resolvedTheme === 'dark' ? 'text-gray-100' : 'text-gray-800',
             )}
           >
             Project Activity
@@ -122,8 +118,8 @@ const CommitTabs = ({}: Props) => {
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  "flex items-center justify-center gap-2 px-4 py-2 h-full",
-                  activeTab === tab.value && "font-medium"
+                  'flex items-center justify-center gap-2 px-4 py-2 h-full',
+                  activeTab === tab.value && 'font-medium',
                 )}
               >
                 {tab.icon}
@@ -137,7 +133,7 @@ const CommitTabs = ({}: Props) => {
               <div className="relative">
                 <Listbox.Button
                   className={cn(
-                    "relative w-full cursor-pointer rounded-lg bg-white dark:bg-gray-900/50 py-2 pl-3 pr-10 text-left shadow-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    'relative w-full cursor-pointer rounded-lg bg-white dark:bg-gray-900/50 py-2 pl-3 pr-10 text-left shadow-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500',
                   )}
                 >
                   <span className="flex items-center gap-2">
@@ -151,7 +147,12 @@ const CommitTabs = ({}: Props) => {
                       fill="none"
                       stroke="currentColor"
                     >
-                      <path d="M7 7l3-3 3 3m0 6l-3 3-3-3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path
+                        d="M7 7l3-3 3 3m0 6l-3 3-3-3"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
                     </svg>
                   </span>
                 </Listbox.Button>
@@ -162,22 +163,20 @@ const CommitTabs = ({}: Props) => {
                       value={tab.value}
                       className={({ active }: { active: boolean }) =>
                         cn(
-                          "cursor-pointer select-none relative py-2 pl-10 pr-4",
+                          'cursor-pointer select-none relative py-2 pl-10 pr-4',
                           active
-                            ? "bg-blue-100 text-blue-900 dark:bg-gray-800 dark:text-white"
-                            : "text-gray-900 dark:text-gray-100"
+                            ? 'bg-blue-100 text-blue-900 dark:bg-gray-800 dark:text-white'
+                            : 'text-gray-900 dark:text-gray-100',
                         )
                       }
                     >
                       {({ selected }) => (
                         <>
-                          <span className="absolute left-2 flex items-center">
-                            {tab.icon}
-                          </span>
+                          <span className="absolute left-2 flex items-center">{tab.icon}</span>
                           <span
                             className={cn(
-                              "block truncate",
-                              selected ? "font-medium" : "font-normal"
+                              'block truncate',
+                              selected ? 'font-medium' : 'font-normal',
                             )}
                           >
                             {tab.label}
@@ -198,8 +197,8 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="contributions" className="space-y-4">
           <div
             className={cn(
-              "rounded-lg p-4 overflow-hidden",
-              resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
+              'rounded-lg p-4 overflow-hidden',
+              resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >
             <ContributionChart />
@@ -208,8 +207,8 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="readme" className="space-y-4">
           <div
             className={cn(
-              "overflow-hidden",
-              resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
+              'overflow-hidden',
+              resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >
             <ReadmeGeneratorForm />
@@ -218,8 +217,8 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="Code" className="space-y-4">
           <div
             className={cn(
-              "overflow-hidden",
-              resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
+              'overflow-hidden',
+              resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >
             <Code />
@@ -228,8 +227,8 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="git-graph" className="space-y-4">
           <div
             className={cn(
-              "overflow-hidden",
-              resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
+              'overflow-hidden',
+              resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >
             <GitGraphs />
@@ -238,8 +237,8 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="Ci/Cd" className="space-y-4">
           <div
             className={cn(
-              "overflow-hidden",
-              resolvedTheme === "dark" ? "bg-gray-900/50" : "bg-white"
+              'overflow-hidden',
+              resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >
             <CiCd />

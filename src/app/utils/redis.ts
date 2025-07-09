@@ -9,17 +9,17 @@ class ChatStore {
 
   async set(sessionId: string, messages: unknown[]) {
     this.store.set(sessionId, messages);
-    
+
     const previousTimeout = this.timeouts.get(sessionId);
     if (previousTimeout) {
       clearTimeout(previousTimeout);
     }
-    
+
     const timeout = setTimeout(() => {
       this.store.delete(sessionId);
       this.timeouts.delete(sessionId);
-    }, 900000); 
-    
+    }, 900000);
+
     this.timeouts.set(sessionId, timeout);
   }
 

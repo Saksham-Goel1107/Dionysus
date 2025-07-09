@@ -1,6 +1,6 @@
-'use server'
+'use server';
 
-import { auth, clerkClient } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server';
 
 export const markOnboardingComplete = async () => {
   const { userId } = await auth();

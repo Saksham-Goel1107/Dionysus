@@ -1,34 +1,71 @@
-"use client";
-import useProject from "@/hooks/use-project";
-import { ExternalLink, Github, MessageCirclePlus} from "lucide-react";
-import Link from "next/link";
-import CommitTabs from "./_components/CommitTabs";
-import AskQuestionCard from "./_components/AskQuestionCard";
-import MeetingCard from "./_components/MeetingCard";
-import ArchiveButton from "./_components/ArchiveButton";
-const InviteButton=dynamic(()=>import('./_components/InviteButton'),{ssr:false});
+'use client';
+import useProject from '@/hooks/use-project';
+import { ExternalLink, Github, MessageCirclePlus } from 'lucide-react';
+import Link from 'next/link';
+import CommitTabs from './_components/CommitTabs';
+import AskQuestionCard from './_components/AskQuestionCard';
+import MeetingCard from './_components/MeetingCard';
 import { api } from '@/trpc/react';
+import ArchiveButton from './_components/ArchiveButton';
+const InviteButton = dynamic(() => import('./_components/InviteButton'), { ssr: false });
 
-import TeamMembers from "./_components/TeamMembers";
-import dynamic from "next/dynamic";
-import RepoMetricsCard from "./_components/RepoMetricsCard";
-import { Button } from "@/components/ui/button";
+import TeamMembers from './_components/TeamMembers';
+import dynamic from 'next/dynamic';
+import RepoMetricsCard from './_components/RepoMetricsCard';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
 type Props = {};
 
-const page = ({}: Props) => {
-  const { project, projects,projectId } = useProject();
-  const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
-  const users = Array.isArray(members) ? members : [];
-  const showChat = users.length >= 2; 
+const Page = ({}: Props) => {
+  const { project, projects, projectId } = useProject();
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [isLeavingLoading, setisLeavingLoading] = useState(false);
+  const utils = api.useContext();
+  const { data: isCreator } = api.project.isProjectCreator.useQuery(
+    { projectId },
+    { enabled: !!projectId },
+  );
+
+  const leaveMutation = api.project.leaveProject.useMutation({
+    onSuccess: async () => {
+      setShowConfirm(false);
+      setisLeavingLoading(false);
+      await utils.project.invalidate();
+      toast.success('You have left the project.');
+    },
+    onError: (error) => {
+      setShowConfirm(false);
+      setisLeavingLoading(false);
+      toast.error(error?.message || 'Failed to leave project.');
+    },
+  });
+
+  const handleLeaveProject = () => {
+    setShowConfirm(true);
+  };
+
+  const confirmLeaveProject = async () => {
+    if (!projectId) {
+      setisLeavingLoading(false);
+      return;
+    }
+    setisLeavingLoading(true);
+    leaveMutation.mutate({ projectId });
+  };
+
+  const cancelLeaveProject = () => {
+    setShowConfirm(false);
+  };
 
   if (!projects || projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <h2 className="text-xl font-semibold mb-4">No Projects Found</h2>
-        <p className="mb-4">You don't have any projects yet.</p>
-        <Link 
-          href="/create" 
+        <p className="mb-4">You don&apos;t have any projects yet.</p>
+        <Link
+          href="/create"
           className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
         >
           Create a Project
@@ -46,28 +83,25 @@ const page = ({}: Props) => {
     );
   }
 
-  const maintenanceScheduled = process.env.NEXT_PUBLIC_MAINTAINENCE_SCHEDULED
-  const maintenanceDate = process.env.NEXT_PUBLIC_MAINTAINENCE_DATE
-  const maintenanceTime = process.env.NEXT_PUBLIC_MAINTAINENCE_TIME
+  const maintenanceScheduled = process.env.NEXT_PUBLIC_MAINTAINENCE_SCHEDULED;
+  const maintenanceDate = process.env.NEXT_PUBLIC_MAINTAINENCE_DATE;
+  const maintenanceTime = process.env.NEXT_PUBLIC_MAINTAINENCE_TIME;
 
   return (
     <div>
-      {maintenanceScheduled === "true" && maintenanceDate && maintenanceTime && (
+      {maintenanceScheduled === 'true' && maintenanceDate && maintenanceTime && (
         <div
           className="mb-4 rounded-md px-4 py-2 text-sm font-medium bg-yellow-100 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 flex items-center"
           role="alert"
         >
           <span className="mr-2">⚠️</span>
-          Scheduled maintenance on{" "}
-          <span className="mx-1 font-semibold">
-            {maintenanceTime}
-          </span>
-          . You shall be unable to access the site at that time.
+          Scheduled maintenance on <span className="mx-1 font-semibold">{maintenanceTime}</span>.
+          You shall be unable to access the site at that time.
         </div>
       )}
 
       {/* Repo Metrics Card - now between header and dashboard */}
-      <RepoMetricsCard githubUrl={project.githubUrl ?? ""} />
+      <RepoMetricsCard githubUrl={project.githubUrl ?? ''} />
 
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-y-4">
@@ -77,9 +111,9 @@ const page = ({}: Props) => {
               <Github className="size-5 text-white" />
               <div className="ml-2">
                 <p className="text-sm font-medium text-white">
-                  This project is linked to{" "}
+                  This project is linked to{' '}
                   <Link
-                    href={project.githubUrl ?? ""}
+                    href={project.githubUrl ?? ''}
                     className="inline-flex items-center text-white/80 hover:underline"
                     target="_blank"
                   >
@@ -95,10 +129,51 @@ const page = ({}: Props) => {
 
           {/* TEAM MEMBERS, INVITE, ARCHIVE */}
           <div className="flex items-center gap-2">
-              <TeamMembers />
-              {showChat && <Link href="/chatting"><Button className="px-2 py-1"><MessageCirclePlus /></Button></Link>}
-              <InviteButton />
-              <ArchiveButton /> 
+            <TeamMembers />
+            <Link href="/chatting">
+              <Button className="px-2 py-1">
+                <MessageCirclePlus />
+              </Button>
+            </Link>
+            <InviteButton />
+            <ArchiveButton />
+            {!isCreator && (
+              <>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleLeaveProject}
+                  className="font-bold"
+                >
+                  Leave Project
+                </Button>
+                {showConfirm && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                      <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                        Leave Project?
+                      </h3>
+                      <p className="mb-6 text-sm text-gray-700 dark:text-gray-300">
+                        Are you sure you want to leave this project? You will lose access to all its
+                        resources.
+                      </p>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={cancelLeaveProject}>
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={confirmLeaveProject}
+                          disabled={isLeavingLoading}
+                        >
+                          {isLeavingLoading ? 'Leaving...' : 'Yes, Leave'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
 
@@ -117,4 +192,4 @@ const page = ({}: Props) => {
   );
 };
 
-export default page;
+export default Page;

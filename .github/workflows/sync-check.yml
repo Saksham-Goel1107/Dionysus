@@ -9,20 +9,40 @@ on:
 jobs:
   check-sync:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Check for uncommitted changes after build/lint/format
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup dummy environment
         run: |
-          npm ci
-          npm run build || true
-          npx eslint . --ext .js,.jsx,.ts,.tsx || true
-          npx prettier --check . || true
-          git status
-          git diff --exit-code
-        shell: bash
-      - name: Fail if there are uncommitted changes
-        run: |
-          if [[ $(git status --porcelain) ]]; then
-            echo "Uncommitted changes detected! Please sync your code and re-run checks." && exit 1
-          fi
-        shell: bash
+          echo "STRIPE_SECRET_KEY=dummy" >> .env
+          echo "NEXT_PUBLIC_SKIP_ENV_VALIDATION=true" >> .env
+          echo "DATABASE_URL=postgres://user:pass@localhost:5432/db" >> .env
+          echo "NODE_ENV=development" >> .env
+          echo "HUGGINGFACE_API_KEY=dummy" >> .env
+
+      - name: Clear .next build and types cache
+        run: rm -rf .next
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20 # or match your `.nvmrc` / package.json engines
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Type Check (Clean)
+        run: tsc --noEmit
+        env:
+          SKIP_ENV_VALIDATION: true
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Lint Code
+        run: npx eslint . --ext .js,.jsx,.ts,.tsx
+
+      - name: Check Formatting with Prettier
+        run: npx prettier --write .

@@ -1,13 +1,25 @@
-"use client";
-import React from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
+'use client';
+import React from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
 
 const BarChartComponent = ({ analytics }: { analytics: any[] }) => {
   // Example: show cyclomatic complexity per file
-  const data = analytics.map(a => ({
-    name: a.path.split("/").pop(),
+  const data = analytics.map((a) => ({
+    name: a.path.split('/').pop(),
     complexity: a.aggregate?.cyclomatic || 0,
-    sloc: typeof a.aggregate?.sloc === 'object' ? (a.aggregate.sloc.logical || 0) : (a.aggregate?.sloc || 0),
+    sloc:
+      typeof a.aggregate?.sloc === 'object'
+        ? a.aggregate.sloc.logical || 0
+        : a.aggregate?.sloc || 0,
   }));
   return (
     <div className="w-full h-72">

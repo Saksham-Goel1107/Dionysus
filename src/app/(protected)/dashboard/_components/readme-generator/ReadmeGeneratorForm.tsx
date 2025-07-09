@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Card,
   CardContent,
@@ -12,29 +12,29 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import useProject from "@/hooks/use-project";
+} from '@/components/ui/select';
+import useProject from '@/hooks/use-project';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { InfoIcon, Copy, Download, Youtube, Code, FileText, Eye } from "lucide-react";
-import { toast } from "sonner";
+} from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { InfoIcon, Copy, Download, Youtube, Code, FileText, Eye } from 'lucide-react';
+import { toast } from 'sonner';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import './readme-preview.css';
-import Link from "next/link";
+import Link from 'next/link';
 
 // Define types for README form data
 interface ReadmeFormData {
@@ -59,32 +59,32 @@ interface ReadmeFormData {
 
 // Initial form data
 const initialFormData: ReadmeFormData = {
-  projectName: "",
-  projectDescription: "",
-  projectTags: "",
-  projectLicense: "MIT",
-  projectLink: "",
-  projectDemoLink: "",
-  installationSteps: "",
-  usageInstructions: "",
-  features: "",
-  technologies: "",
+  projectName: '',
+  projectDescription: '',
+  projectTags: '',
+  projectLicense: 'MIT',
+  projectLink: '',
+  projectDemoLink: '',
+  installationSteps: '',
+  usageInstructions: '',
+  features: '',
+  technologies: '',
   includeContributing: true,
   includeTwitter: false,
-  twitterUsername: "",
+  twitterUsername: '',
   includeLinkedIn: false,
-  linkedInUsername: "",
+  linkedInUsername: '',
   includeScreenshots: false,
-  screenshotLinks: "",
+  screenshotLinks: '',
 };
 
 // Available licenses
 const licenses = [
-  { value: "MIT", label: "MIT License" },
-  { value: "Apache-2.0", label: "Apache License 2.0" },
-  { value: "GPL-3.0", label: "GNU General Public License v3.0" },
-  { value: "BSD-3-Clause", label: "BSD 3-Clause License" },
-  { value: "NONE", label: "No License" },
+  { value: 'MIT', label: 'MIT License' },
+  { value: 'Apache-2.0', label: 'Apache License 2.0' },
+  { value: 'GPL-3.0', label: 'GNU General Public License v3.0' },
+  { value: 'BSD-3-Clause', label: 'BSD 3-Clause License' },
+  { value: 'NONE', label: 'No License' },
 ];
 
 interface ReadmeGeneratorFormProps {
@@ -94,20 +94,21 @@ interface ReadmeGeneratorFormProps {
 export default function ReadmeGeneratorForm() {
   const { project } = useProject();
   const [formData, setFormData] = useState<ReadmeFormData>(initialFormData);
-  const [generatedReadme, setGeneratedReadme] = useState<string>("");
+  const [generatedReadme, setGeneratedReadme] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("form");
-  const [generationMethod, setGenerationMethod] = useState<"manual" | "ai">("manual");
-  const [isAiGenerating, setIsAiGenerating] = useState(false);  const [isCurrentProject, setIsCurrentProject] = useState(false);
-  const [isFormEmpty, setIsFormEmpty] = useState(true);  // Track form emptiness
+  const [activeTab, setActiveTab] = useState<string>('form');
+  const [generationMethod, setGenerationMethod] = useState<'manual' | 'ai'>('manual');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isCurrentProject, setIsCurrentProject] = useState(false);
+  const [isFormEmpty, setIsFormEmpty] = useState(true); // Track form emptiness
   const [showProPrompt, setShowProPrompt] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch("/api/user/pro-status");
-        if (!res.ok) throw new Error("Failed to fetch pro status");
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
       } catch (error) {
@@ -124,16 +125,18 @@ export default function ReadmeGeneratorForm() {
         return formData[key] === initialFormData[key];
       }
       // For strings, compare trimmed values
-      return typeof formData[key] === 'string' && 
-             (formData[key] as string).trim() === (initialFormData[key] as string).trim();
+      return (
+        typeof formData[key] === 'string' &&
+        (formData[key] as string).trim() === (initialFormData[key] as string).trim()
+      );
     };
 
     // Check if any field differs from its initial value
-    const isModified = Object.keys(formData).some(key => !isDefault(key as keyof ReadmeFormData));
-    
+    const isModified = Object.keys(formData).some((key) => !isDefault(key as keyof ReadmeFormData));
+
     // Or check if text fields have content
-    const hasContent = 
-      formData.projectName.trim() !== '' || 
+    const hasContent =
+      formData.projectName.trim() !== '' ||
       formData.projectDescription.trim() !== '' ||
       formData.projectLink.trim() !== '' ||
       formData.projectDemoLink.trim() !== '' ||
@@ -142,29 +145,29 @@ export default function ReadmeGeneratorForm() {
       formData.installationSteps.trim() !== '' ||
       formData.usageInstructions.trim() !== '' ||
       formData.projectTags.trim() !== '';
-    
+
     setIsFormEmpty(!hasContent && !isModified);
   }, [formData]);
 
   // Auto-fill form with current project data
   const populateFromCurrentProject = () => {
     if (!project) {
-      toast.error("No project is currently selected");
+      toast.error('No project is currently selected');
       return;
     }
 
-    let repoName = "";
-    let repoOwner = "";
-      try {
+    let repoName = '';
+    let repoOwner = '';
+    try {
       const url = new URL(project.githubUrl);
       const pathSegments = url.pathname.split('/').filter(Boolean);
-      
+
       if (pathSegments.length >= 2) {
-        repoOwner = pathSegments[0] || "";
-        repoName = pathSegments[1] || "";
+        repoOwner = pathSegments[0] || '';
+        repoName = pathSegments[1] || '';
       }
     } catch (error) {
-      console.error("Invalid GitHub URL:", error);
+      console.error('Invalid GitHub URL:', error);
     }
 
     setFormData({
@@ -173,21 +176,21 @@ export default function ReadmeGeneratorForm() {
       projectLink: project.githubUrl,
       // Pre-fill typical values for the current project
       projectDescription: `${project.name} is a GitHub project that...`,
-      technologies: "React, Next.js, TypeScript", // Default modern stack, user can edit
+      technologies: 'React, Next.js, TypeScript', // Default modern stack, user can edit
     });
-    
+
     setIsCurrentProject(true);
     setIsFormEmpty(false);
-    toast.success("Form populated with current project data. Please fill in remaining details.");
+    toast.success('Form populated with current project data. Please fill in remaining details.');
   };
-    // Clear the form data
+  // Clear the form data
   const clearForm = () => {
     // Create a fresh copy of initialFormData to ensure complete reset
     const freshFormData = { ...initialFormData };
     setFormData(freshFormData);
     setIsCurrentProject(false);
     setIsFormEmpty(true);
-    toast.success("Form cleared. You can now create a README for another project.");
+    toast.success('Form cleared. You can now create a README for another project.');
   };
 
   // Handle form input changes
@@ -214,32 +217,33 @@ export default function ReadmeGeneratorForm() {
       ...prevData,
       [name]: value,
     }));
-  };  // Generate README markdown using selected method
+  }; // Generate README markdown using selected method
   const generateReadme = async () => {
     setIsGenerating(true);
 
     try {
       // Basic validation
       if (!formData.projectName || !formData.projectDescription) {
-        toast.error("Please provide at least a project name and description");
+        toast.error('Please provide at least a project name and description');
         setIsGenerating(false);
         return;
-      }      if (generationMethod === "ai") {
+      }
+      if (generationMethod === 'ai') {
         await generateAiReadme();
       } else {
         await generateManualReadme();
       }
-      
-      setActiveTab("preview");
-      
+
+      setActiveTab('preview');
+
       if (isCurrentProject) {
         toast.success(`README for ${project?.name} generated successfully!`);
       } else {
-        toast.success("README generated successfully!");
+        toast.success('README generated successfully!');
       }
     } catch (error) {
-      console.error("Error generating README:", error);
-      toast.error("Failed to generate README. Please try again.");
+      console.error('Error generating README:', error);
+      toast.error('Failed to generate README. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -248,25 +252,25 @@ export default function ReadmeGeneratorForm() {
   // Generate README using AI
   const generateAiReadme = async () => {
     setIsAiGenerating(true);
-    
+
     try {
-      const response = await fetch("/api/readme-generator", {
-        method: "POST",
+      const response = await fetch('/api/readme-generator', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to generate README with AI");
+        throw new Error(errorData.error || 'Failed to generate README with AI');
       }
-      
+
       const data = await response.json();
       setGeneratedReadme(data.content);
     } catch (error) {
-      console.error("AI README generation error:", error);
+      console.error('AI README generation error:', error);
       throw error;
     } finally {
       setIsAiGenerating(false);
@@ -276,67 +280,81 @@ export default function ReadmeGeneratorForm() {
   // Generate README manually
   const generateManualReadme = async () => {
     // Split tags, features, and technologies into arrays
-    const tags = formData.projectTags.split(",").map((tag) => tag.trim());
-    const features = formData.features.split("\n").filter((f) => f.trim() !== "");
-    const technologies = formData.technologies.split(",").map((tech) => tech.trim());
-    const installationSteps = formData.installationSteps.split("\n").filter((step) => step.trim() !== "");
-    const usageInstructions = formData.usageInstructions.split("\n").filter((instr) => instr.trim() !== "");
-    const screenshotLinks = formData.screenshotLinks.split("\n").filter((link) => link.trim() !== "");
+    const tags = formData.projectTags.split(',').map((tag) => tag.trim());
+    const features = formData.features.split('\n').filter((f) => f.trim() !== '');
+    const technologies = formData.technologies.split(',').map((tech) => tech.trim());
+    const installationSteps = formData.installationSteps
+      .split('\n')
+      .filter((step) => step.trim() !== '');
+    const usageInstructions = formData.usageInstructions
+      .split('\n')
+      .filter((instr) => instr.trim() !== '');
+    const screenshotLinks = formData.screenshotLinks
+      .split('\n')
+      .filter((link) => link.trim() !== '');
 
     // Generate badges based on technologies
     const techBadges = technologies
       .map((tech) => {
         const techLower = tech.toLowerCase();
-        
+
         // Map common technologies to badges
         const badgeMap: Record<string, string> = {
-          react: "![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)",
-          javascript: "![JavaScript](https://img.shields.io/badge/JavaScript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)",
-          typescript: "![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)",
-          node: "![NodeJS](https://img.shields.io/badge/Node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)",
-          nextjs: "![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)",
-          tailwind: "![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)",
-          mongodb: "![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)",
-          postgresql: "![Postgres](https://img.shields.io/badge/PostgreSQL-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)",
-          prisma: "![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)",
+          react:
+            '![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)',
+          javascript:
+            '![JavaScript](https://img.shields.io/badge/JavaScript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)',
+          typescript:
+            '![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)',
+          node: '![NodeJS](https://img.shields.io/badge/Node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white)',
+          nextjs:
+            '![Next JS](https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white)',
+          tailwind:
+            '![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)',
+          mongodb:
+            '![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)',
+          postgresql:
+            '![Postgres](https://img.shields.io/badge/PostgreSQL-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)',
+          prisma:
+            '![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)',
         };
-        
+
         // Return badge if found, otherwise create a generic one
         for (const [key, badge] of Object.entries(badgeMap)) {
           if (techLower.includes(key)) {
             return badge;
           }
         }
-        
+
         // Generic badge for other technologies
-        return `![${tech}](https://img.shields.io/badge/${tech.replace(/\s/g, "%20")}-%23007ACC.svg?style=for-the-badge)`;
+        return `![${tech}](https://img.shields.io/badge/${tech.replace(/\s/g, '%20')}-%23007ACC.svg?style=for-the-badge)`;
       })
-      .join(" ");
+      .join(' ');
 
     // Create license badge
-    let licenseBadge = "";
-    if (formData.projectLicense !== "NONE") {
-      licenseBadge = `![License](https://img.shields.io/badge/License-${formData.projectLicense.replace(/-/g, "%20")}-blue.svg)`;
+    let licenseBadge = '';
+    if (formData.projectLicense !== 'NONE') {
+      licenseBadge = `![License](https://img.shields.io/badge/License-${formData.projectLicense.replace(/-/g, '%20')}-blue.svg)`;
     }
 
     // Build the README content
     let readmeContent = `# ${formData.projectName}\n\n`;
-    
+
     // Add badges section
     readmeContent += `\n\n`;
     if (licenseBadge) {
       readmeContent += `${licenseBadge} `;
     }
-    readmeContent += `![Stars](https://img.shields.io/github/stars/${formData.projectLink.replace("https://github.com/", "")}?style=social) `;
-    readmeContent += `![Forks](https://img.shields.io/github/forks/${formData.projectLink.replace("https://github.com/", "")}?style=social) `;
-    readmeContent += `![Issues](https://img.shields.io/github/issues/${formData.projectLink.replace("https://github.com/", "")})\n\n`;
+    readmeContent += `![Stars](https://img.shields.io/github/stars/${formData.projectLink.replace('https://github.com/', '')}?style=social) `;
+    readmeContent += `![Forks](https://img.shields.io/github/forks/${formData.projectLink.replace('https://github.com/', '')}?style=social) `;
+    readmeContent += `![Issues](https://img.shields.io/github/issues/${formData.projectLink.replace('https://github.com/', '')})\n\n`;
     readmeContent += `\n\n`;
 
     // Add description
     readmeContent += `## 📝 Description\n\n${formData.projectDescription}\n\n`;
 
     // Add tags if provided
-    if (tags.length > 0 && tags[0] !== "") {
+    if (tags.length > 0 && tags[0] !== '') {
       readmeContent += `## 🏷️ Tags\n\n`;
       tags.forEach((tag) => {
         readmeContent += `\`${tag}\` `;
@@ -359,13 +377,13 @@ export default function ReadmeGeneratorForm() {
     }
 
     // Add tech stack if provided
-    if (technologies.length > 0 && technologies[0] !== "") {
+    if (technologies.length > 0 && technologies[0] !== '') {
       readmeContent += `## 🛠️ Technologies\n\n`;
       readmeContent += `${techBadges}\n\n`;
     }
 
     // Add features if provided
-    if (features.length > 0 && features[0] !== "") {
+    if (features.length > 0 && features[0] !== '') {
       readmeContent += `## ✨ Features\n\n`;
       features.forEach((feature) => {
         readmeContent += `- ${feature}\n`;
@@ -374,17 +392,17 @@ export default function ReadmeGeneratorForm() {
     }
 
     // Add installation steps if provided
-    if (installationSteps.length > 0 && installationSteps[0] !== "") {
+    if (installationSteps.length > 0 && installationSteps[0] !== '') {
       readmeContent += `## 🚀 Installation\n\n`;
-      readmeContent += "```bash\n";
+      readmeContent += '```bash\n';
       installationSteps.forEach((step) => {
         readmeContent += `${step}\n`;
       });
-      readmeContent += "```\n\n";
+      readmeContent += '```\n\n';
     }
 
     // Add usage instructions if provided
-    if (usageInstructions.length > 0 && usageInstructions[0] !== "") {
+    if (usageInstructions.length > 0 && usageInstructions[0] !== '') {
       readmeContent += `## 📖 Usage\n\n`;
       usageInstructions.forEach((instruction) => {
         readmeContent += `${instruction}\n\n`;
@@ -399,22 +417,22 @@ export default function ReadmeGeneratorForm() {
     }
 
     // Add license section
-    if (formData.projectLicense !== "NONE") {
+    if (formData.projectLicense !== 'NONE') {
       readmeContent += `## 📄 License\n\n`;
       readmeContent += `This project is [${formData.projectLicense}](https://opensource.org/licenses/${formData.projectLicense}) licensed.\n\n`;
     }
 
     // Add social links if enabled
     readmeContent += `## 👨‍💻 Author\n\n`;
-    
+
     if (formData.includeTwitter && formData.twitterUsername) {
       readmeContent += `- Twitter: [@${formData.twitterUsername}](https://twitter.com/${formData.twitterUsername})\n`;
     }
-    
+
     if (formData.includeLinkedIn && formData.linkedInUsername) {
       readmeContent += `- LinkedIn: [${formData.linkedInUsername}](https://linkedin.com/in/${formData.linkedInUsername})\n`;
     }
-    
+
     readmeContent += `\n---\n\n`;
     readmeContent += `<p align="center">⭐ If you found this project helpful, please consider giving it a star! ⭐</p>\n`;
 
@@ -425,21 +443,21 @@ export default function ReadmeGeneratorForm() {
   // Copy README to clipboard
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedReadme);
-    toast.success("README copied to clipboard!");
+    toast.success('README copied to clipboard!');
   };
 
   // Download README as markdown file
   const downloadReadme = () => {
-    const blob = new Blob([generatedReadme], { type: "text/markdown" });
+    const blob = new Blob([generatedReadme], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "README.md";
+    a.download = 'README.md';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success("README downloaded!");
+    toast.success('README downloaded!');
   };
   return (
     <Card className="w-full sm:max-w-3xl mx-auto">
@@ -483,7 +501,11 @@ export default function ReadmeGeneratorForm() {
             <Code className="h-4 w-4" />
             <span>Markdown</span>
           </TabsTrigger>
-          <TabsTrigger value="preview" disabled={!generatedReadme} className="flex items-center gap-1">
+          <TabsTrigger
+            value="preview"
+            disabled={!generatedReadme}
+            className="flex items-center gap-1"
+          >
             <Eye className="h-4 w-4" />
             <span>Preview</span>
           </TabsTrigger>
@@ -505,11 +527,11 @@ export default function ReadmeGeneratorForm() {
                   <div className="flex border rounded-md overflow-hidden sm:w-auto w-full sm:mt-0 mt-2 sm:whitespace-nowrap sm:min-w-0">
                     <button
                       type="button"
-                      onClick={() => setGenerationMethod("manual")}
+                      onClick={() => setGenerationMethod('manual')}
                       className={`px-4 py-2 text-sm ${
-                        generationMethod === "manual"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background"
+                        generationMethod === 'manual'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background'
                       }`}
                     >
                       Manual
@@ -518,28 +540,28 @@ export default function ReadmeGeneratorForm() {
                       type="button"
                       onClick={() => {
                         if (hasProPlan) {
-                          setGenerationMethod("ai");
+                          setGenerationMethod('ai');
                         } else {
                           setShowProPrompt(true);
                         }
                       }}
                       className={`px-4 py-2 text-sm ${
-                        generationMethod === "ai"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background"
+                        generationMethod === 'ai'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-background'
                       }`}
                     >
                       AI-Powered
                     </button>
                   </div>
-                  {generationMethod === "ai" && (
+                  {generationMethod === 'ai' && (
                     <p className="text-xs text-muted-foreground sm:mt-0 mt-2">
                       AI will generate a comprehensive README based on your input
                     </p>
                   )}
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="projectName">Project Name*</Label>
                 <Input
@@ -579,7 +601,7 @@ export default function ReadmeGeneratorForm() {
                   <Label htmlFor="projectLicense">License</Label>
                   <Select
                     value={formData.projectLicense}
-                    onValueChange={(value) => handleSelectChange("projectLicense", value)}
+                    onValueChange={(value) => handleSelectChange('projectLicense', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a license" />
@@ -777,7 +799,7 @@ export default function ReadmeGeneratorForm() {
             <Button
               variant="outline"
               onClick={() => {
-                window.open("https://youtu.be/5JoEB2YTlpw?si=X5JX8Xd_8ERLXJhG", "_blank");
+                window.open('https://youtu.be/5JoEB2YTlpw?si=X5JX8Xd_8ERLXJhG', '_blank');
               }}
               className="gap-2 sm:w-auto w-full"
             >
@@ -787,12 +809,12 @@ export default function ReadmeGeneratorForm() {
             <div className="flex gap-2 sm:w-auto w-full">
               <Button onClick={generateReadme} disabled={isGenerating} className="sm:w-auto w-full">
                 {isGenerating
-                  ? generationMethod === "ai"
-                    ? "AI is working..."
-                    : "Generating..."
-                  : generationMethod === "ai"
-                  ? "Generate AI README"
-                  : "Generate README"}
+                  ? generationMethod === 'ai'
+                    ? 'AI is working...'
+                    : 'Generating...'
+                  : generationMethod === 'ai'
+                    ? 'Generate AI README'
+                    : 'Generate README'}
               </Button>
             </div>
           </CardFooter>
@@ -802,7 +824,7 @@ export default function ReadmeGeneratorForm() {
             <div className="flex sm:flex-row flex-col justify-end sm:space-y-0 space-y-2 sm:space-x-2 mb-4">
               <Button
                 variant="outline"
-                onClick={() => setActiveTab("form")}
+                onClick={() => setActiveTab('form')}
                 className="gap-2 sm:w-auto w-full"
               >
                 <FileText size={16} />
@@ -816,11 +838,7 @@ export default function ReadmeGeneratorForm() {
                 <Copy size={16} />
                 Copy
               </Button>
-              <Button
-                variant="outline"
-                onClick={downloadReadme}
-                className="gap-2 sm:w-auto w-full"
-              >
+              <Button variant="outline" onClick={downloadReadme} className="gap-2 sm:w-auto w-full">
                 <Download size={16} />
                 Download README.md
               </Button>
@@ -829,7 +847,9 @@ export default function ReadmeGeneratorForm() {
               <div className="space-y-4">
                 <div className="flex sm:flex-row flex-col items-start sm:items-center justify-between sm:gap-0 gap-2">
                   <h3 className="text-xl font-semibold">Markdown Code</h3>
-                  <p className="text-xs text-muted-foreground">Edit markdown directly and see changes in preview</p>
+                  <p className="text-xs text-muted-foreground">
+                    Edit markdown directly and see changes in preview
+                  </p>
                 </div>
                 <Textarea
                   className="font-mono text-sm sm:min-h-[500px] min-h-[300px] bg-background resize-y"
@@ -866,11 +886,7 @@ export default function ReadmeGeneratorForm() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button
-              variant="default"
-              onClick={downloadReadme}
-              className="w-full gap-2"
-            >
+            <Button variant="default" onClick={downloadReadme} className="w-full gap-2">
               <Download size={16} />
               Download README.md
             </Button>
@@ -881,43 +897,33 @@ export default function ReadmeGeneratorForm() {
             <div className="flex sm:flex-row flex-col justify-end sm:space-y-0 space-y-2 sm:space-x-2 mb-4">
               <Button
                 variant="outline"
-                onClick={() => setActiveTab("code")}
+                onClick={() => setActiveTab('code')}
                 className="gap-2 sm:w-auto w-full"
               >
                 <Code size={16} />
                 View Markdown
               </Button>
-              <Button
-                variant="outline"
-                onClick={downloadReadme}
-                className="gap-2 sm:w-auto w-full"
-              >
+              <Button variant="outline" onClick={downloadReadme} className="gap-2 sm:w-auto w-full">
                 <Download size={16} />
                 Download
               </Button>
             </div>
             <div className="bg-white dark:bg-gray-900 border rounded-md sm:p-6 p-2 overflow-x-auto shadow-sm mb-4">
               <div className="prose dark:prose-invert max-w-none readme-preview">
-                <ReactMarkdown 
-                  remarkPlugins={[remarkGfm]} 
-                  rehypePlugins={[rehypeRaw]}
-                >
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                   {generatedReadme}
                 </ReactMarkdown>
               </div>
             </div>
             <div className="bg-yellow-50 dark:bg-yellow-900/20 sm:p-4 p-2 rounded-md border border-yellow-200 dark:border-yellow-900/50">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                <strong>Note:</strong> The actual appearance on GitHub may differ slightly from this preview. And believe me it will be much better there then here.
+                <strong>Note:</strong> The actual appearance on GitHub may differ slightly from this
+                preview. And believe me it will be much better there then here.
               </p>
             </div>
           </CardContent>
           <CardFooter>
-            <Button
-              variant="default"
-              onClick={downloadReadme}
-              className="w-full gap-2"
-            >
+            <Button variant="default" onClick={downloadReadme} className="w-full gap-2">
               <Download size={16} />
               Download README.md
             </Button>
@@ -928,7 +934,10 @@ export default function ReadmeGeneratorForm() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2">
           <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg sm:p-8 p-4 max-w-sm w-full text-center border">
             <h2 className="text-xl font-bold mb-2 text-yellow-700">Pro Required</h2>
-            <p className="mb-4 text-muted-foreground">Upgrade to <span className="font-semibold">Pro</span> to unlock AI-powered README generation.</p>
+            <p className="mb-4 text-muted-foreground">
+              Upgrade to <span className="font-semibold">Pro</span> to unlock AI-powered README
+              generation.
+            </p>
             <Link href="/subscriptions">
               <Button className="w-full mb-2">Get Pro</Button>
             </Link>

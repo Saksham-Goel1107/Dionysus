@@ -6,32 +6,29 @@ import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId,has } = await auth();
+    const { userId, has } = await auth();
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
-    const hasProPlan = has({ plan: 'dionysus_advance_pack' })
-    if(!hasProPlan){
-        return NextResponse.json(
-        { error: 'Advance plan required' },
-        { status: 403 }
-      );
+    const hasProPlan = has({ plan: 'dionysus_advance_pack' });
+    if (!hasProPlan) {
+      return NextResponse.json({ error: 'Advance plan required' }, { status: 403 });
     }
 
     // Rate limiting
     const identifier = userId;
-    const { success, limit, remaining } = await rateLimit(req, identifier, { limit: 5, window: 60 });
+    const { success, limit, remaining } = await rateLimit(req, identifier, {
+      limit: 5,
+      window: 60,
+    });
 
     if (!success) {
       return NextResponse.json(
         {
           error: `Rate limit exceeded. Try again in a few minutes. Remaining: ${remaining}/${limit}`,
         },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -40,28 +37,25 @@ export async function POST(req: NextRequest) {
     const { prompt } = body;
 
     if (!prompt) {
-      return NextResponse.json(
-        { error: 'Prompt is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    const prisma = (global as any).prisma || require('@/lib/prisma').default;
+    const prisma = (global as any).prisma || (await import('@/lib/prisma')).default;
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { emailAddress: true, firstName: true, credits: true }
+      select: { emailAddress: true, firstName: true, credits: true },
     });
 
     if ((user?.credits ?? 0) < 5) {
       return NextResponse.json(
         { error: 'You do not have enough credits to generate a logo. Please top up your credits.' },
-        { status: 402 }
+        { status: 402 },
       );
     }
 
     // Enhanced prompt for web/app header logo
     const enhancedPrompt = `Design a single, clean, modern, and professional logo for a website or app header for the brand: "${prompt}". The logo must have a transparent background (PNG), be centered, and only include the brand name and a simple, relevant icon if appropriate. Do NOT add any extra text, borders, decorative lines, or background shapes. The logo should be clear, sharp, scalable, and suitable for use in a website or app header. No watermark, no extra elements that are not said in the prompt `;
-    
+
     const imageUrl = await generateImage(enhancedPrompt);
 
     // Deduct credits from user
@@ -82,7 +76,7 @@ export async function POST(req: NextRequest) {
     console.error('Logo generation API error:', error);
     return NextResponse.json(
       { error: error.message || 'Failed to generate logo' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

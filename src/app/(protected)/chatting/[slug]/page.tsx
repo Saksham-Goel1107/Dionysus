@@ -8,18 +8,18 @@ export default async function Page({ params }: { params: { slug: string } }) {
   if (!user) {
     redirect('/sign-in');
   }
-  
-  const { slug } = await params; 
-  
+
+  const { slug } = await params;
+
   // Get or generate Stream Chat token
-  let token = String(user.publicMetadata.token || "");
-  
+  let token = String(user.publicMetadata.token || '');
+
   // Initialize the server client
   const apiKey = process.env.STREAM_API_KEY;
   const apiSecret = process.env.STREAM_API_SECRET;
-  
+
   if (!apiKey || !apiSecret) {
-    console.error("Stream API credentials missing");
+    console.error('Stream API credentials missing');
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
@@ -27,16 +27,16 @@ export default async function Page({ params }: { params: { slug: string } }) {
       </div>
     );
   }
-  
+
   // Create a server client to manage channels and permissions
   const serverClient = StreamChat.getInstance(apiKey, apiSecret);
-  
+
   // If token doesn't exist, create one
   if (!token) {
     try {
       token = serverClient.createToken(user.id);
     } catch (error) {
-      console.error("Failed to generate Stream token:", error);
+      console.error('Failed to generate Stream token:', error);
       return (
         <div className="p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Unable to load chat</h2>
@@ -45,7 +45,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
       );
     }
   }
-  
+
   // Ensure the user exists in Stream
   try {
     // Upsert the user to ensure they exist in Stream
@@ -54,36 +54,35 @@ export default async function Page({ params }: { params: { slug: string } }) {
       name: user.firstName ?? user.id,
       image: user.imageUrl ?? `https://getstream.io/random_png/?name=${user.firstName || user.id}`,
     });
-    
+
     // Get or create the channel and add the current user as a member
     const channel = serverClient.channel('messaging', slug);
-    
+
     // First try to query the channel to see if it exists
     try {
       const response = await channel.query();
-      
+
       // If channel exists, add the current user as a member if not already
       if (response.channel) {
         const members = response.members || {};
         const isMember = Object.values(members).some((member: any) => member.user_id === user.id);
-        
+
         if (!isMember) {
           await channel.addMembers([user.id]);
           console.log(`Added user ${user.id} to existing channel ${slug}`);
         }
       }
     } catch (error) {
-      // If channel doesn't exist, create it and add the user
-      await channel.create({
+      channel.data = {
         name: slug,
-        members: [user.id],
         created_by_id: user.id,
-      });
+      };
+      await channel.create();
+      await channel.addMembers([user.id]);
       console.log(`Created new channel ${slug} with user ${user.id}`);
     }
-    
   } catch (error) {
-    console.error("Error managing Stream channel:", error);
+    console.error('Error managing Stream channel:', error);
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Channel Error</h2>
@@ -91,13 +90,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
       </div>
     );
   }
-  
+
   return (
     <ChatClient
       clerkUser={{
         id: user.id,
-        name: user.firstName ?? "",
-        token: token
+        name: user.firstName ?? '',
+        token: token,
       }}
       slug={slug}
     />

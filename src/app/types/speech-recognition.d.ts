@@ -43,4 +43,6 @@ declare global {
   }
 }
 
-export type SpeechRecognition = typeof window.SpeechRecognition | typeof window.webkitSpeechRecognition;
+export type SpeechRecognition =
+  | typeof window.SpeechRecognition
+  | typeof window.webkitSpeechRecognition;

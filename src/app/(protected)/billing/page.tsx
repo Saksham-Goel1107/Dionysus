@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { api } from '@/trpc/react';
-import { Info } from 'lucide-react';
-import React, { useEffect } from 'react';
+import { InfoIcon } from 'lucide-react';
+import React, { useEffect, useMemo } from 'react';
 import { UserProfile } from '@clerk/nextjs';
 import {
   Table,
@@ -25,6 +25,7 @@ import {
 import { BarChart2 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { validateCouponCode } from './couponUtils';
 
 const india_discount = true;
 const india_discount_value = 10;
@@ -50,6 +51,12 @@ const BillingPage = () => {
   const [hasProPlan, sethasProPlan] = React.useState(false);
   const [mfaEnabled, setMfaEnabled] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
+  const [couponInput, setCouponInput] = React.useState('');
+  const [couponStatus, setCouponStatus] = React.useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = React.useState<{
+    discount: number;
+    code: string;
+  } | null>(null);
   const { user: clerkUser } = useUser();
   const router = useRouter();
   const creditsToBuyAmount = creditsToBuy[0]!;
@@ -57,14 +64,19 @@ const BillingPage = () => {
   let totalDiscount = discount || 0;
   if (hasProPlan) totalDiscount += 10;
   if (mfaEnabled) totalDiscount += 10;
+  if (appliedCoupon) totalDiscount += appliedCoupon.discount;
   const discountedPrice = (basePrice * (1 - totalDiscount / 100)).toFixed(2);
   const price = basePrice.toFixed(2);
 
   // Calculate discount breakdown
-  const discountParts: string[] = [];
-  if (hasProPlan) discountParts.push('10% Pro Plan');
-  if (mfaEnabled) discountParts.push('10% MFA');
-  if (discount && discountCountry) discountParts.push(`${discount}% ${discountCountry}`);
+  const discountParts: string[] = useMemo(() => {
+    const parts: string[] = [];
+    if (hasProPlan) parts.push('10% Pro Plan');
+    if (mfaEnabled) parts.push('10% MFA');
+    if (discount && discountCountry) parts.push(`${discount}% ${discountCountry}`);
+    if (appliedCoupon) parts.push(`${appliedCoupon.discount}% Coupon`);
+    return parts;
+  }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon]);
   const discountBreakdown = discountParts.join(' + ');
 
   const utils = api.useUtils();
@@ -75,8 +87,7 @@ const BillingPage = () => {
     void utils.project.getMyCredits.invalidate();
   };
 
-  // Fix: Move mfaEnabled logic into useEffect to avoid infinite re-renders
-  React.useEffect(() => {
+  useEffect(() => {
     if (clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled) {
       setMfaEnabled(true);
     } else {
@@ -139,6 +150,22 @@ const BillingPage = () => {
     })();
   }, []);
 
+  // Coupon apply logic
+  const handleApplyCoupon = async () => {
+    setCouponStatus('Checking...');
+    const result = await validateCouponCode(couponInput.trim());
+    if (!result) {
+      setCouponStatus('Invalid or expired coupon code.');
+      return;
+    }
+    if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
+      setCouponStatus('Coupon already used.');
+      return;
+    }
+    setAppliedCoupon({ discount: result.discount, code: couponInput.trim() });
+    setCouponStatus(`Coupon applied! ${result.discount}% off.`);
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0">
       <div className="rounded-lg border bg-card p-4 sm:p-6">
@@ -148,7 +175,7 @@ const BillingPage = () => {
         <div className="h-2"></div>
         <div className="rounded-md border-blue-200 bg-blue-50 px-2 py-2 sm:px-4 text-blue-700">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Info className="size-4" />
+            <InfoIcon className="size-4" />
             <p className="text-sm">Each credit allows you to index 1 file in a repository.</p>
           </div>
           <p className="text-xs sm:text-sm mt-1">
@@ -167,15 +194,14 @@ const BillingPage = () => {
         {mfaEnabled && (
           <div className="text-green-700 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
             <span className="block w-full sm:w-auto text-left">
-              Multi Factor Authentication is enabled. You get additional 10% discount on every purchase.
+              Multi Factor Authentication is enabled. You get additional 10% discount on every
+              purchase.
             </span>
           </div>
         )}
 
         {!mfaEnabled && (
-          <div
-            className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full"
-          >
+          <div className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
             <span className="block w-full sm:w-auto text-left">
               Enable Multi Factor Authentication to get additional 10% discount on every purchase.
             </span>
@@ -242,6 +268,20 @@ const BillingPage = () => {
           className="cursor-grab active:cursor-grabbing"
         />
         <div className="h-4"></div>
+        {/* Coupon code UI */}
+        <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+          <input
+            type="text"
+            value={couponInput}
+            onChange={(e) => setCouponInput(e.target.value)}
+            placeholder="Enter coupon code"
+            className="border rounded px-2 py-1 w-full sm:w-64"
+          />
+          <Button onClick={handleApplyCoupon} variant="outline">
+            Apply Coupon
+          </Button>
+        </div>
+        {couponStatus && <div className="text-sm mt-1 mb-2">{couponStatus}</div>}
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">

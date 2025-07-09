@@ -1,11 +1,11 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Document } from "@langchain/core/documents";
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Document } from '@langchain/core/documents';
 import { Redis } from 'ioredis';
 
 // Initialize Redis client if REDIS_URL is available
 // Otherwise use a memory-based fallback for development
 let redis: Redis | null = null;
-const inMemoryStore: Map<string, { count: number, expires: number }> = new Map();
+const inMemoryStore: Map<string, { count: number; expires: number }> = new Map();
 let redisEnabled = false;
 
 // Only initialize Redis if URL is available (e.g., in production)
@@ -16,22 +16,28 @@ if (process.env.REDIS_URL_NEW) {
       retryStrategy: (times) => {
         // Only retry once, then give up
         return times >= 1 ? null : 200;
-      }
+      },
     });
-    
+
     // Handle Redis connection errors
     redis.on('error', (err) => {
-      console.warn('Redis connection error in gemini.ts, falling back to in-memory store:', err.message);
+      console.warn(
+        'Redis connection error in gemini.ts, falling back to in-memory store:',
+        err.message,
+      );
       redisEnabled = false;
     });
-    
+
     // Set flag when connection is successful
     redis.on('connect', () => {
       console.log('Successfully connected to Redis in gemini.ts');
       redisEnabled = true;
     });
   } catch (err: any) {
-    console.warn('Failed to initialize Redis in gemini.ts, using in-memory store instead:', err.message);
+    console.warn(
+      'Failed to initialize Redis in gemini.ts, using in-memory store instead:',
+      err.message,
+    );
     redis = null;
     redisEnabled = false;
   }
@@ -39,57 +45,66 @@ if (process.env.REDIS_URL_NEW) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash",
+  model: 'gemini-2.0-flash',
 });
 
 // Internal rate limiter for library functions
-async function checkRateLimit(key: string, limit: number = 50, windowInSeconds: number = 60): Promise<boolean> {
+async function checkRateLimit(
+  key: string,
+  limit: number = 50,
+  windowInSeconds: number = 60,
+): Promise<boolean> {
   const identifier = `lib:gemini:${key}`;
   let isAllowed = true;
-  
+
   try {
     if (redis && redisEnabled) {
       try {
         // Use Redis if available and connected
         const current = await redis.incr(identifier);
-        
+
         // Set expiration on first request
         if (current === 1) {
           await redis.expire(identifier, windowInSeconds);
         }
-        
+
         isAllowed = current <= limit;
       } catch (redisError: any) {
-        console.warn(`Redis rate limit operation failed in gemini.ts: ${redisError.message || redisError}`);
+        console.warn(
+          `Redis rate limit operation failed in gemini.ts: ${redisError.message || redisError}`,
+        );
         // Fall back to in-memory implementation
-        return useMemoryRateLimit();
+        return memoryRateLimit();
       }
     } else {
       // In-memory fallback
-      return useMemoryRateLimit();
+      return memoryRateLimit();
     }
-    
+
     return isAllowed;
   } catch (error: any) {
-    console.error("Rate limit check error:", error?.message || error);
+    console.error('Rate limit check error:', error?.message || error);
     return true; // Allow on error to prevent blocking legitimate requests
   }
-  
+
   // Helper function for in-memory rate limiting
-  function useMemoryRateLimit(): boolean {
+  function memoryRateLimit(): boolean {
     const now = Date.now();
-    const record = inMemoryStore.get(identifier) || { count: 0, expires: now + (windowInSeconds * 1000) };
-    
+    const record = inMemoryStore.get(identifier) || {
+      count: 0,
+      expires: now + windowInSeconds * 1000,
+    };
+
     // Reset if window has expired
     if (now > record.expires) {
       record.count = 0;
-      record.expires = now + (windowInSeconds * 1000);
+      record.expires = now + windowInSeconds * 1000;
     }
-    
+
     // Increment counter
     record.count += 1;
     inMemoryStore.set(identifier, record);
-    
+
     return record.count <= limit;
   }
 }
@@ -97,7 +112,7 @@ async function checkRateLimit(key: string, limit: number = 50, windowInSeconds: 
 export const aiSummariseCommit = async (diff: string, projectName: string) => {
   const isAllowed = await checkRateLimit('commit-summary', 10, 60);
   if (!isAllowed) {
-    throw new Error("Rate limit exceeded for commit summaries. Please try again later.");
+    throw new Error('Rate limit exceeded for commit summaries. Please try again later.');
   }
 
   const response = await model.generateContent([
@@ -140,7 +155,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
 export const summariseCode = async (doc: Document) => {
   const isAllowed = await checkRateLimit('code-summary', 10, 60);
   if (!isAllowed) {
-    throw new Error("Rate limit exceeded for code summaries. Please try again later.");
+    throw new Error('Rate limit exceeded for code summaries. Please try again later.');
   }
 
   try {
@@ -156,7 +171,7 @@ export const summariseCode = async (doc: Document) => {
     ]);
     return response.response.text();
   } catch (error) {
-    return "";
+    return '';
   }
 };
 
@@ -164,11 +179,11 @@ export const generateEmbedding = async (summary: string) => {
   // Check rate limit (50 embeddings per minute)
   const isAllowed = await checkRateLimit('embedding', 50, 60);
   if (!isAllowed) {
-    throw new Error("Rate limit exceeded for embeddings generation. Please try again later.");
+    throw new Error('Rate limit exceeded for embeddings generation. Please try again later.');
   }
-  
+
   const model = genAI.getGenerativeModel({
-    model: "text-embedding-004",
+    model: 'text-embedding-004',
   });
 
   const result = await model.embedContent(summary);
@@ -182,22 +197,22 @@ export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: 
   if (!isAllowed) {
     return {
       yaml: '# ❌ Error: Rate limit exceeded.',
-      tip: 'Please try again after some time. There is a limit to how many requests you can make per minute.'
+      tip: 'Please try again after some time. There is a limit to how many requests you can make per minute.',
     };
   }
-  
+
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return {
       yaml: '# ❌ Error: The GEMINI_API_KEY environment variable is missing.',
-      tip: 'Set GEMINI_API_KEY in your environment to enable Gemini-powered YAML generation.'
+      tip: 'Set GEMINI_API_KEY in your environment to enable Gemini-powered YAML generation.',
     };
   }
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); 
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const context = `
 You are a professional DevOps engineer. 
@@ -218,22 +233,24 @@ Respond in this format:
     const tipMatch = text.match(/Tip:(.*)/i);
 
     return {
-      yaml: yamlMatch?.[1]?.trim() ?? "# ⚠️ YAML block not detected in response.",
-      tip: tipMatch?.[1]?.trim() ?? "No tip found. Ensure your prompt is clear and focused on CI/CD needs."
+      yaml: yamlMatch?.[1]?.trim() ?? '# ⚠️ YAML block not detected in response.',
+      tip:
+        tipMatch?.[1]?.trim() ??
+        'No tip found. Ensure your prompt is clear and focused on CI/CD needs.',
     };
   } catch (error: any) {
-    console.error("Gemini Error:", error?.message || error);
+    console.error('Gemini Error:', error?.message || error);
 
-    if (error.message?.includes("API key not valid")) {
+    if (error.message?.includes('API key not valid')) {
       return {
         yaml: '# ❌ Error: Invalid GEMINI_API_KEY.',
-        tip: 'Check and regenerate your API key from https://makersuite.google.com/app/apikey'
+        tip: 'Check and regenerate your API key from https://makersuite.google.com/app/apikey',
       };
     }
 
     return {
-      yaml: `# ❌ Gemini API Error: ${error.message || "Unknown error occurred."}`,
-      tip: "Please try again or verify your API status."
+      yaml: `# ❌ Gemini API Error: ${error.message || 'Unknown error occurred.'}`,
+      tip: 'Please try again or verify your API status.',
     };
   }
 }

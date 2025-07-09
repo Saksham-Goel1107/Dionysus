@@ -7,22 +7,34 @@ export default function SecuritySettings() {
       <div className="flex flex-col gap-4 sm:gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
           <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">Password</span>
-          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>Change Password</button>
+          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>
+            Change Password
+          </button>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">Two-Factor Authentication</span>
-          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>Enable 2FA</button>
+          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+            Two-Factor Authentication
+          </span>
+          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>
+            Enable 2FA
+          </button>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
           <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">Login Alerts</span>
           <input type="checkbox" className="toggle" disabled />
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">Device Management</span>
-          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>View Devices</button>
+          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+            Device Management
+          </span>
+          <button className="btn btn-outline btn-xs sm:btn-sm w-full sm:w-auto" disabled>
+            View Devices
+          </button>
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">Session Timeout</span>
+          <span className="font-medium text-gray-700 dark:text-gray-200 text-sm">
+            Session Timeout
+          </span>
           <select className="input input-bordered w-full sm:w-32 text-sm" disabled>
             <option>30 min</option>
             <option>1 hour</option>
