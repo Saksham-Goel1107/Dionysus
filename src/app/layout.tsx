@@ -6,7 +6,7 @@ import { type Metadata } from 'next';
 import { TRPCReactProvider } from '@/trpc/react';
 import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
-import { ClerkProvider, GoogleOneTap } from '@clerk/nextjs';
+import { GoogleOneTap } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
@@ -23,6 +23,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import RecaptchaGate from './components/RecaptchaGate';
+import Offline from './offline';
 
 export const metadata: Metadata = {
   title: {
@@ -117,6 +118,29 @@ export default async function RootLayout({
 
   const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
 
+  let recaptchaFailed = false;
+  if (typeof window === 'undefined') {
+    // @ts-ignore
+    const { cookies } = require('next/headers');
+    const cookieStore = await cookies();
+    const jwt = cookieStore.get('recaptcha_jwt')?.value;
+    let verified = false;
+    if (jwt) {
+      try {
+        const { verifyRecaptchaJWT } = await import('@/lib/recaptcha-jwt');
+        const payload = await verifyRecaptchaJWT(jwt);
+        verified = !!payload && payload.verified === true;
+      } catch {}
+    }
+    recaptchaFailed = !verified;
+  } else {
+    recaptchaFailed =
+      document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('recaptcha_failed='))
+        ?.split('=')[1] === 'true';
+  }
+
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <head>
@@ -125,47 +149,57 @@ export default async function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          <RecaptchaGate>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <ClerkProviderWithTheme>
-                <MultisessionAppSupport>
-                  {isMaintenance ? (
-                    <>
-                      <MaintenanceScreen />
-                      <BlockInspectAndContext />
-                      <CustomContextMenu />
-                      <Analytics />
-                      <SpeedInsights />
-                    </>
-                  ) : (
-                    <>
-                      <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                      <CookieBanner />
-                      <TRPCReactProvider>
-                        {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                      </TRPCReactProvider>
-                      <Toaster richColors />
-                      <ScrollToTopButton />
-                      <CustomContextMenu />
-                      <BlockInspectAndContext />
-                      <Analytics />
-                      <SpeedInsights />
-                      <Script
-                        src="https://s.pageclip.co/v1/pageclip.js"
-                        charSet="utf-8"
-                        strategy="afterInteractive"
-                      ></Script>
-                    </>
-                  )}
-                </MultisessionAppSupport>
-              </ClerkProviderWithTheme>
-            </ThemeProvider>
-          </RecaptchaGate>
+          {recaptchaFailed ? (
+            <RecaptchaGate>{null}</RecaptchaGate>
+          ) : (
+            <RecaptchaGate>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <ClerkProviderWithTheme>
+                  <MultisessionAppSupport>
+                    {isMaintenance ? (
+                      <>
+                        <MaintenanceScreen />
+                        <BlockInspectAndContext />
+                        <CustomContextMenu />
+                        <Analytics />
+                        <SpeedInsights />
+                      </>
+                    ) : (
+                      <>
+                        <GoogleOneTap
+                          cancelOnTapOutside={true}
+                          itpSupport={true}
+                          fedCmSupport={true}
+                        />
+                        <CookieBanner />
+                        <TRPCReactProvider>
+                          <Offline>
+                            {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                          </Offline>
+                        </TRPCReactProvider>
+                        <Toaster richColors />
+                        <ScrollToTopButton />
+                        <CustomContextMenu />
+                        <BlockInspectAndContext />
+                        <Analytics />
+                        <SpeedInsights />
+                        <Script
+                          src="https://s.pageclip.co/v1/pageclip.js"
+                          charSet="utf-8"
+                          strategy="afterInteractive"
+                        ></Script>
+                      </>
+                    )}
+                  </MultisessionAppSupport>
+                </ClerkProviderWithTheme>
+              </ThemeProvider>
+            </RecaptchaGate>
+          )}
         </ErrorBoundary>
       </body>
     </html>

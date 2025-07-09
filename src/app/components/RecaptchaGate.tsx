@@ -1,45 +1,46 @@
-"use client";
-import { useEffect, useState, useRef } from "react";
+'use client';
+import { useEffect, useState, useRef } from 'react';
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 export default function RecaptchaGate({ children }: { children: React.ReactNode }) {
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const verifyToken = async () => {
     // @ts-ignore
     if (!window.grecaptcha || !SITE_KEY) {
-      setError("reCAPTCHA not properly initialized.");
+      setError('reCAPTCHA not properly initialized.');
       return;
     }
 
     try {
       // @ts-ignore
-      const token = await window.grecaptcha.execute(SITE_KEY, { action: "verify" });
-      const res = await fetch("/api/recaptcha-verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token }),
+      const token = await window.grecaptcha.execute(SITE_KEY, { action: 'verify' });
+      const res = await fetch('/api/recaptcha-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }),
       });
       const data = await res.json();
       if (!data.success) {
-      setError("reCAPTCHA verification failed. Bot-like activity detected.");
+        setError('reCAPTCHA verification failed. Bot-like activity detected.');
+        return;
       } else {
-      setError(""); 
+        setError('');
       }
     } catch {
-      setError("Network error during reCAPTCHA verification.");
+      console.error('Some error occured');
     }
   };
 
   useEffect(() => {
     if (!SITE_KEY) {
-      setError("reCAPTCHA site key not set");
+      setError('reCAPTCHA site key not set');
       return;
     }
 
-    const script = document.createElement("script");
+    const script = document.createElement('script');
     script.src = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`;
     script.async = true;
     script.onload = () => {
@@ -47,15 +48,15 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       if (window.grecaptcha) {
         // @ts-ignore
         window.grecaptcha.ready(() => {
-          verifyToken(); // Initial check
+          verifyToken();
           intervalRef.current = setInterval(verifyToken, 30_000);
         });
       } else {
-        setError("reCAPTCHA failed to load");
+        setError('reCAPTCHA failed to load');
       }
     };
     script.onerror = () => {
-      setError("Failed to load reCAPTCHA script.");
+      setError('Failed to load reCAPTCHA script.');
     };
     document.body.appendChild(script);
 
@@ -69,25 +70,60 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
     <>
       {children}
       {error && (
-        <div style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          height: "100vh",
-          width: "100vw",
-          backgroundColor: "rgba(15, 15, 15, 0.95)",
-          color: "#f33",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          zIndex: 9999,
-          fontFamily: "sans-serif",
-          textAlign: "center",
-          padding: "2rem"
-        }}>
-          <h1 style={{ fontSize: "2rem" }}>⚠️ Access Blocked</h1>
-          <p>{error}</p>
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            height: '100vh',
+            width: '100vw',
+            background: 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)',
+            color: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            fontFamily: 'Inter, sans-serif',
+            textAlign: 'center',
+            padding: '2.5rem 1.5rem',
+            boxShadow: '0 0 0 100vmax rgba(0,0,0,0.7)',
+            transition: 'background 0.4s',
+          }}
+        >
+          <div
+            style={{
+              background: 'rgba(30,30,30,0.98)',
+              borderRadius: 20,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+              padding: '2.5rem 2rem 2rem 2rem',
+              minWidth: 320,
+              maxWidth: 420,
+              border: '2px solid #f33',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <span
+              style={{ fontSize: '3rem', marginBottom: 18, filter: 'drop-shadow(0 2px 8px #f33a)' }}
+            >
+              🛡️
+            </span>
+            <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}>
+              Access Blocked
+            </h1>
+            <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
+            <div style={{ marginTop: 24, fontSize: '0.98rem', color: '#aaa' }}>
+              This page is protected by reCAPTCHA.
+              <br />
+              If you believe this is a mistake, please refresh or contact{' '}
+              <a className="font-semibold text-blue-500" href="mailto:sakshamgoel1107@gmail.com">
+                support
+              </a>
+              .
+            </div>
+          </div>
         </div>
       )}
     </>
