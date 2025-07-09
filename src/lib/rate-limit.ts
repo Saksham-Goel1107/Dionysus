@@ -166,3 +166,16 @@ export async function withRateLimit(req: NextRequest, key: string, options: Rate
   const result = await rateLimit(req, key, options);
   return result.success ? null : result.response;
 }
+
+// Reset rate limit for a given key (works for both Redis and in-memory)
+export async function resetRateLimit(key: string) {
+  if (redis && redisEnabled) {
+    try {
+      await redis.del(key);
+    } catch (err) {
+      // ignore
+    }
+  } else {
+    inMemoryStore.delete(key);
+  }
+}
