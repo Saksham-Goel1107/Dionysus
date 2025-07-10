@@ -30,8 +30,15 @@ export class ErrorBoundary extends React.Component<
               boxShadow: '0 8px 32px rgba(31, 41, 55, 0.15)',
               borderRadius: 16,
               padding: 32,
-              maxWidth: 420,
+              maxWidth: 480,
               margin: '0 auto',
+              width: '95vw',
+              minWidth: 0,
+              maxHeight: '90vh',
+              overflow: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
             }}
           >
             <DialogHeader>
@@ -68,7 +75,7 @@ export class ErrorBoundary extends React.Component<
               </DialogTitle>
             </DialogHeader>
             <div
-              style={{ margin: '24px 0 16px 0', color: '#334155', fontSize: 17, lineHeight: 1.6 }}
+              style={{ margin: '24px 0 16px 0', color: '#334155', fontSize: 17, lineHeight: 1.6, width: '100%' }}
             >
               <p style={{ marginBottom: 8 }}>
                 <strong>Oops!</strong> Something went wrong and the app cannot continue.
@@ -89,7 +96,7 @@ export class ErrorBoundary extends React.Component<
                 </a>{' '}
                 with details.
               </p>
-              <pre
+              <div
                 style={{
                   background: 'linear-gradient(90deg, #fef3c7 0%, #fee2e2 100%)',
                   color: '#b91c1c',
@@ -98,16 +105,25 @@ export class ErrorBoundary extends React.Component<
                   marginTop: 18,
                   fontSize: 15,
                   fontFamily: 'Menlo, Monaco, Consolas, monospace',
-                  maxHeight: 180,
+                  maxHeight: 220,
                   overflow: 'auto',
                   boxShadow: '0 2px 8px rgba(251, 191, 36, 0.08)',
                   border: '1px solid #fde68a',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'pre-wrap',
+                  width: '100%',
                 }}
               >
                 {this.state.error.message}
-              </pre>
+                {this.state.error.stack && (
+                  <details style={{ marginTop: 12, color: '#b91c1c', fontSize: 13 }}>
+                    <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Stack Trace</summary>
+                    <pre style={{ maxHeight: 120, overflow: 'auto', margin: 0 }}>{this.state.error.stack}</pre>
+                  </details>
+                )}
+              </div>
             </div>
-            <DialogFooter style={{ justifyContent: 'center', marginTop: 24 }}>
+            <DialogFooter style={{ justifyContent: 'center', marginTop: 24, width: '100%' }}>
               <button
                 onClick={this.handleDashboard}
                 style={{
@@ -121,6 +137,11 @@ export class ErrorBoundary extends React.Component<
                   boxShadow: '0 2px 8px rgba(37, 99, 235, 0.12)',
                   cursor: 'pointer',
                   transition: 'background 0.2s',
+                  width: '100%',
+                  maxWidth: 320,
+                  minWidth: 120,
+                  margin: '0 auto',
+                  display: 'block',
                 }}
               >
                 Go to Dashboard
