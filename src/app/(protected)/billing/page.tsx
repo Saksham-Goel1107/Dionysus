@@ -158,11 +158,15 @@ const BillingPage = () => {
       setCouponStatus('Invalid or expired coupon code.');
       return;
     }
+    if (result.success === false && result.status === 429) {
+      setCouponStatus(result.message || 'Rate limit exceeded. Please try again later.');
+      return;
+    }
     if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
       setCouponStatus('Coupon already used.');
       return;
     }
-    setAppliedCoupon({ discount: result.discount, code: couponInput.trim() });
+    setAppliedCoupon({ discount: result.discount ?? 0, code: couponInput.trim() });
     setCouponStatus(`Coupon applied! ${result.discount}% off.`);
   };
 

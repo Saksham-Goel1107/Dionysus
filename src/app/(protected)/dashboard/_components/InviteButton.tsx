@@ -128,7 +128,7 @@ const InviteButton = () => {
               <Input
                 readOnly
                 className="pr-28"
-                type="password"
+                type={!isRegenerating ? 'password' : 'text'}
                 onClick={copyToClipboard}
                 value={isRegenerating ? 'Generating...' : inviteLink}
                 key={tokenToUse}

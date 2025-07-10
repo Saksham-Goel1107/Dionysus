@@ -2,6 +2,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getRedisClient } from '@/lib/rate-limit';
 
 export async function generateCouponCode(discount: number, expiresInMinutes: number = 10) {
   const { userId } = await auth();
@@ -11,7 +12,7 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
   if (email !== 'sakshamgoel1107@gmail.com') {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
-  const secret = process.env.COUPON_SECRET || 'dionysus-coupon-secret';
+  const secret = process.env.COUPON_SECRET!;
   const exp = Date.now() + expiresInMinutes * 60 * 1000;
   const payload = `${discount}:${exp}`;
   const hmac = crypto.createHmac('sha256', secret);
@@ -20,8 +21,24 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
   return Buffer.from(`${payload}:${sigHex}`).toString('base64');
 }
 
-export async function validateCouponCode(code: string) {
-  const secret = process.env.COUPON_SECRET || 'dionysus-coupon-secret';
+export async function validateCouponCode(code: string, userId?: string) {
+  const redis = await getRedisClient();
+  const key = `coupon:validate:${userId || 'anon'}`;
+  const maxReq = 10;
+  const windowSec = 60 * 60; // 1 hour
+  const reqCount = await redis.incr(key);
+  if (reqCount === 1) {
+    await redis.expire(key, windowSec);
+  }
+  if (reqCount > maxReq) {
+    return {
+      success: false,
+      message: 'Rate limit exceeded',
+      status: 429,
+    };
+  }
+
+  const secret = process.env.COUPON_SECRET!;
   try {
     const decoded = Buffer.from(code, 'base64').toString('utf-8');
     const [discount, exp, sigHex] = decoded.split(':');
