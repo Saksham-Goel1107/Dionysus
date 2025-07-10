@@ -1,3 +1,4 @@
+// @ts-nocheck
 // gif.worker.js 0.2.0 - https://github.com/jnordberg/gif.js
 (function e(t, n, r) {
   function s(o, u) {
@@ -135,8 +136,6 @@
           if (dither === true) dither = 'FloydSteinberg';
           this.dither = dither;
         };
-        GIFEncoder.prototype.setGlobalPalette = function (palette) {
-          this.globalPalette = palette;
         };
         GIFEncoder.prototype.getGlobalPalette = function () {
           return (
