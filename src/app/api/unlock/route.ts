@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const rateKey = `unlock-attempt:${userId}`;
     const rate = await rateLimit(req, rateKey, {
       limit: 5,
-      window: 60 * 60, 
+      window: 60 * 60,
       errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
     });
     if (!rate.success) {
@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
     await resetRateLimit(rateKey);
     if (disable) {
       await prisma.user.update({ where: { id: userId }, data: { passwordHash: null } });
-      localStorage.setItem('unlockToken', '');
       return NextResponse.json({ success: true });
     }
     if (!newPassword && !disable) {

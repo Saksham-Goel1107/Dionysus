@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         const rateKey = `unlock-attempt:${userId}`;
         const rate = await rateLimit(req, rateKey, {
           limit: 5,
-          window: 60 * 60, 
+          window: 60 * 60,
           errorMessage: 'Too many unlock attempts. Please try again in 1 hour.',
         });
         const reset = parseRateLimitMeta(rate);

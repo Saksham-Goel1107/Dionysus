@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  let body: any;
+  try {
+    body = await req.json();
+  } catch (e) {
+    return NextResponse.json({ issues: [], error: 'Invalid or empty JSON body.' }, { status: 400 });
+  }
   const analytics = body?.analytics;
   if (!Array.isArray(analytics)) {
     return NextResponse.json({ issues: [], error: 'Invalid analytics data.' }, { status: 400 });
   }
-  // Simple quality analysis: flag files with high complexity or too many functions
   const issues = analytics
     .map((f: any) => {
       const issues: string[] = [];

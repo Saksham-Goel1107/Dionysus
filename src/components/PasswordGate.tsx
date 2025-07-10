@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
+import { UserButton } from '@clerk/nextjs';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -169,6 +170,11 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
             alignItems: 'center',
           }}
         >
+          <div
+            style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}
+          >
+            <UserButton />
+          </div>
           <span
             style={{
               fontSize: '2.5rem',
@@ -320,8 +326,25 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           >
             {verifying ? 'Verifying...' : 'Unlock'}
           </button>
-          <div style={{ marginTop: 18, color: resolvedTheme === 'dark' ? '#aaa' : '#555', fontSize: 14, textAlign: 'center' }}>
-            Forgot password? Contact <a href="mailto:sakshamgoel1107@gmail.com" style={{ color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff', textDecoration: 'underline' }}>support</a>.
+          <div
+            style={{
+              marginTop: 18,
+              color: resolvedTheme === 'dark' ? '#aaa' : '#555',
+              fontSize: 14,
+              textAlign: 'center',
+            }}
+          >
+            Forgot password? Contact{' '}
+            <a
+              href="mailto:sakshamgoel1107@gmail.com"
+              style={{
+                color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+                textDecoration: 'underline',
+              }}
+            >
+              support
+            </a>
+            .
           </div>
         </form>
       </div>

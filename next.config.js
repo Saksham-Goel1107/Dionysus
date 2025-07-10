@@ -27,6 +27,10 @@ const config = {
         protocol: 'https',
         hostname: 'avatars.githubusercontent.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'nyc.cloud.appwrite.io',
+      },
     ],
   },
 };

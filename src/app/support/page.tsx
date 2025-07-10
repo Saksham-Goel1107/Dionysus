@@ -6,7 +6,11 @@ import { useUser } from '@clerk/nextjs';
 
 export default function SupportPage() {
   const { user, isSignedIn, isLoaded } = useUser();
-  const [form, setForm] = useState({ name: '', email: user?.primaryEmailAddress?.emailAddress || '', message: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: user?.primaryEmailAddress?.emailAddress || '',
+    message: '',
+  });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -15,7 +19,7 @@ export default function SupportPage() {
       setForm((prev) => ({
         ...prev,
         name: user?.firstName ?? '',
-        email: user.primaryEmailAddress?.emailAddress ?? ''
+        email: user.primaryEmailAddress?.emailAddress ?? '',
       }));
     }
   }, [user?.primaryEmailAddress?.emailAddress, user?.firstName]);
@@ -81,7 +85,12 @@ export default function SupportPage() {
                   Thank you! We&apos;ll get back to you soon.
                 </div>
               ) : (
-                <form action={`https://send.pageclip.co/${process.env.PAGECLIP_KEY_2}`} className="pageclip-form flex flex-col gap-3" method='POST' onSubmit={handleSubmit}>
+                <form
+                  action={`https://send.pageclip.co/${process.env.PAGECLIP_KEY_2}`}
+                  className="pageclip-form flex flex-col gap-3"
+                  method="POST"
+                  onSubmit={handleSubmit}
+                >
                   <input
                     type="text"
                     name="name"
@@ -116,18 +125,36 @@ export default function SupportPage() {
                     disabled={!isSignedIn}
                   />
                   <div className="flex justify-between items-center text-xs mt-[-4px] mb-[-4px]">
-                    <span className={form.message.trim().length < 30 ? 'text-red-500' : 'text-green-600 dark:text-green-400'}>
+                    <span
+                      className={
+                        form.message.trim().length < 30
+                          ? 'text-red-500'
+                          : 'text-green-600 dark:text-green-400'
+                      }
+                    >
                       Minimum of 30 characters
                     </span>
-                    <span className={form.message.trim().length < 30 ? 'text-red-500' : 'text-gray-500'}>
+                    <span
+                      className={form.message.trim().length < 30 ? 'text-red-500' : 'text-gray-500'}
+                    >
                       {form.message.trim().length}/30
                     </span>
                   </div>
-                  <Button type="submit" disabled={loading || !isSignedIn} className="w-full max-w-xs">
-                    {isSignedIn ? (loading ? 'Sending...' : 'Send Message') : 'Sign in to contact support'}
+                  <Button
+                    type="submit"
+                    disabled={loading || !isSignedIn}
+                    className="w-full max-w-xs"
+                  >
+                    {isSignedIn
+                      ? loading
+                        ? 'Sending...'
+                        : 'Send Message'
+                      : 'Sign in to contact support'}
                   </Button>
                   {!isSignedIn && (
-                    <div className="text-red-600 dark:text-red-400 text-sm mt-2 text-center">You must be signed in to contact support.</div>
+                    <div className="text-red-600 dark:text-red-400 text-sm mt-2 text-center">
+                      You must be signed in to contact support.
+                    </div>
                   )}
                 </form>
               )}

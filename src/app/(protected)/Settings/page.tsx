@@ -27,7 +27,8 @@ export default function SettingsPage() {
   const [verified, setVerified] = useState(false);
   const { resolvedTheme } = useTheme();
 
-  const handleClick = async () => {
+  const handleClick = async (e: React.FormEvent) => {
+    e.preventDefault();
     const myData = await performAction();
     if (!myData) return;
     setVerified(true);
