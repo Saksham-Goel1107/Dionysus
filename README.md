@@ -361,6 +361,21 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 
 ---
 
+## 🆕 Recent Features & Improvements
+
+- **Anonymized Error & Crash Reporting:** Users are now informed (via the CookieBanner) that anonymized error and crash data may be collected to improve reliability and security. No personal or sensitive data is ever included.
+- **Robust Cookie Consent Banner:** The CookieBanner has been enhanced for clarity, accessibility, and transparency about privacy and data collection.
+- **TypeScript & Linting Exclusions:** The `public/` and `.next/` directories are now excluded from both ESLint and TypeScript checks, preventing errors from vendor/minified files and build outputs.
+- **Improved ErrorBoundary:** The error boundary UI is now more robust, scrollable, and user-friendly, with better error display and stack trace toggling.
+- **About Page Expansion:** The `/about` page is now a visually rich, multi-section experience with testimonials, team, partners, fun facts, roadmap, press, gallery, awards, open source, video demo, changelog, and more, including external images.
+- **CSP & Monitoring:** Content Security Policy (CSP) has been updated to support Sentry and Vercel Speed Insights, ensuring analytics and monitoring work without blocking scripts.
+- **API Route Hardening:** Improved error handling and logging for `/api/recaptcha-verify` and `/api/set-password` routes, with better feedback in the UI.
+- **RecaptchaGate Improvements:** The RecaptchaGate component now handles API errors gracefully, with fallback and bypass logic for a smoother user experience.
+- **ESLint Config Fixes:** Config files (`postcss.config.js`, `prettier.config.js`) now export via variables to avoid ESLint warnings. The `.eslintignore` file ensures public assets are not linted.
+- **Autoprefixer Dependency:** The missing `autoprefixer` package is now installed, resolving build errors for PostCSS.
+
+---
+
 ## 📄 Licensing
 
 This project is protected by a proprietary license. The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.

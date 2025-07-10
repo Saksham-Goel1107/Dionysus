@@ -103,3 +103,96 @@ export async function sendDataExportWarningEmail({ to, name }: { to: string; nam
     html,
   });
 }
+
+export async function sendPasswordChangeWarningEmail({ to, name }: { to: string; name?: string }) {
+  const subject = '⚠️ Your Dionysus Password Was Changed';
+  const html = `
+  <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; color: #1f2937;">
+    <h2 style="color: #dc2626; text-align: center; margin-top: 0; margin-bottom: 8px;">⚠️ Password Change Alert</h2>
+    <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 24px;">
+      Hi${name ? ' ' + name : ''}, your account password was recently changed on Dionysus.
+    </p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 16px; margin-bottom: 16px;">
+      If you initiated this password change, no further action is needed.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 24px;">
+      If you <strong>did not</strong> perform this action, please <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: none;">contact support immediately</a>.
+    </p>
+    <p style="font-size: 15px; color: #6b7280; margin-bottom: 32px;">
+      This is a security notification sent to help protect your account.
+    </p>
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+      &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+    </p>
+  </div>
+  `;
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}
+
+export async function sendPasswordSetWarningEmail({ to, name }: { to: string; name?: string }) {
+  const subject = '⚠️ A Password Was Added to Your Dionysus Account';
+  const html = `
+  <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; color: #1f2937;">
+    <h2 style="color: #dc2626; text-align: center; margin-top: 0; margin-bottom: 8px;">⚠️ Password Added Alert</h2>
+    <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 24px;">
+      Hi${name ? ' ' + name : ''}, a password was just added to your Dionysus account.
+    </p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 16px; margin-bottom: 16px;">
+      If you added this password, no further action is needed.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 24px;">
+      If you <strong>did not</strong> perform this action, please <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: none;">contact support immediately</a>.
+    </p>
+    <p style="font-size: 15px; color: #6b7280; margin-bottom: 32px;">
+      This is a security notification sent to help protect your account.
+    </p>
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+      &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+    </p>
+  </div>
+  `;
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}
+
+export async function sendPasswordDeleteWarningEmail({ to, name }: { to: string; name?: string }) {
+  const subject = '⚠️ Password Lock Disabled on Your Dionysus Account';
+  const html = `
+  <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; color: #1f2937;">
+    <h2 style="color: #dc2626; text-align: center; margin-top: 0; margin-bottom: 8px;">⚠️ Password Lock Disabled</h2>
+    <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 24px;">
+      Hi${name ? ' ' + name : ''}, password protection was just <b>disabled</b> on your Dionysus account.
+    </p>
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+    <p style="font-size: 16px; margin-bottom: 16px;">
+      If you disabled password lock, no further action is needed.
+    </p>
+    <p style="font-size: 16px; margin-bottom: 24px;">
+      If you <strong>did not</strong> perform this action, please <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: none;">contact support immediately</a>.
+    </p>
+    <p style="font-size: 15px; color: #6b7280; margin-bottom: 32px;">
+      This is a security notification sent to help protect your account.
+    </p>
+    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+      &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+    </p>
+  </div>
+  `;
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}

@@ -117,6 +117,11 @@ export default function UnlockPage() {
         setConfirmPassword('');
         setConfirmAction(null);
         localStorage.removeItem('unlockToken');
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'change' }),
+        });
         setTimeout(() => router.replace('/dashboard'), 1000);
       } else {
         setError(data.error || 'Failed to update password.');
@@ -153,6 +158,11 @@ export default function UnlockPage() {
         setConfirmPassword('');
         setConfirmAction(null);
         localStorage.removeItem('unlockToken');
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'delete' }),
+        });
         setTimeout(() => router.replace('/dashboard'), 1000);
       } else {
         setError(data.error || 'Failed to disable password lock.');

@@ -101,6 +101,11 @@ export default function LockPage() {
         setSuccess('Password set successfully! You can now use your account. Redirecting...');
         setPassword('');
         setConfirmPassword('');
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
         setInterval(() => {
           router.replace('/dashboard');
         }, 1000);

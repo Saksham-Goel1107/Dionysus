@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
     }
     // @ts-ignore
     const valid = await compare(currentPassword, user.passwordHash);
-    console.log('Unlock API:', { currentPassword, hash: user.passwordHash, valid });
     if (!valid) {
       return NextResponse.json(
         { success: false, error: 'Incorrect current password.' },
