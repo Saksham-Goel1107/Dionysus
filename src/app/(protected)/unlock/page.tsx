@@ -483,7 +483,10 @@ export default function UnlockPage() {
           </Button>
         </div>
         <div className="text-xs text-center mt-3">
-          If you forgot your password contact <Link className="text-blue-500 font-bold" href="/support">Support</Link>
+          If you forgot your password contact{' '}
+          <Link className="text-blue-500 font-bold" href="/support">
+            Support
+          </Link>
         </div>
         {/* Confirmation Dialog */}
         <Dialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>

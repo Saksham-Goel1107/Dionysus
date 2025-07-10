@@ -119,15 +119,21 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
             </span>
             {loading ? (
               <>
-                <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#fff' }}>
+                <h1
+                  style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#fff' }}
+                >
                   Verifying you are human...
                 </h1>
-                <div style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>Loading reCAPTCHA security check</div>
+                <div style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>
+                  Loading reCAPTCHA security check
+                </div>
                 <div style={{ marginTop: 24, fontSize: '2rem' }}>⏳</div>
               </>
             ) : (
               <>
-                <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}>
+                <h1
+                  style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}
+                >
                   Access Blocked
                 </h1>
                 <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
@@ -135,7 +141,10 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
                   This page is protected by reCAPTCHA.
                   <br />
                   If you believe this is a mistake, please refresh or contact{' '}
-                  <a className="font-semibold text-blue-500" href="mailto:sakshamgoel1107@gmail.com">
+                  <a
+                    className="font-semibold text-blue-500"
+                    href="mailto:sakshamgoel1107@gmail.com"
+                  >
                     support
                   </a>
                   .

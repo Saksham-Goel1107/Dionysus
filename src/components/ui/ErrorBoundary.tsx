@@ -75,7 +75,13 @@ export class ErrorBoundary extends React.Component<
               </DialogTitle>
             </DialogHeader>
             <div
-              style={{ margin: '24px 0 16px 0', color: '#334155', fontSize: 17, lineHeight: 1.6, width: '100%' }}
+              style={{
+                margin: '24px 0 16px 0',
+                color: '#334155',
+                fontSize: 17,
+                lineHeight: 1.6,
+                width: '100%',
+              }}
             >
               <p style={{ marginBottom: 8 }}>
                 <strong>Oops!</strong> Something went wrong and the app cannot continue.
@@ -118,7 +124,9 @@ export class ErrorBoundary extends React.Component<
                 {this.state.error.stack && (
                   <details style={{ marginTop: 12, color: '#b91c1c', fontSize: 13 }}>
                     <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Stack Trace</summary>
-                    <pre style={{ maxHeight: 120, overflow: 'auto', margin: 0 }}>{this.state.error.stack}</pre>
+                    <pre style={{ maxHeight: 120, overflow: 'auto', margin: 0 }}>
+                      {this.state.error.stack}
+                    </pre>
                   </details>
                 )}
               </div>

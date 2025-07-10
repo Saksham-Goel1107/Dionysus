@@ -10,10 +10,10 @@ const isPublicRoute = createRouteMatcher([
   '/docs(.*)',
   '/privacy(.*)',
   '/terms(.*)',
-  '/api/create(.*)',    // for the stream chat initialization
+  '/api/create(.*)', // for the stream chat initialization
   '/support(.*)',
   '/api/recaptcha-verify(.*)',
-  '/about(.*)'
+  '/about(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);

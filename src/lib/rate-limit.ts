@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Redis } from 'ioredis';
 
-
 let redis: Redis | null = null;
 const inMemoryStore: Map<string, { count: number; expires: number }> = new Map();
 let redisEnabled = false;
@@ -33,7 +32,7 @@ if (process.env.REDIS_URL_NEW) {
 
 type RateLimitOptions = {
   limit: number;
-  window: number; 
+  window: number;
   errorMessage?: string;
 };
 
@@ -160,7 +159,7 @@ export async function resetRateLimit(key: string) {
     try {
       await redis.del(key);
     } catch (err) {
-      console.error("Error in redis",err)
+      console.error('Error in redis', err);
     }
   } else {
     inMemoryStore.delete(key);

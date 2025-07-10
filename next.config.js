@@ -17,11 +17,11 @@ const baseConfig = {
 };
 
 const sentryOptions = {
-  org: "saksham-vj",
-  project: "javascript-nextjs",
+  org: 'saksham-vj',
+  project: 'javascript-nextjs',
   silent: !process.env.CI,
   widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
+  tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
 };

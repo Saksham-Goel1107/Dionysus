@@ -29,6 +29,10 @@ export default function CookieBanner() {
           We <strong className="font-semibold text-gray-900 dark:text-white">never</strong> use
           cookies for advertising or tracking purposes.
         </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          For reliability and security, we may collect anonymized error and crash reports. These
+          never include personal or sensitive data, and are only used to improve the service.
+        </p>
         <button
           onClick={handleAccept}
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-full px-6 py-2.5 shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-zinc-900"
