@@ -89,6 +89,7 @@
     "@vercel/functions": "^2.2.2",
     "@vercel/speed-insights": "^1.2.0",
     "ai": "^4.0.33",
+    "appwrite": "^18.1.1",
     "assemblyai": "^4.8.0",
     "autocannon": "^8.0.0",
     "axios": "^1.7.9",

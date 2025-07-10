@@ -40,10 +40,11 @@ export default function LockPage() {
       .catch(() => setHasPassword(null));
   }, []);
 
-  const handleClick = async () => {
+  const handleClick = async (e: React.FormEvent) => {
+    e.preventDefault();
     const myData = await performAction();
     if (!myData) return;
-    handleSubmit;
+    handleSubmit(e);
   };
 
   const handlePasswordBlur = async () => {
@@ -70,7 +71,6 @@ export default function LockPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
-    handleClick();
     if (!password || !confirmPassword) {
       setError('Please fill in both fields.');
       return;
@@ -102,7 +102,7 @@ export default function LockPage() {
         setPassword('');
         setConfirmPassword('');
         setInterval(() => {
-          router.replace('/');
+          router.replace('/dashboard');
         }, 1000);
       } else {
         setError(data.error || 'Failed to set password.');
@@ -130,7 +130,7 @@ export default function LockPage() {
           }}
         >
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => handleClick(e)}
             style={{
               background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff',
               borderRadius: 20,

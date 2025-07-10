@@ -131,15 +131,18 @@ export default function Home() {
     let speaking = '';
     let spoken = false; // Only allow one utterance per response
     try {
-      const res: Response = await fetch('https://maiden-pounds-contacted-pct.trycloudflare.com/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'maryasov/qwen2.5-coder-cline:7b-instruct-q8_0',
-          messages: contextMessages,
-          stream: true,
-        }),
-      });
+      const res: Response = await fetch(
+        'https://maiden-pounds-contacted-pct.trycloudflare.com/api/chat',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'maryasov/qwen2.5-coder-cline:7b-instruct-q8_0',
+            messages: contextMessages,
+            stream: true,
+          }),
+        },
+      );
       if (!res.ok || !res.body) throw new Error('LLM service unavailable. Please try again later.');
       const reader: ReadableStreamDefaultReader<Uint8Array> = res.body.getReader();
       const decoder = new TextDecoder('utf-8');

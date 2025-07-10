@@ -19,7 +19,7 @@ const layout = ({ children }: Props) => {
           <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4 shadow">
             <SidebarTrigger />
             <CurrentTimeDisplay />
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 justify-center">
               <ModeToggle />
               <ProCrownUserButtonWrapper />
             </div>

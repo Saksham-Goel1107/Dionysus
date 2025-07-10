@@ -10,6 +10,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useReverification } from '@clerk/nextjs';
+import { myAction } from '../Settings/actions';
+import Link from 'next/link';
 
 export default function UnlockPage() {
   const { resolvedTheme } = useTheme();
@@ -27,13 +30,15 @@ export default function UnlockPage() {
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [resetTime, setResetTime] = useState<number | null>(null);
   const [confirmAction, setConfirmAction] = useState<'update' | 'disable' | null>(null);
+  const performAction = useReverification(myAction);
+  const [verified, setVerified] = useState<boolean>(false);
 
   useEffect(() => {
-      fetch('/api/has-password')
-        .then((res) => res.json())
-        .then((data) => setHasPassword(!!data.hasPassword))
-        .catch(() => setHasPassword(null));
-    }, []);
+    fetch('/api/has-password')
+      .then((res) => res.json())
+      .then((data) => setHasPassword(!!data.hasPassword))
+      .catch(() => setHasPassword(null));
+  }, []);
 
   function formatResetTime(reset: number | null) {
     if (!reset) return '';
@@ -43,7 +48,6 @@ export default function UnlockPage() {
     return min === 1 ? 'in 1 minute' : `in ${min} minutes`;
   }
 
-  // Input sanitization helper
   function isInputValid(action: 'update' | 'disable') {
     if (!currentPassword || currentPassword.trim() === '') {
       setError('Current password is required.');
@@ -80,7 +84,13 @@ export default function UnlockPage() {
     return true;
   }
 
-  // Update handler
+  const handleClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const myData = await performAction();
+    if (!myData) return;
+    setVerified(true);
+  };
+
   const handleUpdate = async () => {
     if (!isInputValid('update')) return;
     setError('');
@@ -90,7 +100,10 @@ export default function UnlockPage() {
       const res = await fetch('/api/unlock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: currentPassword.trim(), newPassword: newPassword.trim() }),
+        body: JSON.stringify({
+          currentPassword: currentPassword.trim(),
+          newPassword: newPassword.trim(),
+        }),
       });
       const data = await res.json();
       if (typeof data.limit === 'number' && typeof data.remaining === 'number') {
@@ -102,8 +115,9 @@ export default function UnlockPage() {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-        setConfirmAction(null); 
-        setTimeout(() => router.replace('/dashboard'), 1500);
+        setConfirmAction(null);
+        localStorage.removeItem('unlockToken');
+        setTimeout(() => router.replace('/dashboard'), 1000);
       } else {
         setError(data.error || 'Failed to update password.');
         setConfirmAction(null);
@@ -116,7 +130,6 @@ export default function UnlockPage() {
     }
   };
 
-  // Disable handler
   const handleDisable = async () => {
     if (!isInputValid('disable')) return;
     setError('');
@@ -138,8 +151,9 @@ export default function UnlockPage() {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-        setConfirmAction(null); 
-        setTimeout(() => router.replace('/dashboard'), 1500);
+        setConfirmAction(null);
+        localStorage.removeItem('unlockToken');
+        setTimeout(() => router.replace('/dashboard'), 1000);
       } else {
         setError(data.error || 'Failed to disable password lock.');
         setConfirmAction(null);
@@ -154,30 +168,163 @@ export default function UnlockPage() {
 
   if (hasPassword === false) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: resolvedTheme === 'dark' ? 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)' : 'radial-gradient(circle at 60% 40%, #f0f4ff 0%, #e2e8f0 100%)' }}>
-        <div style={{ background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff', borderRadius: 20, boxShadow: resolvedTheme === 'dark' ? '0 8px 32px rgba(0,0,0,0.25)' : '0 8px 32px rgba(60,100,255,0.08)', padding: '2.5rem 2rem 2rem 2rem', minWidth: 320, maxWidth: 420, border: resolvedTheme === 'dark' ? '2px solid #3af' : '2px solid #3a8cff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '2.5rem', marginBottom: 18, filter: resolvedTheme === 'dark' ? 'drop-shadow(0 2px 8px #3af)' : 'drop-shadow(0 2px 8px #3a8cff)' }}>🔒</span>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff', marginBottom: 10, textAlign: 'center' }}>No password set</h1>
-          <p style={{ fontSize: '1rem', opacity: 0.92, color: resolvedTheme === 'dark' ? '#ccc' : '#333', textAlign: 'center', marginBottom: 24 }}>Please set a password to protect your account.</p>
-          <Button onClick={() => router.replace('/lock')} style={{ width: '100%', fontWeight: 600 }}>Set Password</Button>
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background:
+            resolvedTheme === 'dark'
+              ? 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)'
+              : 'radial-gradient(circle at 60% 40%, #f0f4ff 0%, #e2e8f0 100%)',
+        }}
+      >
+        <div
+          style={{
+            background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff',
+            borderRadius: 20,
+            boxShadow:
+              resolvedTheme === 'dark'
+                ? '0 8px 32px rgba(0,0,0,0.25)'
+                : '0 8px 32px rgba(60,100,255,0.08)',
+            padding: '2.5rem 2rem 2rem 2rem',
+            minWidth: 320,
+            maxWidth: 420,
+            border: resolvedTheme === 'dark' ? '2px solid #3af' : '2px solid #3a8cff',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '2.5rem',
+              marginBottom: 18,
+              filter:
+                resolvedTheme === 'dark'
+                  ? 'drop-shadow(0 2px 8px #3af)'
+                  : 'drop-shadow(0 2px 8px #3a8cff)',
+            }}
+          >
+            🔒
+          </span>
+          <h1
+            style={{
+              fontSize: '1.5rem',
+              fontWeight: 700,
+              color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+              marginBottom: 10,
+              textAlign: 'center',
+            }}
+          >
+            No password set
+          </h1>
+          <p
+            style={{
+              fontSize: '1rem',
+              opacity: 0.92,
+              color: resolvedTheme === 'dark' ? '#ccc' : '#333',
+              textAlign: 'center',
+              marginBottom: 24,
+            }}
+          >
+            Please set a password to protect your account.
+          </p>
+          <Button
+            onClick={() => router.replace('/lock')}
+            style={{ width: '100%', fontWeight: 600 }}
+          >
+            Set Password
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: resolvedTheme === 'dark' ? 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)' : 'radial-gradient(circle at 60% 40%, #f0f4ff 0%, #e2e8f0 100%)' }}>
-      <form style={{ background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff', borderRadius: 20, boxShadow: resolvedTheme === 'dark' ? '0 8px 32px rgba(0,0,0,0.25)' : '0 8px 32px rgba(60,100,255,0.08)', padding: '2.5rem 2rem 2rem 2rem', minWidth: 320, maxWidth: 420, border: resolvedTheme === 'dark' ? '2px solid #3af' : '2px solid #3a8cff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <span style={{ fontSize: '2.5rem', marginBottom: 18, filter: resolvedTheme === 'dark' ? 'drop-shadow(0 2px 8px #3af)' : 'drop-shadow(0 2px 8px #3a8cff)' }}>🔓</span>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 10, color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff' }}>Update or Disable Password</h1>
-        <p style={{ fontSize: '1rem', opacity: 0.92, marginBottom: 20, color: resolvedTheme === 'dark' ? '#ccc' : '#333', textAlign: 'center' }}>Enter your current password to update or disable password lock.</p>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background:
+          resolvedTheme === 'dark'
+            ? 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)'
+            : 'radial-gradient(circle at 60% 40%, #f0f4ff 0%, #e2e8f0 100%)',
+      }}
+    >
+      <form
+        style={{
+          background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff',
+          borderRadius: 20,
+          boxShadow:
+            resolvedTheme === 'dark'
+              ? '0 8px 32px rgba(0,0,0,0.25)'
+              : '0 8px 32px rgba(60,100,255,0.08)',
+          padding: '2.5rem 2rem 2rem 2rem',
+          minWidth: 320,
+          maxWidth: 420,
+          border: resolvedTheme === 'dark' ? '2px solid #3af' : '2px solid #3a8cff',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '2.5rem',
+            marginBottom: 18,
+            filter:
+              resolvedTheme === 'dark'
+                ? 'drop-shadow(0 2px 8px #3af)'
+                : 'drop-shadow(0 2px 8px #3a8cff)',
+          }}
+        >
+          🔓
+        </span>
+        <h1
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            marginBottom: 10,
+            color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+          }}
+        >
+          Update or Disable Password
+        </h1>
+        <p
+          style={{
+            fontSize: '1rem',
+            opacity: 0.92,
+            marginBottom: 20,
+            color: resolvedTheme === 'dark' ? '#ccc' : '#333',
+            textAlign: 'center',
+          }}
+        >
+          Enter your current password to update or disable password lock.
+        </p>
         <div style={{ width: '100%', position: 'relative', marginBottom: 14 }}>
           <input
             type={showCurrent ? 'text' : 'password'}
             placeholder="Current Password"
             value={currentPassword}
-            onChange={(e) => { setCurrentPassword(e.target.value); setError(''); }}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: 8, border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd', background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc', color: resolvedTheme === 'dark' ? '#fff' : '#222', fontSize: '1rem', outline: 'none', paddingRight: 38 }}
+            onChange={(e) => {
+              setCurrentPassword(e.target.value);
+              setError('');
+            }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: 8,
+              border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd',
+              background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc',
+              color: resolvedTheme === 'dark' ? '#fff' : '#222',
+              fontSize: '1rem',
+              outline: 'none',
+              paddingRight: 38,
+            }}
             disabled={loading}
           />
           <button
@@ -185,7 +332,18 @@ export default function UnlockPage() {
             tabIndex={-1}
             aria-label={showCurrent ? 'Hide password' : 'Show password'}
             onClick={() => setShowCurrent((v) => !v)}
-            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: resolvedTheme === 'dark' ? '#aaa' : '#555', fontSize: 20, padding: 0 }}
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: resolvedTheme === 'dark' ? '#aaa' : '#555',
+              fontSize: 20,
+              padding: 0,
+            }}
           >
             {showCurrent ? '🙈' : '👁️'}
           </button>
@@ -196,7 +354,17 @@ export default function UnlockPage() {
             placeholder="New Password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: 8, border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd', background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc', color: resolvedTheme === 'dark' ? '#fff' : '#222', fontSize: '1rem', outline: 'none', paddingRight: 38 }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: 8,
+              border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd',
+              background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc',
+              color: resolvedTheme === 'dark' ? '#fff' : '#222',
+              fontSize: '1rem',
+              outline: 'none',
+              paddingRight: 38,
+            }}
             disabled={loading}
           />
           <button
@@ -204,7 +372,18 @@ export default function UnlockPage() {
             tabIndex={-1}
             aria-label={showNew ? 'Hide password' : 'Show password'}
             onClick={() => setShowNew((v) => !v)}
-            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: resolvedTheme === 'dark' ? '#aaa' : '#555', fontSize: 20, padding: 0 }}
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: resolvedTheme === 'dark' ? '#aaa' : '#555',
+              fontSize: 20,
+              padding: 0,
+            }}
           >
             {showNew ? '🙈' : '👁️'}
           </button>
@@ -215,7 +394,17 @@ export default function UnlockPage() {
             placeholder="Confirm New Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            style={{ width: '100%', padding: '0.75rem', borderRadius: 8, border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd', background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc', color: resolvedTheme === 'dark' ? '#fff' : '#222', fontSize: '1rem', outline: 'none', paddingRight: 38 }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              borderRadius: 8,
+              border: resolvedTheme === 'dark' ? '1px solid #444' : '1px solid #bcd',
+              background: resolvedTheme === 'dark' ? '#181818' : '#f8fafc',
+              color: resolvedTheme === 'dark' ? '#fff' : '#222',
+              fontSize: '1rem',
+              outline: 'none',
+              paddingRight: 38,
+            }}
             disabled={loading}
           />
           <button
@@ -223,13 +412,30 @@ export default function UnlockPage() {
             tabIndex={-1}
             aria-label={showConfirm ? 'Hide password' : 'Show password'}
             onClick={() => setShowConfirm((v) => !v)}
-            style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: resolvedTheme === 'dark' ? '#aaa' : '#555', fontSize: 20, padding: 0 }}
+            style={{
+              position: 'absolute',
+              right: 10,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: resolvedTheme === 'dark' ? '#aaa' : '#555',
+              fontSize: 20,
+              padding: 0,
+            }}
           >
             {showConfirm ? '🙈' : '👁️'}
           </button>
         </div>
         {typeof attemptsLeft === 'number' && (
-          <div style={{ color: attemptsLeft === 0 ? '#f33' : resolvedTheme === 'dark' ? '#3af' : '#3a8cff', marginBottom: 10, fontWeight: 500 }}>
+          <div
+            style={{
+              color: attemptsLeft === 0 ? '#f33' : resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+              marginBottom: 10,
+              fontWeight: 500,
+            }}
+          >
             Attempts left: {attemptsLeft} / 5
             {resetTime && (
               <span style={{ marginLeft: 8, color: attemptsLeft === 0 ? '#f33' : undefined }}>
@@ -239,7 +445,17 @@ export default function UnlockPage() {
           </div>
         )}
         {error && <div style={{ color: '#f33', marginBottom: 12, fontWeight: 500 }}>{error}</div>}
-        {success && <div style={{ color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff', marginBottom: 12, fontWeight: 500 }}>{success}</div>}
+        {success && (
+          <div
+            style={{
+              color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+              marginBottom: 12,
+              fontWeight: 500,
+            }}
+          >
+            {success}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 12, width: '100%', marginTop: 8 }}>
           <Button
             type="button"
@@ -248,7 +464,9 @@ export default function UnlockPage() {
             disabled={loading || attemptsLeft === 0}
             onClick={() => setConfirmAction('update')}
           >
-            {loading && confirmAction === 'update' ? <span className="loader" style={{ marginRight: 8 }} /> : null}
+            {loading && confirmAction === 'update' ? (
+              <span className="loader" style={{ marginRight: 8 }} />
+            ) : null}
             Update Password
           </Button>
           <Button
@@ -258,9 +476,14 @@ export default function UnlockPage() {
             onClick={() => setConfirmAction('disable')}
             disabled={loading || attemptsLeft === 0}
           >
-            {loading && confirmAction === 'disable' ? <span className="loader" style={{ marginRight: 8 }} /> : null}
+            {loading && confirmAction === 'disable' ? (
+              <span className="loader" style={{ marginRight: 8 }} />
+            ) : null}
             Disable Password
           </Button>
+        </div>
+        <div className="text-xs text-center mt-3">
+          If you forgot your password contact <Link className="text-blue-500 font-bold" href="/support">Support</Link>
         </div>
         {/* Confirmation Dialog */}
         <Dialog open={!!confirmAction} onOpenChange={(open) => !open && setConfirmAction(null)}>
@@ -276,7 +499,14 @@ export default function UnlockPage() {
                 : 'Are you sure you want to disable password lock? This will remove your password protection.'}
             </div>
             {typeof attemptsLeft === 'number' && (
-              <div style={{ color: attemptsLeft === 0 ? '#f33' : resolvedTheme === 'dark' ? '#3af' : '#3a8cff', marginBottom: 10, fontWeight: 500 }}>
+              <div
+                style={{
+                  color:
+                    attemptsLeft === 0 ? '#f33' : resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+                  marginBottom: 10,
+                  fontWeight: 500,
+                }}
+              >
                 Attempts left: {attemptsLeft} / 5
                 {resetTime && (
                   <span style={{ marginLeft: 8, color: attemptsLeft === 0 ? '#f33' : undefined }}>
@@ -289,9 +519,17 @@ export default function UnlockPage() {
               <div style={{ color: '#f33', marginBottom: 12, fontWeight: 500 }}>{error}</div>
             )}
             <DialogFooter>
-              <Button onClick={() => setConfirmAction(null)} variant="secondary">Cancel</Button>
+              <Button onClick={() => setConfirmAction(null)} variant="secondary">
+                Cancel
+              </Button>
               <Button
-                onClick={confirmAction === 'update' ? handleUpdate : handleDisable}
+                onClick={(e) => {
+                  if (confirmAction === 'update') {
+                    verified ? handleUpdate() : handleClick(e);
+                  } else {
+                    verified ? handleDisable() : handleClick(e);
+                  }
+                }}
                 variant={confirmAction === 'update' ? 'default' : 'destructive'}
                 disabled={loading}
               >
