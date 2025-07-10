@@ -12,6 +12,12 @@ export function Footer() {
         </div>
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-6">
           <Link
+            href="/about"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            About
+          </Link>
+          <Link
             href="#features"
             className="text-sm font-medium transition-colors hover:text-primary"
           >

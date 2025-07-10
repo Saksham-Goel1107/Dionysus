@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 export function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
 
   return (
@@ -21,6 +20,12 @@ export function Navbar() {
         </div>
 
         <nav className="hidden items-center gap-6 md:flex">
+          <Link
+            href="/about"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            About
+          </Link>
           <Link
             href="#features"
             className="text-sm font-medium transition-colors hover:text-primary"
