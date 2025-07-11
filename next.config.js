@@ -10,7 +10,7 @@ const baseConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },
       { protocol: 'https', hostname: 'img.clerk.com' },
-      { protocol: 'https', hostname: 'nyc.cloud.appwrite.io' },
+      { protocol: 'https', hostname: 'fra.cloud.appwrite.io' },
       { protocol: 'https', hostname: 'randomuser.me' },
     ],
   },
