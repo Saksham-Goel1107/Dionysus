@@ -5,14 +5,12 @@ const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
 export default function RecaptchaGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const verifyToken = async () => {
     // @ts-ignore
     if (!window.grecaptcha || !SITE_KEY) {
       setError('reCAPTCHA not properly initialized.');
-      setLoading(false);
       return;
     }
     try {
@@ -26,22 +24,18 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       const data = await res.json();
       if (!data.success) {
         setError('reCAPTCHA verification failed. Bot-like activity detected.');
-        setLoading(false);
         return;
       } else {
         setError('');
-        setLoading(false);
       }
     } catch (err) {
       console.error('Some error occured', err);
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (!SITE_KEY) {
       setError('reCAPTCHA site key not set');
-      setLoading(false);
       return;
     }
 
@@ -58,12 +52,10 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
         });
       } else {
         setError('reCAPTCHA failed to load');
-        setLoading(false);
       }
     };
     script.onerror = () => {
       setError('Failed to load reCAPTCHA script.');
-      setLoading(false);
     };
     document.body.appendChild(script);
 
@@ -76,7 +68,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
   return (
     <>
       {children}
-      {(loading || error) && (
+      {(error) && (
         <div
           style={{
             position: 'fixed',
@@ -117,19 +109,6 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
             >
               🛡️
             </span>
-            {loading ? (
-              <>
-                <h1
-                  style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#fff' }}
-                >
-                  Verifying you are human...
-                </h1>
-                <div style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>
-                  Loading reCAPTCHA security check
-                </div>
-                <div style={{ marginTop: 24, fontSize: '2rem' }}>⏳</div>
-              </>
-            ) : (
               <>
                 <h1
                   style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}
@@ -150,10 +129,9 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
                   .
                 </div>
               </>
-            )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </>
   );
 }

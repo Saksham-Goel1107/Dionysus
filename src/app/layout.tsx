@@ -116,30 +116,7 @@ export default async function RootLayout({
     await checkAndSyncProStatus(userId);
   }
 
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
-
-  let recaptchaFailed = false;
-  if (typeof window === 'undefined') {
-    // @ts-ignore
-    const { cookies } = require('next/headers');
-    const cookieStore = await cookies();
-    const jwt = cookieStore.get('recaptcha_jwt')?.value;
-    let verified = false;
-    if (jwt) {
-      try {
-        const { verifyRecaptchaJWT } = await import('@/lib/recaptcha-jwt');
-        const payload = await verifyRecaptchaJWT(jwt);
-        verified = !!payload && payload.verified === true;
-      } catch {}
-    }
-    recaptchaFailed = !verified;
-  } else {
-    recaptchaFailed =
-      document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('recaptcha_failed='))
-        ?.split('=')[1] === 'true';
-  }
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true'; 
 
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
@@ -149,11 +126,7 @@ export default async function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          {recaptchaFailed ? (
-            <RecaptchaGate>{null}</RecaptchaGate>
-          ) : (
-            <RecaptchaGate>
-              <ThemeProvider
+               <ThemeProvider
                 attribute="class"
                 defaultTheme="system"
                 enableSystem
@@ -171,35 +144,37 @@ export default async function RootLayout({
                       </>
                     ) : (
                       <>
-                        <GoogleOneTap
-                          cancelOnTapOutside={true}
-                          itpSupport={true}
-                          fedCmSupport={true}
-                        />
-                        <CookieBanner />
-                        <TRPCReactProvider>
-                          <Offline>
-                            {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                          </Offline>
-                        </TRPCReactProvider>
-                        <Toaster richColors />
-                        <ScrollToTopButton />
-                        <CustomContextMenu />
-                        <BlockInspectAndContext />
-                        <Analytics />
-                        <SpeedInsights />
-                        <Script
-                          src="https://s.pageclip.co/v1/pageclip.js"
-                          charSet="utf-8"
-                          strategy="afterInteractive"
-                        ></Script>
+                      <RecaptchaGate>
+                        <>
+                          <GoogleOneTap
+                            cancelOnTapOutside={true}
+                            itpSupport={true}
+                            fedCmSupport={true}
+                          />
+                          <CookieBanner />
+                          <TRPCReactProvider>
+                            <Offline>
+                              {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                            </Offline>
+                          </TRPCReactProvider>
+                          <Toaster richColors />
+                          <ScrollToTopButton />
+                          <CustomContextMenu />
+                          <BlockInspectAndContext />
+                          <Analytics />
+                          <SpeedInsights />
+                          <Script
+                            src="https://s.pageclip.co/v1/pageclip.js"
+                            charSet="utf-8"
+                            strategy="afterInteractive"
+                          ></Script>
+                        </>
+                      </RecaptchaGate>
                       </>
                     )}
                   </MultisessionAppSupport>
                 </ClerkProviderWithTheme>
-              </ThemeProvider>
-            </RecaptchaGate>
-          )}
+              </ThemeProvider>          
         </ErrorBoundary>
       </body>
     </html>

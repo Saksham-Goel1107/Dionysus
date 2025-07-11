@@ -4,7 +4,16 @@ import { signRecaptchaJWT } from '@/lib/recaptcha-jwt';
 const SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 export async function POST(req: Request) {
-  const { token } = await req.json();
+  let token: string | undefined;
+  try {
+    const body = await req.json();
+    token = body?.token;
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid or missing JSON body' },
+      { status: 400 },
+    );
+  }
 
   if (!token || !SECRET_KEY) {
     return NextResponse.json(
