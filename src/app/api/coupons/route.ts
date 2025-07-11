@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { api } from '@/trpc/react';
 import { 
   getCouponByCode, 
   getAvailableCouponsForUser,
   hasUserUsedCoupon
 } from '../../(protected)/billing/appwriteCoupons';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET() {
-  const { data: transactions } = api.project.getMyTransactions.useQuery();
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -20,6 +21,11 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
     
+    // Fetch transactions from StripeTransaction model for this user
+    const transactions = await prisma.stripeTransaction.findMany({
+      where: { userId },
+    });
+    
     const createdAt = user.createdAt;
     const has2FA = user.totpEnabled || user.twoFactorEnabled;
     
@@ -30,13 +36,17 @@ export async function GET() {
       const { ip } = await ipRes.json();
       if (ip) {
         const geoRes = await fetch(`https://ipapi.co/${ip}/json/`);
-        const geoData = await geoRes.json();
-        region = geoData.country || '';
+        if (geoRes.ok && geoRes.headers.get('content-type')?.includes('application/json')) {
+          const geoData = await geoRes.json();
+          region = geoData.country || '';
+        } else {
+          // fallback or log
+          console.warn('Geo API did not return JSON or was rate-limited');
+        }
       }
     } catch (e) {
       console.error('Error extracting region from email:', e);
     }
-    
     
     const purchaseCount = transactions?.length ?? 0;
     

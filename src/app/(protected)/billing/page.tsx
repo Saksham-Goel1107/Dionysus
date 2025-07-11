@@ -270,6 +270,22 @@ const BillingPage = () => {
     setCouponInput('');
   };
 
+  useEffect(() => {
+    if (!appliedCoupon) return;
+    (async () => {
+      const res = await fetch('/api/coupons');
+      if (!res.ok) return;
+      const data = await res.json();
+      const found = data.coupons?.find((c: any) => c.code === appliedCoupon.code);
+      if (found && found.minimumOrderValue > basePrice) {
+        clearCoupon();
+        setCouponError(
+          `Coupon removed: Minimum order value is ₹${found.minimumOrderValue}, your cart is ₹${basePrice}`
+        );
+      }
+    })();
+  }, [appliedCoupon, basePrice]);
+
   return (
     <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0">
       <div className="rounded-lg border bg-card p-4 sm:p-6">
@@ -416,6 +432,7 @@ const BillingPage = () => {
                     <AvailableCoupons 
                       onSelectCoupon={handleSelectCoupon} 
                       appliedCoupon={appliedCoupon}
+                      cartTotal={basePrice}
                     />
                   </TabsContent>
                   
@@ -564,7 +581,7 @@ const BillingPage = () => {
             <TableBody>
               {transactions?.length ? (
                 transactions.map((transaction: Transaction) => (
-                  <TableRow key={transaction.id} className="hover:bg-muted transition">
+                  <TableRow key={transaction.id}>
                     <TableCell>
                       <div>
                         <span className="font-medium">

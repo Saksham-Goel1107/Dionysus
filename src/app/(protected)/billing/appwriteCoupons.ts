@@ -36,6 +36,8 @@ export interface Coupon {
   maxUses: number;
   currentUses: number;
   createdAt: string;
+  isOneTimeUse?: boolean;
+  minimumOrderValue?: number;
 }
 
 export interface CouponUsage {
@@ -45,8 +47,16 @@ export interface CouponUsage {
   usedAt: string;
 }
 
+const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';
+
 // Create a new coupon (Admin only)
-export const createCoupon = async (coupon: Omit<Coupon, '$id' | 'currentUses' | 'createdAt'>) => {
+export const createCoupon = async (
+  coupon: Omit<Coupon, '$id' | 'currentUses' | 'createdAt'>,
+  currentUserId: string
+) => {
+  if (currentUserId !== ADMIN_USER_ID) {
+    throw new Error('Unauthorized: Only admin can create coupons');
+  }
   return databases.createDocument(
     DATABASE_ID,
     COUPONS_COLLECTION_ID,
@@ -220,7 +230,14 @@ export const getAllCoupons = async (): Promise<Coupon[]> => {
 };
 
 // Update a coupon (Admin only)
-export const updateCoupon = async (couponId: string, updates: Partial<Coupon>) => {
+export const updateCoupon = async (
+  couponId: string,
+  updates: Partial<Coupon>,
+  currentUserId: string
+) => {
+  if (currentUserId !== ADMIN_USER_ID) {
+    throw new Error('Unauthorized: Only admin can update coupons');
+  }
   try {
     return await databases.updateDocument(DATABASE_ID, COUPONS_COLLECTION_ID, couponId, updates);
   } catch (error) {
@@ -230,7 +247,10 @@ export const updateCoupon = async (couponId: string, updates: Partial<Coupon>) =
 };
 
 // Delete a coupon (Admin only)
-export const deleteCoupon = async (couponId: string) => {
+export const deleteCoupon = async (couponId: string, currentUserId: string) => {
+  if (currentUserId !== ADMIN_USER_ID) {
+    throw new Error('Unauthorized: Only admin can delete coupons');
+  }
   try {
     return await databases.deleteDocument(DATABASE_ID, COUPONS_COLLECTION_ID, couponId);
   } catch (error) {

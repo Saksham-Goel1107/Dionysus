@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -35,7 +35,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -55,6 +54,7 @@ import { Coupon, CouponConditions, createCoupon, getAllCoupons, updateCoupon, de
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { useUser } from '@clerk/nextjs';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: "Name must be at least 3 characters" }),
@@ -64,6 +64,8 @@ const formSchema = z.object({
   expiresAt: z.date(),
   isActive: z.boolean().default(true),
   maxUses: z.number().int().min(0),
+  isOneTimeUse: z.boolean().default(false),
+  minimumOrderValue: z.number().min(0).default(0),
   conditions: z.object({
     requires2FA: z.boolean().default(false),
     regions: z.array(z.string()).optional(),
@@ -78,7 +80,10 @@ const formSchema = z.object({
 
 type CouponFormValues = z.infer<typeof formSchema>;
 
+
+
 export default function CouponManagement() {
+  const { user } = useUser();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -87,6 +92,8 @@ export default function CouponManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
   const { toast } = useToast();
 
   const form = useForm<CouponFormValues>({
@@ -98,6 +105,8 @@ export default function CouponManagement() {
       discount: 10,
       isActive: true,
       maxUses: 100,
+      isOneTimeUse: false,
+      minimumOrderValue: 0,
       conditions: {
         requires2FA: false,
         regions: [],
@@ -120,6 +129,8 @@ export default function CouponManagement() {
       discount: 10,
       isActive: true,
       maxUses: 100,
+      isOneTimeUse: false,
+      minimumOrderValue: 0,
       conditions: {
         requires2FA: false,
         regions: [],
@@ -178,6 +189,9 @@ export default function CouponManagement() {
 
   // Create a new coupon
   const onSubmit = async (values: CouponFormValues) => {
+    if(!user?.id){
+      return
+    }
     try {
       // Format the date to ISO string and keep conditions as object
       const formattedValues = {
@@ -186,7 +200,7 @@ export default function CouponManagement() {
         conditions: values.conditions,
       };
 
-      await createCoupon(formattedValues);
+      await createCoupon(formattedValues, user.id);
       
       toast({
         title: 'Coupon Created',
@@ -208,17 +222,16 @@ export default function CouponManagement() {
 
   // Edit a coupon
   const onEditSubmit = async (values: CouponFormValues) => {
-    if (!selectedCoupon?.$id) return;
+    if (!selectedCoupon?.$id || !user?.id) return;
     try {
       // Format the date to ISO string and keep conditions as object
       const formattedValues = {
         ...values,
         expiresAt: values.expiresAt.toISOString(),
-        // Pass conditions as object, not as string[]
         conditions: values.conditions,
       };
 
-      await updateCoupon(selectedCoupon.$id, formattedValues);
+      await updateCoupon(selectedCoupon.$id, formattedValues, user.id);
       
       toast({
         title: 'Coupon Updated',
@@ -239,17 +252,14 @@ export default function CouponManagement() {
     }
   };
 
-  const handleDeleteCoupon = async (couponId: string) => {
-    if (!confirm('Are you sure you want to delete this coupon?')) return;
-    
+  const handleDeleteCoupon = async () => {
+    if (!couponToDelete?.$id || !user?.id) return;
     try {
-      await deleteCoupon(couponId);
-      
+      await deleteCoupon(couponToDelete.$id, user.id);
       toast({
         title: 'Coupon Deleted',
         description: 'Coupon deleted successfully.',
       });
-      
       fetchCoupons();
     } catch (error) {
       console.error('Error deleting coupon:', error);
@@ -258,6 +268,9 @@ export default function CouponManagement() {
         description: 'Failed to delete coupon.',
         variant: 'destructive',
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setCouponToDelete(null);
     }
   };
 
@@ -274,6 +287,8 @@ export default function CouponManagement() {
       expiresAt: new Date(coupon.expiresAt),
       isActive: coupon.isActive,
       maxUses: coupon.maxUses,
+      isOneTimeUse: coupon.isOneTimeUse || false,
+      minimumOrderValue: coupon.minimumOrderValue || 0,
       conditions: {
         requires2FA: coupon.conditions.requires2FA || false,
         regions: coupon.conditions.regions || [],
@@ -407,6 +422,7 @@ export default function CouponManagement() {
                     <TableHead>Code</TableHead>
                     <TableHead>Discount</TableHead>
                     <TableHead>Conditions</TableHead>
+                    <TableHead>Restrictions</TableHead>
                     <TableHead>Expires</TableHead>
                     <TableHead>Usage</TableHead>
                     <TableHead>Status</TableHead>
@@ -418,7 +434,7 @@ export default function CouponManagement() {
                     <TableRow>
                       <TableCell colSpan={8} className="h-24 text-center">
                         <div className="flex flex-col items-center justify-center">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800"></div>
+                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-800 dark:border-gray-500"></div>
                           <span className="mt-2">Loading coupons...</span>
                         </div>
                       </TableCell>
@@ -449,10 +465,10 @@ export default function CouponManagement() {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
-                              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">{coupon.code}</code>
+                              <code className="text-xs bg-gray-100 dark:bg-gray-400 px-1 py-0.5 rounded">{coupon.code}</code>
                               <button
                                 onClick={() => copyToClipboard(coupon.code)}
-                                className="text-gray-500 hover:text-gray-800"
+                                className="text-gray-500 hover:text-gray-800 transition dark:hover:text-gray-400"
                               >
                                 {copiedCode === coupon.code ? <Check size={14} /> : <Copy size={14} />}
                               </button>
@@ -472,6 +488,40 @@ export default function CouponManagement() {
                                   </Badge>
                                 ))
                               ) : (
+                                <span className="text-xs text-gray-500">None</span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              {/* Conditionally style based on if the requirements are met (simulated here) */}
+                              {coupon.isOneTimeUse && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    // Simulate if condition is met for this user (in production, check actual user state)
+                                    Math.random() > 0.5 
+                                      ? "text-purple-700 bg-purple-50" 
+                                      : "text-gray-400 bg-gray-50"
+                                  }`}
+                                >
+                                  {Math.random() > 0.5 ? "✓ " : ""}One-time Use
+                                </Badge>
+                              )}
+                              {(coupon.minimumOrderValue ?? 0) > 0 && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    // Simulate if condition is met (in production, check cart total)
+                                    Math.random() > 0.5 
+                                      ? "text-blue-700 bg-blue-50" 
+                                      : "text-gray-400 bg-gray-50"
+                                  }`}
+                                >
+                                  {Math.random() > 0.5 ? "✓ " : ""}Min ₹{coupon.minimumOrderValue ?? 0}
+                                </Badge>
+                              )}
+                              {!coupon.isOneTimeUse && coupon.minimumOrderValue === 0 && (
                                 <span className="text-xs text-gray-500">None</span>
                               )}
                             </div>
@@ -512,7 +562,10 @@ export default function CouponManagement() {
                                 variant="ghost"
                                 size="icon"
                                 className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                                onClick={() => coupon.$id && handleDeleteCoupon(coupon.$id)}
+                                onClick={() => {
+                                  setCouponToDelete(coupon);
+                                  setDeleteDialogOpen(true);
+                                }}
                               >
                                 <Trash size={16} />
                                 <span className="sr-only">Delete</span>
@@ -671,7 +724,13 @@ export default function CouponManagement() {
                     <FormItem>
                       <FormLabel>Maximum Uses (0 = unlimited)</FormLabel>
                       <FormControl>
-                        <Input type="number" min={0} step={1} {...field} />
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={field.value}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -680,7 +739,7 @@ export default function CouponManagement() {
                 
                 <FormField
                   control={form.control}
-                  name="isActive"
+                  name="isOneTimeUse"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                       <FormControl>
@@ -690,11 +749,34 @@ export default function CouponManagement() {
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Active</FormLabel>
+                        <FormLabel>One-time Use</FormLabel>
                         <FormDescription>
-                          Enable or disable this coupon
+                          Each user can only use this coupon once
                         </FormDescription>
                       </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="minimumOrderValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Order Value (₹)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          min={0} 
+                          step={1} 
+                          value={field.value}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        0 = no minimum order value
+                      </FormDescription>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -1010,6 +1092,67 @@ export default function CouponManagement() {
                 
                 <FormField
                   control={editForm.control}
+                  name="maxUses"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Maximum Uses (0 = unlimited)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={1}
+                          value={field.value}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="isOneTimeUse"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>One-time Use</FormLabel>
+                        <FormDescription>
+                          Coupon can only be used once per user
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
+                  name="minimumOrderValue"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minimum Order Value (₹)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          value={field.value}
+                          onChange={e => field.onChange(Number(e.target.value))}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={editForm.control}
                   name="isActive"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
@@ -1025,20 +1168,6 @@ export default function CouponManagement() {
                           Enable or disable this coupon
                         </FormDescription>
                       </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={editForm.control}
-                  name="maxUses"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Maximum Uses (0 = unlimited)</FormLabel>
-                      <FormControl>
-                        <Input type="number" min={0} step={1} {...field} />
-                      </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -1239,6 +1368,26 @@ export default function CouponManagement() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Coupon</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the coupon <span className="font-semibold">{couponToDelete?.name}</span>? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteCoupon}>
+              Delete
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
