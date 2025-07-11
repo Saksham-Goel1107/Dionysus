@@ -116,7 +116,7 @@ export default async function RootLayout({
     await checkAndSyncProStatus(userId);
   }
 
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true'; 
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
 
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
@@ -126,55 +126,55 @@ export default async function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-               <ThemeProvider
-                attribute="class"
-                defaultTheme="system"
-                enableSystem
-                disableTransitionOnChange
-              >
-                <ClerkProviderWithTheme>
-                  <MultisessionAppSupport>
-                    {isMaintenance ? (
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <ClerkProviderWithTheme>
+              <MultisessionAppSupport>
+                {isMaintenance ? (
+                  <>
+                    <MaintenanceScreen />
+                    <BlockInspectAndContext />
+                    <CustomContextMenu />
+                    <Analytics />
+                    <SpeedInsights />
+                  </>
+                ) : (
+                  <>
+                    <RecaptchaGate>
                       <>
-                        <MaintenanceScreen />
-                        <BlockInspectAndContext />
+                        <GoogleOneTap
+                          cancelOnTapOutside={true}
+                          itpSupport={true}
+                          fedCmSupport={true}
+                        />
+                        <CookieBanner />
+                        <TRPCReactProvider>
+                          <Offline>
+                            {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                          </Offline>
+                        </TRPCReactProvider>
+                        <Toaster richColors />
+                        <ScrollToTopButton />
                         <CustomContextMenu />
+                        <BlockInspectAndContext />
                         <Analytics />
                         <SpeedInsights />
+                        <Script
+                          src="https://s.pageclip.co/v1/pageclip.js"
+                          charSet="utf-8"
+                          strategy="afterInteractive"
+                        ></Script>
                       </>
-                    ) : (
-                      <>
-                      <RecaptchaGate>
-                        <>
-                          <GoogleOneTap
-                            cancelOnTapOutside={true}
-                            itpSupport={true}
-                            fedCmSupport={true}
-                          />
-                          <CookieBanner />
-                          <TRPCReactProvider>
-                            <Offline>
-                              {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                            </Offline>
-                          </TRPCReactProvider>
-                          <Toaster richColors />
-                          <ScrollToTopButton />
-                          <CustomContextMenu />
-                          <BlockInspectAndContext />
-                          <Analytics />
-                          <SpeedInsights />
-                          <Script
-                            src="https://s.pageclip.co/v1/pageclip.js"
-                            charSet="utf-8"
-                            strategy="afterInteractive"
-                          ></Script>
-                        </>
-                      </RecaptchaGate>
-                      </>
-                    )}
-                  </MultisessionAppSupport>
-                </ClerkProviderWithTheme>
-              </ThemeProvider>          
+                    </RecaptchaGate>
+                  </>
+                )}
+              </MultisessionAppSupport>
+            </ClerkProviderWithTheme>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

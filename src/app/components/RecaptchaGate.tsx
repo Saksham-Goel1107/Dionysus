@@ -68,7 +68,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
   return (
     <>
       {children}
-      {(error) && (
+      {error && (
         <div
           style={{
             position: 'fixed',
@@ -109,29 +109,24 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
             >
               🛡️
             </span>
-              <>
-                <h1
-                  style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}
-                >
-                  Access Blocked
-                </h1>
-                <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
-                <div style={{ marginTop: 24, fontSize: '0.98rem', color: '#aaa' }}>
-                  This page is protected by reCAPTCHA.
-                  <br />
-                  If you believe this is a mistake, please refresh or contact{' '}
-                  <a
-                    className="font-semibold text-blue-500"
-                    href="mailto:sakshamgoel1107@gmail.com"
-                  >
-                    support
-                  </a>
-                  .
-                </div>
-              </>
-            </div>
+            <>
+              <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}>
+                Access Blocked
+              </h1>
+              <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
+              <div style={{ marginTop: 24, fontSize: '0.98rem', color: '#aaa' }}>
+                This page is protected by reCAPTCHA.
+                <br />
+                If you believe this is a mistake, please refresh or contact{' '}
+                <a className="font-semibold text-blue-500" href="mailto:sakshamgoel1107@gmail.com">
+                  support
+                </a>
+                .
+              </div>
+            </>
           </div>
-        )}
+        </div>
+      )}
     </>
   );
 }

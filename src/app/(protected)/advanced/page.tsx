@@ -18,6 +18,9 @@ import LogoGenerator from '@/components/logo-generator';
 import MetaDataGenerator from './MetaDataGenerator';
 import RobotSitemapGenerator from './RobotSitemapGenerator';
 import MediaOptimizer from './MediaOptimizer';
+import RegexTester from './RegexTester';
+import YamlValidator from './YamlValidator';
+import FileEncryptor from './FileEncryptor';
 import { Client, Avatars } from 'appwrite';
 import Image from 'next/image';
 
@@ -313,6 +316,16 @@ const Advanced = () => {
           <MetaDataGenerator />
           <RobotSitemapGenerator />
           <QRCodeGenerator />
+          {/* Advanced Utilities */}
+          <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-violet-50 via-white to-violet-100 dark:from-violet-900/60 dark:via-violet-950/80 dark:to-violet-900/60 rounded-2xl border border-violet-300 dark:border-violet-700 shadow-xl flex flex-col items-center relative overflow-hidden">
+            <RegexTester />
+          </div>
+          <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-lime-50 via-white to-lime-100 dark:from-lime-900/60 dark:via-lime-950/80 dark:to-lime-900/60 rounded-2xl border border-lime-300 dark:border-lime-700 shadow-xl flex flex-col items-center relative overflow-hidden">
+            <YamlValidator />
+          </div>
+          <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900/60 dark:via-gray-950/80 dark:to-gray-900/60 rounded-2xl border border-gray-300 dark:border-gray-700 shadow-xl flex flex-col items-center relative overflow-hidden">
+            <FileEncryptor />
+          </div>
         </div>
         <PlagiarismChecker />
         <CommitGraphModal />
