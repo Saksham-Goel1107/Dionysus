@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { api } from '@/trpc/react';
 import { InfoIcon } from 'lucide-react';
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { UserProfile } from '@clerk/nextjs';
 import {
   Table,
@@ -22,10 +22,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { BarChart2 } from 'lucide-react';
+import { BarChart2, Gift } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { validateCouponCode } from './couponUtils';
+import AvailableCoupons from './components/AvailableCoupons';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const india_discount = true;
 const india_discount_value = 10;
@@ -53,10 +61,14 @@ const BillingPage = () => {
   const [showProfile, setShowProfile] = React.useState(false);
   const [couponInput, setCouponInput] = React.useState('');
   const [couponStatus, setCouponStatus] = React.useState<string | null>(null);
+  const [couponError, setCouponError] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('manual');
   const [appliedCoupon, setAppliedCoupon] = React.useState<{
     discount: number;
     code: string;
+    name?: string;
   } | null>(null);
+  
   const { user: clerkUser } = useUser();
   const router = useRouter();
   const creditsToBuyAmount = creditsToBuy[0]!;
@@ -74,7 +86,12 @@ const BillingPage = () => {
     if (hasProPlan) parts.push('10% Pro Plan');
     if (mfaEnabled) parts.push('10% MFA');
     if (discount && discountCountry) parts.push(`${discount}% ${discountCountry}`);
-    if (appliedCoupon) parts.push(`${appliedCoupon.discount}% Coupon`);
+    if (appliedCoupon) {
+      const label = appliedCoupon.name 
+        ? `${appliedCoupon.discount}% ${appliedCoupon.name}`
+        : `${appliedCoupon.discount}% Coupon`;
+      parts.push(label);
+    }
     return parts;
   }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon]);
   const discountBreakdown = discountParts.join(' + ');
@@ -150,24 +167,107 @@ const BillingPage = () => {
     })();
   }, []);
 
-  // Coupon apply logic
+  // Select a coupon from available coupons
+  const handleSelectCoupon = async (coupon: { code: string; discount: number; name: string }) => {
+    setCouponStatus('Applying coupon...');
+    setCouponError(null);
+    
+    try {
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: coupon.code }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        setCouponError(data.error || 'Failed to apply coupon');
+        setCouponStatus(null);
+        return;
+      }
+      
+      setAppliedCoupon({
+        code: coupon.code,
+        discount: coupon.discount,
+        name: coupon.name
+      });
+      setCouponStatus(`Coupon applied! ${coupon.discount}% off.`);
+      
+    } catch (error) {
+      setCouponError('An error occurred while applying the coupon');
+      setCouponStatus(null);
+    }
+  };
+
+  // Manual coupon apply logic
   const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+    
     setCouponStatus('Checking...');
-    const result = await validateCouponCode(couponInput.trim());
-    if (!result) {
-      setCouponStatus('Invalid or expired coupon code.');
-      return;
+    setCouponError(null);
+    
+    try {
+      // First try the new Appwrite coupon system
+      const res = await fetch('/api/coupons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: couponInput.trim() }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        setAppliedCoupon({
+          code: couponInput.trim(),
+          discount: data.coupon.discount,
+          name: data.coupon.name
+        });
+        setCouponStatus(`Coupon applied! ${data.coupon.discount}% off.`);
+        return;
+      }
+      
+      // Fallback to the old coupon system
+      const result = await validateCouponCode(couponInput.trim());
+      
+      if (!result) {
+        setCouponError('Invalid or expired coupon code.');
+        setCouponStatus(null);
+        return;
+      }
+      
+      if (result.success === false && result.status === 429) {
+        setCouponError(result.message || 'Rate limit exceeded. Please try again later.');
+        setCouponStatus(null);
+        return;
+      }
+      
+      if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
+        setCouponError('Coupon already used.');
+        setCouponStatus(null);
+        return;
+      }
+      
+      setAppliedCoupon({ discount: result.discount ?? 0, code: couponInput.trim() });
+      setCouponStatus(`Coupon applied! ${result.discount}% off.`);
+      
+    } catch (error) {
+      setCouponError('An error occurred while checking the coupon');
+      setCouponStatus(null);
     }
-    if (result.success === false && result.status === 429) {
-      setCouponStatus(result.message || 'Rate limit exceeded. Please try again later.');
-      return;
-    }
-    if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
-      setCouponStatus('Coupon already used.');
-      return;
-    }
-    setAppliedCoupon({ discount: result.discount ?? 0, code: couponInput.trim() });
-    setCouponStatus(`Coupon applied! ${result.discount}% off.`);
+  };
+
+  const clearCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponStatus(null);
+    setCouponError(null);
+    setCouponInput('');
   };
 
   return (
@@ -207,7 +307,8 @@ const BillingPage = () => {
         {!mfaEnabled && (
           <div className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
             <span className="block w-full sm:w-auto text-left">
-              Enable Multi Factor Authentication to get additional 10% discount on every purchase.
+              Enable Multi Factor Authentication to get additional 10% discount on every
+              purchase.
             </span>
             <Button
               size="sm"
@@ -272,20 +373,77 @@ const BillingPage = () => {
           className="cursor-grab active:cursor-grabbing"
         />
         <div className="h-4"></div>
-        {/* Coupon code UI */}
-        <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <input
-            type="text"
-            value={couponInput}
-            onChange={(e) => setCouponInput(e.target.value)}
-            placeholder="Enter coupon code"
-            className="border rounded px-2 py-1 w-full sm:w-64"
-          />
-          <Button onClick={handleApplyCoupon} variant="outline">
-            Apply Coupon
-          </Button>
-        </div>
-        {couponStatus && <div className="text-sm mt-1 mb-2">{couponStatus}</div>}
+        
+        {/* Coupon Selection UI */}
+        <Accordion type="single" collapsible className="w-full mb-4">
+          <AccordionItem value="coupons">
+            <AccordionTrigger className="py-2">
+              <div className="flex items-center gap-2">
+                <Gift className="h-4 w-4" />
+                <span>Discount Coupons</span>
+                {appliedCoupon && (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                    Applied
+                  </span>
+                )}
+              </div>
+            </AccordionTrigger>
+            <AccordionContent>
+              {appliedCoupon ? (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className={`font-medium text-sm dark:text-black`}>
+                        Applied coupon: {appliedCoupon.name || appliedCoupon.code}
+                      </p>
+                      <p className="text-xs text-green-700">
+                        {appliedCoupon.discount}% discount applied
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={clearCoupon}>
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid grid-cols-2 mb-4">
+                    <TabsTrigger value="available">Available Coupons</TabsTrigger>
+                    <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="available" className="mt-0">
+                    <AvailableCoupons 
+                      onSelectCoupon={handleSelectCoupon} 
+                      appliedCoupon={appliedCoupon}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="manual" className="mt-0">
+                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value)}
+                        placeholder="Enter coupon code"
+                        className="border rounded px-2 py-1 w-full sm:w-64"
+                      />
+                      <Button onClick={handleApplyCoupon} variant="outline">
+                        Apply Coupon
+                      </Button>
+                    </div>
+                    {couponError && (
+                      <div className="text-sm text-red-600 mt-1">{couponError}</div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              )}
+              
+              {couponStatus && <div className="text-sm mt-1 mb-2">{couponStatus}</div>}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
