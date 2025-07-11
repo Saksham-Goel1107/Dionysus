@@ -82,7 +82,18 @@ type CouponFormValues = z.infer<typeof formSchema>;
 
 
 
+
 export default function CouponManagement() {
+  // --- Trial Coupon Generator State ---
+  const [trialDiscount, setTrialDiscount] = useState(10);
+  const [trialMinutes, setTrialMinutes] = useState(60); // 1 hour default
+  const [isTrialGenerating, setIsTrialGenerating] = useState(false);
+  const [trialCouponHistory, setTrialCouponHistory] = useState<any[]>([]);
+  const [trialCopiedCode, setTrialCopiedCode] = useState<string | null>(null);
+  const [isTrialDialogOpen, setIsTrialDialogOpen] = useState(false);
+  const [newTrialCouponCode, setNewTrialCouponCode] = useState('');
+
+  // --- Main Coupon Management State ---
   const { user } = useUser();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,6 +106,65 @@ export default function CouponManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
   const { toast } = useToast();
+  // --- Trial Coupon Generator Logic ---
+  useEffect(() => {
+    try {
+      const savedCoupons = localStorage.getItem('adminTrialCouponHistory');
+      if (savedCoupons) {
+        const parsedCoupons = JSON.parse(savedCoupons);
+        const formattedCoupons = parsedCoupons.map((coupon: any) => ({
+          ...coupon,
+          expiryTime: new Date(coupon.expiryTime),
+          createdAt: new Date(coupon.createdAt),
+        }));
+        setTrialCouponHistory(formattedCoupons);
+      }
+    } catch (error) {
+      // ignore
+    }
+  }, []);
+
+  const handleTrialGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsTrialGenerating(true);
+    try {
+      // Simple random code
+      const code = Math.random().toString(36).substring(2, 10).toUpperCase();
+      setNewTrialCouponCode(code);
+      const expiryTime = new Date();
+      expiryTime.setMinutes(expiryTime.getMinutes() + trialMinutes);
+      const newCoupon = {
+        code,
+        discount: trialDiscount,
+        expiryTime,
+        createdAt: new Date(),
+        status: 'active',
+      };
+      const updatedHistory = [newCoupon, ...trialCouponHistory];
+      setTrialCouponHistory(updatedHistory);
+      localStorage.setItem('adminTrialCouponHistory', JSON.stringify(updatedHistory));
+      setIsTrialDialogOpen(true);
+      toast({
+        title: 'Trial Coupon Generated',
+        description: `${trialDiscount}% discount coupon created.`,
+      });
+    } catch {
+      toast({
+        title: 'Error',
+        description: 'Failed to generate trial coupon.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTrialGenerating(false);
+    }
+  };
+
+  const trialCopyToClipboard = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setTrialCopiedCode(code);
+    setTimeout(() => setTrialCopiedCode(null), 2000);
+    toast({ title: 'Copied!', description: 'Coupon code copied to clipboard.' });
+  };
 
   const form = useForm<CouponFormValues>({
     resolver: zodResolver(formSchema),
@@ -367,8 +437,115 @@ export default function CouponManagement() {
     form.setValue('code', randomCode);
   };
 
+
   return (
     <div className="p-6">
+      {/* --- Trial Coupon Generator Card --- */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Generate Trial Coupon</CardTitle>
+            <CardDescription>Quickly generate a random trial coupon (local-only, not saved to DB)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleTrialGenerate} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Discount Percentage</label>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">{trialDiscount}%</span>
+                    <span className="text-sm text-gray-500">Max: 90%</span>
+                  </div>
+                  <Slider
+                    value={[trialDiscount]}
+                    min={5}
+                    max={90}
+                    step={5}
+                    onValueChange={(values) => setTrialDiscount(values[0] ?? trialDiscount)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Valid Duration</label>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {trialMinutes < 60
+                        ? `${trialMinutes} minutes`
+                        : trialMinutes === 60
+                        ? '1 hour'
+                        : trialMinutes < 1440
+                        ? `${trialMinutes / 60} hours`
+                        : `${trialMinutes / 1440} days`}
+                    </span>
+                  </div>
+                  <Slider
+                    value={[trialMinutes]}
+                    min={5}
+                    max={10080}
+                    step={5}
+                    onValueChange={(values) => setTrialMinutes(values[0] ?? trialMinutes)}
+                  />
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTrialMinutes(15)} className="text-xs">15m</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTrialMinutes(60)} className="text-xs">1h</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTrialMinutes(24 * 60)} className="text-xs">1d</Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => setTrialMinutes(7 * 24 * 60)} className="text-xs">7d</Button>
+                </div>
+              </div>
+              <Button type="submit" className="w-full" disabled={isTrialGenerating}>
+                {isTrialGenerating ? 'Generating...' : 'Generate Trial Coupon'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        {/* Trial Coupon Dialog */}
+        <Dialog open={isTrialDialogOpen} onOpenChange={setIsTrialDialogOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>New Trial Coupon Created</DialogTitle>
+              <DialogDescription>
+                Coupon code has been generated. Copy the code to share with users.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-md mt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Discount</p>
+                  <p className="font-bold text-lg">{trialDiscount}% OFF</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Valid for</p>
+                  <p className="font-medium">
+                    {trialMinutes < 60
+                      ? `${trialMinutes} minutes`
+                      : trialMinutes === 60
+                      ? '1 hour'
+                      : trialMinutes < 1440
+                      ? `${trialMinutes / 60} hours`
+                      : `${trialMinutes / 1440} days`}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Coupon Code</p>
+                <div className="flex items-center justify-between bg-white dark:bg-gray-950 p-2 rounded-md border">
+                  <code className="text-blue-600 dark:text-blue-400 font-mono break-all text-sm">{newTrialCouponCode}</code>
+                  <Button variant="ghost" size="icon" onClick={() => trialCopyToClipboard(newTrialCouponCode)}>
+                    {trialCopiedCode === newTrialCouponCode ? <Check size={16} /> : <Copy size={16} />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={() => setIsTrialDialogOpen(false)}>Close</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* --- Main Coupon Management UI --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Coupon Management</h1>
