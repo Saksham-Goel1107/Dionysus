@@ -126,12 +126,7 @@ export default async function RootLayout({
       </head>
       <body>
         <ErrorBoundary>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ClerkProviderWithTheme>
               <MultisessionAppSupport>
                 {isMaintenance ? (

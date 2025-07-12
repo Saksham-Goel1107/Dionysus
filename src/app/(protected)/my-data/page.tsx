@@ -9,7 +9,7 @@ import { useUser } from '@clerk/nextjs';
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
 import { myAction } from '../Settings/actions';
 import { useReverification } from '@clerk/nextjs';
-import { sendDataExportWarningEmail } from '@/lib/email';
+import SlideButton from '@/components/Slide-Button';
 
 export default function MyDataPage() {
   const { user, isLoaded } = useUser();
@@ -185,11 +185,11 @@ export default function MyDataPage() {
             <Button variant="outline" onClick={() => setExportConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={() => {
+            <SlideButton
+              onClick={async () => {
                 if (exportConfirmText === 'CONFIRM EXPORT') {
                   setExportConfirmText('');
-                  handleClick();
+                  await handleClick();
                 } else {
                   toast.error('You must type CONFIRM EXPORT exactly.');
                 }
@@ -197,7 +197,7 @@ export default function MyDataPage() {
               disabled={exportConfirmText !== 'CONFIRM EXPORT'}
             >
               Confirm & Export
-            </Button>
+            </SlideButton>
           </div>
         </DialogContent>
       </Dialog>

@@ -10,10 +10,10 @@ export function Hero() {
         <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
           <div className="flex flex-col justify-center space-y-4">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none">
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-white">
                 Enhance Your Development Workflow with AI
               </h1>
-              <p className="max-w-[600px] text-muted-foreground md:text-xl">
+              <p className="max-w-[600px] md:text-xl text-gray-300">
                 Dionysus is an AI-powered development assistant that helps you understand codebases,
                 analyze repositories, and transcribe meetings.
               </p>

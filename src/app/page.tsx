@@ -10,7 +10,9 @@ export default function Home() {
       <div className="min-h-screen bg-background">
         <Navbar />
         <main>
-          <Hero />
+          <div className="bg-hero bg-cover bg-center">
+            <Hero />
+          </div>
           <Features />
           <HowItWorks />
         </main>
