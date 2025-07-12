@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserButton } from '@clerk/nextjs';
+import StarOnGithub from '@/app/components/starOnGithub';
 
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
@@ -81,6 +82,9 @@ export default function UserAvatarMenu() {
             </span>
             {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
           </Button>
+          <div className="mt-2 flex w-full justify-center">
+            <StarOnGithub />
+          </div>
         </div>
       )}
     </div>

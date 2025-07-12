@@ -1,6 +1,61 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+// Simple theme toggle using localStorage and document.documentElement.classList
+function ThemeToggle({ collapsed }: { collapsed: boolean }) {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [theme]);
+
+  return (
+    <button
+      className={`w-full flex items-center justify-${collapsed ? 'center' : 'start'} gap-2 px-2 py-2 mb-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800`}
+      aria-label="Toggle dark/light mode"
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+    >
+      {theme === 'dark' ? (
+        // Moon icon for dark mode
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <path
+            fill="currentColor"
+            d="M21 12.79A9 9 0 0 1 11.21 3a1 1 0 0 0-1.13 1.36A7 7 0 1 0 19.64 13.92a1 1 0 0 0 1.36-1.13Z"
+          />
+        </svg>
+      ) : (
+        // Sun icon for light mode
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="5" fill="currentColor" />
+          <g stroke="currentColor" strokeWidth="2">
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </g>
+        </svg>
+      )}
+      {!collapsed && (
+        <span className="text-sm font-medium">{theme === 'dark' ? 'Dark' : 'Light'} Mode</span>
+      )}
+    </button>
+  );
+}
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -76,9 +131,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </ul>
         </nav>
 
-        {/* User */}
+        {/* Theme Toggle & User */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
+          <ThemeToggle collapsed={collapsed} />
+          <div className="flex items-center gap-3 mt-2">
             <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
               S
             </div>

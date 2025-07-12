@@ -1,3 +1,4 @@
+import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
@@ -18,12 +19,9 @@ export function Hero() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button size="lg" asChild>
-                <Link href="/sign-in">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link href="/sign-in">
+                <GetStartedButton />
+              </Link>
               <Button size="lg" variant="outline" asChild>
                 <Link href="#how-it-works">Learn More</Link>
               </Button>

@@ -1,14 +1,29 @@
+'use client';
 import Link from 'next/link';
 import { Logo } from './logo';
 import { Github, Twitter, Linkedin } from 'lucide-react';
+import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
+import { useTheme } from 'next-themes';
 
 export function Footer() {
+  const { setTheme } = useTheme();
   return (
     <footer className="w-full border-t bg-background px-20">
       <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
-        <div className="flex items-center gap-2">
-          <Logo />
-          <span className="text-lg font-bold">Dionysus</span>
+        <div className="flex flex-col items-center gap-1 md:items-start min-w-[120px]">
+          <div className="flex items-center gap-2">
+            <Logo />
+            <span className="text-lg font-bold">Dionysus</span>
+          </div>
+          <ThemeSwitcher
+            className="mt-0.5"
+            defaultValue="system"
+            onChange={(theme) => {
+              if (typeof window !== 'undefined') {
+                setTheme(theme);
+              }
+            }}
+          />
         </div>
         <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-6">
           <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
@@ -45,7 +60,7 @@ export function Footer() {
             Support
           </Link>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end w-full md:w-auto">
           <a
             rel="noopener noreferrer"
             href="https://github.com/Saksham-Goel1107/Dionysus"

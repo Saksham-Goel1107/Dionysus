@@ -7,6 +7,8 @@ import { Logo } from './logo';
 import { ModeToggle } from './ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import StarOnGithub from './starOnGithub';
+import GetStartedButton from '@/components/shsfui/button/get-started-button';
 
 export function Navbar() {
   const router = useRouter();
@@ -39,7 +41,10 @@ export function Navbar() {
             Docs
           </Link>
           <ModeToggle />
-          <Button onClick={() => router.push('/sign-in')}>Get Started</Button>
+          <Link href={'/sign-in'}>
+            <GetStartedButton />
+          </Link>
+          <StarOnGithub />
         </nav>
       </div>
     </header>

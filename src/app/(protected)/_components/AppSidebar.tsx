@@ -15,7 +15,9 @@ import {
 } from '@/components/ui/sidebar';
 import useProject from '@/hooks/use-project';
 import { api } from '@/trpc/react';
+import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { cn } from '@/lib/utils';
+import { useTheme } from 'next-themes';
 import {
   Bot,
   CircleDollarSign,
@@ -86,6 +88,8 @@ const AppSidebar = ({}: Props) => {
   const [search, setSearch] = useState('');
   const [hasProPlan, sethasProPlan] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+
+  const { setTheme } = useTheme();
 
   const users = Array.isArray(members) ? members : [];
   const showChat = users.length >= 2 && !!projectId;
@@ -234,15 +238,27 @@ const AppSidebar = ({}: Props) => {
                 </SidebarMenuItem>
               )}
               {open && (
-                <SidebarMenuItem>
-                  <div
-                    className={`text-xs px-2 py-1 ${!hasProPlan && projects.length >= 3 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
-                  >
-                    {hasProPlan
-                      ? `${projects?.length || 0}/Unlimited projects`
-                      : `${projects?.length || 0} / 5 projects`}
-                  </div>
-                </SidebarMenuItem>
+                <>
+                  <SidebarMenuItem>
+                    <div
+                      className={`text-xs px-2 py-1 ${!hasProPlan && projects.length >= 3 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
+                    >
+                      {hasProPlan
+                        ? `${projects?.length || 0}/Unlimited projects`
+                        : `${projects?.length || 0} / 5 projects`}
+                    </div>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <ThemeSwitcher
+                      defaultValue="system"
+                      onChange={(theme) => {
+                        if (typeof window !== 'undefined') {
+                          setTheme(theme);
+                        }
+                      }}
+                    />
+                  </SidebarMenuItem>
+                </>
               )}
               {showProModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
