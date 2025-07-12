@@ -21,6 +21,7 @@ import MediaOptimizer from './MediaOptimizer';
 import RegexTester from './RegexTester';
 import YamlValidator from './YamlValidator';
 import FileEncryptor from './FileEncryptor';
+import CodeFormatter from './CodeFormatter';
 import { Client, Avatars } from 'appwrite';
 import Image from 'next/image';
 
@@ -316,6 +317,10 @@ const Advanced = () => {
           <MetaDataGenerator />
           <RobotSitemapGenerator />
           <QRCodeGenerator />
+
+          {/* Code Beautifier Component */}
+          <CodeFormatter />
+
           {/* Advanced Utilities */}
           <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-violet-50 via-white to-violet-100 dark:from-violet-900/60 dark:via-violet-950/80 dark:to-violet-900/60 rounded-2xl border border-violet-300 dark:border-violet-700 shadow-xl flex flex-col items-center relative overflow-hidden">
             <RegexTester />

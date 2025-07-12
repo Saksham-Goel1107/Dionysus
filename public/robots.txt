@@ -1,6 +1,6 @@
 # Allow all crawlers
 User-agent: *
-Allow: /
+Disallow: /admin/
 
 # Sitemap location
 Sitemap: https://dionysus-gray.vercel.app/sitemap.xml
