@@ -4,21 +4,20 @@ import { notFound, redirect } from 'next/navigation';
 
 type Props = {};
 
-const Page = async ({}: Props) => {
-
+// Function to sync user data with the database
+async function syncUserToDB() {
   const { userId } = await auth();
   if (!userId) {
-    redirect('/sign-in');
+    return false;
   }
-
-  const client = await clerkClient();
-
+  
   try {
+    const client = await clerkClient();
     const user = await client.users.getUser(userId);
 
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
-      notFound();
+      return false;
     }
 
     await db.user.upsert({
@@ -36,14 +35,19 @@ const Page = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-
-    redirect('/dashboard');
-  } catch (error: any) {
-    if (error.message === 'Not Found' && error.status === 404) {
-      redirect('/sign-out');
-    }
-    throw error;
+    return true;
+  } catch (error) {
+    console.error('Error syncing user:', error);
+    return false;
   }
+}
+
+const Page = async ({}: Props) => {
+  // Sync the user and then redirect
+  await syncUserToDB();
+  
+  // Always redirect to dashboard after sync attempt
+  redirect('/dashboard');
 };
 
 export default Page;
