@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
 import { Users, CreditCard, Folder, TrendingUp, BadgeCheck, Activity } from 'lucide-react';
@@ -40,6 +40,12 @@ export default function AdminDashboard({
   userGrowthData,
   topUsersByCredits,
 }: AdminDashboardProps) {
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLastUpdated(new Date().toLocaleString());
+  }, []);
+
   // Format user growth data for the chart
   const formattedUserGrowthData =
     userGrowthData?.map((data: any) => ({
@@ -55,7 +61,7 @@ export default function AdminDashboard({
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <div className="text-sm text-gray-500 dark:text-gray-400">
-          Last updated: {new Date().toLocaleString()}
+          Last updated: {lastUpdated || 'Loading...'}
         </div>
       </div>
 
@@ -281,7 +287,7 @@ export default function AdminDashboard({
                       {index + 1}
                     </div>
                     <div>
-                      <p className="font-medium">
+                      <div className="font-medium">
                         {user.firstName || 'User'} {user.lastName || ''}
                         {user.isPro && (
                           <Badge
@@ -291,7 +297,7 @@ export default function AdminDashboard({
                             PRO
                           </Badge>
                         )}
-                      </p>
+                      </div>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {user.emailAddress}
                       </p>
