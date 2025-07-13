@@ -1,26 +1,21 @@
 import { db } from '@/server/db';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { notFound, redirect } from 'next/navigation';
+import { redirect } from 'next/navigation';
 
 type Props = {};
 
 const Page = async ({}: Props) => {
-
-  const { userId } = await auth();
-  if (!userId) {
-    redirect('/sign-in');
-  }
-
-  const client = await clerkClient();
-
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      redirect('/sign-in');
+    }
+    const client = await clerkClient();
     const user = await client.users.getUser(userId);
-
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
-      notFound();
+      redirect('/sign-in');
     }
-
     await db.user.upsert({
       where: { emailAddress: email },
       update: {
@@ -36,13 +31,9 @@ const Page = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-
     redirect('/dashboard');
-  } catch (error: any) {
-    if (error.message === 'Not Found' && error.status === 404) {
-      redirect('/sign-out');
-    }
-    throw error;
+  } catch (error) {
+    redirect('/dashboard');
   }
 };
 

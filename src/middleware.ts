@@ -16,7 +16,7 @@ const isPublicRoute = createRouteMatcher([
   '/about(.*)',
 ]);
 
-const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)', '/sync-user(.*)']);
+const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
@@ -178,16 +178,14 @@ export default clerkMiddleware(async (auth, request) => {
     if (userId && !pathname.startsWith('/sync-user')) {
       const referer = request.headers.get('referer') || '';
       if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
-        if (pathname !== '/sync-user') {
-          const response = NextResponse.redirect(new URL('/sync-user', request.url));
-          response.cookies.set('middleware_redirect', 'true', {
-            maxAge: 10,
-            httpOnly: true,
-            path: '/sync-user',
-            sameSite: 'strict',
-          });
-          return response;
-        }
+        const response = NextResponse.redirect(new URL('/sync-user', request.url));
+        response.cookies.set('middleware_redirect', 'true', {
+          maxAge: 10,
+          httpOnly: true,
+          path: '/sync-user',
+          sameSite: 'strict',
+        });
+        return response;
       }
     }
   }
