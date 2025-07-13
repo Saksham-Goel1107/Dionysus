@@ -17,30 +17,38 @@ const Page = async ({}: Props) => {
   }
 
   const client = await clerkClient();
-  const user = await client.users.getUser(userId);
+  
+  try {
+    const user = await client.users.getUser(userId);
 
-  const email = user.emailAddresses[0]?.emailAddress;
-  if (!email) {
-    return notFound();
+    const email = user.emailAddresses[0]?.emailAddress;
+    if (!email) {
+      return notFound();
+    }
+
+    await db.user.upsert({
+      where: { emailAddress: email },
+      update: {
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+      create: {
+        id: userId,
+        emailAddress: email,
+        imageUrl: user.imageUrl,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      },
+    });
+
+    return redirect('/dashboard');
+  } catch (error: any) {
+    if (error.message === 'Not Found' && error.status === 404) {
+      return redirect('/sign-out');
+    }
+    throw error; // Re-throw other errors
   }
-
-  await db.user.upsert({
-    where: { emailAddress: email },
-    update: {
-      imageUrl: user.imageUrl,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    },
-    create: {
-      id: userId,
-      emailAddress: email,
-      imageUrl: user.imageUrl,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    },
-  });
-
-  return redirect('/dashboard');
 };
 
 export default Page;
