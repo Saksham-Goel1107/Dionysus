@@ -5,15 +5,10 @@ import { notFound, redirect } from 'next/navigation';
 type Props = {};
 
 const Page = async ({}: Props) => {
-  const { userId } = await auth();
 
+  const { userId } = await auth();
   if (!userId) {
     return redirect('/sign-in');
-  }
-
-  if (typeof window !== 'undefined') {
-    window.location.href = '/dashboard';
-    return null;
   }
 
   const client = await clerkClient();

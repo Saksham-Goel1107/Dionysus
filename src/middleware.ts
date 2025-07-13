@@ -148,33 +148,46 @@ export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
-    if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
+    if (
+      userId &&
+      !sessionClaims?.metadata?.onboardingComplete &&
+      !isOnboardingRoute(request)
+    ) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-      const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
-      response.cookies.set('middleware_redirect', 'true', {
-        maxAge: 10,
-        httpOnly: true,
-        path: '/onboarding',
-        sameSite: 'strict',
-      });
-      return response;
-    }
-
-    if (userId && sessionClaims?.metadata?.onboardingComplete && pathname === '/onboarding') {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-      return NextResponse.redirect(new URL('/dashboard', baseUrl));
-    }
-    if (userId && !pathname.startsWith('/sync-user')) {
-      const referer = request.headers.get('referer') || '';
-      if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
-        const response = NextResponse.redirect(new URL('/sync-user', request.url));
+      if (pathname !== '/onboarding' && pathname !== '/sync-user') {
+        const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
         response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
-          path: '/sync-user',
+          path: '/onboarding',
           sameSite: 'strict',
         });
         return response;
+      }
+    }
+
+    if (
+      userId &&
+      sessionClaims?.metadata?.onboardingComplete &&
+      pathname === '/onboarding'
+    ) {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+      
+    }
+
+    if (userId && !pathname.startsWith('/sync-user')) {
+      const referer = request.headers.get('referer') || '';
+      if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
+        if (pathname !== '/sync-user') {
+          const response = NextResponse.redirect(new URL('/sync-user', request.url));
+          response.cookies.set('middleware_redirect', 'true', {
+            maxAge: 10,
+            httpOnly: true,
+            path: '/sync-user',
+            sameSite: 'strict',
+          });
+          return response;
+        }
       }
     }
   }
