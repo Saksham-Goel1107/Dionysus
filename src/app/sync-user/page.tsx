@@ -8,17 +8,17 @@ const Page = async ({}: Props) => {
 
   const { userId } = await auth();
   if (!userId) {
-    return redirect('/sign-in');
+    redirect('/sign-in');
   }
 
   const client = await clerkClient();
-  
+
   try {
     const user = await client.users.getUser(userId);
 
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
-      return notFound();
+      notFound();
     }
 
     await db.user.upsert({
@@ -37,12 +37,12 @@ const Page = async ({}: Props) => {
       },
     });
 
-    return redirect('/dashboard');
+    redirect('/dashboard');
   } catch (error: any) {
     if (error.message === 'Not Found' && error.status === 404) {
-      return redirect('/sign-out');
+      redirect('/sign-out');
     }
-    throw error; // Re-throw other errors
+    throw error;
   }
 };
 

@@ -172,7 +172,7 @@ export default clerkMiddleware(async (auth, request) => {
       pathname === '/onboarding'
     ) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-      
+      return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
     if (userId && !pathname.startsWith('/sync-user')) {
