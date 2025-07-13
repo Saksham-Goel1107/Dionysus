@@ -29,9 +29,14 @@ export default function SettingsPage() {
 
   const handleClick = async (e: React.FormEvent) => {
     e.preventDefault();
-    const myData = await performAction();
-    if (!myData) return;
-    setVerified(true);
+    try {
+      const myData = await performAction();
+      if (myData?.success) {
+        setVerified(true);
+      }
+    } catch (error) {
+      console.log('User cancelled verification.');
+    }
   };
 
   return (
