@@ -313,11 +313,12 @@ export default function AboutPage() {
             {testimonials.map((t, i) => (
               <div key={i} className="bg-white/10 rounded-xl p-6 flex flex-col items-center shadow">
                 <Image
-                  src={t.avatar ?? '/default-avatar.png'}
+                  src={t.avatar ?? '/about/default-avatar.svg'}
                   alt={t.name}
                   width={56}
                   height={56}
                   className="rounded-full mb-3 border-2 border-white"
+                  unoptimized
                 />
                 <p className="text-gray-200 text-sm mb-2">&quot;{t.text}&quot;</p>
                 <span className="text-white font-semibold text-sm">{t.name}</span>
