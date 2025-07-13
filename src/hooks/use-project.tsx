@@ -23,20 +23,7 @@ const useProject = () => {
         setProjectId(newProjectId);
 
         toast.warning('You no longer have access to that project. Switching to another project.');
-        if (
-          pathname &&
-          (pathname.includes('/qa') ||
-            pathname.includes('/meetings') ||
-            pathname.startsWith('/project/'))
-        ) {
-          router.push('/dashboard');
-        }
         if (pathname && pathname !== '/dashboard' && pathname !== '/create') {
-          router.push('/dashboard');
-        }
-        setProjectId('');
-
-        if (pathname !== '/dashboard' && pathname !== '/create') {
           router.push('/dashboard');
         }
       }
