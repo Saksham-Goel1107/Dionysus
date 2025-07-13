@@ -33,6 +33,13 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
     }
   };
 
+  const handleVerification = () => {
+    verifyToken().catch(err => {
+      console.error("reCAPTCHA verification failed:", err);
+      setError("reCAPTCHA verification failed. Please try again.");
+    });
+  };
+
   useEffect(() => {
     if (!SITE_KEY) {
       setError('reCAPTCHA site key not set');
@@ -47,8 +54,8 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       if (window.grecaptcha) {
         // @ts-ignore
         window.grecaptcha.ready(() => {
-          verifyToken();
-          intervalRef.current = setInterval(verifyToken, 30_000);
+          handleVerification();
+          intervalRef.current = setInterval(handleVerification, 30_000);
         });
       } else {
         setError('reCAPTCHA failed to load');
