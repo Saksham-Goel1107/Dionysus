@@ -10,7 +10,6 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
   const verifyToken = useCallback(async () => {
     // @ts-ignore
     if (!window.grecaptcha || !SITE_KEY) {
-      setError('reCAPTCHA not properly initialized.');
       return;
     }
     try {
@@ -29,7 +28,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
         setError('');
       }
     } catch (err) {
-      console.error('Some error occured', err);
+      return;
     }
   }, []);
 
@@ -55,7 +54,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
         // @ts-ignore
         window.grecaptcha.ready(() => {
           handleVerification();
-          intervalRef.current = setInterval(handleVerification, 30_000);
+          intervalRef.current = setInterval(handleVerification, 60_000);
         });
       } else {
         setError('reCAPTCHA failed to load');

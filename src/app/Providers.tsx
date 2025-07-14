@@ -8,7 +8,7 @@ import AiToolkitButton from './components/AiButton';
 function Providers({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const pathname = usePathname();
-  const hideAiChat = pathname?.startsWith('/sign-in') || pathname?.startsWith('/sign-up');
+  const hideAiChat = pathname?.startsWith('/sign-in') || pathname?.startsWith('/sign-up') || pathname?.startsWith('/onboarding');
 
   return (
     <>

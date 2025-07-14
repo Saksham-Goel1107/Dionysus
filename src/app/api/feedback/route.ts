@@ -1,3 +1,4 @@
+import { env } from '@/env';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
     if (validatedData.feedback) formData.append('feedback', validatedData.feedback);
     if (validatedData.email) formData.append('email', validatedData.email);
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? '';
+    const baseUrl =env.NEXT_PUBLIC_BASE_URL ?? '';
 
     const response = await fetch(`https://send.pageclip.co/${process.env.PAGECLIP_KEY}`, {
       method: 'POST',

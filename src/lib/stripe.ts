@@ -1,5 +1,6 @@
 'use server';
 
+import { env } from '@/env';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
@@ -31,8 +32,8 @@ export async function createCheckoutSession(credits: number) {
     ],
     customer_creation: 'always',
     mode: 'payment',
-    success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}&credits=${credits}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/billing`,
+    success_url: `${env.NEXT_PUBLIC_BASE_URL}/billing/success?session_id={CHECKOUT_SESSION_ID}&credits=${credits}`,
+    cancel_url: `${env.NEXT_PUBLIC_BASE_URL}/billing`,
     client_reference_id: userId.toString(),
     metadata: {
       credits,
