@@ -1,4 +1,4 @@
-"use client"
+'use client';
 
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,6 @@ import { Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
 
 export function Hero() {
-  
   const { user } = useUser();
   const userId = user?.id;
 

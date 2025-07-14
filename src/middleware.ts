@@ -37,7 +37,7 @@ const aj = arcjet({
     fixedWindow({
       mode: 'LIVE',
       window: '60s',
-      max: 50,
+      max: 80,
     }),
   ],
 });
@@ -118,7 +118,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (!isRateLimitPage) {
       const response = NextResponse.redirect(new URL('/rate-limit', request.url));
       response.cookies.set('middleware_redirect', 'true', {
-        maxAge: 10,
+        maxAge: 60,
         httpOnly: true,
         path: '/rate-limit',
         sameSite: 'strict',
@@ -132,7 +132,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (!isBlockPage) {
       const response = NextResponse.redirect(new URL('/block', request.url));
       response.cookies.set('middleware_redirect', 'true', {
-        maxAge: 10,
+        maxAge: 60,
         httpOnly: true,
         path: '/block',
         sameSite: 'strict',
