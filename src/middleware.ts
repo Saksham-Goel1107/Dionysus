@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
 import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
+import { env } from '@/env';
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -153,7 +154,7 @@ export default clerkMiddleware(async (auth, request) => {
       !sessionClaims?.metadata?.onboardingComplete &&
       !isOnboardingRoute(request)
     ) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+      const baseUrl = env.NEXT_PUBLIC_BASE_URL;
       if (pathname !== '/onboarding' && pathname !== '/sync-user') {
         const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
         response.cookies.set('middleware_redirect', 'true', {
@@ -171,7 +172,7 @@ export default clerkMiddleware(async (auth, request) => {
       sessionClaims?.metadata?.onboardingComplete &&
       pathname === '/onboarding'
     ) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
+      const baseUrl = env.NEXT_PUBLIC_BASE_URL;
       return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
