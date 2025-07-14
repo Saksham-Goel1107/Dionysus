@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import AiChatSidebar from './components/AiChatSidebar';
 import AiToolkitButton from './components/AiButton';
+import RecaptchaGate from './components/RecaptchaGate';
 
 function Providers({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -13,6 +14,8 @@ function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
+      <RecaptchaGate>
+      </RecaptchaGate>
       {!hideAiChat && <AiToolkitButton setIsSidebarOpen={setIsSidebarOpen} />}
       {!hideAiChat && (
         <AiChatSidebar

@@ -139,32 +139,28 @@ export default async function RootLayout({
                 </>
               ) : (
                 <>
-                  <RecaptchaGate>
-                    <>
-                      <GoogleOneTap
-                        cancelOnTapOutside={true}
-                        itpSupport={true}
-                        fedCmSupport={true}
-                      />
-                      <CookieBanner />
-                      <TRPCReactProvider>
-                        <Offline>
-                          {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                        </Offline>
-                      </TRPCReactProvider>
-                      <Toaster richColors />
-                      <ScrollToTopButton />
-                      <CustomContextMenu />
-                      <BlockInspectAndContext />
-                      <Analytics />
-                      <SpeedInsights />
-                      <Script
-                        src="https://s.pageclip.co/v1/pageclip.js"
-                        charSet="utf-8"
-                        strategy="afterInteractive"
-                      ></Script>
-                    </>
-                  </RecaptchaGate>
+                  <GoogleOneTap
+                    cancelOnTapOutside={true}
+                    itpSupport={true}
+                    fedCmSupport={true}
+                  />
+                  <CookieBanner />
+                  <TRPCReactProvider>
+                    <Offline>
+                      {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                    </Offline>
+                  </TRPCReactProvider>
+                  <Toaster richColors />
+                  <ScrollToTopButton />
+                  <CustomContextMenu />
+                  <BlockInspectAndContext />
+                  <Analytics />
+                  <SpeedInsights />
+                  <Script
+                    src="https://s.pageclip.co/v1/pageclip.js"
+                    charSet="utf-8"
+                    strategy="afterInteractive"
+                  ></Script>
                 </>
               )}
               {/* </MultisessionAppSupport> */}
