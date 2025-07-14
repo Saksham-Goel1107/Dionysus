@@ -153,9 +153,8 @@ export default clerkMiddleware(async (auth, request) => {
       !sessionClaims?.metadata?.onboardingComplete &&
       !isOnboardingRoute(request)
     ) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
       if (pathname !== '/onboarding' && pathname !== '/sync-user') {
-        const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
+        const response = NextResponse.redirect(new URL('/onboarding', request.url));
         response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
@@ -171,8 +170,7 @@ export default clerkMiddleware(async (auth, request) => {
       sessionClaims?.metadata?.onboardingComplete &&
       pathname === '/onboarding'
     ) {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
-      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     if (userId && !pathname.startsWith('/sync-user')) {
