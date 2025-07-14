@@ -15,10 +15,12 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-16">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Logo />
-          <span className="text-xl font-bold sm:inline-block">Dionysus</span>
-        </div>
+        <Link href='/'>
+          <div className="flex items-center gap-2">
+            <Logo />
+            <span className="text-xl font-bold sm:inline-block">Dionysus</span>
+          </div>
+        </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
           <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
