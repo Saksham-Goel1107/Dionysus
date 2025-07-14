@@ -2,8 +2,12 @@ import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 
 export function Hero() {
+  const { user } = useUser();
+  const userId = user?.id;
+  
   return (
     <section className="w-full p-12  md:py-24 lg:py-32 xl:py-48">
       <div className="container px-4 md:px-6">
@@ -19,9 +23,15 @@ export function Hero() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link href="/sign-in">
-                <GetStartedButton />
-              </Link>
+              {userId ? (
+                <Link href="/my-data">
+                  <GetStartedButton />
+                </Link>
+              ) : (
+                <Link href="/sign-in">
+                  <GetStartedButton />
+                </Link>
+              )}
               <Button size="lg" variant="outline" asChild>
                 <Link href="#how-it-works">Learn More</Link>
               </Button>
