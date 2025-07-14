@@ -168,7 +168,13 @@ export default clerkMiddleware(async (auth, request) => {
       return NextResponse.redirect(new URL('/dashboard', baseUrl));
     }
 
-    if (userId && !pathname.startsWith('/sync-user')) {
+    if (
+      userId &&
+      sessionClaims &&
+      !sessionClaims?.metadata?.onboardingComplete &&
+      !pathname.startsWith('/sync-user') &&
+      !pathname.startsWith('/onboarding')
+    ) {
       const referer = request.headers.get('referer') || '';
       if (referer.includes('/sign-in') || referer.includes('/sign-up')) {
         const response = NextResponse.redirect(new URL('/sync-user', request.url));
