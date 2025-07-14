@@ -2,16 +2,15 @@
 
 import Link from 'next/link';
 
-import { useState } from 'react';
 import { Logo } from './logo';
 import { ModeToggle } from './ThemeToggle';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 import StarOnGithub from './starOnGithub';
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
+import { useUser } from '@clerk/nextjs';
 
 export function Navbar() {
-  const router = useRouter();
+  const { user } = useUser();
+  const userId = user?.id;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-16">
@@ -41,7 +40,7 @@ export function Navbar() {
             Docs
           </Link>
           <ModeToggle />
-          <Link href={'/sign-in'}>
+          <Link href={userId ? '/dashboard' : '/sign-in'}>
             <GetStartedButton />
           </Link>
           <StarOnGithub />

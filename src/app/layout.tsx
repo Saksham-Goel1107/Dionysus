@@ -16,7 +16,7 @@ import MaintenanceScreen from '../components/updates/screen';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import CustomContextMenu from '@/components/ui/CustomContextMenu';
 import BlockInspectAndContext from '@/components/BlockInspectAndContext';
-import MultisessionAppSupport from './MultiSession';
+// import MultisessionAppSupport from './MultiSession';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -128,46 +128,46 @@ export default async function RootLayout({
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ClerkProviderWithTheme>
-              <MultisessionAppSupport>
-                {isMaintenance ? (
-                  <>
-                    <MaintenanceScreen />
-                    <BlockInspectAndContext />
-                    <CustomContextMenu />
-                    <Analytics />
-                    <SpeedInsights />
-                  </>
-                ) : (
-                  <>
-                    <RecaptchaGate>
-                      <>
-                        <GoogleOneTap
-                          cancelOnTapOutside={true}
-                          itpSupport={true}
-                          fedCmSupport={true}
-                        />
-                        <CookieBanner />
-                        <TRPCReactProvider>
-                          <Offline>
-                            {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                          </Offline>
-                        </TRPCReactProvider>
-                        <Toaster richColors />
-                        <ScrollToTopButton />
-                        <CustomContextMenu />
-                        <BlockInspectAndContext />
-                        <Analytics />
-                        <SpeedInsights />
-                        <Script
-                          src="https://s.pageclip.co/v1/pageclip.js"
-                          charSet="utf-8"
-                          strategy="afterInteractive"
-                        ></Script>
-                      </>
-                    </RecaptchaGate>
-                  </>
-                )}
-              </MultisessionAppSupport>
+              {/* <MultisessionAppSupport> */}
+              {isMaintenance ? (
+                <>
+                  <MaintenanceScreen />
+                  <BlockInspectAndContext />
+                  <CustomContextMenu />
+                  <Analytics />
+                  <SpeedInsights />
+                </>
+              ) : (
+                <>
+                  <RecaptchaGate>
+                    <>
+                      <GoogleOneTap
+                        cancelOnTapOutside={true}
+                        itpSupport={true}
+                        fedCmSupport={true}
+                      />
+                      <CookieBanner />
+                      <TRPCReactProvider>
+                        <Offline>
+                          {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                        </Offline>
+                      </TRPCReactProvider>
+                      <Toaster richColors />
+                      <ScrollToTopButton />
+                      <CustomContextMenu />
+                      <BlockInspectAndContext />
+                      <Analytics />
+                      <SpeedInsights />
+                      <Script
+                        src="https://s.pageclip.co/v1/pageclip.js"
+                        charSet="utf-8"
+                        strategy="afterInteractive"
+                      ></Script>
+                    </>
+                  </RecaptchaGate>
+                </>
+              )}
+              {/* </MultisessionAppSupport> */}
             </ClerkProviderWithTheme>
           </ThemeProvider>
         </ErrorBoundary>

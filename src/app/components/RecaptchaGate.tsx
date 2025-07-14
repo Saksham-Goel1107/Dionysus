@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
@@ -7,7 +7,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
   const [error, setError] = useState('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const verifyToken = async () => {
+  const verifyToken = useCallback(async () => {
     // @ts-ignore
     if (!window.grecaptcha || !SITE_KEY) {
       setError('reCAPTCHA not properly initialized.');
@@ -31,14 +31,14 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
     } catch (err) {
       console.error('Some error occured', err);
     }
-  };
+  }, []);
 
-  const handleVerification = () => {
-    verifyToken().catch(err => {
-      console.error("reCAPTCHA verification failed:", err);
-      setError("reCAPTCHA verification failed. Please try again.");
+  const handleVerification = useCallback(() => {
+    verifyToken().catch((err) => {
+      console.error('reCAPTCHA verification failed:', err);
+      setError('reCAPTCHA verification failed. Please try again.');
     });
-  };
+  }, [verifyToken]);
 
   useEffect(() => {
     if (!SITE_KEY) {
@@ -70,7 +70,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       if (intervalRef.current) clearInterval(intervalRef.current);
       document.body.removeChild(script);
     };
-  }, []);
+  }, [handleVerification]);
 
   return (
     <>
