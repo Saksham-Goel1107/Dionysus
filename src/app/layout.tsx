@@ -120,7 +120,7 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get('x-next-pathname') || '';
 
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'false';
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
 
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
@@ -142,8 +142,6 @@ export default async function RootLayout({
                   <SpeedInsights />
                 </>
               ) : (
-                <>
-                  <RecaptchaGate>
                     <>
                       <GoogleOneTap
                         cancelOnTapOutside={true}
@@ -168,8 +166,6 @@ export default async function RootLayout({
                         strategy="afterInteractive"
                       ></Script>
                     </>
-                  </RecaptchaGate>
-                </>
               )}
               {/* </MultisessionAppSupport> */}
             </ClerkProviderWithTheme>
