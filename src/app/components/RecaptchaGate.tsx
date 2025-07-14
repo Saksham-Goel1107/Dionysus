@@ -1,11 +1,30 @@
 'use client';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+// List of public route prefixes
+const PUBLIC_ROUTE_PREFIXES = [
+  '/',
+  '/sign-in',
+  '/sign-up',
+  '/docs',
+  '/privacy',
+  '/terms',
+  '/about',
+];
+
+function isPublicRoute(pathname: string) {
+  return PUBLIC_ROUTE_PREFIXES.some((prefix) =>
+    pathname === prefix || pathname.startsWith(prefix + '/')
+  );
+}
 
 export default function RecaptchaGate({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState('');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pathname = usePathname();
 
   const verifyToken = useCallback(async () => {
     // @ts-ignore
@@ -44,6 +63,10 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       setError('reCAPTCHA site key not set');
       return;
     }
+    if (isPublicRoute(pathname)) {
+      setError('');
+      return;
+    }
 
     const script = document.createElement('script');
     script.src = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`;
@@ -69,12 +92,12 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       if (intervalRef.current) clearInterval(intervalRef.current);
       document.body.removeChild(script);
     };
-  }, [handleVerification]);
+  }, [handleVerification, pathname]);
 
   return (
     <>
       {children}
-      {error && (
+      {error && !isPublicRoute(pathname) && (
         <div
           style={{
             position: 'fixed',

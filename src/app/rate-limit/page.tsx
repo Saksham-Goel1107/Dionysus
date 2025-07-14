@@ -1,15 +1,14 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import RateLimitRedirector from './RateLimitRedirector';
 
 export default async function RateLimitPage() {
   const cookiesList = await cookies();
   const redirectCookie = cookiesList.get('middleware_redirect');
 
-  // If not accessed through middleware redirect, send user to homepage
   if (!redirectCookie) {
     redirect('/');
-    return null;
   }
 
   return (
@@ -35,6 +34,7 @@ export default async function RateLimitPage() {
         <div className="text-xs text-gray-500">
           Your patience is appreciated as we work to keep our platform secure.
         </div>
+        <RateLimitRedirector />
       </div>
     </div>
   );

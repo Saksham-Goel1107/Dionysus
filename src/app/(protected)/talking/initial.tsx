@@ -128,39 +128,72 @@ export default function Home() {
   }
 
   const doFetch = async (contextMessages: Message[]): Promise<void> => {
+    let fullResponse = '';
+    let speaking = '';
+    let spoken = false; // Only allow one utterance per response
     try {
-      // Prepare payload for Gemini 2.0 Flash endpoint
-      const userMessages = contextMessages.filter((m) => m.role === 'user');
-      const lastUser = userMessages.length > 0 ? userMessages[userMessages.length - 1].content : '';
-      const history = contextMessages
-        .filter((m) => m.role === 'user' || m.role === 'assistant')
-        .slice(0, -1)
-        .map((m) => ({
-          role: m.role === 'assistant' ? 'ai' : 'user',
-          content: m.content,
-        }));
-      const res: Response = await fetch('/api/gemini/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: lastUser,
-          analytics: {},
-          history,
-        }),
-      });
-      if (!res.ok) throw new Error('Gemini service unavailable. Please try again later.');
-      const data = await res.json();
-      const geminiResponse = data.answer || '';
-      if (geminiResponse.trim()) {
+      const res: Response = await fetch(
+        'https://maiden-pounds-contacted-pct.trycloudflare.com/api/chat',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'maryasov/qwen2.5-coder-cline:7b-instruct-q8_0',
+            messages: contextMessages,
+            stream: true,
+          }),
+        },
+      );
+      if (!res.ok || !res.body) throw new Error('LLM service unavailable. Please try again later.');
+      const reader: ReadableStreamDefaultReader<Uint8Array> = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+      while (true) {
+        if (stoppedByUser.current) break;
+        const { done, value }: { done: boolean; value?: Uint8Array } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            if (stoppedByUser.current) break;
+            const json: LLMResponseChunk = JSON.parse(line);
+            const chunk: string | undefined = json?.message?.content;
+            if (!chunk) continue;
+            fullResponse += chunk;
+            speaking += chunk;
+            if (/[.?!]\s?$/.test(speaking) && !spoken) {
+              if (!stoppedByUser.current && !speakingActive.current) {
+                setAssistantSpeaking(true);
+                speakText(speaking);
+                setSpeakingNow(speaking);
+                speakingActive.current = true;
+                spoken = true;
+              }
+              speaking = '';
+            } else if (stoppedByUser.current) {
+              window.speechSynthesis.cancel();
+              setSpeakingNow('');
+              setAssistantSpeaking(false);
+              setActive(false);
+              speakingActive.current = false;
+              break;
+            }
+          } catch {}
+        }
+      }
+      // Only speak the full response if nothing was spoken yet
+      if (fullResponse.trim() && !stoppedByUser.current && !speakingActive.current && !spoken) {
         setAssistantSpeaking(true);
-        speakText(geminiResponse);
-        setSpeakingNow(geminiResponse);
+        speakText(fullResponse);
+        setSpeakingNow(fullResponse);
         speakingActive.current = true;
       }
-      setMessages((prev) => [...prev, { role: 'assistant', content: geminiResponse } as Message]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: fullResponse } as Message]);
     } catch (e) {
-      const errorMsg =
-        'Sorry, the Gemini AI service is currently unavailable. Please try again later.';
+      const errorMsg = 'Sorry, the AI service is currently unavailable. Please try again later.';
       setSpeakingNow(errorMsg);
       setAssistantSpeaking(false);
       setActive(false);

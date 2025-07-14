@@ -19,7 +19,7 @@ const isPublicRoute = createRouteMatcher([
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)','/sentry-example-page(.*)']);
 
 const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
 const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';
@@ -37,7 +37,7 @@ const aj = arcjet({
     fixedWindow({
       mode: 'LIVE',
       window: '60s',
-      max: 50,
+      max: 80,
     }),
   ],
 });
@@ -118,7 +118,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (!isRateLimitPage) {
       const response = NextResponse.redirect(new URL('/rate-limit', request.url));
       response.cookies.set('middleware_redirect', 'true', {
-        maxAge: 10,
+        maxAge: 60,
         httpOnly: true,
         path: '/rate-limit',
         sameSite: 'strict',
@@ -132,7 +132,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (!isBlockPage) {
       const response = NextResponse.redirect(new URL('/block', request.url));
       response.cookies.set('middleware_redirect', 'true', {
-        maxAge: 10,
+        maxAge: 60,
         httpOnly: true,
         path: '/block',
         sameSite: 'strict',
@@ -213,7 +213,7 @@ export default clerkMiddleware(async (auth, request) => {
     'Content-Security-Policy',
     [
       "default-src 'self';",
-      "media-src 'self' blob:;",
+      "media-src 'self' blob: https://www.w3schools.com https://samplelib.com https://www.videezy.com;",
       "img-src 'self' https: data: blob: https://huggingface.co https://cdn-lfs.huggingface.co https://github.com https://avatars.githubusercontent.com https://nyc.cloud.appwrite.io;",
       "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co https://www.google.com https://www.gstatic.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com;",
       "style-src 'self' 'unsafe-inline' https:;",

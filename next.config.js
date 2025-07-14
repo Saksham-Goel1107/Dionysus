@@ -12,6 +12,10 @@ const baseConfig = {
       { protocol: 'https', hostname: 'img.clerk.com' },
       { protocol: 'https', hostname: 'fra.cloud.appwrite.io' },
       { protocol: 'https', hostname: 'randomuser.me' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'samplelib.com' },
+      { protocol: 'https', hostname: 'www.w3schools.com' },
+      { protocol: 'https', hostname: 'www.videezy.com' },
     ],
   },
 };
@@ -24,6 +28,7 @@ const sentryOptions = {
   tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
+  autoInstrumentServerFunctions: false,
 };
 
 const config = withSentryConfig(baseConfig, sentryOptions);

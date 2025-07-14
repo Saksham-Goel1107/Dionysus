@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 
 import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
+import { headers } from 'next/headers';
 
 import { TRPCReactProvider } from '@/trpc/react';
 import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
@@ -116,6 +117,9 @@ export default async function RootLayout({
     await checkAndSyncProStatus(userId);
   }
 
+  const headersList = await headers();
+  const pathname = headersList.get('x-next-pathname') || '';
+
   const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
 
   return (
@@ -138,15 +142,13 @@ export default async function RootLayout({
                   <SpeedInsights />
                 </>
               ) : (
-                <>
-                  <RecaptchaGate>
                     <>
                       <GoogleOneTap
                         cancelOnTapOutside={true}
                         itpSupport={true}
                         fedCmSupport={true}
                       />
-                      <CookieBanner />
+                      {pathname !== '/rate-limit' && pathname !== '/block' && pathname !== '/updates' && <CookieBanner />}
                       <TRPCReactProvider>
                         <Offline>
                           {userId ? <Providers>{children}</Providers> : <>{children}</>}
@@ -164,8 +166,6 @@ export default async function RootLayout({
                         strategy="afterInteractive"
                       ></Script>
                     </>
-                  </RecaptchaGate>
-                </>
               )}
               {/* </MultisessionAppSupport> */}
             </ClerkProviderWithTheme>
