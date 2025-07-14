@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     const scriptPath = path.resolve('generate_diagram.py'); // Python file at root
     const outputFile = 'diagram.png';
     const outputPath = path.resolve(outputFile);
+    const svgPath = path.resolve('diagram.svg'); // Fallback SVG path
 
     console.log(`[API] Running script for repo ${owner}/${repo}`);
 
@@ -87,22 +88,47 @@ export async function POST(req: Request) {
         }
 
         try {
-          await waitForFile(outputPath);
-          const fileBuffer = await fs.readFile(outputPath);
+          // First try to find a PNG file
+          let fileToSend = outputPath;
+          let contentType = 'image/png';
+          let fileExtension = 'png';
+
+          if (!fsSync.existsSync(outputPath)) {
+            // If PNG doesn't exist, try SVG
+            if (fsSync.existsSync(svgPath)) {
+              fileToSend = svgPath;
+              contentType = 'image/svg+xml';
+              fileExtension = 'svg';
+              console.log('📄 Using SVG file as PNG is not available');
+            } else {
+              // Try HTML as final fallback
+              const htmlPath = path.resolve('diagram.html');
+              if (fsSync.existsSync(htmlPath)) {
+                fileToSend = htmlPath;
+                contentType = 'text/html';
+                fileExtension = 'html';
+                console.log('📄 Using HTML file as final fallback');
+              } else {
+                throw new Error('No diagram file generated');
+              }
+            }
+          }
+
+          const fileBuffer = await fs.readFile(fileToSend);
 
           return resolve(
             new NextResponse(new Uint8Array(fileBuffer), {
               status: 200,
               headers: {
-                'Content-Type': 'image/png',
-                'Content-Disposition': `attachment; filename="${repo}_diagram.png"`,
+                'Content-Type': contentType,
+                'Content-Disposition': `attachment; filename="${repo}_diagram.${fileExtension}"`,
               },
             }),
           );
         } catch (err) {
-          console.error('❌ Diagram generation timeout or file not found:', err);
+          console.error('❌ Diagram file not found or could not be read:', err);
           return resolve(
-            NextResponse.json({ error: 'Diagram generation timed out.' }, { status: 500 }),
+            NextResponse.json({ error: 'Diagram generation failed or file not found.' }, { status: 500 }),
           );
         }
       });
