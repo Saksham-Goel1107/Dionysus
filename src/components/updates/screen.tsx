@@ -164,7 +164,14 @@ export default function MaintenanceScreen() {
             <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">Watch What’s New:</span>
             <div className="flex flex-col gap-4 mt-2">
               {info.videos.map((vid, i) => (
-                vid.includes('youtube.com') ? (
+                (() => {
+                  try {
+                    const { host } = new URL(vid);
+                    return ['youtube.com', 'www.youtube.com'].includes(host);
+                  } catch {
+                    return false;
+                  }
+                })() ? (
                   <div key={i} className="aspect-video w-full rounded-xl overflow-hidden shadow border-2 border-sky-200 dark:border-sky-800">
                     <iframe
                       src={vid}
