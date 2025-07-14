@@ -31,9 +31,9 @@ const Page = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-    return redirect('/dashboard');
+    return redirect('/onboarding');
   } catch (error) {
-    return redirect('/dashboard');
+    return redirect('/onboarding');
   }
 };
 
