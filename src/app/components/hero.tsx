@@ -1,3 +1,5 @@
+'use client';
+
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Github, Headphones, Code } from 'lucide-react';
