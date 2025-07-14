@@ -24,6 +24,7 @@ const sentryOptions = {
   tunnelRoute: '/monitoring',
   disableLogger: true,
   automaticVercelMonitors: true,
+  autoInstrumentServerFunctions: false,
 };
 
 const config = withSentryConfig(baseConfig, sentryOptions);
