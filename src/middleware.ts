@@ -19,7 +19,7 @@ const isPublicRoute = createRouteMatcher([
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)','/sentry-example-page(.*)']);
 
 const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
 const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';

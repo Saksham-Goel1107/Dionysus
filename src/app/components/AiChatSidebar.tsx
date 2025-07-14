@@ -9,6 +9,7 @@ import type {
   SpeechRecognitionResultList,
   SpeechRecognitionAlternative,
 } from '../types/speech-recognition';
+import { useRouter } from 'next/navigation';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -68,6 +69,7 @@ export default function AiChatSidebar({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const router = useRouter()
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -377,7 +379,7 @@ export default function AiChatSidebar({
               <button
                 onClick={() => {
                   if (!message.trim()) {
-                    window.location.href = '/talking';
+                    router.push('/talking');
                     onClose();
                   } else {
                     handleSendMessage();
