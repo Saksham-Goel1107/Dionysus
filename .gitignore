@@ -48,6 +48,10 @@ yarn-error.log*
 
 # git digram files
 diagram.png
+diagram.svg
+diagram.html
+diagram.txt
+diagram_fallback.*
 temp.mmd
 __pycache__/
 *.pyc
