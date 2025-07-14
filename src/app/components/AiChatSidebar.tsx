@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
+import { useRouter } from 'next/navigation';
 import VoiceButton from '../components/VoiceButton';
 import type {
   SpeechRecognition,
@@ -68,6 +69,7 @@ export default function AiChatSidebar({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const router = useRouter();
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -377,7 +379,7 @@ export default function AiChatSidebar({
               <button
                 onClick={() => {
                   if (!message.trim()) {
-                    window.location.href = '/talking';
+                    router.push('/talking');
                     onClose();
                   } else {
                     handleSendMessage();
