@@ -9,6 +9,8 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    RECAPTCHA_SECRET_KEY: z.string().min(1),
+    RECAPTCHA_JWT_SECRET: z.string().min(1),
   },
 
   /**
@@ -28,6 +30,8 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    RECAPTCHA_SECRET_KEY: process.env.RECAPTCHA_SECRET_KEY,
+    RECAPTCHA_JWT_SECRET: process.env.RECAPTCHA_JWT_SECRET,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
