@@ -2,10 +2,10 @@ import { SignIn } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
 
-export default async function Page({ searchParams }: { searchParams: { [key: string]: string } }) {
+export default async function Page({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const { userId } = await auth();
-  const sparams = await searchParams;
-  const isAddingAccount = Boolean(sparams?.__clerk_add_account);
+  const plainSearchParams = searchParams ? Object.fromEntries(Object.entries(searchParams)) : {};
+  const isAddingAccount = Boolean(plainSearchParams.__clerk_add_account);
 
   if (userId && !isAddingAccount) {
     return (
