@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 
 import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
+import { headers } from 'next/headers';
 
 import { TRPCReactProvider } from '@/trpc/react';
 import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
@@ -116,7 +117,10 @@ export default async function RootLayout({
     await checkAndSyncProStatus(userId);
   }
 
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
+  const headersList = await headers();
+  const pathname = headersList.get('x-next-pathname') || '';
+
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'false';
 
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
@@ -146,7 +150,7 @@ export default async function RootLayout({
                         itpSupport={true}
                         fedCmSupport={true}
                       />
-                      <CookieBanner />
+                      {pathname !== '/rate-limit' && pathname !== '/block' && pathname !== '/updates' && <CookieBanner />}
                       <TRPCReactProvider>
                         <Offline>
                           {userId ? <Providers>{children}</Providers> : <>{children}</>}

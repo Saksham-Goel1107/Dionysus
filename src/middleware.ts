@@ -213,7 +213,7 @@ export default clerkMiddleware(async (auth, request) => {
     'Content-Security-Policy',
     [
       "default-src 'self';",
-      "media-src 'self' blob:;",
+      "media-src 'self' blob: https://www.w3schools.com https://samplelib.com https://www.videezy.com;",
       "img-src 'self' https: data: blob: https://huggingface.co https://cdn-lfs.huggingface.co https://github.com https://avatars.githubusercontent.com https://nyc.cloud.appwrite.io;",
       "script-src 'self' 'unsafe-inline' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co https://www.google.com https://www.gstatic.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com;",
       "style-src 'self' 'unsafe-inline' https:;",
