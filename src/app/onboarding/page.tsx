@@ -3,29 +3,10 @@
 import * as React from 'react';
 import { markOnboardingComplete } from './completeOnboardingAction';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
 
-const THEME_KEY = 'theme';
 const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
 
-function useTheme() {
-  const [theme, setTheme] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(THEME_KEY) || 'light';
-    }
-    return 'light';
-  });
-
-  React.useEffect(() => {
-    document.documentElement.classList.remove('light', 'dark');
-    document.documentElement.classList.add(theme);
-    localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
-
-  const toggleTheme = () => setTheme((t) => (t === 'light' ? 'dark' : 'light'));
-  return [theme, toggleTheme] as const;
-}
-
-// Fix: type for TOUR_STEPS and FEATURE_ICONS
 const TOUR_STEPS: Array<{
   key: keyof typeof FEATURE_ICONS;
   title: string;
@@ -151,8 +132,8 @@ declare global {
   }
 }
 
-export default function OnboardingComponent() {
-  const [theme, toggleTheme] = useTheme();
+function OnboardingPage() {
+  const { theme, setTheme } = useTheme();
   const [step, setStep] = React.useState(0);
   const [showMeetDev, setShowMeetDev] = React.useState(false);
   const [showSkip, setShowSkip] = React.useState(false);
@@ -221,7 +202,7 @@ export default function OnboardingComponent() {
         <button
           aria-label="Toggle theme"
           className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform"
-          onClick={toggleTheme}
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
@@ -311,7 +292,7 @@ export default function OnboardingComponent() {
       <button
         aria-label="Toggle theme"
         className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform z-50"
-        onClick={toggleTheme}
+        onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       >
         {theme === 'light' ? '🌙' : '☀️'}
       </button>
@@ -472,6 +453,7 @@ export default function OnboardingComponent() {
   );
 }
 
+export default OnboardingPage;
 function ConfirmModal({
   message,
   onConfirm,

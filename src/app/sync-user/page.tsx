@@ -8,13 +8,13 @@ const Page = async ({}: Props) => {
   try {
     const { userId } = await auth();
     if (!userId) {
-      redirect('/sign-in');
+      return redirect('/sign-in');
     }
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
-      redirect('/sign-in');
+      return redirect('/sign-in');
     }
     await db.user.upsert({
       where: { emailAddress: email },
@@ -31,9 +31,9 @@ const Page = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-    redirect('/dashboard');
+    return redirect('/dashboard');
   } catch (error) {
-    redirect('/dashboard');
+    return redirect('/dashboard');
   }
 };
 

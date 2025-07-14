@@ -1,11 +1,15 @@
+"use client"
+
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { Button } from '@/components/ui/button';
-import { auth } from '@clerk/nextjs/server';
+import { useUser } from '@clerk/nextjs';
 import { Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
 
-export async function Hero() {
-  const { userId } = await auth();
+export function Hero() {
+  
+  const { user } = useUser();
+  const userId = user?.id;
 
   return (
     <section className="w-full p-12  md:py-24 lg:py-32 xl:py-48">

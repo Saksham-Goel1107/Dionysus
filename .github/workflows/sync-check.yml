@@ -21,6 +21,7 @@ jobs:
           echo "DATABASE_URL=postgres://user:pass@localhost:5432/db" >> .env
           echo "NODE_ENV=development" >> .env
           echo "HUGGINGFACE_API_KEY=dummy" >> .env
+          echo "NEXT_PUBLIC_BASE_URL=https://dionysus-gray.vercel.app" >> .env
 
       - name: Clear .next build and types cache
         run: rm -rf .next
