@@ -3,6 +3,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 /** @type {import("next").NextConfig} */
 const baseConfig = {
+  swcMinify: false,
   eslint: { ignoreDuringBuilds: false },
   typescript: { ignoreBuildErrors: true },
   poweredByHeader: false,
