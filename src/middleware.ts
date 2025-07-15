@@ -55,9 +55,6 @@ export default clerkMiddleware(async (auth, request) => {
   if (pathname === '/api/uptime') {
     return NextResponse.next();
   }
-  if (isPublicRoute(request) && !isApiRoute) {
-    return NextResponse.next();
-  }
 
   if (isAdminRoute(request)) {
     const { userId, sessionClaims } = await auth();
