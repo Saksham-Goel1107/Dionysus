@@ -16,7 +16,6 @@ const isPublicRoute = createRouteMatcher([
   '/api/recaptcha-verify(.*)',
   '/about(.*)',
   '/status(.*)',
-  '/api/status(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
@@ -52,12 +51,10 @@ export default clerkMiddleware(async (auth, request) => {
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
-  const userAgent = request.headers.get('user-agent') || '';
-  if (userAgent.includes('UptimeRobot')) {
+  const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
+  if (pathname === '/api/uptime') {
     return NextResponse.next();
   }
-
-  const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
   if (isPublicRoute(request) && !isApiRoute) {
     return NextResponse.next();
   }

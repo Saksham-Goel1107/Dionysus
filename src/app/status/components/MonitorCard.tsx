@@ -78,17 +78,14 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
                 <span>Never checked</span>
               )}
             </div>
-
-            {monitor.url && (
-              <a
-                href={monitor.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center text-xs font-medium text-primary hover:underline"
-              >
-                View <ArrowUpRight className="ml-1 h-3 w-3" />
-              </a>
-            )}
+            <a
+              href="https://stats.uptimerobot.com/wKGC8z1EG2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-xs font-medium text-primary hover:underline"
+            >
+              View <ArrowUpRight className="ml-1 h-3 w-3" />
+            </a>
           </div>
         </div>
       </CardContent>
