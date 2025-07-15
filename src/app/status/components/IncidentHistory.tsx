@@ -83,11 +83,16 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                 </Badge>
               </div>
 
+
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                 <Clock className="h-4 w-4" />
-                <span>{format(incident.startTime, 'MMMM d, yyyy HH:mm')}</span>
+                <span>
+                  {incident.startTime ? format(incident.startTime, 'MMMM d, yyyy HH:mm') : 'Unknown start'}
+                </span>
                 <span>·</span>
-                <span>Duration: {incident.duration} minutes</span>
+                <span>
+                  Duration: {typeof incident.duration === 'number' && !isNaN(incident.duration) ? incident.duration : '?'} minutes
+                </span>
               </div>
 
               <div className="space-y-3">
@@ -101,7 +106,7 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                   </p>
                 </div>
 
-                {incident.status === 'resolved' && (
+                {incident.status === 'resolved' && incident.endTime && (
                   <div className="bg-muted/50 p-3 rounded-md">
                     <p className="text-sm font-medium mb-1">
                       {format(incident.endTime, 'HH:mm')} - Issue resolved
@@ -109,6 +114,14 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                     <p className="text-sm text-muted-foreground">
                       The issue was identified and resolved. The system returned to normal
                       operation.
+                    </p>
+                  </div>
+                )}
+                {incident.status === 'resolved' && !incident.endTime && (
+                  <div className="bg-muted/50 p-3 rounded-md">
+                    <p className="text-sm font-medium mb-1">Resolution time unknown</p>
+                    <p className="text-sm text-muted-foreground">
+                      The issue was resolved, but the exact resolution time is unavailable.
                     </p>
                   </div>
                 )}

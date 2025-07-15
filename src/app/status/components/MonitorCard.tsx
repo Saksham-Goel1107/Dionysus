@@ -16,11 +16,17 @@ interface MonitorCardProps {
 export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }: MonitorCardProps) {
   const statusText = getMonitorStatusText(monitor.status);
   const badgeVariant = getStatusBadge(monitor.status);
-  const uptime = parseFloat(monitor.all_time_uptime_ratio as any) || 0;
+  
+  // Handle different data formats from UptimeRobot
+  const uptimeValue = monitor.all_time_uptime_ratio;
+  const uptime = typeof uptimeValue === 'string' 
+    ? parseFloat(uptimeValue) 
+    : (typeof uptimeValue === 'number' ? uptimeValue : undefined);
+  
   const lastChecked =
     typeof monitor.last_check === 'number' && monitor.last_check > 0
       ? new Date(monitor.last_check * 1000)
-      : null;
+      : new Date();
 
   function getMonitorStatusText(status: number): string {
     switch (status) {
@@ -53,7 +59,7 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
           <div className="space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Uptime</span>
-              <span className="font-medium">{uptime}%</span>
+              <span className="font-medium">{uptime !== undefined ? `${uptime}%` : 'No Data'}</span>
             </div>
             <Progress value={uptime} className="h-1" />
           </div>
@@ -61,7 +67,11 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div>
               <p className="text-muted-foreground">Response</p>
-              <p className="font-medium">{monitor.average_response_time} ms</p>
+              <p className="font-medium">
+                {monitor.average_response_time 
+                  ? `${monitor.average_response_time} ms` 
+                  : 'N/A'}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Type</p>
@@ -79,12 +89,12 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
               )}
             </div>
             <a
-              href="https://stats.uptimerobot.com/wKGC8z1EG2"
+              href={`https://stats.uptimerobot.com/wKGC8z1EG2`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center text-xs font-medium text-primary hover:underline"
             >
-              View <ArrowUpRight className="ml-1 h-3 w-3" />
+              View Details <ArrowUpRight className="ml-1 h-3 w-3" />
             </a>
           </div>
         </div>

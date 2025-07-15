@@ -127,6 +127,7 @@
     "nodemailer": "^7.0.3",
     "octokit": "^4.1.0",
     "paypal-rest-sdk": "^1.8.1",
+    "pg": "^8.16.3",
     "react": "^19.1.0",
     "react-circular-progressbar": "^2.1.0",
     "react-day-picker": "^9.7.0",

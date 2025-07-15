@@ -66,6 +66,16 @@ export default function UserAvatarMenu() {
             See your data with us
           </Button>
           <Button
+            className="w-full justify-start rounded-lg text-base font-semibold py-3"
+            variant="ghost"
+            onClick={() => {
+              setShowMenu(false);
+              router.push('/status');
+            }}
+          >
+            Check Dionysus Status
+          </Button>
+          <Button
             className="w-full justify-start rounded-lg text-base font-semibold py-3 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
             variant="ghost"
             onClick={() => {
