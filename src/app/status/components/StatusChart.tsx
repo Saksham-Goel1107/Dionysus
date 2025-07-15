@@ -22,12 +22,13 @@ interface StatusChartProps {
   isLoading?: boolean;
 }
 
-const formatUptime = (ratio: number): string => {
+const formatUptime = (ratio: number | null): string => {
+  if (ratio === null) return 'No Data';
   return (ratio || 0).toFixed(2) + '%';
 };
 
 const formatResponseTime = (time: number): string => {
-  if (typeof time !== 'number' || isNaN(time) || time === null || time === undefined) return 'N/A';
+  if (typeof time !== 'number' || isNaN(time) || time === null || time === undefined) return 'No Data';
   if (time < 1000) return `${Math.round(time)}ms`;
   return `${(time / 1000).toFixed(2)}s`;
 };
@@ -54,11 +55,13 @@ const generateDataPoints = (monitors: Monitor[]) => {
 
   monitors.forEach((monitor) => {
     hourlyData.forEach((dataPoint) => {
-      dataPoint[monitor.friendly_name] = 100;
+      // Don't set a default status - leave it undefined if we have no data
+      dataPoint[monitor.friendly_name] = null;
       dataPoint[`${monitor.friendly_name}_data`] = {
         responseTime: null,
         monitorId: monitor.id,
         uptimeRatio: monitor.all_time_uptime_ratio,
+        hasData: false
       };
     });
 
@@ -162,7 +165,15 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
               <div key={index} className="flex items-center gap-2 my-1">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-sm">
-                  {entry.name}: {value === 100 ? 'Up' : value === 50 ? 'Partial' : 'Down'}
+                  {entry.name}: {
+                    value === null || value === undefined 
+                      ? 'No Data' 
+                      : value === 100 
+                        ? 'Up' 
+                        : value === 50 
+                          ? 'Partial' 
+                          : 'Down'
+                  }
                   {monitorData?.responseTime && value === 100 && (
                     <span className="ml-2 text-xs opacity-70">
                       {formatResponseTime(monitorData.responseTime)}
@@ -208,13 +219,24 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
   );
 
   const calculateOverallUptime = () => {
-    if (!monitors || monitors.length === 0) return 0;
+    if (!monitors || monitors.length === 0) return null;
 
-    const sum = monitors.reduce((acc, monitor) => {
-      return acc + (monitor.all_time_uptime_ratio || 0);
+    // Count monitors that actually have uptime data
+    const monitorsWithData = monitors.filter(m => 
+      typeof m.all_time_uptime_ratio === 'number' || 
+      (typeof m.all_time_uptime_ratio === 'string' && m.all_time_uptime_ratio !== '')
+    );
+    
+    if (monitorsWithData.length === 0) return null;
+
+    const sum = monitorsWithData.reduce((acc, monitor) => {
+      const ratio = typeof monitor.all_time_uptime_ratio === 'string'
+        ? parseFloat(monitor.all_time_uptime_ratio)
+        : (monitor.all_time_uptime_ratio || 0);
+      return acc + (isNaN(ratio) ? 0 : ratio);
     }, 0);
 
-    return sum / monitors.length;
+    return monitorsWithData.length > 0 ? sum / monitorsWithData.length : null;
   };
 
   const overallUptime = calculateOverallUptime();
@@ -264,18 +286,22 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
               </div>
               <Badge
                 variant={
-                  overallUptime >= 99.9
-                    ? 'default'
-                    : overallUptime >= 95
-                      ? 'outline'
-                      : 'destructive'
+                  overallUptime === null
+                    ? 'outline'
+                    : overallUptime >= 99.9
+                      ? 'default'
+                      : overallUptime >= 95
+                        ? 'outline'
+                        : 'destructive'
                 }
               >
-                {overallUptime >= 99.9
-                  ? 'Excellent'
-                  : overallUptime >= 95
-                    ? 'Good'
-                    : 'Needs Attention'}
+                {overallUptime === null
+                  ? 'No Data'
+                  : overallUptime >= 99.9
+                    ? 'Excellent'
+                    : overallUptime >= 95
+                      ? 'Good'
+                      : 'Needs Attention'}
               </Badge>
             </div>
           </CardContent>

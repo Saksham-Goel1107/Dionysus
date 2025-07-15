@@ -18,11 +18,15 @@ export interface Monitor {
     uptime: number;
     downtime: number;
   };
-  average_response: number;
+  average_response?: number;
   create_datetime: number;
   logs: MonitorLog[];
   average_response_time: number;
   last_check: number;
+  response_times?: Array<{
+    value: number;
+    datetime: number;
+  }>;
 }
 
 export interface MonitorLog {
