@@ -13,11 +13,12 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/privacy',
   '/terms',
   '/about',
+  '/support',
 ];
 
 function isPublicRoute(pathname: string) {
-  return PUBLIC_ROUTE_PREFIXES.some((prefix) =>
-    pathname === prefix || pathname.startsWith(prefix + '/')
+  return PUBLIC_ROUTE_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(prefix + '/'),
   );
 }
 

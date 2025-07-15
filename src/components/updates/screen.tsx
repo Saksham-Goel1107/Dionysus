@@ -87,12 +87,16 @@ export default function MaintenanceScreen() {
         transition: 'background 0.3s',
       }}
     >
-      <div
-        className="max-w-2xl w-full flex flex-col items-center text-center p-8 rounded-3xl shadow-2xl border-4 border-sky-200 dark:border-sky-900 relative overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl"
-      >
+      <div className="max-w-2xl w-full flex flex-col items-center text-center p-8 rounded-3xl shadow-2xl border-4 border-sky-200 dark:border-sky-900 relative overflow-hidden bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl">
         {/* Banner or SVG */}
         {info?.banner ? (
-          <Image width={900} height={400} src={info.banner} alt="Maintenance Banner" className="object-cover rounded-2xl mb-6 shadow-xl border-2 border-sky-200 dark:border-sky-800" />
+          <Image
+            width={900}
+            height={400}
+            src={info.banner}
+            alt="Maintenance Banner"
+            className="object-cover rounded-2xl mb-6 shadow-xl border-2 border-sky-200 dark:border-sky-800"
+          />
         ) : (
           <svg width={100} height={100} viewBox="0 0 24 24" fill="none" className="mb-6">
             <circle
@@ -117,7 +121,8 @@ export default function MaintenanceScreen() {
         <p className="text-gray-800 dark:text-gray-300 mb-6 text-lg font-medium max-w-xl mx-auto">
           {info?.message || (
             <>
-              Our site is currently undergoing scheduled maintenance.<br />
+              Our site is currently undergoing scheduled maintenance.
+              <br />
               We&rsquo;ll be back shortly with new features and improvements.
             </>
           )}
@@ -125,7 +130,9 @@ export default function MaintenanceScreen() {
         {/* Countdown Timer */}
         {info?.maintenanceEnd && (
           <div className="mb-6 flex flex-col items-center">
-            <span className="uppercase text-xs font-bold text-sky-700 dark:text-sky-300 tracking-widest">Estimated Time Left</span>
+            <span className="uppercase text-xs font-bold text-sky-700 dark:text-sky-300 tracking-widest">
+              Estimated Time Left
+            </span>
             <span className="text-3xl font-mono font-bold text-sky-600 dark:text-sky-200 bg-sky-100 dark:bg-sky-900 px-6 py-2 rounded-xl shadow mt-2 animate-pulse">
               {timeLeft}
             </span>
@@ -134,10 +141,15 @@ export default function MaintenanceScreen() {
         {/* Features */}
         {info?.features && info.features.length > 0 && (
           <div className="mb-6 w-full">
-            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">What’s coming:</span>
+            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">
+              What’s coming:
+            </span>
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
               {info.features.map((f, i) => (
-                <li key={i} className="bg-sky-50 dark:bg-sky-800/60 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 shadow flex items-center gap-2">
+                <li
+                  key={i}
+                  className="bg-sky-50 dark:bg-sky-800/60 rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 shadow flex items-center gap-2"
+                >
                   <span className="inline-block w-2 h-2 bg-sky-400 dark:bg-sky-300 rounded-full"></span>
                   {f}
                 </li>
@@ -148,11 +160,19 @@ export default function MaintenanceScreen() {
         {/* Images Carousel */}
         {info?.images && info.images.length > 0 && (
           <div className="mb-6 w-full">
-            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">Sneak Peek:</span>
+            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">
+              Sneak Peek:
+            </span>
             <div className="flex gap-3 mt-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-sky-300 dark:scrollbar-thumb-sky-800">
               {info.images.map((img, i) => (
                 <div key={i} className="min-w-[180px] max-w-[220px] flex-shrink-0">
-                  <Image width={220} height={140} src={img} alt={`update-img-${i}`} className="object-cover rounded-xl shadow border-2 border-sky-200 dark:border-sky-800" />
+                  <Image
+                    width={220}
+                    height={140}
+                    src={img}
+                    alt={`update-img-${i}`}
+                    className="object-cover rounded-xl shadow border-2 border-sky-200 dark:border-sky-800"
+                  />
                 </div>
               ))}
             </div>
@@ -161,9 +181,11 @@ export default function MaintenanceScreen() {
         {/* Videos Section */}
         {info?.videos && info.videos.length > 0 && (
           <div className="mb-6 w-full">
-            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">Watch What’s New:</span>
+            <span className="font-semibold text-sky-700 dark:text-sky-300 text-lg">
+              Watch What’s New:
+            </span>
             <div className="flex flex-col gap-4 mt-2">
-              {info.videos.map((vid, i) => (
+              {info.videos.map((vid, i) =>
                 (() => {
                   try {
                     const { host } = new URL(vid);
@@ -172,7 +194,10 @@ export default function MaintenanceScreen() {
                     return false;
                   }
                 })() ? (
-                  <div key={i} className="aspect-video w-full rounded-xl overflow-hidden shadow border-2 border-sky-200 dark:border-sky-800">
+                  <div
+                    key={i}
+                    className="aspect-video w-full rounded-xl overflow-hidden shadow border-2 border-sky-200 dark:border-sky-800"
+                  >
                     <iframe
                       src={vid}
                       title={`update-video-${i}`}
@@ -182,9 +207,14 @@ export default function MaintenanceScreen() {
                     />
                   </div>
                 ) : (
-                  <video key={i} src={vid} controls className="w-full rounded-xl shadow border-2 border-sky-200 dark:border-sky-800 aspect-video" />
-                )
-              ))}
+                  <video
+                    key={i}
+                    src={vid}
+                    controls
+                    className="w-full rounded-xl shadow border-2 border-sky-200 dark:border-sky-800 aspect-video"
+                  />
+                ),
+              )}
             </div>
           </div>
         )}

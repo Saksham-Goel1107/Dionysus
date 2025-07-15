@@ -12,14 +12,14 @@ const isPublicRoute = createRouteMatcher([
   '/privacy(.*)',
   '/terms(.*)',
   '/api/create(.*)', // for the stream chat initialization
-  '/support(.*)',
+  '/support',
   '/api/recaptcha-verify(.*)',
   '/about(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)','/sentry-example-page(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)', '/sentry-example-page(.*)']);
 
 const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
 const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';

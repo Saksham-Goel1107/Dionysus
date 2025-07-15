@@ -1,167 +1,108 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { useUser } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
+import { Navbar } from '../components/navbar';
+import Link from 'next/link';
 
 export default function SupportPage() {
-  const { user, isSignedIn, isLoaded } = useUser();
-  const [form, setForm] = useState({
-    name: '',
-    email: user?.primaryEmailAddress?.emailAddress || '',
-    message: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { user, isLoaded } = useUser();
+  const userId = user?.id;
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (user?.primaryEmailAddress?.emailAddress) {
-      setForm((prev) => ({
-        ...prev,
-        name: user?.firstName ?? '',
-        email: user.primaryEmailAddress?.emailAddress ?? '',
-      }));
+    if (!isLoaded) {
+      setChecking(true);
+      return;
     }
-  }, [user?.primaryEmailAddress?.emailAddress, user?.firstName]);
+    if (userId) {
+      router.replace('/supportAuth');
+      return;
+    }
+    setChecking(false);
+  }, [userId, isLoaded, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isSignedIn) return;
-    // Prevent submission if message is only spaces or empty after trimming
-    if (form.message.trim().length < 30) return;
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setSubmitted(true);
-    setLoading(false);
-  };
+  if (checking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-3xl border border-blue-200 dark:border-blue-800 relative">
-        <h1 className="text-4xl font-extrabold text-center mb-2 text-blue-700 dark:text-blue-300 tracking-tight">
-          Support & Help Center
-        </h1>
-        <p className="text-center text-gray-700 dark:text-gray-300 mb-8 text-lg max-w-2xl mx-auto">
-          Welcome to the Dionysus Support Center. We&apos;re here to help with any questions,
-          issues, or feedback about your account, billing, privacy, technical problems, or anything
-          else. Browse our resources, reach out, or join the community!
-        </p>
-        {/* Contact Options */}
-        <div className="mb-10 flex flex-col md:flex-row gap-8">
-          <div className="flex-1">
-            <h2 className="text-xl font-bold mb-2 text-blue-700 dark:text-blue-300">
-              Contact Us Directly
-            </h2>
-            <ul className="text-base text-gray-700 dark:text-gray-300 mb-4 space-y-1">
-              <li>
-                Email:{' '}
-                <a
-                  href="mailto:sakshamgoel1107@gmail.com"
-                  className="text-blue-600 dark:text-blue-400 underline"
-                >
-                  sakshamgoel1107@gmail.com
-                </a>
-              </li>
-              <li>
-                GitHub:{' '}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href="https://github.com/Saksham-Goel1107"
-                  className="text-blue-600 dark:text-blue-400 underline"
-                >
-                  Saksham-Goel1107
-                </a>
-              </li>
-            </ul>
-            <div className="mt-4">
-              <h3 className="font-semibold mb-1">Or send us a message:</h3>
-              {submitted ? (
-                <div className="text-green-600 dark:text-green-400 font-semibold">
-                  Thank you! We&apos;ll get back to you soon.
-                </div>
-              ) : (
-                <form
-                  action={`https://send.pageclip.co/${process.env.PAGECLIP_KEY_2}`}
-                  className="pageclip-form flex flex-col gap-3"
-                  method="POST"
-                  onSubmit={handleSubmit}
-                >
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Your Name"
-                    className="border p-2 rounded bg-white dark:bg-gray-900"
-                    value={form.name}
-                    onChange={handleChange}
-                    required
-                    readOnly={!!user?.firstName}
-                    disabled={!isSignedIn}
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="Your Email"
-                    className="border p-2 rounded bg-white dark:bg-gray-900"
-                    value={form.email}
-                    onChange={handleChange}
-                    required
-                    readOnly={!!user?.primaryEmailAddress?.emailAddress}
-                    disabled={!isSignedIn}
-                  />
-                  <textarea
-                    name="message"
-                    placeholder="How can we help you?"
-                    className="border p-2 rounded bg-white dark:bg-gray-900 min-h-[80px]"
-                    value={form.message}
-                    minLength={30}
-                    maxLength={150}
-                    onChange={handleChange}
-                    required
-                    disabled={!isSignedIn}
-                  />
-                  <div className="flex justify-between items-center text-xs mt-[-4px] mb-[-4px]">
-                    <span
-                      className={
-                        form.message.trim().length < 30
-                          ? 'text-red-500'
-                          : 'text-green-600 dark:text-green-400'
-                      }
-                    >
-                      Minimum of 30 characters
-                    </span>
-                    <span
-                      className={form.message.trim().length < 30 ? 'text-red-500' : 'text-gray-500'}
-                    >
-                      {form.message.trim().length}/30
-                    </span>
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={loading || !isSignedIn}
-                    className="w-full max-w-xs"
-                  >
-                    {isSignedIn
-                      ? loading
-                        ? 'Sending...'
-                        : 'Send Message'
-                      : 'Sign in to contact support'}
-                  </Button>
-                  {!isSignedIn && (
-                    <div className="text-red-600 dark:text-red-400 text-sm mt-2 text-center">
-                      You must be signed in to contact support.
-                    </div>
-                  )}
-                </form>
-              )}
+    <>
+      <Navbar />
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-4xl border border-blue-200 dark:border-blue-800 relative flex flex-col gap-10">
+          <h1 className="text-4xl font-extrabold text-center mb-2 text-blue-700 dark:text-blue-300 tracking-tight">
+            Support & Help Center
+          </h1>
+          <p className="text-center text-gray-700 dark:text-gray-300 mb-8 text-lg max-w-2xl mx-auto">
+            Welcome to the Dionysus Support Center. We&apos;re here to help with any questions,
+            issues, or feedback about your account, billing, privacy, technical problems, or
+            anything else. Browse our resources, reach out, or join the community!
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-blue-100 dark:bg-blue-900 rounded-xl p-6 flex flex-col items-center shadow border border-blue-200 dark:border-blue-700 min-h-[220px]">
+              <span className="text-3xl mb-2">📚</span>
+              <h3 className="font-bold text-blue-700 dark:text-blue-200 mb-1 text-center">
+                Documentation
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 text-center">
+                Find guides, API docs, and tutorials to help you get the most out of Dionysus.
+              </p>
+              <a href="/docs" className="text-blue-700 dark:text-blue-300 underline font-medium">
+                Go to Docs
+              </a>
+            </div>
+            <div className="bg-green-100 dark:bg-green-900 rounded-xl p-6 flex flex-col items-center shadow border border-green-200 dark:border-green-700">
+              <span className="text-3xl mb-2">💬</span>
+              <h3 className="font-bold text-green-700 dark:text-green-200 mb-1">Community & FAQ</h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 text-center">
+                Join our GitHub Discussions, browse FAQs, and connect with other users for tips and
+                support.
+              </p>
+              <a
+                href="https://github.com/Saksham-Goel1107/Dionysus/discussions"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-green-700 dark:text-green-400 underline font-medium"
+              >
+                Join Github Discussions
+              </a>
+            </div>
+            <div className="bg-yellow-100 dark:bg-yellow-900 rounded-xl p-6 flex flex-col items-center shadow border border-yellow-200 dark:border-yellow-700">
+              <span className="text-3xl mb-2">📧</span>
+              <h3 className="font-bold text-yellow-700 dark:text-yellow-200 mb-1">
+                Contact Support
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 text-center">
+                Need help? Email us directly or open a GitHub issue for technical support.
+              </p>
+              <a
+                href="mailto:sakshamgoel1107@gmail.com"
+                className="text-yellow-700 dark:text-yellow-400 underline font-medium"
+              >
+                Email Support
+              </a>
+              <a
+                href="https://github.com/Saksham-Goel1107/dionysus/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-yellow-700 dark:text-yellow-400 underline font-medium mt-1"
+              >
+                Open GitHub Issue
+              </a>
             </div>
           </div>
-          <div className="flex-1 flex flex-col gap-6">
-            <div className="bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-900 p-5 rounded-xl border border-blue-200 dark:border-blue-800 shadow-lg">
+
+          {/* New: Feature Highlight Section */}
+          <div className="flex flex-col md:flex-row gap-8 mt-10">
+            <div className="flex-1 bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-blue-200 dark:border-blue-800 shadow-lg flex flex-col gap-2">
               <h3 className="font-bold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-2">
                 Quick Links
               </h3>
@@ -169,11 +110,6 @@ export default function SupportPage() {
                 <li>
                   <a href="/docs" className="underline">
                     Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="/my-data" className="underline">
-                    My Data & Privacy
                   </a>
                 </li>
                 <li>
@@ -188,19 +124,19 @@ export default function SupportPage() {
                 </li>
               </ul>
             </div>
-            <div className="bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 p-5 rounded-xl border border-green-200 dark:border-green-700 shadow flex flex-col gap-2">
+            <div className="flex-1 bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-green-200 dark:border-green-700 shadow flex flex-col gap-2">
               <div className="flex items-center gap-2 text-green-700 dark:text-green-300 font-semibold text-base">
                 <span>💡</span>General Tips
               </div>
               <ul className="list-disc list-inside text-xs text-gray-700 dark:text-gray-300 ml-2">
                 <li>Check the FAQ and documentation for instant answers.</li>
-                <li>For urgent issues, use email or Discord for fastest response.</li>
+                <li>For urgent issues, use email or GitHub for fastest response.</li>
                 <li>Never share your password or exported files with anyone.</li>
                 <li>All support requests are confidential and handled promptly.</li>
                 <li>We value your feedback to improve Dionysus for everyone!</li>
               </ul>
             </div>
-            <div className="bg-gradient-to-br from-red-50 to-yellow-100 dark:from-gray-800 dark:to-gray-900 p-5 rounded-xl border border-red-200 dark:border-red-700 shadow flex flex-col gap-2">
+            <div className="flex-1 bg-gradient-to-br from-red-50 to-yellow-100 dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-red-200 dark:border-red-700 shadow flex flex-col gap-2">
               <div className="flex items-center gap-2 text-red-700 dark:text-red-300 font-semibold text-base">
                 <span>⚠️</span>Security & Privacy
               </div>
@@ -227,114 +163,57 @@ export default function SupportPage() {
               </ul>
             </div>
           </div>
-        </div>
-        {/* FAQ */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-300">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-4">
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">How do I export my data?</summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Go to the My Data page, follow the export steps, and confirm your identity. Your
-                data will be encrypted and downloadable as a zip file.
+
+          {/* New: Testimonials Section */}
+          <div className="mt-10">
+            <h3 className="text-2xl font-bold text-center text-blue-700 dark:text-blue-300 mb-6">
+              What Our Users Say
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-blue-50 dark:bg-gray-800 p-5 rounded-xl border border-blue-200 dark:border-blue-700 shadow flex flex-col gap-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">🌟</span>
+                  <span className="font-semibold text-blue-700 dark:text-blue-300">Aarav S.</span>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  “Dionysus support is fast, friendly, and always solves my issues. The docs are
+                  super helpful too!”
+                </p>
               </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                How do I decrypt my exported data?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Use the password (your email + first name, case-sensitive, no spaces) to decrypt
-                your exported file on the My Data page.
+              <div className="bg-green-50 dark:bg-gray-800 p-5 rounded-xl border border-green-200 dark:border-green-700 shadow flex flex-col gap-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-lg">🌟</span>
+                  <span className="font-semibold text-green-700 dark:text-green-300">Priya G.</span>
+                </div>
+                <p className="text-gray-700 dark:text-gray-300 text-sm">
+                  “I love the community and how quickly I get answers. The team really listens to
+                  feedback!”
+                </p>
               </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                I forgot my password. Can you recover my data?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                For privacy, we cannot recover your password. Please use your email and first name
-                as they were at the time of export.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">How is my data protected?</summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                All exports are encrypted with a password only you know. We never store your
-                password or decrypted data.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">How do I contact support?</summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Use the form above, email us at{' '}
-                <a
-                  href="mailto:sakshamgoel1107@gmail.com"
-                  className="text-blue-600 dark:text-blue-400 underline"
-                >
-                  sakshamgoel1107@gmail.com
-                </a>
-                , or join our Discord.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                Where can I find more documentation?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Check our{' '}
-                <a href="/docs" className="text-blue-600 dark:text-blue-400 underline">
-                  Documentation
-                </a>{' '}
-                page for more guides and details.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                How do I report a bug or request a feature?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Open an issue on{' '}
-                <a
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href="https://github.com/Saksham-Goel1107/dionysus/issues"
-                  className="text-blue-600 dark:text-blue-400 underline"
-                >
-                  GitHub
-                </a>{' '}
-                or use the contact form above.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                What if I have a billing or payment issue?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Check the{' '}
-                <a href="/pricing" className="text-blue-600 dark:text-blue-400 underline">
-                  Pricing
-                </a>{' '}
-                page or contact us directly for help with billing.
-              </div>
-            </details>
-            <details className="bg-blue-50 dark:bg-gray-800 rounded p-3">
-              <summary className="font-semibold cursor-pointer">
-                How do I delete my account?
-              </summary>
-              <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                Contact support with your request. We&apos;ll guide you through the secure deletion
-                process.
-              </div>
-            </details>
+            </div>
+          </div>
+
+          {/* New: Get Started CTA */}
+          <div className="mt-12 flex flex-col items-center gap-4">
+            <h3 className="text-xl font-bold text-blue-700 dark:text-blue-300">
+              Ready to explore Dionysus?
+            </h3>
+            <Link
+              href="/sign-up"
+              className="px-6 py-3 rounded-lg bg-blue-700 text-white dark:bg-blue-400 dark:text-gray-900 font-semibold shadow hover:bg-blue-800 dark:hover:bg-blue-300 transition"
+            >
+              Create Your Free Account
+            </Link>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              No credit card required
+            </span>
+          </div>
+
+          <div className="text-xs text-gray-400 text-center mt-8">
+            &copy; {new Date().getFullYear()} Dionysus. All rights reserved.
           </div>
         </div>
-        <div className="text-xs text-gray-400 text-center mt-8">
-          &copy; {new Date().getFullYear()} Dionysus. All rights reserved.
-        </div>
       </div>
-    </div>
+    </>
   );
 }

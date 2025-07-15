@@ -13,8 +13,11 @@ import { Button } from '@/components/ui/button';
 import { useReverification } from '@clerk/nextjs';
 import { myAction } from '../Settings/actions';
 import Link from 'next/link';
+import { useUser } from '@clerk/nextjs';
 
 export default function UnlockPage() {
+  const { user } = useUser();
+  const userId = user?.id;
   const { resolvedTheme } = useTheme();
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState('');
@@ -494,7 +497,10 @@ export default function UnlockPage() {
         </div>
         <div className="text-xs text-center mt-3">
           If you forgot your password contact{' '}
-          <Link className="text-blue-500 font-bold" href="/support">
+          <Link
+            className="text-blue-500 font-bold"
+            href={`${userId ? '/supportAuth' : '/support'}`}
+          >
             Support
           </Link>
         </div>

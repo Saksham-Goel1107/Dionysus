@@ -18,6 +18,7 @@ import { init, SearchIndex } from 'emoji-mart';
 import data from '@emoji-mart/data';
 
 import 'stream-chat-react/dist/css/v2/index.css';
+import Link from 'next/link';
 
 interface ChatClientProps {
   clerkUser: { id: string; name: string; token: string };
@@ -75,7 +76,10 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
     return (
       <div className="p-8 text-center">
         <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
-        <p>Chat service is not properly configured. Please contact support.</p>
+        <p>
+          Chat service is not properly configured. Please contact{' '}
+          <Link href="/supportAuth">support</Link>.
+        </p>
       </div>
     );
   }

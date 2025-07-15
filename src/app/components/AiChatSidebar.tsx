@@ -69,7 +69,7 @@ export default function AiChatSidebar({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const router = useRouter()
+  const router = useRouter();
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);

@@ -142,30 +142,28 @@ export default async function RootLayout({
                   <SpeedInsights />
                 </>
               ) : (
-                    <>
-                      <GoogleOneTap
-                        cancelOnTapOutside={true}
-                        itpSupport={true}
-                        fedCmSupport={true}
-                      />
-                      {pathname !== '/rate-limit' && pathname !== '/block' && pathname !== '/updates' && <CookieBanner />}
-                      <TRPCReactProvider>
-                        <Offline>
-                          {userId ? <Providers>{children}</Providers> : <>{children}</>}
-                        </Offline>
-                      </TRPCReactProvider>
-                      <Toaster richColors />
-                      <ScrollToTopButton />
-                      <CustomContextMenu />
-                      <BlockInspectAndContext />
-                      <Analytics />
-                      <SpeedInsights />
-                      <Script
-                        src="https://s.pageclip.co/v1/pageclip.js"
-                        charSet="utf-8"
-                        strategy="afterInteractive"
-                      ></Script>
-                    </>
+                <>
+                  <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
+                  {pathname !== '/rate-limit' &&
+                    pathname !== '/block' &&
+                    pathname !== '/updates' && <CookieBanner />}
+                  <TRPCReactProvider>
+                    <Offline>
+                      {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                    </Offline>
+                  </TRPCReactProvider>
+                  <Toaster richColors />
+                  <ScrollToTopButton />
+                  <CustomContextMenu />
+                  <BlockInspectAndContext />
+                  <Analytics />
+                  <SpeedInsights />
+                  <Script
+                    src="https://s.pageclip.co/v1/pageclip.js"
+                    charSet="utf-8"
+                    strategy="afterInteractive"
+                  ></Script>
+                </>
               )}
               {/* </MultisessionAppSupport> */}
             </ClerkProviderWithTheme>

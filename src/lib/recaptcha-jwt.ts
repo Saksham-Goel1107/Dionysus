@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 function getJwtSecret(): Uint8Array {
   const secret = process.env.RECAPTCHA_JWT_SECRET;
   if (!secret) {
-    throw new Error("RECAPTCHA_JWT_SECRET environment variable is not set");
+    throw new Error('RECAPTCHA_JWT_SECRET environment variable is not set');
   }
   return new TextEncoder().encode(secret);
 }

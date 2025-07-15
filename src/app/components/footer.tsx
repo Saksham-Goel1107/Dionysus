@@ -4,8 +4,11 @@ import { Logo } from './logo';
 import { Github, Twitter, Linkedin } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { useTheme } from 'next-themes';
+import { useUser } from '@clerk/nextjs';
 
 export function Footer() {
+  const { user } = useUser();
+  const userId = user?.id;
   const { setTheme } = useTheme();
   return (
     <footer className="w-full border-t bg-background px-20">
@@ -54,7 +57,7 @@ export function Footer() {
             Terms & Conditions
           </Link>
           <Link
-            href="/support"
+            href={`${userId ? '/supportAuth' : '/support'}`}
             className="text-sm font-medium transition-colors hover:text-primary"
           >
             Support
