@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
 import {
   Dialog,
   DialogContent,
@@ -20,11 +21,21 @@ const FEEDBACK_SHOWN_KEY = 'dionysus_feedback_shown';
 const FEEDBACK_SUBMITTED_KEY = 'dionysus_feedback_submitted';
 
 export default function FeedbackForm() {
+  const { user, isLoaded } = useUser();
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [email, setEmail] = useState('');
+  const [useClerkEmail, setUseClerkEmail] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Auto-fill email from Clerk if toggle is on
+  useEffect(() => {
+    if (useClerkEmail && isLoaded && user?.primaryEmailAddress?.emailAddress) {
+      setEmail(user.primaryEmailAddress.emailAddress);
+    } else if (!useClerkEmail) {
+      setEmail('');
+    }
+  }, [useClerkEmail, isLoaded, user]);
 
   useEffect(() => {
     const checkAndShowFeedback = () => {
@@ -128,9 +139,14 @@ export default function FeedbackForm() {
     }
   };
 
+  // Only show feedback modal for authenticated users
+  if (!isLoaded || !user) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Feedback</DialogTitle>
           <DialogDescription>
@@ -168,7 +184,20 @@ export default function FeedbackForm() {
               placeholder="Leave your email if you'd like us to follow up"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={true}
             />
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="useClerkEmail" className="cursor-pointer select-none">
+                Use my Clerk email
+              </Label>
+              <input
+                id="useClerkEmail"
+                type="checkbox"
+                checked={useClerkEmail}
+                onChange={(e) => setUseClerkEmail(e.target.checked)}
+                disabled={!isLoaded || !user?.primaryEmailAddress?.emailAddress}
+              />
+            </div>
             <p className="text-xs text-muted-foreground">
               Only provide your email if you want us to contact you.
             </p>

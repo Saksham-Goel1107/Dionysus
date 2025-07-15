@@ -50,6 +50,11 @@ export default clerkMiddleware(async (auth, request) => {
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
+  const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
+  if (isPublicRoute(request) && !isApiRoute) {
+    return NextResponse.next();
+  }
+
   if (isAdminRoute(request)) {
     const { userId, sessionClaims } = await auth();
     if (!userId) {
@@ -82,7 +87,6 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
   const isHighLoadApiRoute =
     pathname.startsWith('/api/ai-') ||
     pathname.startsWith('/api/git-') ||
