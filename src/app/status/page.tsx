@@ -10,6 +10,7 @@ import IncidentHistory from './components/IncidentHistory';
 import MonitorCard from './components/MonitorCard';
 import { type Monitor, type UptimeRobotResponse } from './types';
 import StatusChart from './components/StatusChart';
+import { Navbar } from '../components/navbar';
 
 export default function StatusPage() {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
@@ -108,88 +109,91 @@ export default function StatusPage() {
   const isAllOperational = systemStatus === 'All Systems Operational';
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-7xl">
-      <StatusHeader
-        status={systemStatus}
-        isAllOperational={isAllOperational}
-        uptime={overallUptime}
-        onRefresh={fetchMonitors}
-        lastUpdated={lastUpdated}
-      />
+    <>
+      <Navbar />
+      <div className="container mx-auto py-8 px-4 max-w-7xl">
+        <StatusHeader
+          status={systemStatus}
+          isAllOperational={isAllOperational}
+          uptime={overallUptime}
+          onRefresh={fetchMonitors}
+          lastUpdated={lastUpdated}
+        />
 
-      {loading ? (
-        <div className="mt-8 space-y-6">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="w-full">
-              <CardHeader className="pb-2">
-                <Skeleton className="h-6 w-1/3" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-4 w-full mb-2" />
-                <Skeleton className="h-4 w-2/3" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : error ? (
-        <Card className="mt-8 border-red-300 bg-red-50 dark:bg-red-900/20">
-          <CardHeader>
-            <CardTitle className="text-red-700 dark:text-red-300">Error Loading Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{error}</p>
-            <button
-              onClick={fetchMonitors}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              Try Again
-            </button>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-            <TabsList className="grid grid-cols-2 mb-8">
-              <TabsTrigger value="current">Current Status</TabsTrigger>
-              <TabsTrigger value="history">Incident History</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="current" className="space-y-8">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {monitors.map((monitor) => (
-                  <MonitorCard
-                    key={monitor.id}
-                    monitor={monitor}
-                    getStatusColor={getStatusColor}
-                    getStatusBadge={getStatusBadge}
-                  />
-                ))}
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Overall Performance (Last 24 Hours)</CardTitle>
-                  <CardDescription>Uptime across all monitored services</CardDescription>
+        {loading ? (
+          <div className="mt-8 space-y-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="w-full">
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-6 w-1/3" />
                 </CardHeader>
-                <CardContent className="pt-2">
-                  <StatusChart monitors={monitors} />
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
                 </CardContent>
               </Card>
-            </TabsContent>
+            ))}
+          </div>
+        ) : error ? (
+          <Card className="mt-8 border-red-300 bg-red-50 dark:bg-red-900/20">
+            <CardHeader>
+              <CardTitle className="text-red-700 dark:text-red-300">Error Loading Status</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>{error}</p>
+              <button
+                onClick={fetchMonitors}
+                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Try Again
+              </button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
+              <TabsList className="grid grid-cols-2 mb-8">
+                <TabsTrigger value="current">Current Status</TabsTrigger>
+                <TabsTrigger value="history">Incident History</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="history">
-              <IncidentHistory monitors={monitors} />
-            </TabsContent>
-          </Tabs>
-        </>
-      )}
+              <TabsContent value="current" className="space-y-8">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {monitors.map((monitor) => (
+                    <MonitorCard
+                      key={monitor.id}
+                      monitor={monitor}
+                      getStatusColor={getStatusColor}
+                      getStatusBadge={getStatusBadge}
+                    />
+                  ))}
+                </div>
 
-      <div className="mt-12 text-center text-sm text-muted-foreground">
-        <p>
-          Status page powered by Uptime Robot • Last refreshed{' '}
-          {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'just now'}
-        </p>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Overall Performance (Last 24 Hours)</CardTitle>
+                    <CardDescription>Uptime across all monitored services</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <StatusChart monitors={monitors} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="history">
+                <IncidentHistory monitors={monitors} />
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
+
+        <div className="mt-12 text-center text-sm text-muted-foreground">
+          <p>
+            Status page powered by Uptime Robot • Last refreshed{' '}
+            {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'just now'}
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
