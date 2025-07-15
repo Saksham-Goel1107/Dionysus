@@ -114,7 +114,11 @@ export default async function RootLayout({
   const { userId } = await auth();
 
   if (userId) {
-    await checkAndSyncProStatus(userId);
+    try {
+      await checkAndSyncProStatus(userId);
+    } catch (error) {
+      console.error('Failed to sync pro status', error);
+    }
   }
 
   const headersList = await headers();
