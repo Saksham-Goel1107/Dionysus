@@ -44,6 +44,12 @@ export function Navbar() {
               About
             </Link>
             <Link
+              href="/status"
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Status
+            </Link>
+            <Link
               href="#features"
               className="text-sm font-medium transition-colors hover:text-primary"
             >

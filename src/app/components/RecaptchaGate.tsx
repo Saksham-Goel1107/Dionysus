@@ -14,6 +14,8 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/terms',
   '/about',
   '/support',
+  '/status',
+  '/api/recaptcha-verify(.*)',
 ];
 
 function isPublicRoute(pathname: string) {

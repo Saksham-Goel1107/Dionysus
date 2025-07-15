@@ -154,6 +154,33 @@ export class ErrorBoundary extends React.Component<
               >
                 Go to Dashboard
               </button>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  background: 'linear-gradient(90deg, #22c55e 0%, #38bdf8 100%)',
+                  color: '#fff',
+                  padding: '12px 28px',
+                  borderRadius: 8,
+                  fontWeight: 700,
+                  fontSize: 16,
+                  border: 'none',
+                  boxShadow: '0 2px 8px rgba(34, 197, 94, 0.12)',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                  width: '100%',
+                  maxWidth: 320,
+                  minWidth: 120,
+                  margin: '0 auto',
+                  display: 'block',
+                  outline: 'none',
+                  marginLeft: 12,
+                }}
+                aria-label="Refresh the page"
+                title="Refresh the page"
+                autoFocus
+              >
+                Refresh
+              </button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
