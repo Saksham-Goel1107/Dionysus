@@ -4,7 +4,15 @@ import { Slider } from '@/components/ui/slider';
 import { api } from '@/trpc/react';
 import { InfoIcon } from 'lucide-react';
 import React, { useEffect, useMemo } from 'react';
-import { UserProfile } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
+
+const UserProfile = dynamic(
+  () => import('@clerk/nextjs').then((mod) => mod.UserProfile),
+  {
+    ssr: false,
+    loading: () => <p className="p-4 text-center">Loading Profile...</p>,
+  }
+);
 import {
   Table,
   TableBody,
