@@ -171,6 +171,22 @@ export default async function RootLayout({
                     data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
                   ></Script>
                   <Script
+                    id="crisp-chat"
+                    strategy="afterInteractive"
+                    dangerouslySetInnerHTML={{
+                        __html: `
+            window.$crisp=[];
+            window.CRISP_WEBSITE_ID="9f873e84-45ff-4681-9255-5d728ea45da4";
+            (function(){
+                var d=document,s=d.createElement("script");
+                s.src="https://client.crisp.chat/l.js";
+                s.async=1;
+                d.getElementsByTagName("head")[0].appendChild(s);
+            })();
+        `,
+                    }}
+                  />
+                  <Script
                     id="tawkto"
                     strategy="afterInteractive"
                     dangerouslySetInnerHTML={{
