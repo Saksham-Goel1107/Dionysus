@@ -244,6 +244,7 @@ export default clerkMiddleware(async (auth, request) => {
 export const config = {
   matcher: [
     '/((?!_next|robots\\.txt|sitemap\\.xml|favicon\\.ico|site\\.webmanifest|Flag-India\\.webp|logo\\.png|gemini\\.png|undraw_developer\\.svg|success\\.mp3|public/|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    '/trpc(.*)',
+    '/api(?!/uptime$).*',
   ],
 };
