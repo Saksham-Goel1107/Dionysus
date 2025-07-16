@@ -167,6 +167,28 @@ export default async function RootLayout({
                     charSet="utf-8"
                     strategy="afterInteractive"
                   ></Script>
+                  <Script
+                    src="https://cdn.userway.org/widget.js"
+                    data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
+                    strategy="afterInteractive"
+                  ></Script>
+                  <Script
+                    id="tawkto"
+                    strategy="afterInteractive"
+                    dangerouslySetInnerHTML={{
+                      __html: `
+      var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+      (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src=\`https://embed.tawk.to/${process.env.NEXT_PUBLIC_TAWKTO_ACCOUNT}\`;
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+      })();
+    `,
+                    }}
+                  />{' '}
                 </>
               )}
               {/* </MultisessionAppSupport> */}
