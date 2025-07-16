@@ -1,3 +1,5 @@
+'use client';
+
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 import AppSidebar from './_components/AppSidebar';
