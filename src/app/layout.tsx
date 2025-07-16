@@ -195,6 +195,9 @@ export default async function RootLayout({
                         __html: `
         window.Userback = window.Userback || {};
         Userback.access_token = \`${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN}\`;
+        Userback.widget_settings = {
+          help_link: \`/support\`
+        };
         (async function() {
           try {
           const res = await fetch('/api/user-info', { credentials: 'include' });
