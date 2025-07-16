@@ -52,9 +52,6 @@ export default clerkMiddleware(async (auth, request) => {
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
-  if (pathname === '/api/uptime') {
-    return NextResponse.next();
-  }
   if (isPublicRoute(request) && !isApiRoute) {
     return NextResponse.next();
   }
@@ -243,7 +240,7 @@ export default clerkMiddleware(async (auth, request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next|robots\\.txt|sitemap\\.xml|favicon\\.ico|site\\.webmanifest|Flag-India\\.webp|logo\\.png|gemini\\.png|undraw_developer\\.svg|success\\.mp3|public/|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    '/(api|trpc)(.*)',
+    '/((?!api/uptime|_next|robots\\.txt|sitemap\\.xml|favicon\\.ico|site\\.webmanifest|Flag-India\\.webp|logo\\.png|gemini\\.png|undraw_developer\\.svg|success\\.mp3|public/|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    '/(api(?!/uptime)|trpc)(.*)',
   ],
 };
