@@ -167,6 +167,10 @@ export default async function RootLayout({
                     charSet="utf-8"
                     strategy="afterInteractive"
                   ></Script>
+                  <Script
+                    src="https://embed.tawk.to/68775b59fc37d419156e43a8/1j093plnm"
+                    strategy="afterInteractive"
+                  ></Script>
                 </>
               )}
               {/* </MultisessionAppSupport> */}
