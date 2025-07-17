@@ -178,12 +178,13 @@ export default async function RootLayout({
                     strategy="afterInteractive"
                     dangerouslySetInnerHTML={{
                       __html: `
-                        window.$crisp=[];
-                        window.CRISP_WEBSITE_ID=\`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
+                        window.$crisp = [];
+                        window.CRISP_WEBSITE_ID = \`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
+                        window.$crisp.push(["safe", true]);
                         (function(){
-                          var d=document,s=d.createElement("script");
-                          s.src="https://client.crisp.chat/l.js";
-                          s.async=1;
+                          var d = document, s = d.createElement("script");
+                          s.src = "https://client.crisp.chat/l.js";
+                          s.async = 1;
                           d.getElementsByTagName("head")[0].appendChild(s);
                         })();
                       `,
