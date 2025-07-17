@@ -198,12 +198,12 @@ export default async function RootLayout({
         (async function() {
           try {
           const res = await fetch('/api/user-info', { credentials: 'include' });
-          const user = await res.json();
+          const userData = await res.json();
           Userback.user_data = {
             id: \`${userId}\`, 
             info: {
-            name: \`\${user.firstName || user.lastName || user.email || 'User'}\`, 
-            email: \`\${user.email || 'user@example.com'}\` 
+            name: \`\${userData.firstName || userData.lastName || userData.email || 'User'}\`, 
+            email: \`\${userData.email || 'user@example.com'}\` 
             }
           };
           } catch (e) {
