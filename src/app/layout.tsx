@@ -114,6 +114,7 @@ export default async function RootLayout({
   const { userId } = await auth();
   let user = null;
 
+
   if (userId) {
     try {
       user = await clerkClient.users.getUser(userId);
@@ -197,7 +198,7 @@ export default async function RootLayout({
                       `,
                     }}
                   />
-                  {userId && user && (
+                  {userId && userData && (
                     <Script
                       id="userback"
                       strategy="afterInteractive"
@@ -210,8 +211,8 @@ export default async function RootLayout({
           Userback.user_data = {
             id: \`${userId}\`, 
             info: {
-            name: \`${user.firstName || user.lastName || user?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
-            email: \`${user?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
+            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
+            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
             }
           };
           } catch (e) {
