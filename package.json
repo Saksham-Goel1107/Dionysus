@@ -122,7 +122,7 @@
     "livekit-server-sdk": "^2.13.1",
     "lucide-react": "^0.471.2",
     "motion": "^12.23.3",
-    "next": "^15.3.4",
+    "next": "^15.4.1",
     "next-themes": "^0.4.4",
     "nodemailer": "^7.0.3",
     "octokit": "^4.1.0",
