@@ -112,13 +112,14 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
-  const user = userId ? await clerkClient.users.getUser(userId) : null;
+  let user = null;
 
   if (userId) {
     try {
+      user = await clerkClient.users.getUser(userId);
       await checkAndSyncProStatus(userId);
     } catch (error) {
-      console.error('Failed to sync pro status', error);
+      console.error('Failed to fetch user or sync pro status', error);
     }
   }
 
