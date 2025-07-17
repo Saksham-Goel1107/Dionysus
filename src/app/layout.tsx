@@ -112,7 +112,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
-  const user = userId ? await clerkClient.users.getUser(userId) : null;
+  const userData = userId ? await clerkClient.users.getUser(userId) : null;
 
   if (userId) {
     try {
@@ -190,7 +190,7 @@ export default async function RootLayout({
                       `,
                     }}
                   />
-                  {userId && user && (
+                  {userId && userData && (
                     <Script
                       id="userback"
                       strategy="afterInteractive"
@@ -203,8 +203,8 @@ export default async function RootLayout({
           Userback.user_data = {
             id: \`${userId}\`, 
             info: {
-            name: \`${user.firstName || user.lastName || user?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
-            email: \`${user?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
+            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
+            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
             }
           };
           } catch (e) {
