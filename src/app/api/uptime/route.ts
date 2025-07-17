@@ -15,7 +15,6 @@ export async function OPTIONS() {
   });
 }
 
-
 export async function HEAD(request: Request) {
   const reqHeaders = new Headers();
   if (request && request.headers) {
@@ -33,7 +32,8 @@ export async function GET(request: Request) {
     for (const [k, v] of request.headers.entries()) reqHeaders.set(k, v);
   }
 
-  const plainText = (text: string, status = 200) => new NextResponse(text, { status, headers: { 'Content-Type': 'text/plain' } });
+  const plainText = (text: string, status = 200) =>
+    new NextResponse(text, { status, headers: { 'Content-Type': 'text/plain' } });
   const jsonResp = (obj: any, status = 200) => NextResponse.json(obj, { status });
 
   if (!API_KEY || !process.env.DATABASE_URL) {
@@ -46,7 +46,10 @@ export async function GET(request: Request) {
     const clerkRes = await fetch('https://api.clerk.dev/v1/health');
     if (!clerkRes.ok) throw new Error('Clerk Unavailable');
 
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    });
     try {
       await pool.query('SELECT 1');
     } finally {
@@ -81,7 +84,9 @@ export async function GET(request: Request) {
         const monitorsWithRecent = data.monitors.map((monitor: any) => {
           let recent_response_time = null;
           if (Array.isArray(monitor.response_times) && monitor.response_times.length > 0) {
-            const latest = monitor.response_times.reduce((a: any, b: any) => (a.datetime > b.datetime ? a : b));
+            const latest = monitor.response_times.reduce((a: any, b: any) =>
+              a.datetime > b.datetime ? a : b,
+            );
             recent_response_time = latest.value;
           }
           return { ...monitor, recent_response_time };

@@ -83,15 +83,20 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                 </Badge>
               </div>
 
-
               <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                 <Clock className="h-4 w-4" />
                 <span>
-                  {incident.startTime ? format(incident.startTime, 'MMMM d, yyyy HH:mm') : 'Unknown start'}
+                  {incident.startTime
+                    ? format(incident.startTime, 'MMMM d, yyyy HH:mm')
+                    : 'Unknown start'}
                 </span>
                 <span>·</span>
                 <span>
-                  Duration: {typeof incident.duration === 'number' && !isNaN(incident.duration) ? incident.duration : '?'} minutes
+                  Duration:{' '}
+                  {typeof incident.duration === 'number' && !isNaN(incident.duration)
+                    ? incident.duration
+                    : '?'}{' '}
+                  minutes
                 </span>
               </div>
 

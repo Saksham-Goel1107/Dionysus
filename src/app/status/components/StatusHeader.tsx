@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 interface StatusHeaderProps {
   status: string;
   isAllOperational: boolean;
-  uptime: number; 
+  uptime: number;
   lastUpdated: Date | null;
   onRefresh: () => void;
 }
@@ -33,10 +33,10 @@ export default function StatusHeader({
 
       <Card
         className={`border-2 ${
-          status === 'No Monitors Configured' 
+          status === 'No Monitors Configured'
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : isAllOperational 
-              ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
+            : isAllOperational
+              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
               : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
         }`}
       >

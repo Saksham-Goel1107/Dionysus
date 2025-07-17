@@ -6,13 +6,10 @@ import { InfoIcon } from 'lucide-react';
 import React, { useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
-const UserProfile = dynamic(
-  () => import('@clerk/nextjs').then((mod) => mod.UserProfile),
-  {
-    ssr: false,
-    loading: () => <p className="p-4 text-center">Loading Profile...</p>,
-  }
-);
+const UserProfile = dynamic(() => import('@clerk/nextjs').then((mod) => mod.UserProfile), {
+  ssr: false,
+  loading: () => <p className="p-4 text-center">Loading Profile...</p>,
+});
 import {
   Table,
   TableBody,

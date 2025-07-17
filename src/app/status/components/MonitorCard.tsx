@@ -16,13 +16,16 @@ interface MonitorCardProps {
 export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }: MonitorCardProps) {
   const statusText = getMonitorStatusText(monitor.status);
   const badgeVariant = getStatusBadge(monitor.status);
-  
+
   // Handle different data formats from UptimeRobot
   const uptimeValue = monitor.all_time_uptime_ratio;
-  const uptime = typeof uptimeValue === 'string' 
-    ? parseFloat(uptimeValue) 
-    : (typeof uptimeValue === 'number' ? uptimeValue : undefined);
-  
+  const uptime =
+    typeof uptimeValue === 'string'
+      ? parseFloat(uptimeValue)
+      : typeof uptimeValue === 'number'
+        ? uptimeValue
+        : undefined;
+
   const lastChecked =
     typeof monitor.last_check === 'number' && monitor.last_check > 0
       ? new Date(monitor.last_check * 1000)
@@ -68,9 +71,7 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
             <div>
               <p className="text-muted-foreground">Response</p>
               <p className="font-medium">
-                {monitor.average_response_time 
-                  ? `${monitor.average_response_time} ms` 
-                  : 'N/A'}
+                {monitor.average_response_time ? `${monitor.average_response_time} ms` : 'N/A'}
               </p>
             </div>
             <div>

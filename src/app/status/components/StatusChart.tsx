@@ -28,7 +28,8 @@ const formatUptime = (ratio: number | null): string => {
 };
 
 const formatResponseTime = (time: number): string => {
-  if (typeof time !== 'number' || isNaN(time) || time === null || time === undefined) return 'No Data';
+  if (typeof time !== 'number' || isNaN(time) || time === null || time === undefined)
+    return 'No Data';
   if (time < 1000) return `${Math.round(time)}ms`;
   return `${(time / 1000).toFixed(2)}s`;
 };
@@ -61,7 +62,7 @@ const generateDataPoints = (monitors: Monitor[]) => {
         responseTime: null,
         monitorId: monitor.id,
         uptimeRatio: monitor.all_time_uptime_ratio,
-        hasData: false
+        hasData: false,
       };
     });
 
@@ -165,15 +166,14 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
               <div key={index} className="flex items-center gap-2 my-1">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-sm">
-                  {entry.name}: {
-                    value === null || value === undefined 
-                      ? 'No Data' 
-                      : value === 100 
-                        ? 'Up' 
-                        : value === 50 
-                          ? 'Partial' 
-                          : 'Down'
-                  }
+                  {entry.name}:{' '}
+                  {value === null || value === undefined
+                    ? 'No Data'
+                    : value === 100
+                      ? 'Up'
+                      : value === 50
+                        ? 'Partial'
+                        : 'Down'}
                   {monitorData?.responseTime && value === 100 && (
                     <span className="ml-2 text-xs opacity-70">
                       {formatResponseTime(monitorData.responseTime)}
@@ -222,17 +222,19 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
     if (!monitors || monitors.length === 0) return null;
 
     // Count monitors that actually have uptime data
-    const monitorsWithData = monitors.filter(m => 
-      typeof m.all_time_uptime_ratio === 'number' || 
-      (typeof m.all_time_uptime_ratio === 'string' && m.all_time_uptime_ratio !== '')
+    const monitorsWithData = monitors.filter(
+      (m) =>
+        typeof m.all_time_uptime_ratio === 'number' ||
+        (typeof m.all_time_uptime_ratio === 'string' && m.all_time_uptime_ratio !== ''),
     );
-    
+
     if (monitorsWithData.length === 0) return null;
 
     const sum = monitorsWithData.reduce((acc, monitor) => {
-      const ratio = typeof monitor.all_time_uptime_ratio === 'string'
-        ? parseFloat(monitor.all_time_uptime_ratio)
-        : (monitor.all_time_uptime_ratio || 0);
+      const ratio =
+        typeof monitor.all_time_uptime_ratio === 'string'
+          ? parseFloat(monitor.all_time_uptime_ratio)
+          : monitor.all_time_uptime_ratio || 0;
       return acc + (isNaN(ratio) ? 0 : ratio);
     }, 0);
 
