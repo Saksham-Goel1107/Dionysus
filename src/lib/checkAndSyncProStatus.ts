@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { auth } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 
 export async function checkAndSyncProStatus(userId: string) {
   const user = await db.user.findUnique({ where: { id: userId } });
