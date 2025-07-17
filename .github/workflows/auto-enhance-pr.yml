@@ -1,0 +1,85 @@
+name: Enhance PR Title and Body
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  enhance-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get changed files
+        id: files
+        run: |
+          echo "FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | tr '\n' ',' | sed 's/,$//')" >> $GITHUB_OUTPUT
+
+      - name: Enhance PR title and body
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.SECRET_GITBUB_TOKEN  }}
+          script: |
+            const pr = context.payload.pull_request;
+            const changedFiles = process.env.FILES.split(',').filter(f => f.trim() !== '');
+            if (!changedFiles.length) {
+              console.log("⚠️ No files changed. Skipping enhancement.");
+              return;
+            }
+
+            const grouped = {
+              '🖼️ Frontend': [],
+              '🧠 Backend': [],
+              '⚙️ Config/Infra': [],
+              '📦 Other': []
+            };
+
+            changedFiles.forEach(file => {
+              if (file.startsWith('pages/') || file.endsWith('.tsx') || file.endsWith('.jsx') || file.includes('components')) {
+                grouped['🖼️ Frontend'].push(file);
+              } else if (file.startsWith('api/') || file.endsWith('.ts') || file.endsWith('.js')) {
+                grouped['🧠 Backend'].push(file);
+              } else if (file.includes('config') || file.endsWith('.json') || file.endsWith('.yml') || file.endsWith('.yaml')) {
+                grouped['⚙️ Config/Infra'].push(file);
+              } else {
+                grouped['📦 Other'].push(file);
+              }
+            });
+
+            function formatGroup(title, files) {
+              return files.length
+                ? `### ${title}\n\`\`\`\n${files.join('\n')}\n\`\`\`\n`
+                : '';
+            }
+
+            let fileSummary = '';
+            let categoriesInTitle = [];
+
+            for (const [category, files] of Object.entries(grouped)) {
+              if (files.length) {
+                fileSummary += formatGroup(category, files);
+                categoriesInTitle.push(category.replace(/[^a-zA-Z]/g, '').toLowerCase());
+              }
+            }
+
+            const enhancedTitle = `✨ Updated ${changedFiles.length} file${changedFiles.length > 1 ? 's' : ''} (${categoriesInTitle.join(', ')})`;
+
+            const newBody = `${pr.body || ''}\n\n---\n📝 **Files changed:**\n${fileSummary}`;
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              title: enhancedTitle,
+              body: newBody
+            });
+
+            console.log("✅ PR title and body enhanced successfully.");
+        env:
+          FILES: ${{ steps.files.outputs.FILES }}
