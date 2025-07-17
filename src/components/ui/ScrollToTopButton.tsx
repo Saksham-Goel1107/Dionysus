@@ -20,7 +20,7 @@ export default function ScrollToTopButton() {
     <button
       onClick={scrollToTop}
       aria-label="Scroll to top"
-      className={`fixed bottom-6 left-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed bottom-16 left-3 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 ${visible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
     >
       <svg
