@@ -198,7 +198,7 @@ export default async function RootLayout({
                       `,
                     }}
                   />
-                  {userId && userData && (
+                  {userId && user && (
                     <Script
                       id="userback"
                       strategy="afterInteractive"
@@ -211,8 +211,8 @@ export default async function RootLayout({
           Userback.user_data = {
             id: \`${userId}\`, 
             info: {
-            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
-            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
+            name: \`${user.firstName || user.lastName || user?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
+            email: \`${user?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
             }
           };
           } catch (e) {
