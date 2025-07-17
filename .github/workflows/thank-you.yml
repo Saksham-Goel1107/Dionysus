@@ -1,0 +1,30 @@
+name: Auto Thank You
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  auto-thank:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post thank-you comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.SECRET_GITBUB_TOKEN }}
+          script: |
+            const isPR = context.eventName === 'pull_request'
+            const issueOrPR = isPR ? context.payload.pull_request : context.payload.issue
+
+            const message = isPR
+              ? "🙏 Thanks for your pull request! We'll review it as soon as possible."
+              : "📬 Thanks for opening an issue! We're reviewing and will respond shortly."
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueOrPR.number,
+              body: message
+            })
