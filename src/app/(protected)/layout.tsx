@@ -1,7 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 import AppSidebar from './_components/AppSidebar';
-import FeedbackForm from '@/components/feedback/FeedbackForm';
+import ClientFeedbackForm from './_components/ClientFeedbackForm';
 import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
 import PasswordGate from '@/components/PasswordGate';
@@ -40,7 +40,7 @@ const Layout = ({ children }: Props) => {
             {children}
           </div>
         </main>
-        <FeedbackForm />
+        <ClientFeedbackForm />
       </SidebarProvider>
     </PasswordGate>
   );
