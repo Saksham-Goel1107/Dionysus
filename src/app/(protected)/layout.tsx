@@ -5,12 +5,16 @@ import FeedbackForm from '@/components/feedback/FeedbackForm';
 import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
 import PasswordGate from '@/components/PasswordGate';
+import { Inbox } from '@novu/nextjs';
+import { useUser } from '@clerk/nextjs';
 
 type Props = {
   children: React.ReactNode;
 };
 
-const layout = ({ children }: Props) => {
+const Layout = ({ children }: Props) => {
+  const { user } = useUser();
+  const userId = user?.id;
   return (
     <PasswordGate>
       <SidebarProvider>
@@ -20,8 +24,14 @@ const layout = ({ children }: Props) => {
             <SidebarTrigger />
             <CurrentTimeDisplay />
             <div className="ml-auto flex items-center gap-2 justify-center">
-              <ModeToggle />
-              <ProCrownUserButtonWrapper />
+            {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
+              <Inbox
+                applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
+                subscriber={userId}
+              />
+            )}
+            <ModeToggle />
+            <ProCrownUserButtonWrapper />
             </div>
           </div>
           <div className="h-4"> </div>
@@ -36,4 +46,4 @@ const layout = ({ children }: Props) => {
   );
 };
 
-export default layout;
+export default Layout;
