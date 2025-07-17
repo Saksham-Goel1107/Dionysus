@@ -112,15 +112,14 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
-  let user = null;
+  let userData = null;
 
 
   if (userId) {
     try {
-      user = await clerkClient.users.getUser(userId);
+      userData = await clerkClient.users.getUser(userId);
     } catch (error) {
       console.error("Failed to fetch user:", error);
-      // user will be null and the Userback script will not be rendered.
     }
 
     try {
