@@ -9,6 +9,7 @@ import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
 import { GoogleOneTap } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
+import clerkClient from '@clerk/clerk-sdk-node';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';
@@ -111,6 +112,7 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
   const { userId } = await auth();
+  const user = userId ? await clerkClient.users.getUser(userId) : null;
 
   if (userId) {
     try {
@@ -187,7 +189,7 @@ export default async function RootLayout({
                       `,
                     }}
                   />
-                  {userId && (
+                  {userId && user && (
                     <Script
                       id="userback"
                       strategy="afterInteractive"
@@ -197,13 +199,11 @@ export default async function RootLayout({
         Userback.access_token = \`${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN}\`;
         (async function() {
           try {
-          const res = await fetch('/api/user-info', { credentials: 'include' });
-          const user = await res.json();
           Userback.user_data = {
             id: \`${userId}\`, 
             info: {
-            name: \`\${user.firstName || user.lastName || user.email || 'User'}\`, 
-            email: \`\${user.email || 'user@example.com'}\` 
+            name: \`${user.firstName || user.lastName || user?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
+            email: \`${user?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
             }
           };
           } catch (e) {
