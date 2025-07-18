@@ -1,0 +1,13 @@
+# ✅ Use Ankane's pgvector image
+FROM ankane/pgvector:latest
+
+# Set environment variables for default user, password, and database
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=postgres
+
+# Expose default Postgres port
+EXPOSE 5432
+
+# Optional: Mount a volume for persistent data
+VOLUME ["/var/lib/postgresql/data"]

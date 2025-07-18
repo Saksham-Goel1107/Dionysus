@@ -139,6 +139,7 @@ export default async function RootLayout({
       <head>
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body>
         <ErrorBoundary>
@@ -208,15 +209,15 @@ export default async function RootLayout({
         (async function() {
           try {
           Userback.user_data = {
-            id: \`${userId}\`, 
+            id: \`${userId}\`,
             info: {
-            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`, 
-            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\` 
+            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`,
+            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\`
             }
           };
           } catch (e) {
           Userback.user_data = {
-            id: \`${userId}\`, 
+            id: \`${userId}\`,
             info: {
             name: 'User',
             email: 'user@example.com'
