@@ -7,6 +7,7 @@ import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
 import PasswordGate from '@/components/PasswordGate';
 import { Inbox } from '@novu/nextjs';
 import { auth } from '@clerk/nextjs/server';
+import Battery from '@/app/components/Battery'
 
 type Props = {
   children: React.ReactNode;
@@ -24,15 +25,18 @@ const Layout = async ({ children }: Props) => {
             <CurrentTimeDisplay />
             <div className="ml-auto flex items-center gap-2 justify-center">
               <div className="dark:bg-gray-300">
-                {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
-                  <Inbox
-                    applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
-                    subscriber={userId}
-                  />
-                )}
+              {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
+                <Inbox
+                applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
+                subscriber={userId}
+                />
+              )}
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />
+              <div className="hidden sm:block">
+              <Battery />
+              </div>
             </div>
           </div>
           <div className="h-4"> </div>

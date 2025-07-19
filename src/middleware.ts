@@ -16,6 +16,8 @@ const isPublicRoute = createRouteMatcher([
   '/api/recaptcha-verify(.*)',
   '/about(.*)',
   '/status(.*)',
+  '/api/uptime',
+  '/api/maintenance-info'
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
@@ -52,12 +54,6 @@ export default clerkMiddleware(async (auth, request) => {
   const isRateLimitPage = pathname.startsWith('/rate-limit');
 
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
-  if (pathname === '/api/uptime') {
-    return NextResponse.next();
-  }
-  if (isPublicRoute(request) && !isApiRoute) {
-    return NextResponse.next();
-  }
 
   if (isAdminRoute(request)) {
     const { userId, sessionClaims } = await auth();
@@ -235,6 +231,8 @@ export default clerkMiddleware(async (auth, request) => {
       'upgrade-insecure-requests;',
     ].join(' '),
   );
+  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
@@ -245,6 +243,5 @@ export const config = {
   matcher: [
     '/((?!_next|robots\\.txt|sitemap\\.xml|favicon\\.ico|site\\.webmanifest|manifest\\.json|Flag-India\\.webp|logo\\.png|gemini\\.png|undraw_developer\\.svg|success\\.mp3|public/|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
     '/(api|trpc)(.*)',
-    '/_not-found',
   ],
 };

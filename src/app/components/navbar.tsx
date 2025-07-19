@@ -8,6 +8,7 @@ import StarOnGithub from './starOnGithub';
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
+import Battery from './Battery'
 
 export function Navbar() {
   const { user } = useUser();
@@ -36,7 +37,7 @@ export function Navbar() {
         </Link>
 
         {isHome && (
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="hidden items-center gap-5 md:flex">
             <Link
               href="/about"
               className="text-sm font-medium transition-colors hover:text-primary"
@@ -69,6 +70,7 @@ export function Navbar() {
               <GetStartedButton />
             </Link>
             <StarOnGithub />
+            <Battery />
           </nav>
         )}
 
