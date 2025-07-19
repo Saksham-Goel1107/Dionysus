@@ -150,6 +150,13 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  if (pathname.startsWith('/survey-check')) {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
+    }
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
