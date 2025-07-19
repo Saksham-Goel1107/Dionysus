@@ -6,7 +6,7 @@ type Props = {};
 
 const syncUser = async ({}: Props) => {
   try {
-    const { userId } = await auth();
+    const { userId,sessionClaims } = await auth();
     if (!userId) {
       return redirect('/sign-in');
     }
@@ -17,7 +17,7 @@ const syncUser = async ({}: Props) => {
       return redirect('/sign-in');
     }
     await db.user.upsert({
-      where: { emailAddress: email },
+      where: { id: userId },
       update: {
         imageUrl: user.imageUrl,
         firstName: user.firstName,
@@ -31,8 +31,19 @@ const syncUser = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-    return redirect('/onboarding');
+
+    if (userId && !sessionClaims?.metadata?.onboardingComplete) {
+      return redirect('/onboarding');
+    }
+    const servey = await db.user.findUnique({ where: { id: userId }, select: { SurveyDone: true } });
+    if (servey?.SurveyDone) {
+      return redirect('/dashboard');
+    }
+    else{
+      return redirect('/survey-check');
+    }
   } catch (error) {
+    console.error(error);
     return redirect('/onboarding');
   }
 };
