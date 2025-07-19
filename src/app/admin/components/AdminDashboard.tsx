@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
-import { Users, CreditCard, Folder, TrendingUp, BadgeCheck, Activity } from 'lucide-react';
+import { Users, CreditCard, Folder, TrendingUp, BadgeCheck, Activity, BarChart2, ChevronRight } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -18,6 +18,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 interface AdminDashboardProps {
   totalUsers: number;
@@ -46,26 +47,33 @@ export default function AdminDashboard({
     setLastUpdated(new Date().toLocaleString());
   }, []);
 
-  // Format user growth data for the chart
   const formattedUserGrowthData =
     userGrowthData?.map((data: any) => ({
       month: format(new Date(data.month), 'MMM'),
       users: Number(data.count),
     })) || [];
 
-  // Calculate pro user percentage
   const proUserPercentage = totalUsers > 0 ? (proUsers / totalUsers) * 100 : 0;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <div className="text-sm text-gray-500 dark:text-gray-400">
-          Last updated: {lastUpdated || 'Loading...'}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/surveys"
+            className="flex items-center px-4 py-2 text-sm font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors"
+          >
+            <BarChart2 size={16} className="mr-2" />
+            Survey Analytics
+            <ChevronRight size={16} className="ml-1" />
+          </Link>
+          <div className="text-sm text-gray-500 dark:text-gray-400">
+            Last updated: {lastUpdated || 'Loading...'}
+          </div>
         </div>
       </div>
 
-      {/* Key metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-6">
@@ -131,9 +139,7 @@ export default function AdminDashboard({
         </Card>
       </div>
 
-      {/* Charts section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User growth chart */}
         <Card>
           <CardHeader>
             <CardTitle>User Growth</CardTitle>
@@ -172,7 +178,6 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* Credits and User distribution */}
         <Card>
           <CardHeader>
             <CardTitle>User Metrics</CardTitle>
@@ -220,9 +225,7 @@ export default function AdminDashboard({
         </Card>
       </div>
 
-      {/* Recent transactions and top users */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent transactions */}
         <Card>
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
@@ -269,7 +272,6 @@ export default function AdminDashboard({
           </CardContent>
         </Card>
 
-        {/* Top users by credits */}
         <Card>
           <CardHeader>
             <CardTitle>Top Users by Credits</CardTitle>

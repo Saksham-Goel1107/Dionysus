@@ -25,7 +25,7 @@ const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)', '/sentry-example-page(.*)']);
 
 const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
-const ADMIN_USER_ID = 'user_2yfihsCUpfg5wM2Le7letlXwj2C';
+const ADMIN_USER_ID = 'user_305lI6eNGYdLyLHK6N4HKgQgHNF';
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,

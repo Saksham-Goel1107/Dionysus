@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-// Simple theme toggle using localStorage and document.documentElement.classList
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
@@ -29,7 +28,6 @@ function ThemeToggle({ collapsed }: { collapsed: boolean }) {
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
       {theme === 'dark' ? (
-        // Moon icon for dark mode
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
           <path
             fill="currentColor"
@@ -37,7 +35,6 @@ function ThemeToggle({ collapsed }: { collapsed: boolean }) {
           />
         </svg>
       ) : (
-        // Sun icon for light mode
         <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="5" fill="currentColor" />
           <g stroke="currentColor" strokeWidth="2">
@@ -69,6 +66,7 @@ import {
   Tag,
   ChevronLeft,
   ChevronRight,
+  ChartLine,
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -81,18 +79,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/finances', label: 'Finances', icon: CreditCard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+    { href: '/admin/surveys', label: 'Surveys', icon: ChartLine },
   ];
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-      {/* Sidebar */}
       <aside
         className={cn(
           'md:relative absolute z-10 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col',
           collapsed ? 'md:w-16 w-13' : 'w-64',
         )}
       >
-        {/* Logo */}
         <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
           {!collapsed && (
             <h1 className="font-bold text-xl text-blue-600 dark:text-blue-400">Admin Panel</h1>
@@ -106,7 +103,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-2">
             {navItems.map((item) => {
@@ -133,7 +129,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </ul>
         </nav>
 
-        {/* Theme Toggle & User */}
         <div className="p-4 border-t border-gray-200 dark:border-gray-800">
           <ThemeToggle collapsed={collapsed} />
           <div className="flex items-center gap-3 mt-2">
@@ -145,7 +140,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
   );

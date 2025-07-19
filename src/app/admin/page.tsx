@@ -2,7 +2,6 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { db } from '@/server/db';
 import AdminDashboard from './components/AdminDashboard';
-import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,8 +45,8 @@ export default async function AdminPage() {
   sixMonthsAgo.setMonth(currentDate.getMonth() - 5); // Get last 6 months including current
 
   const userGrowthData = await db.$queryRaw<any[]>`
-    SELECT 
-      DATE_TRUNC('month', "createdAt") as month, 
+    SELECT
+      DATE_TRUNC('month', "createdAt") as month,
       COUNT(*) as count
     FROM "User"
     WHERE "createdAt" >= ${sixMonthsAgo}
