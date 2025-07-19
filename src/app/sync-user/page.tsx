@@ -1,10 +1,27 @@
 import { db } from '@/server/db';
 import { auth, clerkClient } from '@clerk/nextjs/server';
+import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 type Props = {};
 
+
+
+const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const Loading = dynamic(() => import('./loading'), { ssr: false });
+
 const Page = async ({}: Props) => {
+  // Show loading screen during 2s buffer
+  await sleep(2000);
+  return (
+    <Suspense fallback={<div />}>
+      <LoadingWrapper />
+    </Suspense>
+  );
+};
+
+async function LoadingWrapper() {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -35,6 +52,6 @@ const Page = async ({}: Props) => {
   } catch (error) {
     return redirect('/onboarding');
   }
-};
+}
 
 export default Page;

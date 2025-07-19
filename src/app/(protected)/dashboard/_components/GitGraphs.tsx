@@ -103,25 +103,41 @@ const GitGraphs = () => {
               </p>
             </div>
             <Button
-              disabled={true}
+              disabled={false}
               onClick={async () => {
-                const res = await fetch('/api/GitGraph', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ owner, repo }),
-                });
+                try {
+                  const res = await fetch('/api/GitGraph', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ owner, repo }),
+                  });
 
-                if (res.ok) {
-                  const blob = await res.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${repo}_diagram.png`;
-                  a.click();
-                  a.remove();
-                } else {
-                  const err = await res.json();
-                  alert('Failed to generate diagram: ' + err?.error || 'Unknown error');
+                  if (res.ok) {
+                    const blob = await res.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    // Determine file extension from content type
+                    const contentType = res.headers.get('content-type') || '';
+                    let extension = 'png';
+                    if (contentType.includes('svg')) {
+                      extension = 'svg';
+                    } else if (contentType.includes('html')) {
+                      extension = 'html';
+                    }
+                    
+                    a.download = `${repo}_diagram.${extension}`;
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                  } else {
+                    const err = await res.json();
+                    alert('Failed to generate diagram: ' + (err?.error || 'Unknown error'));
+                  }
+                } catch (error) {
+                  console.error('Error generating diagram:', error);
+                  alert('Failed to generate diagram: Network error');
                 }
               }}
               className="relative mt-4 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-semibold text-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 border-0"
@@ -144,8 +160,8 @@ const GitGraphs = () => {
               users
             </span>
             <div className="flex justify-center pt-0 mt-0">
-              <span className="text-red-400 text-xs">
-                If your repo is private then you can not visualize your repo you will face errors
+              <span className="text-orange-400 text-xs">
+                📋 Note: Generates repository structure diagrams. For private repos, ensure proper access permissions are configured.
               </span>
             </div>
           </div>
