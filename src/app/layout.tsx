@@ -9,7 +9,7 @@ import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
 import { GoogleOneTap } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import clerkClient from '@clerk/clerk-sdk-node';
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';

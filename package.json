@@ -31,7 +31,7 @@
   "dependencies": {
     "@ai-sdk/google": "^1.0.15",
     "@arcjet/next": "^1.0.0-beta.8",
-    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@clerk/clerk-sdk-node": "^5.1.6",
     "@clerk/nextjs": "^6.22.0",
     "@clerk/themes": "^2.2.54",
     "@emoji-mart/data": "^1.2.1",
