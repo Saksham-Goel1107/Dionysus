@@ -24,6 +24,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
+import ClientOnly from '@/components/ui/ClientOnly';
 import Offline from './offline';
 
 export const metadata: Metadata = {
@@ -144,13 +145,18 @@ export default async function RootLayout({
       <body>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ClerkProviderWithTheme>
+            <ClientOnly>
+              <ClerkProviderWithTheme>
               {/* <MultisessionAppSupport> */}
               {isMaintenance ? (
                 <>
                   <MaintenanceScreen />
                   <BlockInspectAndContext />
-                  <CustomContextMenu />
+                  <ClientOnly>
+                    <ClientOnly>
+                    <CustomContextMenu />
+                  </ClientOnly>
+                  </ClientOnly>
                   <Analytics />
                   <SpeedInsights />
                 </>
@@ -167,7 +173,11 @@ export default async function RootLayout({
                   </TRPCReactProvider>
                   <Toaster richColors />
                   <ScrollToTopButton />
-                  <CustomContextMenu />
+                  <ClientOnly>
+                    <ClientOnly>
+                    <CustomContextMenu />
+                  </ClientOnly>
+                  </ClientOnly>
                   <BlockInspectAndContext />
                   <Analytics />
                   <SpeedInsights />
@@ -235,7 +245,8 @@ export default async function RootLayout({
                 </>
               )}
               {/* </MultisessionAppSupport> */}
-            </ClerkProviderWithTheme>
+              </ClerkProviderWithTheme>
+            </ClientOnly>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
