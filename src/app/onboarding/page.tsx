@@ -183,7 +183,7 @@ function OnboardingPage() {
             // Use useUser hook to get latest user
             const user = window.Clerk?.user || null;
             if (user && user.publicMetadata && user.publicMetadata.onboardingComplete) {
-              window.location.href = '/dashboard';
+              window.location.href = '/survey-check';
               return;
             }
             await new Promise((res) => setTimeout(res, interval));
@@ -275,7 +275,6 @@ function OnboardingPage() {
               setRedirecting(true);
               await handleComplete();
               setShowConfirm(null);
-              // router.replace('/dashboard'); // removed, handled in handleComplete
             }}
             onCancel={() => setShowConfirm(null)}
           />

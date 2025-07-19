@@ -24,6 +24,8 @@ model User {
   questionsAsked      Question[]
   stripeTransactions  StripeTransaction[]
   userToProjects      UserToProject[]
+  SurveyDone          Boolean?            @default(false)
+  survey              Survey?
 }
 
 model Project {
@@ -132,6 +134,25 @@ model StripeTransaction {
 enum MeetingStatus {
   PROCESSING
   COMPLETED
+}
+
+model Survey {
+  id                    String   @id @default(cuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id])
+  companyName           String?
+  companySize           String?
+  industry              String?
+  role                  String?
+  usagePurpose          String?
+  hearAboutUs           String?
+  expectedFeatures      String[]
+  developmentExperience Int?      // 1-5 scale
+  githubExperience      Int?      // 1-5 scale
+  feedbackFrequency     String?
+  additionalFeedback    String?
 }
 
 enum PlanType {

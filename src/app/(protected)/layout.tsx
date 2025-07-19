@@ -7,14 +7,26 @@ import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
 import PasswordGate from '@/components/PasswordGate';
 import { Inbox } from '@novu/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import Battery from '@/app/components/Battery'
+import Battery from '@/app/components/Battery';
+import { shouldRedirectToSurvey } from '@/lib/survey';
+import { redirect } from 'next/navigation';
 
 type Props = {
   children: React.ReactNode;
 };
 
 const Layout = async ({ children }: Props) => {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
+
+  if (!sessionClaims?.metadata?.onboardingComplete) {
+    return redirect('/onboarding');
+  }
+
+  const shouldRedirect = await shouldRedirectToSurvey();
+  if (shouldRedirect) {
+    return redirect('/survey-check');
+  }
+
   return (
     <PasswordGate>
       <SidebarProvider>
@@ -25,17 +37,17 @@ const Layout = async ({ children }: Props) => {
             <CurrentTimeDisplay />
             <div className="ml-auto flex items-center gap-2 justify-center">
               <div className="dark:bg-gray-300">
-              {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
-                <Inbox
-                applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
-                subscriber={userId}
-                />
-              )}
+                {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
+                  <Inbox
+                    applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
+                    subscriber={userId}
+                  />
+                )}
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />
               <div className="hidden sm:block">
-              <Battery />
+                <Battery />
               </div>
             </div>
           </div>
