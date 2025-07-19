@@ -34,6 +34,7 @@ export const metadata: Metadata = {
   description:
     'Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers.',
   metadataBase: new URL('https://dionysus-gray.vercel.app'),
+  themeColor: '#0a192f',
   keywords: [
     'AI',
     'GitHub',
