@@ -20,13 +20,11 @@ const surveySchema = z.object({
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-
     const validatedData = surveySchema.safeParse(body);
     if (!validatedData.success) {
       return NextResponse.json(
@@ -35,43 +33,39 @@ export async function POST(request: Request) {
       );
     }
 
-    await db.$transaction(async (tx) => {
-      await tx.survey.upsert({
-        where: { userId },
-        update: {
-          companyName: validatedData.data.companyName,
-          companySize: validatedData.data.companySize,
-          industry: validatedData.data.industry,
-          role: validatedData.data.role,
-          usagePurpose: validatedData.data.usagePurpose,
-          hearAboutUs: validatedData.data.hearAboutUs,
-          expectedFeatures: validatedData.data.expectedFeatures,
-          developmentExperience: validatedData.data.developmentExperience,
-          githubExperience: validatedData.data.githubExperience,
-          feedbackFrequency: validatedData.data.feedbackFrequency,
-          additionalFeedback: validatedData.data.additionalFeedback,
-        },
-        create: {
-          userId,
-          companyName: validatedData.data.companyName,
-          companySize: validatedData.data.companySize,
-          industry: validatedData.data.industry,
-          role: validatedData.data.role,
-          usagePurpose: validatedData.data.usagePurpose,
-          hearAboutUs: validatedData.data.hearAboutUs,
-          expectedFeatures: validatedData.data.expectedFeatures,
-          developmentExperience: validatedData.data.developmentExperience,
-          githubExperience: validatedData.data.githubExperience,
-          feedbackFrequency: validatedData.data.feedbackFrequency,
-          additionalFeedback: validatedData.data.additionalFeedback,
-        },
-      });
+    // Ensure expectedFeatures is stored as JSON if needed
+    const surveyData = {
+      ...validatedData.data,
+      expectedFeatures: Array.isArray(validatedData.data.expectedFeatures)
+        ? validatedData.data.expectedFeatures
+        : [],
+    };
 
-      await tx.user.update({
-        where: { id: userId },
-        data: { SurveyDone: true },
+    try {
+      await db.$transaction(async (tx) => {
+        await tx.survey.upsert({
+          where: { userId },
+          update: {
+            ...surveyData,
+          },
+          create: {
+            userId,
+            ...surveyData,
+          },
+        });
+
+        await tx.user.update({
+          where: { id: userId },
+          data: { SurveyDone: true },
+        });
       });
-    });
+    } catch (dbError) {
+      console.error('Prisma/DB error in survey API:', dbError);
+      return NextResponse.json(
+        { message: 'Database error', error: String(dbError) },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json({ success: true, message: 'Survey submitted successfully' });
   } catch (error) {

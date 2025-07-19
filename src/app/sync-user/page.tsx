@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 type Props = {};
 
-const Page = async ({}: Props) => {
+const syncUser = async ({}: Props) => {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -37,4 +37,4 @@ const Page = async ({}: Props) => {
   }
 };
 
-export default Page;
+export default syncUser;

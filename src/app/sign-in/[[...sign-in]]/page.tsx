@@ -9,7 +9,7 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
   // const isAddingAccount = Boolean(sparams?.__clerk_add_account);
 
   if (userId) {
-    return redirect('/dashboard');
+    return redirect('/sync-user');
   }
   // if (userId && !isAddingAccount) {
   //   return (
