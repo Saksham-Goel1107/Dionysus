@@ -154,9 +154,8 @@ export default clerkMiddleware(async (auth, request) => {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
     if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
-      const baseUrl = env.NEXT_PUBLIC_BASE_URL;
       if (pathname !== '/onboarding' && pathname !== '/sync-user') {
-        const response = NextResponse.redirect(new URL('/onboarding', baseUrl));
+        const response = NextResponse.redirect(new URL('/onboarding', request.url));
         response.cookies.set('middleware_redirect', 'true', {
           maxAge: 10,
           httpOnly: true,
@@ -168,8 +167,7 @@ export default clerkMiddleware(async (auth, request) => {
     }
 
     if (userId && sessionClaims?.metadata?.onboardingComplete && pathname === '/onboarding') {
-      const baseUrl = env.NEXT_PUBLIC_BASE_URL;
-      return NextResponse.redirect(new URL('/dashboard', baseUrl));
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
 
     if (
