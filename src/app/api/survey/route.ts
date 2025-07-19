@@ -20,25 +20,25 @@ const surveySchema = z.object({
 export async function POST(request: Request) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
-    
+
     const body = await request.json();
-    
+
     const validatedData = surveySchema.safeParse(body);
     if (!validatedData.success) {
       return NextResponse.json(
         { message: 'Invalid survey data', errors: validatedData.error.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await db.$transaction(async (tx) => {
       await tx.survey.upsert({
         where: { userId },
-        update: { 
+        update: {
           companyName: validatedData.data.companyName,
           companySize: validatedData.data.companySize,
           industry: validatedData.data.industry,
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     console.error('Error in survey API:', error);
     return NextResponse.json(
       { message: 'Internal server error', error: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

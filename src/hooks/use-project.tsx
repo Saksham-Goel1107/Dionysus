@@ -40,20 +40,20 @@ const useProject = () => {
   const project = projects?.find((project) => project.id === effectiveProjectId);
 
   useEffect(() => {
-  if (!isLoading && projects && projectId && !projectExists) {
-    if (projects.length > 0) {
-      const newProjectId = projects[0]?.id || '';
-      setProjectId(newProjectId);
+    if (!isLoading && projects && projectId && !projectExists) {
+      if (projects.length > 0) {
+        const newProjectId = projects[0]?.id || '';
+        setProjectId(newProjectId);
 
-      if (projectId) { 
-        toast.warning('You no longer have access to that project. Switching to another project.');
-      }
-      if (pathname && pathname !== '/dashboard' && pathname !== '/create') {
-        router.push('/dashboard');
+        if (projectId) {
+          toast.warning('You no longer have access to that project. Switching to another project.');
+        }
+        if (pathname && pathname !== '/dashboard' && pathname !== '/create') {
+          router.push('/dashboard');
+        }
       }
     }
-  }
-}, [projectId, projects, projectExists, setProjectId, isLoading, pathname, router]);
+  }, [projectId, projects, projectExists, setProjectId, isLoading, pathname, router]);
 
   return {
     projects,

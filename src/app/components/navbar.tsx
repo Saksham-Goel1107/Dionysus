@@ -8,7 +8,7 @@ import StarOnGithub from './starOnGithub';
 import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
-import Battery from './Battery'
+import Battery from './Battery';
 
 export function Navbar() {
   const { user } = useUser();

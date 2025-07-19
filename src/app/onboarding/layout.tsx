@@ -1,14 +1,14 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { getSurveyStatus } from '@/lib/survey';
+import { hasCompletedSurvey } from '@/lib/survey';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
-  if ((await auth()).sessionClaims?.metadata.onboardingComplete === true) {
-    const surveyStatus = await getSurveyStatus(userId ?? '');
-      if (!surveyStatus.SurveyDone) {
-        redirect('/survey-check');
-      }
+  const { sessionClaims } = await auth();
+  if (sessionClaims?.metadata.onboardingComplete === true) {
+    const surveyDone = await hasCompletedSurvey();
+    if (!surveyDone) {
+      redirect('/survey-check');
+    }
     redirect('/dashboard');
   }
 

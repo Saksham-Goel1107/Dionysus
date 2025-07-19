@@ -8,16 +8,16 @@ import { db } from '@/server/db';
 export async function hasCompletedSurvey(): Promise<boolean> {
   try {
     const user = await currentUser();
-    
+
     if (!user?.id) {
       return false;
     }
-    
+
     const dbUser = await db.user.findUnique({
       where: { id: user.id },
       select: { SurveyDone: true },
     });
-    
+
     return !!dbUser?.SurveyDone;
   } catch (error) {
     console.error('Error checking survey status:', error);
@@ -32,11 +32,11 @@ export async function hasCompletedSurvey(): Promise<boolean> {
 export async function shouldRedirectToSurvey(): Promise<boolean> {
   try {
     const user = await currentUser();
-    
+
     if (!user?.id) {
       return false;
     }
-    
+
     // Check survey status from DB
     const dbUser = await db.user.findUnique({
       where: { id: user.id },
