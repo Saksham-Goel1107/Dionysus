@@ -3,12 +3,14 @@
 import React, { useState, useEffect } from 'react';
 // Simple theme toggle using localStorage and document.documentElement.classList
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      const storedTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      setTheme(storedTheme);
     }
-    return 'light';
-  });
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
