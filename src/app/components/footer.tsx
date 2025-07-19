@@ -7,7 +7,12 @@ import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 
 export function Footer() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return <div>Loading...</div>; // Or some other loading indicator
+  }
+
   const userId = user?.id;
   const { setTheme } = useTheme();
   return (

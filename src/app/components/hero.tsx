@@ -7,7 +7,12 @@ import { Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
 
 export function Hero() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
+
+  if (!isLoaded) {
+    return <div>Loading...</div>; // Or some other loading indicator
+  }
+
   const userId = user?.id;
 
   return (
