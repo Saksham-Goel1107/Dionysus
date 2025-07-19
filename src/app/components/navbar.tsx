@@ -9,12 +9,29 @@ import GetStartedButton from '@/components/shsfui/button/get-started-button';
 import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import Battery from './Battery';
+import { useEffect, useState } from 'react';
 
 export function Navbar() {
   const { user } = useUser();
+  const [isOnboarding, setIsOnboarding] = useState<boolean>(true);
+
+  useEffect(() => {
+    // Invert logic: onboarding is considered complete if isOnboarding is false or undefined
+    setIsOnboarding(user?.publicMetadata?.isOnboarding !== false);
+  }, [user]);
   const userId = user?.id;
   const pathname = usePathname();
   const isHome = pathname === '/';
+
+  const [surveyDone, setSurveyDone] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (userId && isOnboarding) {
+      fetch('/api/survey-status')
+        .then((res) => res.json())
+        .then((data) => setSurveyDone(data.done))
+        .catch(() => setSurveyDone(null));
+    }
+  }, [userId, isOnboarding]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-16">
@@ -50,23 +67,33 @@ export function Navbar() {
             >
               Status
             </Link>
-            <Link
+            <a
               href="#features"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               Features
-            </Link>
-            <Link
+            </a>
+            <a
               href="#how-it-works"
               className="text-sm font-medium transition-colors hover:text-primary"
             >
               How It Works
-            </Link>
+            </a>
             <Link href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
               Docs
             </Link>
             <ModeToggle />
-            <Link href={userId ? '/dashboard' : '/sign-in'}>
+            <Link
+              href={
+                userId
+                  ? !isOnboarding
+                    ? '/onboarding'
+                    : surveyDone === false
+                      ? '/survey-check'
+                      : '/dashboard'
+                  : '/sign-in'
+              }
+            >
               <GetStartedButton />
             </Link>
             <StarOnGithub />
@@ -77,7 +104,17 @@ export function Navbar() {
         {!isHome && (
           <div className="hidden md:flex items-center gap-5">
             <ModeToggle />
-            <Link href={userId ? '/dashboard' : '/sign-in'}>
+            <Link
+              href={
+                userId
+                  ? !isOnboarding
+                    ? '/onboarding'
+                    : surveyDone === false
+                      ? '/survey-check'
+                      : '/dashboard'
+                  : '/sign-in'
+              }
+            >
               <GetStartedButton />
             </Link>
           </div>

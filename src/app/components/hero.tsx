@@ -5,10 +5,29 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@clerk/nextjs';
 import { Github, Headphones, Code } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export function Hero() {
   const { user } = useUser();
+  const [isOnboarding, setIsOnboarding] = useState<boolean>(true);
+
+  useEffect(() => {
+    setIsOnboarding(user?.publicMetadata?.isOnboarding !== false);
+  }, [user]);
   const userId = user?.id;
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+
+  const [surveyDone, setSurveyDone] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (userId && isOnboarding) {
+      fetch('/api/survey-status')
+        .then((res) => res.json())
+        .then((data) => setSurveyDone(data.done))
+        .catch(() => setSurveyDone(null));
+    }
+  }, [userId, isOnboarding]);
 
   return (
     <section className="w-full p-12  md:py-24 lg:py-32 xl:py-48">
@@ -25,11 +44,21 @@ export function Hero() {
               </p>
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Link href={userId ? '/dashboard' : '/sign-in'}>
+              <Link
+                href={
+                  userId
+                    ? !isOnboarding
+                      ? '/onboarding'
+                      : surveyDone === false
+                        ? '/survey-check'
+                        : '/dashboard'
+                    : '/sign-in'
+                }
+              >
                 <GetStartedButton />
               </Link>
               <Button size="lg" variant="outline" asChild>
-                <Link href="#how-it-works">Learn More</Link>
+                <a href="#how-it-works">Learn More</a>
               </Button>
             </div>
           </div>
