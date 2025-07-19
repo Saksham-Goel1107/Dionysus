@@ -114,12 +114,11 @@ export default async function RootLayout({
   const { userId } = await auth();
   let userData = null;
 
-
   if (userId) {
     try {
       userData = await clerkClient.users.getUser(userId);
     } catch (error) {
-      console.error("Failed to fetch user:", error);
+      console.error('Failed to fetch user:', error);
     }
 
     try {
@@ -196,6 +195,22 @@ export default async function RootLayout({
                           d.getElementsByTagName("head")[0].appendChild(s);
                         })();
                       `,
+                    }}
+                  />
+                  <Script
+                    id="hotjar"
+                    strategy="afterInteractive"
+                    dangerouslySetInnerHTML={{
+                      __html: `
+      (function(h,o,t,j,a,r){
+          h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+          h._hjSettings={hjid:6468665,hjsv:6};
+          a=o.getElementsByTagName('head')[0];
+          r=o.createElement('script');r.async=1;
+          r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+          a.appendChild(r);
+      })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    `,
                     }}
                   />
                   {userId && userData && (
