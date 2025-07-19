@@ -1,6 +1,7 @@
 import { db } from '@/server/db';
 import { auth, clerkClient } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { env } from '@/env.js';
 
 type Props = {};
 
@@ -8,13 +9,13 @@ const syncUser = async ({}: Props) => {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return redirect('/sign-in');
+      return redirect(new URL('/sign-in', env.NEXT_PUBLIC_BASE_URL));
     }
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     const email = user.emailAddresses[0]?.emailAddress;
     if (!email) {
-      return redirect('/sign-in');
+      return redirect(new URL('/sign-in', env.NEXT_PUBLIC_BASE_URL));
     }
     await db.user.upsert({
       where: { emailAddress: email },
@@ -31,9 +32,9 @@ const syncUser = async ({}: Props) => {
         lastName: user.lastName,
       },
     });
-    return redirect('/onboarding');
+    return redirect(new URL('/onboarding', env.NEXT_PUBLIC_BASE_URL));
   } catch (error) {
-    return redirect('/onboarding');
+    return redirect(new URL('/onboarding', env.NEXT_PUBLIC_BASE_URL));
   }
 };
 
