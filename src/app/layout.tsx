@@ -8,8 +8,7 @@ import { TRPCReactProvider } from '@/trpc/react';
 import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
 import { GoogleOneTap } from '@clerk/nextjs';
-import { auth } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/clerk-sdk-node';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';
@@ -116,7 +115,8 @@ export default async function RootLayout({
 
   if (userId) {
     try {
-      userData = await clerkClient.users.getUser(userId);
+      const client = clerkClient();
+      userData = await client.users.getUser(userId);
     } catch (error) {
       console.error('Failed to fetch user:', error);
     }
