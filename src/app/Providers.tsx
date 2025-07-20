@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 import AiChatSidebar from './components/AiChatSidebar';
@@ -13,18 +13,23 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userId = user?.user?.id;
   const userData = user?.user;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
   const hideAiChat =
     pathname?.startsWith('/sign-in') ||
     pathname?.startsWith('/sign-up') ||
     pathname?.startsWith('/onboarding');
 
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
     <>
       {userId ? (
         <RecaptchaGate>
           {children}
-          {userData && (
+          {isClient && userData && (
             <Script
               id="userback"
               strategy="afterInteractive"
