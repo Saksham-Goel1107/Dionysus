@@ -1,6 +1,14 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+
+declare global {
+  interface Window {
+    toast?: {
+      success: (msg: string) => void;
+    };
+  }
+}
 import { api } from '@/trpc/react';
 import { InfoIcon } from 'lucide-react';
 import React, { useEffect, useMemo } from 'react';
@@ -44,6 +52,13 @@ type Transaction = {
 };
 
 const BillingPage = () => {
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+  }, []);
   const { data: user } = api.project.getMyCredits.useQuery();
   const { data: transactions } = api.project.getMyTransactions.useQuery();
   const [creditsToBuy, setCreditsToBuy] = React.useState<number[]>([100]);
@@ -90,6 +105,38 @@ const BillingPage = () => {
     setIsPaymentOpen(false);
     void utils.project.getMyTransactions.invalidate();
     void utils.project.getMyCredits.invalidate();
+    const notify = () => {
+      const title = '🎉 Credits Purchased!';
+      const body = `You have successfully purchased ${creditsToBuyAmount} credits for ₹${discountedPrice}. Thank you for your purchase!`;
+      const icon = '/public/logo.png';
+      try {
+        if (window.Notification) {
+          const redirectToDashboard = () => {
+            window.location.href = '/dashboard';
+          };
+          if (Notification.permission === 'granted') {
+            const notification = new Notification(title, { body, icon });
+            notification.onclick = redirectToDashboard;
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then(permission => {
+              if (permission === 'granted') {
+                const notification = new Notification(title, { body, icon });
+                notification.onclick = redirectToDashboard;
+              }
+            });
+          }
+        } else {
+          if (window?.toast) {
+            window.toast.success(body);
+          }
+        }
+      } catch (err) {
+        if (window?.toast) {
+          window.toast.success(body);
+        }
+      }
+    };
+    notify();
   };
 
   useEffect(() => {
