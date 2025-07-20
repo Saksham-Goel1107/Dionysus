@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
+import { ModeToggle } from '@/app/components/ThemeToggle';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -171,9 +172,10 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           }}
         >
           <div
-            style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}
+            style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: 8, gap: 8 }}
           >
             <UserButton />
+            <ModeToggle />
           </div>
           <span
             style={{
@@ -212,6 +214,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
             <input
               ref={passwordRef}
               type={showPassword ? 'text' : 'password'}
+              name="currentPassword"
+              autoComplete="current-password"
               placeholder="Password"
               style={{
                 width: '100%',

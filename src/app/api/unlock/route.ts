@@ -48,7 +48,20 @@ export async function POST(req: NextRequest) {
     if (newPassword && (typeof newPassword !== 'string' || newPassword.length < 8)) {
       return NextResponse.json({ success: false, error: 'Invalid new password.' }, { status: 400 });
     }
+    // HaveIBeenPwned password check
     if (newPassword) {
+      const sha1 = await import('crypto').then(c => c.createHash('sha1').update(newPassword).digest('hex').toUpperCase());
+      const prefix = sha1.slice(0, 5);
+      const suffix = sha1.slice(5);
+      const hibpRes = await fetch(`https://api.pwnedpasswords.com/range/${prefix}`);
+      if (!hibpRes.ok) {
+        return NextResponse.json({ success: false, error: 'Could not check password security.' }, { status: 500 });
+      }
+      const hibpText = await hibpRes.text();
+      const found = hibpText.split('\n').some(line => line.startsWith(suffix));
+      if (found) {
+        return NextResponse.json({ success: false, error: 'This password has been found in a data breach. Please choose a more secure password.' }, { status: 400 });
+      }
       const hashed = await hash(newPassword, 12);
       await prisma.user.update({ where: { id: userId }, data: { passwordHash: hashed } });
       return NextResponse.json({ success: true });

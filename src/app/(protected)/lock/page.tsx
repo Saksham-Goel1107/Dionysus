@@ -209,6 +209,8 @@ export default function LockPage() {
                   outline: 'none',
                   paddingRight: 38,
                 }}
+                name="password"
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -240,6 +242,8 @@ export default function LockPage() {
               <input
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Confirm Password"
+                name="confirmNewPassword"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{

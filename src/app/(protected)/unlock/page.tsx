@@ -322,6 +322,8 @@ export default function UnlockPage() {
           <input
             type={showCurrent ? 'text' : 'password'}
             placeholder="Current Password"
+            name="currentPassword"
+            autoComplete="current-password"
             value={currentPassword}
             onChange={(e) => {
               setCurrentPassword(e.target.value);
@@ -364,6 +366,8 @@ export default function UnlockPage() {
         <div style={{ width: '100%', position: 'relative', marginBottom: 14 }}>
           <input
             type={showNew ? 'text' : 'password'}
+            name="newPassword"
+            autoComplete="new-password"
             placeholder="New Password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
@@ -404,6 +408,8 @@ export default function UnlockPage() {
         <div style={{ width: '100%', position: 'relative', marginBottom: 14 }}>
           <input
             type={showConfirm ? 'text' : 'password'}
+            name="confirmNewPassword"
+            autoComplete="new-password"
             placeholder="Confirm New Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
