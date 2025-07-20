@@ -1,57 +1,33 @@
-import { db } from '@/server/db';
-import { auth, clerkClient } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
+'use client';
 
-export default async function Page() {
-  try {
-    const { userId, sessionClaims } = await auth();
-    if (!userId) {
-      redirect('/sign-in');
-    }
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const email = user.emailAddresses[0]?.emailAddress;
+export default function SyncUserPage() {
+  const router = useRouter();
 
-    if (!email) {
-      redirect('/sign-in');
-    }
+  useEffect(() => {
+    const syncUser = async () => {
+      try {
+        const res = await fetch('/api/sync-user');
+        const { redirect } = await res.json();
+        if (redirect) {
+          router.replace(redirect);
+        } else {
+          router.replace('/onboarding');
+        }
+      } catch (err) {
+        console.error('Sync user fetch failed:', err);
+        router.replace('/onboarding');
+      }
+    };
 
-    const result = await db.$transaction(async (tx) => {
-      const upsertedUser = await tx.user.upsert({
-        where: { id: userId },
-        update: {
-          imageUrl: user.imageUrl,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-        create: {
-          id: userId,
-          emailAddress: email,
-          imageUrl: user.imageUrl,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-        select: { SurveyDone: true }
-      });
-      return upsertedUser;
-    });
+    syncUser();
+  }, [router]);
 
-    if (userId && !sessionClaims?.metadata?.onboardingComplete) {
-      redirect('/onboarding');
-    }
-
-    if (result.SurveyDone) {
-      redirect('/dashboard');
-    } else {
-      redirect('/survey-check');
-    }
-
-  } catch (error) {
-    console.error('Database error in syncUser:', error);
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
-      console.error('Unique constraint violation');
-    }
-    redirect('/onboarding');
-  }
+  return (
+    <div className="flex h-screen items-center justify-center text-gray-600 dark:text-gray-300">
+      Syncing your account...
+    </div>
+  );
 }
