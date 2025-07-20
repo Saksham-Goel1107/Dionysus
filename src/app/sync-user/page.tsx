@@ -48,6 +48,15 @@ export default async function Page() {
     }
 
   } catch (error) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'digest' in error &&
+      typeof (error as any).digest === 'string' &&
+      (error as any).digest.startsWith('NEXT_REDIRECT')
+    ) {
+      throw error;
+    }
     console.error('Database error in syncUser:', error);
     if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
       console.error('Unique constraint violation');
