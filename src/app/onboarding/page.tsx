@@ -4,6 +4,7 @@ import * as React from 'react';
 import { markOnboardingComplete } from './completeOnboardingAction';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
+import { useIsClient } from '@/hooks/use-is-client';
 
 const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
 
@@ -134,6 +135,7 @@ declare global {
 
 function OnboardingPage() {
   const { theme, setTheme } = useTheme();
+  const isClient = useIsClient();
   const [step, setStep] = React.useState(0);
   const [showMeetDev, setShowMeetDev] = React.useState(false);
   const [showSkip, setShowSkip] = React.useState(false);
@@ -142,14 +144,16 @@ function OnboardingPage() {
 
   const current = TOUR_STEPS[step];
 
+  if (!isClient) {
+    return null;
+  }
+
   // On mount, check if onboarding was finished/skipped but not confirmed
   React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      if (localStorage.getItem(ONBOARDING_FINISHED_KEY) === 'true') {
-        setShowMeetDev(true);
-      }
+    if (isClient && localStorage.getItem(ONBOARDING_FINISHED_KEY) === 'true') {
+      setShowMeetDev(true);
     }
-  }, []);
+  }, [isClient]);
 
   React.useEffect(() => {
     document.body.style.overflow = 'hidden';
