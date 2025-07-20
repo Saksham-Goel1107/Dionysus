@@ -5,11 +5,8 @@ import { type Metadata } from 'next';
 import { headers } from 'next/headers';
 
 import { TRPCReactProvider } from '@/trpc/react';
-import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 
 import { GoogleOneTap } from '@clerk/nextjs';
-import { auth } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/clerk-sdk-node';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';
@@ -25,6 +22,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import Offline from './offline';
+import Head from 'next/head';
 
 export const metadata: Metadata = {
   title: {
@@ -111,22 +109,6 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
-  const { userId } = await auth();
-  let userData = null;
-
-  if (userId) {
-    try {
-      userData = await clerkClient.users.getUser(userId);
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-    }
-
-    try {
-      await checkAndSyncProStatus(userId);
-    } catch (error) {
-      console.error('Failed to sync pro status', error);
-    }
-  }
 
   const headersList = await headers();
   const pathname = headersList.get('x-next-pathname') || '';
@@ -135,11 +117,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
-      <head>
+      <Head>
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <link rel="manifest" href="/manifest.json" />
-      </head>
+      </Head>
       <body>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -161,7 +143,7 @@ export default async function RootLayout({
                     pathname !== '/updates' && <CookieBanner />}
                   <TRPCReactProvider>
                     <Offline>
-                      {userId ? <Providers>{children}</Providers> : <>{children}</>}
+                      <Providers>{children}</Providers>
                     </Offline>
                   </TRPCReactProvider>
                   <Toaster richColors />
@@ -213,40 +195,8 @@ export default async function RootLayout({
     `,
                     }}
                   />
-                  {userId && userData && (
-                    <Script
-                      id="userback"
-                      strategy="afterInteractive"
-                      dangerouslySetInnerHTML={{
-                        __html: `
-        window.Userback = window.Userback || {};
-        Userback.access_token = \`${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN}\`;
-        (async function() {
-          try {
-          Userback.user_data = {
-            id: \`${userId}\`,
-            info: {
-            name: \`${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}\`,
-            email: \`${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}\`
-            }
-          };
-          } catch (e) {
-          Userback.user_data = {
-            id: \`${userId}\`,
-            info: {
-            name: 'User',
-            email: 'user@example.com'
-            }
-          };
-          }
-        })();
-        (function(d) {
-          var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
-        })(document);
-                    `,
-                      }}
-                    />
-                  )}
+
+
                 </>
               )}
               {/* </MultisessionAppSupport> */}

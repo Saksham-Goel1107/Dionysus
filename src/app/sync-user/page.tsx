@@ -6,7 +6,7 @@ export default async function Page() {
   try {
     const { userId, sessionClaims } = await auth();
     if (!userId) {
-      redirect('/sign-in');
+      return redirect('/sign-in');
     }
 
     const client = await clerkClient();
@@ -14,7 +14,7 @@ export default async function Page() {
     const email = user.emailAddresses[0]?.emailAddress;
 
     if (!email) {
-      redirect('/sign-in');
+      return redirect('/sign-in');
     }
 
     const result = await db.$transaction(async (tx) => {
@@ -38,13 +38,13 @@ export default async function Page() {
     });
 
     if (userId && !sessionClaims?.metadata?.onboardingComplete) {
-      redirect('/onboarding');
+      return redirect('/onboarding');
     }
 
     if (result.SurveyDone) {
-      redirect('/dashboard');
+      return redirect('/dashboard');
     } else {
-      redirect('/survey-check');
+      return redirect('/survey-check');
     }
 
   } catch (error) {
@@ -52,6 +52,6 @@ export default async function Page() {
     if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
       console.error('Unique constraint violation');
     }
-    redirect('/onboarding');
+    return redirect('/onboarding');
   }
 }
