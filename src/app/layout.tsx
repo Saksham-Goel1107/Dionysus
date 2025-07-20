@@ -111,7 +111,13 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
-  const { userId } = await auth();
+  let userId = null;
+  try {
+    const authData = await auth();
+    userId = authData.userId;
+  } catch (e) {
+    console.error('Failed to authenticate user', e);
+  }
   let userData = null;
 
   if (userId) {
