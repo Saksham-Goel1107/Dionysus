@@ -1,16 +1,44 @@
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useState, useMemo } from "react";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  PieChart,
+  Pie,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { useState, useMemo } from 'react';
+import { Input } from '@/components/ui/input';
 
 // Color palette for charts
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', '#5DADE2', '#48C9B0', '#F4D03F'];
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#A569BD',
+  '#5DADE2',
+  '#48C9B0',
+  '#F4D03F',
+];
 
 type SurveyResponse = {
   id: string | number;
@@ -55,34 +83,35 @@ export default function SurveyDashboard({
   goalDistribution,
   featureInterest,
   completionRate,
-  totalResponses
+  totalResponses,
 }: SurveyDashboardProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Prepare chart data
-  const roleData = roleDistribution.map(item => ({
+  const roleData = roleDistribution.map((item) => ({
     name: item.role || 'Not specified',
-    value: item._count
+    value: item._count,
   }));
 
-  const industryData = industryDistribution.map(item => ({
+  const industryData = industryDistribution.map((item) => ({
     name: item.industry || 'Not specified',
-    value: item._count
+    value: item._count,
   }));
 
-  const teamSizeData = teamSizeDistribution.map(item => ({
+  const teamSizeData = teamSizeDistribution.map((item) => ({
     name: item.teamSize || 'Not specified',
-    value: item._count
+    value: item._count,
   }));
 
-  const goalData = goalDistribution.map(item => ({
+  const goalData = goalDistribution.map((item) => ({
     name: item.primaryGoal || 'Not specified',
-    value: item._count
+    value: item._count,
   }));
 
   // Convert feature interest object to array for chart
   const featureData = useMemo(() => {
-    return Object.entries(featureInterest).map(([name, value]) => ({ name, value }))
+    return Object.entries(featureInterest)
+      .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
   }, [featureInterest]);
 
@@ -90,15 +119,17 @@ export default function SurveyDashboard({
   const filteredResponses = useMemo(() => {
     if (!searchTerm) return surveyResponses;
 
-    return surveyResponses.filter(survey => {
+    return surveyResponses.filter((survey) => {
       const fullName = `${survey.user.firstName || ''} ${survey.user.lastName || ''}`.toLowerCase();
       const email = (survey.user.emailAddress || '').toLowerCase();
       const searchLower = searchTerm.toLowerCase();
 
-      return fullName.includes(searchLower) ||
-             email.includes(searchLower) ||
-             (survey.role || '').toLowerCase().includes(searchLower) ||
-             (survey.industry || '').toLowerCase().includes(searchLower);
+      return (
+        fullName.includes(searchLower) ||
+        email.includes(searchLower) ||
+        (survey.role || '').toLowerCase().includes(searchLower) ||
+        (survey.industry || '').toLowerCase().includes(searchLower)
+      );
     });
   }, [surveyResponses, searchTerm]);
 
@@ -152,7 +183,7 @@ export default function SurveyDashboard({
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
                       {roleData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -182,7 +213,7 @@ export default function SurveyDashboard({
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                     >
                       {industryData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -295,7 +326,9 @@ export default function SurveyDashboard({
                   <TableBody>
                     {filteredResponses.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center">No survey responses found</TableCell>
+                        <TableCell colSpan={7} className="text-center">
+                          No survey responses found
+                        </TableCell>
                       </TableRow>
                     ) : (
                       filteredResponses.map((survey) => (
@@ -303,9 +336,13 @@ export default function SurveyDashboard({
                           <TableCell className="font-medium">
                             <div>
                               {survey.user.firstName} {survey.user.lastName}
-                              {survey.user.isPro && <Badge className="ml-2 bg-green-600">PRO</Badge>}
+                              {survey.user.isPro && (
+                                <Badge className="ml-2 bg-green-600">PRO</Badge>
+                              )}
                             </div>
-                            <div className="text-xs text-muted-foreground">{survey.user.emailAddress}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {survey.user.emailAddress}
+                            </div>
                           </TableCell>
                           <TableCell>{survey.role || 'Not specified'}</TableCell>
                           <TableCell>{survey.industry || 'Not specified'}</TableCell>
@@ -313,19 +350,21 @@ export default function SurveyDashboard({
                           <TableCell>{survey.primaryGoal || 'Not specified'}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {Array.isArray(survey.interestedFeatures) ?
+                              {Array.isArray(survey.interestedFeatures) ? (
                                 survey.interestedFeatures.map((feature, i) => (
-                                  <Badge key={i} variant="outline">{feature}</Badge>
-                                )) :
-                                typeof survey.interestedFeatures === 'string' && survey.interestedFeatures
-                                  ? <Badge variant="outline">{survey.interestedFeatures}</Badge>
-                                  : 'None specified'
-                              }
+                                  <Badge key={i} variant="outline">
+                                    {feature}
+                                  </Badge>
+                                ))
+                              ) : typeof survey.interestedFeatures === 'string' &&
+                                survey.interestedFeatures ? (
+                                <Badge variant="outline">{survey.interestedFeatures}</Badge>
+                              ) : (
+                                'None specified'
+                              )}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            {new Date(survey.createdAt).toLocaleDateString()}
-                          </TableCell>
+                          <TableCell>{new Date(survey.createdAt).toLocaleDateString()}</TableCell>
                         </TableRow>
                       ))
                     )}

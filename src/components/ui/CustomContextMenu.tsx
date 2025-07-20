@@ -1,7 +1,35 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
+import * as Sentry from '@sentry/browser';
+
+Sentry.init({
+  dsn: 'https://106d6fed8eb9d133b6a2749ae7674ab9@o4509645375733760.ingest.de.sentry.io/4509645377175632',
+  integrations: [
+    Sentry.feedbackIntegration({
+      autoInject: false,
+    }),
+  ],
+});
+
+function AttachToFeedbackButton() {
+  const [feedback, setFeedback] = useState<ReturnType<typeof Sentry.getFeedback> | undefined>(
+    undefined,
+  );
+  useEffect(() => {
+    setFeedback(Sentry.getFeedback());
+  }, []);
+
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (feedback && buttonRef.current) {
+      const unsubscribe = feedback.attachTo(buttonRef.current);
+      return unsubscribe;
+    }
+    return () => {};
+  }, [feedback]);
+}
 
 const CustomContextMenu = () => {
   const [visible, setVisible] = React.useState(false);
@@ -415,14 +443,22 @@ const CustomContextMenu = () => {
       <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
         Share Site
       </button>
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        href="https://github.com/Saksham-Goel1107/dionysus/issues"
-        className={`${buttonClass} text-blue-600 dark:text-red-500`}
+      <button
+        onClick={() => {
+          const feedback = Sentry.getFeedback();
+          if (feedback) {
+            const tempBtn = document.createElement('button');
+            document.body.appendChild(tempBtn);
+            feedback.attachTo(tempBtn);
+            tempBtn.click();
+          } else {
+            setVisible(false);
+          }
+        }}
+        className={`${buttonClass} text-red-500`}
       >
         Report an issue
-      </a>
+      </button>
     </div>
   );
 };

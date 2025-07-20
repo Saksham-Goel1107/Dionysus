@@ -25,12 +25,12 @@ export default async function AdminSurveysPage() {
           lastName: true,
           emailAddress: true,
           isPro: true,
-        }
-      }
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: 'desc',
+    },
   });
 
   const roleDistribution = await db.survey.groupBy({
@@ -38,9 +38,9 @@ export default async function AdminSurveysPage() {
     _count: true,
     orderBy: {
       _count: {
-        role: 'desc'
-      }
-    }
+        role: 'desc',
+      },
+    },
   });
 
   const industryDistribution = await db.survey.groupBy({
@@ -48,14 +48,14 @@ export default async function AdminSurveysPage() {
     _count: true,
     orderBy: {
       _count: {
-        industry: 'desc'
-      }
-    }
+        industry: 'desc',
+      },
+    },
   });
 
   const companySizeDistribution = await db.survey.groupBy({
     by: ['companySize'],
-    _count: true
+    _count: true,
   });
 
   const usagePurposeDistribution = await db.survey.groupBy({
@@ -63,21 +63,21 @@ export default async function AdminSurveysPage() {
     _count: true,
     orderBy: {
       _count: {
-        usagePurpose: 'desc'
-      }
-    }
+        usagePurpose: 'desc',
+      },
+    },
   });
 
   const featureInterest = await db.survey.findMany({
     select: {
-      expectedFeatures: true
-    }
+      expectedFeatures: true,
+    },
   });
 
   let featureCounts: Record<string, number> = {};
-  featureInterest.forEach(survey => {
+  featureInterest.forEach((survey) => {
     if (Array.isArray(survey.expectedFeatures)) {
-      survey.expectedFeatures.forEach(feature => {
+      survey.expectedFeatures.forEach((feature) => {
         featureCounts[feature] = (featureCounts[feature] || 0) + 1;
       });
     }
@@ -87,12 +87,12 @@ export default async function AdminSurveysPage() {
   const completedSurveys = await db.survey.count();
   const completionRate = totalUsers > 0 ? (completedSurveys / totalUsers) * 100 : 0;
 
-  const safeRoleDistribution = roleDistribution.map(item => ({
+  const safeRoleDistribution = roleDistribution.map((item) => ({
     ...item,
-    role: item.role === null ? undefined : item.role
+    role: item.role === null ? undefined : item.role,
   }));
 
-  const mappedSurveyResponses = surveyResponses.map(survey => ({
+  const mappedSurveyResponses = surveyResponses.map((survey) => ({
     ...survey,
     role: survey.role === null ? undefined : survey.role,
     industry: survey.industry === null ? undefined : survey.industry,
@@ -100,7 +100,7 @@ export default async function AdminSurveysPage() {
       ...survey.user,
       firstName: survey.user.firstName === null ? undefined : survey.user.firstName,
       lastName: survey.user.lastName === null ? undefined : survey.user.lastName,
-    }
+    },
   }));
 
   return (
@@ -109,9 +109,9 @@ export default async function AdminSurveysPage() {
       <SurveyDashboard
         surveyResponses={mappedSurveyResponses}
         roleDistribution={safeRoleDistribution}
-        industryDistribution={industryDistribution.map(item => ({
+        industryDistribution={industryDistribution.map((item) => ({
           ...item,
-          industry: item.industry === null ? undefined : item.industry
+          industry: item.industry === null ? undefined : item.industry,
         }))}
         teamSizeDistribution={companySizeDistribution}
         goalDistribution={usagePurposeDistribution}

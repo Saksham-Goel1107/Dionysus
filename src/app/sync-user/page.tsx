@@ -32,7 +32,7 @@ export default async function Page() {
           firstName: user.firstName,
           lastName: user.lastName,
         },
-        select: { SurveyDone: true }
+        select: { SurveyDone: true },
       });
       return upsertedUser;
     });
@@ -46,10 +46,14 @@ export default async function Page() {
     } else {
       return redirect('/survey-check');
     }
-
   } catch (error) {
     console.error('Database error in syncUser:', error);
-    if (typeof error === 'object' && error !== null && 'code' in error && (error as { code?: string }).code === 'P2002') {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: string }).code === 'P2002'
+    ) {
       console.error('Unique constraint violation');
     }
     return redirect('/onboarding');

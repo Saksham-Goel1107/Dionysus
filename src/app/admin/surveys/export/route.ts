@@ -25,62 +25,66 @@ export async function GET() {
           emailAddress: true,
           isPro: true,
           credits: true,
-        }
-      }
+        },
+      },
     },
     orderBy: {
-      createdAt: 'desc'
-    }
+      createdAt: 'desc',
+    },
   });
 
   const csvRows = [];
 
-  csvRows.push([
-    'User ID',
-    'First Name',
-    'Last Name',
-    'Email',
-    'Is Pro',
-    'Credits',
-    'Company Name',
-    'Company Size',
-    'Industry',
-    'Role',
-    'Usage Purpose',
-    'How They Found Us',
-    'Expected Features',
-    'Development Experience (1-5)',
-    'GitHub Experience (1-5)',
-    'Feedback Frequency',
-    'Additional Feedback',
-    'Survey Date'
-  ].join(','));
+  csvRows.push(
+    [
+      'User ID',
+      'First Name',
+      'Last Name',
+      'Email',
+      'Is Pro',
+      'Credits',
+      'Company Name',
+      'Company Size',
+      'Industry',
+      'Role',
+      'Usage Purpose',
+      'How They Found Us',
+      'Expected Features',
+      'Development Experience (1-5)',
+      'GitHub Experience (1-5)',
+      'Feedback Frequency',
+      'Additional Feedback',
+      'Survey Date',
+    ].join(','),
+  );
 
   for (const survey of surveyResponses) {
     const expectedFeatures = Array.isArray(survey.expectedFeatures)
       ? `"${survey.expectedFeatures.join(', ')}"`
       : '';
 
-    csvRows.push([
-      survey.user.id,
-      survey.user.firstName?.replace(/"/g, '""') || '',
-      survey.user.lastName?.replace(/"/g, '""') || '',
-      survey.user.emailAddress,
-      survey.user.isPro ? 'Yes' : 'No',
-      survey.user.credits,
-      survey.companyName?.replace(/"/g, '""') || '',
-      survey.companySize || '',
-      survey.industry || '',
-      survey.role || '',
-      survey.usagePurpose || '',
-      survey.hearAboutUs || '',
-      expectedFeatures,
-      survey.developmentExperience || '',
-      survey.githubExperience || '',
-      survey.feedbackFrequency || '',
-      `"${(survey.additionalFeedback || '').replace(/"/g, '""')}"`,
-      new Date(survey.createdAt).toISOString().split('T')[0]
-    ].join(','));
+    csvRows.push(
+      [
+        survey.user.id,
+        survey.user.firstName?.replace(/"/g, '""') || '',
+        survey.user.lastName?.replace(/"/g, '""') || '',
+        survey.user.emailAddress,
+        survey.user.isPro ? 'Yes' : 'No',
+        survey.user.credits,
+        survey.companyName?.replace(/"/g, '""') || '',
+        survey.companySize || '',
+        survey.industry || '',
+        survey.role || '',
+        survey.usagePurpose || '',
+        survey.hearAboutUs || '',
+        expectedFeatures,
+        survey.developmentExperience || '',
+        survey.githubExperience || '',
+        survey.feedbackFrequency || '',
+        `"${(survey.additionalFeedback || '').replace(/"/g, '""')}"`,
+        new Date(survey.createdAt).toISOString().split('T')[0],
+      ].join(','),
+    );
   }
 
   const csvContent = csvRows.join('\r\n');
@@ -89,6 +93,6 @@ export async function GET() {
     headers: {
       'Content-Type': 'text/csv',
       'Content-Disposition': `attachment; filename="survey-data-${new Date().toISOString().split('T')[0]}.csv"`,
-    }
+    },
   });
 }

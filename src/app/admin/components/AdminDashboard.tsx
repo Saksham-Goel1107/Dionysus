@@ -3,7 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatDistanceToNow } from 'date-fns';
-import { Users, CreditCard, Folder, TrendingUp, BadgeCheck, Activity, BarChart2, ChevronRight } from 'lucide-react';
+import {
+  Users,
+  CreditCard,
+  Folder,
+  TrendingUp,
+  BadgeCheck,
+  Activity,
+  BarChart2,
+  ChevronRight,
+} from 'lucide-react';
 import {
   LineChart,
   Line,

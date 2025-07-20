@@ -109,7 +109,6 @@ export const metadata: Metadata = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
-
   const headersList = await headers();
   const pathname = headersList.get('x-next-pathname') || '';
 
@@ -195,8 +194,6 @@ export default async function RootLayout({
     `,
                     }}
                   />
-
-
                 </>
               )}
               {/* </MultisessionAppSupport> */}

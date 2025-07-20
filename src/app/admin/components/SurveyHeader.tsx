@@ -1,8 +1,8 @@
 'use client';
 
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft, Home, FileBarChart } from "lucide-react";
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowLeft, Home, FileBarChart } from 'lucide-react';
 
 export default function SurveyHeader() {
   return (
@@ -17,7 +17,9 @@ export default function SurveyHeader() {
           </Link>
           <div>
             <h1 className="text-lg font-medium">Survey Analytics</h1>
-            <p className="text-sm text-muted-foreground">User onboarding survey responses and analytics</p>
+            <p className="text-sm text-muted-foreground">
+              User onboarding survey responses and analytics
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
