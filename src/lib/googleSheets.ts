@@ -18,7 +18,11 @@ async function getGoogleSheetsClient() {
   }
 }
 
-export async function addSubscriber(email: string, name: string, timestamp = new Date().toISOString()) {
+export async function addSubscriber(
+  email: string,
+  name: string,
+  timestamp = new Date().toISOString(),
+) {
   try {
     const sheets = await getGoogleSheetsClient();
     const spreadsheetId = process.env.GOOGLE_SHEETS_NEWSLETTER_ID;
@@ -109,7 +113,7 @@ export async function removeSubscriber(email: string) {
           {
             deleteDimension: {
               range: {
-                sheetId: 0, 
+                sheetId: 0,
                 dimension: 'ROWS',
                 startIndex: rowIndex,
                 endIndex: rowIndex + 1,

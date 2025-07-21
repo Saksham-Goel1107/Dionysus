@@ -172,7 +172,13 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           }}
         >
           <div
-            style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: 8, gap: 8 }}
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginBottom: 8,
+              gap: 8,
+            }}
           >
             <UserButton />
             <ModeToggle />

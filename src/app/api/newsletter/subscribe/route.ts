@@ -12,10 +12,7 @@ export async function POST(request: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -24,7 +21,7 @@ export async function POST(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         { success: false, message: 'Invalid request data', errors: validation.error.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,9 +30,7 @@ export async function POST(request: Request) {
     const { isSubscribed: alreadySubscribed } = await isSubscribed(email);
 
     if (alreadySubscribed) {
-      return NextResponse.json(
-        { success: true, message: 'Already subscribed' }
-      );
+      return NextResponse.json({ success: true, message: 'Already subscribed' });
     }
 
     const { success, error } = await addSubscriber(email, name || '');
@@ -44,16 +39,13 @@ export async function POST(request: Request) {
       console.error('Error adding subscriber:', error);
       return NextResponse.json(
         { success: false, message: 'Failed to subscribe. Please try again.' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true, message: 'Successfully subscribed' });
   } catch (error) {
     console.error('Error in newsletter subscribe API:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

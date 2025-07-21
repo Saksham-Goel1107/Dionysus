@@ -6,10 +6,7 @@ export async function GET() {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const userResponse = await fetch(`https://api.clerk.dev/v1/users/${userId}`, {
@@ -24,7 +21,7 @@ export async function GET() {
     if (!email) {
       return NextResponse.json(
         { success: false, message: 'No email found for user' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -34,16 +31,13 @@ export async function GET() {
       console.error('Error checking subscription status:', error);
       return NextResponse.json(
         { success: false, message: 'Error checking subscription status' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true, isSubscribed: subscriptionStatus });
   } catch (error) {
     console.error('Error in newsletter status API:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

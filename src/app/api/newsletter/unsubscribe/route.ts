@@ -11,10 +11,7 @@ export async function POST(request: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -23,7 +20,7 @@ export async function POST(request: Request) {
     if (!validation.success) {
       return NextResponse.json(
         { success: false, message: 'Invalid request data', errors: validation.error.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -32,9 +29,7 @@ export async function POST(request: Request) {
     const { isSubscribed: currentlySubscribed } = await isSubscribed(email);
 
     if (!currentlySubscribed) {
-      return NextResponse.json(
-        { success: true, message: 'Not currently subscribed' }
-      );
+      return NextResponse.json({ success: true, message: 'Not currently subscribed' });
     }
 
     const { success, error, message } = await removeSubscriber(email);
@@ -43,16 +38,13 @@ export async function POST(request: Request) {
       console.error('Error removing subscriber:', error || message);
       return NextResponse.json(
         { success: false, message: 'Failed to unsubscribe. Please try again.' },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true, message: 'Successfully unsubscribed' });
   } catch (error) {
     console.error('Error in newsletter unsubscribe API:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

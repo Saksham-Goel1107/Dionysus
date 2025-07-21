@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       await sendPasswordChangeWarningEmail({ to: email, name });
     } else if (type === 'delete') {
       await sendPasswordDeleteWarningEmail({ to: email, name });
-    } else if (type === 'new account'){
+    } else if (type === 'new account') {
       await sendNewAccountWelcomeEmail({ to: email, name });
     } else {
       await sendPasswordSetWarningEmail({ to: email, name });

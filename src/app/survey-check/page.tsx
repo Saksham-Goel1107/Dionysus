@@ -555,7 +555,10 @@ export default function SurveyPage() {
                     onChange={() => setDontSubscribe((prev) => !prev)}
                     className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}
                   />
-                  <label htmlFor="dontSubscribe" className={`ml-2 text-sm ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>
+                  <label
+                    htmlFor="dontSubscribe"
+                    className={`ml-2 text-sm ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}
+                  >
                     Don&apos;t subscribe to newsletter
                   </label>
                 </div>

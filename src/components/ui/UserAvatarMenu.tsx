@@ -184,7 +184,7 @@ export default function UserAvatarMenu() {
             <span role="img" aria-label="Newsletter" className="mr-2">
               📧
             </span>
-             Our Newsletter
+            Our Newsletter
           </Button>
           <div className="mt-2 flex w-full justify-center">
             <StarOnGithub />
@@ -203,9 +203,7 @@ export default function UserAvatarMenu() {
                 <X className="w-5 h-5" />
               </button>
 
-              <h2 className="text-2xl font-bold mb-6 text-center">
-                Dionysus Newsletter
-              </h2>
+              <h2 className="text-2xl font-bold mb-6 text-center">Dionysus Newsletter</h2>
 
               <div className="space-y-6 mb-8">
                 <div className="p-5 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
@@ -234,23 +232,22 @@ export default function UserAvatarMenu() {
 
                 <div className="p-5 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <h3 className="text-lg font-semibold mb-2">🔒 Privacy Commitment</h3>
-                  <p>We respect your inbox. We send newsletters monthly, never share your email, and make it easy to unsubscribe at any time.</p>
+                  <p>
+                    We respect your inbox. We send newsletters monthly, never share your email, and
+                    make it easy to unsubscribe at any time.
+                  </p>
                 </div>
               </div>
 
               <div className="flex justify-center">
                 <Button
-                  variant={isSubscribed ? "destructive" : "default"}
+                  variant={isSubscribed ? 'destructive' : 'default'}
                   size="lg"
                   disabled={isLoading}
                   onClick={isSubscribed ? handleUnsubscribe : handleSubscribe}
                   className={`px-8 transition-all duration-150 ${isSubscribed ? '' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'}`}
                 >
-                  {isLoading
-                    ? "Processing..."
-                    : isSubscribed
-                    ? "Unsubscribe"
-                    : "Subscribe Now"}
+                  {isLoading ? 'Processing...' : isSubscribed ? 'Unsubscribe' : 'Subscribe Now'}
                 </Button>
               </div>
             </div>
