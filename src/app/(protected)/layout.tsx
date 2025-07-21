@@ -1,15 +1,19 @@
+import dynamic from 'next/dynamic';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 import AppSidebar from './_components/AppSidebar';
 import ClientFeedbackForm from './_components/ClientFeedbackForm';
 import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
-import PasswordGate from '@/components/PasswordGate';
 import { Inbox } from '@novu/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import Battery from '@/app/components/Battery';
 import { shouldRedirectToSurvey } from '@/lib/survey';
 import { redirect } from 'next/navigation';
+
+const PasswordGate = dynamic(() => import('@/components/PasswordGate'), {
+  ssr: false,
+});
 
 type Props = {
   children: React.ReactNode;
