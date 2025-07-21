@@ -36,7 +36,27 @@ export async function POST(req: NextRequest) {
         { status: 401 },
       );
     }
-    const { password, unlockToken, rememberMinutes } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid or missing request body',
+          limit: 5,
+          remaining: 0,
+          reset: Date.now() + 60 * 60 * 1000,
+        },
+        { status: 400 },
+      );
+    }
+    let { password, unlockToken, rememberMinutes } = body || {};
+    if (typeof password === 'string') password = password.trim();
+    if (typeof unlockToken === 'string') unlockToken = unlockToken.trim();
+    if (typeof rememberMinutes !== 'number') rememberMinutes = 60;
+    if (typeof rememberMinutes === 'number')
+      rememberMinutes = Math.max(1, Math.min(1440, rememberMinutes));
     if (unlockToken) {
       const payload = await verifyRecaptchaJWT(unlockToken);
       if (payload && payload.userId === userId && payload.exp && Date.now() < payload.exp * 1000) {
