@@ -237,7 +237,7 @@
     "url": "https://github.com/Saksham-Goel1107/dionysus/issues"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=9.0.0"
   },
   "support": {

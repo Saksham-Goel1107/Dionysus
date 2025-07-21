@@ -106,7 +106,15 @@ export default function SurveyPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to submit survey');
       }
-
+      try {
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new account' }),
+        });
+      } catch (err) {
+        console.error('Error Sending welcome email:', err);
+      }
       router.push('/dashboard');
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'An unknown error occurred');

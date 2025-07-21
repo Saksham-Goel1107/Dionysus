@@ -101,11 +101,15 @@ export default function LockPage() {
         setSuccess('Password set successfully! You can now use your account. Redirecting...');
         setPassword('');
         setConfirmPassword('');
-        fetch('/api/send-password-change-warning', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
+        try {
+          fetch('/api/send-password-change-warning', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          });
+        } catch (err) {
+          console.error('Error sending email', err);
+        }
         setInterval(() => {
           router.replace('/dashboard');
         }, 1000);
@@ -127,7 +131,9 @@ export default function LockPage() {
       window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
       window.Clerk?.user?.emailAddresses?.[0]?.emailAddress ||
       '';
-  } catch {}
+  } catch (error) {
+    console.error('Error::getClerkEmail:', error);
+  }
 
   return (
     <>
