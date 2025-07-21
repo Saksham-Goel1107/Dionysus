@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { myAction } from '../Settings/actions';
-import { useReverification } from '@clerk/nextjs';
+ 
+ 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -30,7 +30,7 @@ export default function LockPage() {
   const [pwned, setPwned] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const performAction = useReverification(myAction);
+ 
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -135,7 +135,7 @@ export default function LockPage() {
           }}
         >
           <form
-            onSubmit={(e) => handleClick(e)}
+            onSubmit={(e) => handleSubmit(e)}
             style={{
               background: resolvedTheme === 'dark' ? 'rgba(30,30,30,0.98)' : '#fff',
               borderRadius: 20,
