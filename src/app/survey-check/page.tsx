@@ -33,6 +33,7 @@ export default function SurveyPage() {
   const { user, isLoaded } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [dontSubscribe, setDontSubscribe] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const { theme, setTheme } = useTheme();
 
@@ -114,6 +115,21 @@ export default function SurveyPage() {
         });
       } catch (err) {
         console.error('Error Sending welcome email:', err);
+      }
+      // Newsletter logic
+      if (!dontSubscribe && user?.emailAddresses?.[0]?.emailAddress) {
+        try {
+          await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.emailAddresses[0].emailAddress,
+              name: user.firstName || '',
+            }),
+          });
+        } catch (err) {
+          // Silently fail, don't block survey
+        }
       }
       router.push('/dashboard');
     } catch (error) {
@@ -530,11 +546,23 @@ export default function SurveyPage() {
             )}
 
             <div className="pt-5">
-              <div className="flex justify-end">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+                <div className="flex items-center">
+                  <input
+                    id="dontSubscribe"
+                    type="checkbox"
+                    checked={dontSubscribe}
+                    onChange={() => setDontSubscribe((prev) => !prev)}
+                    className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}
+                  />
+                  <label htmlFor="dontSubscribe" className={`ml-2 text-sm ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}>
+                    Don&apos;t subscribe to newsletter
+                  </label>
+                </div>
                 <button
                   type="submit"
                   disabled={isSubmitting || !isDirty || !isValid}
-                  className={`ml-3 inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
+                  className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
                     ${
                       theme === 'dark'
                         ? 'text-white bg-blue-600 hover:bg-blue-700 border-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
