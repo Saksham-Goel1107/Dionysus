@@ -20,14 +20,8 @@
     "preview": "next build && next start",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "prepare": "husky install",
     "lint-staged": "doppler run -- npm run lint:fix && npm run format:write"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "**/*.{json,md,css}": "prettier --write"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.15",
@@ -171,7 +165,7 @@
     "autoprefixer": "^10.4.21",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.0.1",
-    "husky": "^8.0.0",
+    "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "postcss": "^8.4.39",
     "prettier": "^3.6.2",

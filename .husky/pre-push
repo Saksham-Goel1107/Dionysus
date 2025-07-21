@@ -1,0 +1,2 @@
+#!/bin/bash
+doppler run -- npm run build && npm run typecheck
