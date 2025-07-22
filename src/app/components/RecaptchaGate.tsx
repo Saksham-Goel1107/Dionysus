@@ -16,6 +16,8 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/support',
   '/status',
   '/api/recaptcha-verify(.*)',
+  '/lock',
+  '/block',
 ];
 
 function isPublicRoute(pathname: string) {
@@ -80,7 +82,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
         // @ts-ignore
         window.grecaptcha.ready(() => {
           handleVerification();
-          intervalRef.current = setInterval(handleVerification, 60_000);
+          intervalRef.current = setInterval(handleVerification, 30_000);
         });
       } else {
         setError('reCAPTCHA failed to load');

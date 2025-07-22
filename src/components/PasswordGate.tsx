@@ -1,8 +1,21 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
 import { ModeToggle } from '@/app/components/ThemeToggle';
+import Script from 'next/script';
+
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      render: (container: string | HTMLElement, parameters: any) => number;
+      reset: (widgetId?: number) => void;
+      getResponse: (widgetId?: number) => string;
+    };
+  }
+}
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
   const { resolvedTheme } = useTheme();
@@ -17,6 +30,12 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const passwordRef = useRef<HTMLInputElement>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  // reCAPTCHA related states and refs
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaWidgetId = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('/api/has-password')
@@ -87,23 +106,85 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     };
   }, []);
 
+  useEffect(() => {
+    function renderRecaptcha() {
+      if (
+        typeof window !== 'undefined' &&
+        showPrompt &&
+        window.grecaptcha &&
+        containerRef.current &&
+        !recaptchaWidgetId.current &&
+        containerRef.current.childNodes.length === 0
+      ) {
+        recaptchaWidgetId.current = window.grecaptcha.render(containerRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY_V2 || '',
+          theme: resolvedTheme === 'dark' ? 'dark' : 'light',
+          size: 'normal',
+          callback: (token: string) => setRecaptchaToken(token),
+          'expired-callback': () => setRecaptchaToken(null),
+          'error-callback': () => {
+            setError('reCAPTCHA verification failed. Please try again.');
+            setRecaptchaToken(null);
+          },
+        });
+        setRecaptchaLoaded(true);
+      }
+    }
+    if (typeof window !== 'undefined') {
+      const checkReady = () => {
+        if (
+          window.grecaptcha &&
+          typeof window.grecaptcha.render === 'function' &&
+          containerRef.current &&
+          containerRef.current.childNodes.length === 0 &&
+          !recaptchaWidgetId.current
+        ) {
+          renderRecaptcha();
+        } else {
+          setTimeout(checkReady, 300);
+        }
+      };
+      checkReady();
+    }
+  }, [showPrompt, resolvedTheme]);
+
+  useEffect(() => {
+    if (recaptchaLoaded && recaptchaWidgetId.current !== null && window.grecaptcha) {
+      window.grecaptcha.reset(recaptchaWidgetId.current);
+      setRecaptchaToken(null);
+    }
+  }, [resolvedTheme, recaptchaLoaded]);
+
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setVerifying(true);
     const password = passwordRef.current?.value || '';
+
     try {
       const res = await fetch('/api/verify-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, rememberMinutes }),
+        body: JSON.stringify({
+          password,
+          rememberMinutes,
+          recaptchaToken,
+        }),
       });
+
       const data = await res.json();
-      // Parse rate limit info from response
+
       if (typeof data.limit === 'number' && typeof data.remaining === 'number') {
         setAttemptsLeft(data.remaining);
         if (typeof data.reset === 'number') setResetTime(data.reset);
       }
+
       if (res.status === 429) {
         setError(data.message || 'Too many attempts. Please try again later.');
       } else if (data.success && data.unlockToken) {
@@ -115,8 +196,14 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
         setResetTime(null);
       } else {
         setError(data.error || 'Incorrect password.');
+
+        if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaToken(null);
+        }
       }
-    } catch {
+    } catch (error) {
+      console.error('Verification error:', error);
       setError('Something went wrong.');
     } finally {
       setVerifying(false);
@@ -138,6 +225,12 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
 
   return showPrompt ? (
     <>
+      <Script
+        src="https://www.google.com/recaptcha/api.js"
+        strategy="afterInteractive"
+        onLoad={() => setRecaptchaLoaded(true)}
+      />
+
       <div
         style={{
           minHeight: '100vh',
@@ -307,15 +400,27 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
             </div>
           )}
           {error && <div style={{ color: '#f33', marginBottom: 12, fontWeight: 500 }}>{error}</div>}
+
+          <div
+            style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 16 }}
+          >
+            <div ref={containerRef} style={{ minHeight: 78 }} />
+            {!recaptchaLoaded && (
+              <div style={{ color: '#f33', fontSize: 14, marginLeft: 8 }}>
+                If you do not see the captcha, please disable ad blockers and reload.
+              </div>
+            )}
+          </div>
+
           <button
             type="submit"
-            disabled={verifying || attemptsLeft === 0}
+            disabled={verifying || attemptsLeft === 0 || !recaptchaToken}
             style={{
               width: '100%',
               padding: '0.9rem',
               borderRadius: 8,
               background:
-                verifying || attemptsLeft === 0
+                verifying || attemptsLeft === 0 || !recaptchaToken
                   ? resolvedTheme === 'dark'
                     ? '#444'
                     : '#bcd'
@@ -326,7 +431,8 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
               fontWeight: 700,
               fontSize: '1.1rem',
               border: 'none',
-              cursor: verifying || attemptsLeft === 0 ? 'not-allowed' : 'pointer',
+              cursor:
+                verifying || attemptsLeft === 0 || !recaptchaToken ? 'not-allowed' : 'pointer',
               marginTop: 8,
               boxShadow: resolvedTheme === 'dark' ? '0 2px 8px #3af4' : '0 2px 8px #3a8cff44',
               transition: 'background 0.2s',

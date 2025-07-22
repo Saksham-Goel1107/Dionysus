@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import Script from 'next/script';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,18 @@ import { useReverification } from '@clerk/nextjs';
 import { myAction } from '../Settings/actions';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
+
+declare global {
+  interface Window {
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+      render: (container: string | HTMLElement, parameters: any) => number;
+      reset: (widgetId?: number) => void;
+      getResponse: (widgetId?: number) => string;
+    };
+  }
+}
 
 export default function UnlockPage() {
   const { user } = useUser();
@@ -36,12 +49,67 @@ export default function UnlockPage() {
   const performAction = useReverification(myAction);
   const [verified, setVerified] = useState<boolean>(false);
 
+  // reCAPTCHA related states and refs
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaWidgetId = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     fetch('/api/has-password')
       .then((res) => res.json())
       .then((data) => setHasPassword(!!data.hasPassword))
       .catch(() => setHasPassword(null));
   }, []);
+
+  useEffect(() => {
+    function renderRecaptcha() {
+      if (
+        typeof window !== 'undefined' &&
+        window.grecaptcha &&
+        containerRef.current &&
+        !recaptchaWidgetId.current &&
+        containerRef.current.childNodes.length === 0
+      ) {
+        recaptchaWidgetId.current = window.grecaptcha.render(containerRef.current, {
+          sitekey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY_V2 || '',
+          theme: resolvedTheme === 'dark' ? 'dark' : 'light',
+          size: 'normal',
+          callback: (token: string) => setRecaptchaToken(token),
+          'expired-callback': () => setRecaptchaToken(null),
+          'error-callback': () => {
+            setError('reCAPTCHA verification failed. Please try again.');
+            setRecaptchaToken(null);
+          },
+        });
+        setRecaptchaLoaded(true);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      const checkReady = () => {
+        if (
+          window.grecaptcha &&
+          typeof window.grecaptcha.render === 'function' &&
+          containerRef.current &&
+          containerRef.current.childNodes.length === 0 &&
+          !recaptchaWidgetId.current
+        ) {
+          renderRecaptcha();
+        } else {
+          setTimeout(checkReady, 300);
+        }
+      };
+      checkReady();
+    }
+  }, [confirmAction, resolvedTheme]);
+
+  useEffect(() => {
+    if (recaptchaLoaded && recaptchaWidgetId.current !== null && window.grecaptcha) {
+      window.grecaptcha.reset(recaptchaWidgetId.current);
+      setRecaptchaToken(null);
+    }
+  }, [resolvedTheme, recaptchaLoaded]);
 
   function formatResetTime(reset: number | null) {
     if (!reset) return '';
@@ -96,6 +164,12 @@ export default function UnlockPage() {
 
   const handleUpdate = async () => {
     if (!isInputValid('update')) return;
+
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setError('');
     setSuccess('');
     setLoading(true);
@@ -106,6 +180,7 @@ export default function UnlockPage() {
         body: JSON.stringify({
           currentPassword: currentPassword.trim(),
           newPassword: newPassword.trim(),
+          recaptchaToken,
         }),
       });
       const data = await res.json();
@@ -113,6 +188,16 @@ export default function UnlockPage() {
         setAttemptsLeft(data.remaining);
         if (typeof data.reset === 'number') setResetTime(data.reset);
       }
+
+      if (data.requireRecaptcha) {
+        setError('Security verification required. Please complete the captcha.');
+        if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaToken(null);
+        }
+        return;
+      }
+
       if (data.success) {
         setSuccess('Password updated successfully! Redirecting...');
         setCurrentPassword('');
@@ -129,10 +214,22 @@ export default function UnlockPage() {
       } else {
         setError(data.error || 'Failed to update password.');
         setConfirmAction(null);
+
+        // Reset reCAPTCHA on error
+        if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaToken(null);
+        }
       }
     } catch {
       setError('Something went wrong. Please try again.');
       setConfirmAction(null);
+
+      // Reset reCAPTCHA on error
+      if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+        window.grecaptcha.reset(recaptchaWidgetId.current);
+        setRecaptchaToken(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -140,6 +237,12 @@ export default function UnlockPage() {
 
   const handleDisable = async () => {
     if (!isInputValid('disable')) return;
+
+    if (!recaptchaToken) {
+      setError('Please complete the reCAPTCHA verification');
+      return;
+    }
+
     setError('');
     setSuccess('');
     setLoading(true);
@@ -147,13 +250,27 @@ export default function UnlockPage() {
       const res = await fetch('/api/unlock', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: currentPassword.trim(), disable: true }),
+        body: JSON.stringify({
+          currentPassword: currentPassword.trim(),
+          disable: true,
+          recaptchaToken,
+        }),
       });
       const data = await res.json();
       if (typeof data.limit === 'number' && typeof data.remaining === 'number') {
         setAttemptsLeft(data.remaining);
         if (typeof data.reset === 'number') setResetTime(data.reset);
       }
+
+      if (data.requireRecaptcha) {
+        setError('Security verification required. Please complete the captcha.');
+        if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaToken(null);
+        }
+        return;
+      }
+
       if (data.success) {
         setSuccess('Password lock disabled. Redirecting...');
         setCurrentPassword('');
@@ -174,10 +291,22 @@ export default function UnlockPage() {
       } else {
         setError(data.error || 'Failed to disable password lock.');
         setConfirmAction(null);
+
+        // Reset reCAPTCHA on error
+        if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaToken(null);
+        }
       }
     } catch {
       setError('Something went wrong. Please try again.');
       setConfirmAction(null);
+
+      // Reset reCAPTCHA on error
+      if (window.grecaptcha && recaptchaWidgetId.current !== null) {
+        window.grecaptcha.reset(recaptchaWidgetId.current);
+        setRecaptchaToken(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -322,6 +451,15 @@ export default function UnlockPage() {
         >
           Enter your current password to update or disable password lock.
         </p>
+
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+          <div ref={containerRef} style={{ minHeight: 78 }} />
+          {!recaptchaLoaded && (
+            <div style={{ color: '#f33', fontSize: 14, marginLeft: 8 }}>
+              If you do not see the captcha, please disable ad blockers and reload.
+            </div>
+          )}
+        </div>
         <div style={{ width: '100%', position: 'relative', marginBottom: 14 }}>
           <input
             type={showCurrent ? 'text' : 'password'}
@@ -451,6 +589,11 @@ export default function UnlockPage() {
             {showConfirm ? '🙈' : '👁️'}
           </button>
         </div>
+        <Script
+          src="https://www.google.com/recaptcha/api.js"
+          strategy="afterInteractive"
+          onLoad={() => setRecaptchaLoaded(true)}
+        />
         {typeof attemptsLeft === 'number' && (
           <div
             style={{
@@ -553,6 +696,10 @@ export default function UnlockPage() {
               </Button>
               <Button
                 onClick={(e) => {
+                  if (!recaptchaToken) {
+                    setError('Please complete the reCAPTCHA verification');
+                    return;
+                  }
                   if (confirmAction === 'update') {
                     verified ? handleUpdate() : handleClick(e);
                   } else {
@@ -560,7 +707,7 @@ export default function UnlockPage() {
                   }
                 }}
                 variant={confirmAction === 'update' ? 'default' : 'destructive'}
-                disabled={loading}
+                disabled={loading || !recaptchaToken}
               >
                 {loading ? <span className="loader" style={{ marginRight: 8 }} /> : null}
                 {confirmAction === 'update' ? 'Update' : 'Disable'}
