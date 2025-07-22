@@ -6,6 +6,16 @@ import { UserButton, useUser } from '@clerk/nextjs';
 import StarOnGithub from '@/app/components/starOnGithub';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
@@ -13,6 +23,7 @@ export default function UserAvatarMenu() {
   const [showNewsletterPopup, setShowNewsletterPopup] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const router = useRouter();
@@ -126,6 +137,7 @@ export default function UserAvatarMenu() {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
+      setShowUnsubscribeDialog(false);
     }
   }
 
@@ -244,7 +256,7 @@ export default function UserAvatarMenu() {
                   variant={isSubscribed ? 'destructive' : 'default'}
                   size="lg"
                   disabled={isLoading}
-                  onClick={isSubscribed ? handleUnsubscribe : handleSubscribe}
+                  onClick={isSubscribed ? () => setShowUnsubscribeDialog(true) : handleSubscribe}
                   className={`px-8 transition-all duration-150 ${isSubscribed ? '' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700'}`}
                 >
                   {isLoading ? 'Processing...' : isSubscribed ? 'Unsubscribe' : 'Subscribe Now'}
@@ -254,6 +266,23 @@ export default function UserAvatarMenu() {
           </div>
         </div>
       )}
+
+      <Dialog open={showUnsubscribeDialog} onOpenChange={setShowUnsubscribeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to unsubscribe?</DialogTitle>
+            <DialogDescription>You will stop receiving our newsletter updates.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="destructive" onClick={handleUnsubscribe} disabled={isLoading}>
+              {isLoading ? 'Processing...' : 'Yes, Unsubscribe'}
+            </Button>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

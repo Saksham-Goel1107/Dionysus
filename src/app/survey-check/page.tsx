@@ -7,6 +7,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { UserButton, useUser } from '@clerk/nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 const surveySchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -34,6 +43,7 @@ export default function SurveyPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [dontSubscribe, setDontSubscribe] = useState(false);
+  const [showDontSubscribeDialog, setShowDontSubscribeDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const { theme, setTheme } = useTheme();
 
@@ -552,7 +562,13 @@ export default function SurveyPage() {
                     id="dontSubscribe"
                     type="checkbox"
                     checked={dontSubscribe}
-                    onChange={() => setDontSubscribe((prev) => !prev)}
+                    onChange={(e) => {
+                      if (!dontSubscribe && e.target.checked) {
+                        setShowDontSubscribeDialog(true);
+                      } else {
+                        setDontSubscribe(false);
+                      }
+                    }}
                     className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}
                   />
                   <label
@@ -579,6 +595,38 @@ export default function SurveyPage() {
           </form>
         </div>
       </div>
+
+      <Dialog open={showDontSubscribeDialog} onOpenChange={setShowDontSubscribeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to unsubscribe from the newsletter?</DialogTitle>
+            <DialogDescription>
+              You will not receive any product updates, tips, or special offers.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              type="button"
+              className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2
+            ${theme === 'dark' ? 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-900' : 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-50'}`}
+              onClick={() => {
+                setDontSubscribe(true);
+                setShowDontSubscribeDialog(false);
+              }}
+            >
+              Yes, don&apos;t subscribe
+            </button>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

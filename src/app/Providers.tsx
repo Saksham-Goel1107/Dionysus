@@ -7,6 +7,7 @@ import AiChatSidebar from './components/AiChatSidebar';
 import AiToolkitButton from './components/AiButton';
 import RecaptchaGate from './components/RecaptchaGate';
 import { useUser } from '@clerk/nextjs';
+import { app, analytics, perf } from '@/firebase-init';
 
 function Providers({ children }: { children: React.ReactNode }) {
   const user = useUser();
