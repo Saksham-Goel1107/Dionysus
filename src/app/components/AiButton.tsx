@@ -28,7 +28,7 @@ export default function AiToolkitButton({
           setIsSidebarOpen(true);
           document.body.style.overflow = 'hidden';
         }}
-        className={`fixed bottom-[7rem] right-4 bg-white  h-12 w-12 p-1 flex items-center justify-center shadow-lg transition-colors rounded-full cursor-pointer`}
+        className={`fixed bottom-[7rem] right-11 bg-white  h-12 w-12 p-1 flex items-center justify-center shadow-lg transition-colors rounded-full cursor-pointer`}
         aria-label="Open AI Assistant"
       >
         <Image src="/gemini.png" alt="Gemini" width={30} height={30} priority />
