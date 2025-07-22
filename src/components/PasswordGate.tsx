@@ -1,12 +1,10 @@
 'use client';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 
 export default function PasswordGate({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [unlocked, setUnlocked] = useState(false);
   const [showPrompt, setShowPrompt] = useState(false);
@@ -87,7 +85,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     return () => {
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [router]);
+  }, []);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
