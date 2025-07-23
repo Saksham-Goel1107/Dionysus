@@ -1,13 +1,27 @@
-import { useState } from 'react';
+"use client";
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function AiToolkitButton({
   setIsSidebarOpen,
 }: {
-  setIsSidebarOpen: (val: boolean) => void;
+  setIsSidebarOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   let timeout: NodeJS.Timeout;
+
+  useEffect(() => {
+    const handleCtrlQ = (e: KeyboardEvent) => {
+      if (e.ctrlKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setIsSidebarOpen((prev: boolean) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleCtrlQ);
+    return () => {
+      window.removeEventListener('keydown', handleCtrlQ);
+    };
+  }, [setIsSidebarOpen]);
 
   const handleMouseEnter = () => {
     timeout = setTimeout(() => {
@@ -22,7 +36,6 @@ export default function AiToolkitButton({
 
   return (
     <div className="relative z-50" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      {/* Floating Button */}
       <button
         onClick={() => {
           setIsSidebarOpen(true);
@@ -34,7 +47,6 @@ export default function AiToolkitButton({
         <Image src="/gemini.png" alt="Gemini" width={30} height={30} priority />
       </button>
 
-      {/* Tooltip */}
       {showTooltip && (
         <div className="fixed bottom-[10rem] right-4 flex flex-col items-end space-y-1">
           <div
