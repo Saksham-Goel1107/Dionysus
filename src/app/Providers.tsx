@@ -8,7 +8,6 @@ import AiToolkitButton from './components/AiButton';
 import RecaptchaGate from './components/RecaptchaGate';
 import { useUser } from '@clerk/nextjs';
 import { app, analytics, perf } from '@/firebase-init';
-import { useTheme } from 'next-themes';
 
 declare global {
   interface Window {
@@ -21,6 +20,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userId = user?.user?.id;
   const userData = user?.user;
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();
   const hideAiChat =
     pathname?.startsWith('/sign-in') ||
@@ -32,7 +32,10 @@ function Providers({ children }: { children: React.ReactNode }) {
   const countdownTimer = useRef<NodeJS.Timeout | null>(null);
   const [showTranslate, setShowTranslate] = useState(false);
   const [isTranslateReady, setIsTranslateReady] = useState(false);
-  const { theme } = useTheme();
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
@@ -187,7 +190,7 @@ function Providers({ children }: { children: React.ReactNode }) {
           <RecaptchaGate>
             {children}
 
-            {userData && (
+            {isClient && userData && (
               <Script
                 id="userback"
                 strategy="afterInteractive"
