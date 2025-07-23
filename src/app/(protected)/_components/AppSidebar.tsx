@@ -96,7 +96,7 @@ const AppSidebar = ({}: Props) => {
     return () => {
       window.removeEventListener('keydown', handleCtrlB);
     };
-  }, [setOpen,open]);
+  }, [setOpen, open]);
   const [search, setSearch] = useState('');
   const [hasProPlan, sethasProPlan] = useState(false);
   const [showProModal, setShowProModal] = useState(false);

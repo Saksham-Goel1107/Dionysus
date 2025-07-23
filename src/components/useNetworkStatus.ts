@@ -8,10 +8,14 @@ export function useNetworkStatus() {
 
   useEffect(() => {
     const checkSpeed = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      
       try {
         const start = performance.now();
         const res = await fetch('/favicon.ico?_t=' + Date.now(), {
           cache: 'no-store',
+          signal: controller.signal,
         });
         const end = performance.now();
 
@@ -22,8 +26,19 @@ export function useNetworkStatus() {
         } else {
           setIsVerySlow(false);
         }
-      } catch {
-        setIsVerySlow(true);
+      } catch (error) {
+        if (
+          typeof error === 'object' &&
+          error !== null &&
+          'name' in error &&
+          (error as { name?: unknown }).name === 'AbortError'
+        ) {
+          setIsVerySlow(true);
+        } else {
+          setIsVerySlow(true);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
