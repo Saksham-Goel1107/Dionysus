@@ -30,10 +30,10 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
     setError(null);
     Promise.all([
       fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`).then((r) =>
-        r.ok ? r.json() : Promise.reject(),
+        r.ok ? r.json() : Promise.reject(new Error(`GitHub API error: ${r.status}`)),
       ),
       fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`).then((r) =>
-        r.ok ? r.json() : Promise.reject(),
+        r.ok ? r.json() : Promise.reject(new Error(`GitHub API error: ${r.status}`)),
       ),
     ])
       .then(([repoData, prs]) => {
@@ -46,7 +46,7 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
           watchers: repoData.watchers_count ?? 0,
         });
       })
-      .catch(() => setError('Failed to fetch repo metrics.'))
+      .catch((error: Error) => setError(error.message))
       .finally(() => setLoading(false));
   }, [githubUrl]);
 
