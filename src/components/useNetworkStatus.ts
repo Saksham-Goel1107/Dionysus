@@ -10,7 +10,7 @@ export function useNetworkStatus() {
     const checkSpeed = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
+
       try {
         const start = performance.now();
         const res = await fetch('/favicon.ico?_t=' + Date.now(), {

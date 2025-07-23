@@ -1,14 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { Logo } from './logo';
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import { Github, Twitter, Linkedin, Loader2 } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
+import { useEffect, useState } from 'react';
+import { setUserId } from 'firebase/analytics';
 
 export function Footer() {
-  const { user } = useUser();
-  const userId = user?.id;
+  const { user, isLoaded } = useUser();
+  const [userId, setUserId] = useState<string>();
+  useEffect(() => {
+    if (!isLoaded) return;
+    const userid = user?.id;
+    setUserId(userid);
+  }, [user, isLoaded]);
   const { setTheme } = useTheme();
   return (
     <footer className="w-full border-t bg-background px-20">
@@ -59,12 +66,16 @@ export function Footer() {
           <Link href="/terms" className="text-sm font-medium transition-colors hover:text-primary">
             Terms & Conditions
           </Link>
-          <Link
-            href={`${userId ? '/supportAuth' : '/support'}`}
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            Support
-          </Link>
+          {!isLoaded ? (
+            <Loader2 />
+          ) : (
+            <Link
+              href={`${userId ? '/supportAuth' : '/support'}`}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Support
+            </Link>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end w-full md:w-auto">
           <a

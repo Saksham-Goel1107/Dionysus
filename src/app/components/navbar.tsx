@@ -10,15 +10,16 @@ import { useUser } from '@clerk/nextjs';
 import { usePathname } from 'next/navigation';
 import Battery from './Battery';
 import { useEffect, useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export function Navbar() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [isOnboarding, setIsOnboarding] = useState<boolean>(true);
 
   useEffect(() => {
-    // Invert logic: onboarding is considered complete if isOnboarding is false or undefined
+    if (!isLoaded) return;
     setIsOnboarding(user?.publicMetadata?.isOnboarding !== false);
-  }, [user]);
+  }, [user, isLoaded]);
   const userId = user?.id;
   const pathname = usePathname();
   const isHome = pathname === '/';
@@ -83,19 +84,23 @@ export function Navbar() {
               Docs
             </Link>
             <ModeToggle />
-            <Link
-              href={
-                userId
-                  ? !isOnboarding
-                    ? '/onboarding'
-                    : surveyDone === false
-                      ? '/survey-check'
-                      : '/dashboard'
-                  : '/sign-in'
-              }
-            >
-              <GetStartedButton />
-            </Link>
+            {!isLoaded ? (
+              <Loader2 />
+            ) : (
+              <Link
+                href={
+                  userId
+                    ? !isOnboarding
+                      ? '/onboarding'
+                      : surveyDone === false
+                        ? '/survey-check'
+                        : '/dashboard'
+                    : '/sign-in'
+                }
+              >
+                <GetStartedButton />
+              </Link>
+            )}
             <StarOnGithub />
             <Battery />
           </nav>
