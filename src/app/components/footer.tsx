@@ -1,13 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { Logo } from './logo';
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import { Github, Twitter, Linkedin, Loader2 } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 
 export function Footer() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const userId = user?.id;
   const { setTheme } = useTheme();
   return (
@@ -59,12 +59,16 @@ export function Footer() {
           <Link href="/terms" className="text-sm font-medium transition-colors hover:text-primary">
             Terms & Conditions
           </Link>
-          <Link
-            href={`${userId ? '/supportAuth' : '/support'}`}
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            Support
-          </Link>
+          {!isLoaded ? (
+            <Loader2 className="animate-spin w-4 h-4" />
+          ) : (
+            <Link
+              href={`${userId ? '/supportAuth' : '/support'}`}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              Support
+            </Link>
+          )}
         </div>
         <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end w-full md:w-auto">
           <a
