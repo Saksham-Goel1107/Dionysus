@@ -20,10 +20,12 @@ export function Footer() {
     <footer className="w-full border-t bg-background px-20">
       <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
         <div className="flex flex-col items-center gap-1 md:items-start min-w-[120px]">
-          <div className="flex items-center gap-2">
-            <Logo />
-            <span className="text-lg font-bold">Dionysus</span>
-          </div>
+          <Link href="/">
+            <div className="flex items-center gap-2">
+              <Logo />
+              <span className="text-lg font-bold">Dionysus</span>
+            </div>
+          </Link>
           <ThemeSwitcher
             className="mt-0.5"
             defaultValue="system"
