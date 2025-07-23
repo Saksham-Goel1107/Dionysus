@@ -16,6 +16,8 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog';
+import { AvatarStack } from '@/components/ui/kibo-ui/avatar-stack';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
@@ -261,6 +263,29 @@ export default function UserAvatarMenu() {
                 >
                   {isLoading ? 'Processing...' : isSubscribed ? 'Unsubscribe' : 'Subscribe Now'}
                 </Button>
+              </div>
+              <div className="flex flex-col justify-center items-center w-full gap-2">
+                <span className=" text-gray-500 dark:text-gray-300 mt-2 font-bold text-lg">
+                  Join other Subscribers
+                </span>
+                <AvatarStack animate>
+                  <Avatar>
+                    <AvatarImage src="https://github.com/haydenbleasel.png" />
+                    <AvatarFallback>HB</AvatarFallback>
+                  </Avatar>
+                  <Avatar>
+                    <AvatarImage src="https://github.com/shadcn.png" />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  <Avatar>
+                    <AvatarImage src="https://github.com/leerob.png" />
+                    <AvatarFallback>LR</AvatarFallback>
+                  </Avatar>
+                  <Avatar>
+                    <AvatarImage src="https://github.com/serafimcloud.png" />
+                    <AvatarFallback>SC</AvatarFallback>
+                  </Avatar>
+                </AvatarStack>
               </div>
             </div>
           </div>
