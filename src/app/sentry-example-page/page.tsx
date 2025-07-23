@@ -16,7 +16,7 @@ export default function Page() {
   if (process.env.NODE_ENV === 'production') {
     notFound();
   }
-  
+
   const [hasSentError, setHasSentError] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
 

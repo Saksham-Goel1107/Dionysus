@@ -12,7 +12,7 @@ export function GET() {
   if (process.env.NODE_ENV === 'production') {
     return NextResponse.json({ error: 'Not Found' }, { status: 404 });
   }
-  
+
   throw new SentryExampleAPIError(
     'This error is raised on the backend called by the example page.',
   );

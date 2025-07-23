@@ -118,7 +118,7 @@ const BillingPage = () => {
             const notification = new Notification(title, { body, icon });
             notification.onclick = redirectToDashboard;
           } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then(permission => {
+            Notification.requestPermission().then((permission) => {
               if (permission === 'granted') {
                 const notification = new Notification(title, { body, icon });
                 notification.onclick = redirectToDashboard;

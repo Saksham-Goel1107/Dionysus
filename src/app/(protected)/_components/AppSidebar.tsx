@@ -31,7 +31,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type Props = {};
 
@@ -84,10 +84,23 @@ const AppSidebar = ({}: Props) => {
   const pathname = usePathname();
   const { projects, projectId, setProjectId, project } = useProject();
   const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
+  useEffect(() => {
+    const handleCtrlB = (e: KeyboardEvent) => {
+      if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        if (typeof setOpen === 'function') setOpen(!open);
+      }
+    };
+    window.addEventListener('keydown', handleCtrlB);
+    return () => {
+      window.removeEventListener('keydown', handleCtrlB);
+    };
+  }, [setOpen, open]);
   const [search, setSearch] = useState('');
   const [hasProPlan, sethasProPlan] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const { setTheme } = useTheme();
 
@@ -107,6 +120,21 @@ const AppSidebar = ({}: Props) => {
     })();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && (e.key === 'k' || e.key === 'K')) {
+        if (open && searchInputRef.current) {
+          e.preventDefault();
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open]);
+
   const handleCreateProjectClick = (e: React.MouseEvent) => {
     if (!hasProPlan && (projects?.length || 0) >= 5) {
       e.preventDefault();
@@ -118,8 +146,8 @@ const AppSidebar = ({}: Props) => {
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <Link href={'/'}>
-          <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="logo" width={40} height={40} />
+          <div className="flex items-center gap-2 justify-center">
+            <Image className="rounded-lg" src="/logo.png" alt="logo" width={40} height={40} />
             {open && <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>}
           </div>
         </Link>
@@ -189,13 +217,21 @@ const AppSidebar = ({}: Props) => {
           <SidebarGroupContent>
             {open && (
               <div className="mb-2 px-2">
-                <input
-                  type="text"
-                  placeholder="Search projects..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="relative">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Search projects..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-20"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-mono text-muted-foreground">
+                      ⌘ <span className="ml-0.5">K</span>
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 

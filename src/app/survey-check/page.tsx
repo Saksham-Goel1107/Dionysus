@@ -7,6 +7,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { UserButton, useUser } from '@clerk/nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 const surveySchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -33,6 +42,8 @@ export default function SurveyPage() {
   const { user, isLoaded } = useUser();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [dontSubscribe, setDontSubscribe] = useState(false);
+  const [showDontSubscribeDialog, setShowDontSubscribeDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const { theme, setTheme } = useTheme();
 
@@ -106,7 +117,30 @@ export default function SurveyPage() {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to submit survey');
       }
-
+      try {
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new account' }),
+        });
+      } catch (err) {
+        console.error('Error Sending welcome email:', err);
+      }
+      // Newsletter logic
+      if (!dontSubscribe && user?.emailAddresses?.[0]?.emailAddress) {
+        try {
+          await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.emailAddresses[0].emailAddress,
+              name: user.firstName || '',
+            }),
+          });
+        } catch (err) {
+          // Silently fail, don't block survey
+        }
+      }
       router.push('/dashboard');
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -522,11 +556,32 @@ export default function SurveyPage() {
             )}
 
             <div className="pt-5">
-              <div className="flex justify-end">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+                <div className="flex items-center">
+                  <input
+                    id="dontSubscribe"
+                    type="checkbox"
+                    checked={dontSubscribe}
+                    onChange={(e) => {
+                      if (!dontSubscribe && e.target.checked) {
+                        setShowDontSubscribeDialog(true);
+                      } else {
+                        setDontSubscribe(false);
+                      }
+                    }}
+                    className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}
+                  />
+                  <label
+                    htmlFor="dontSubscribe"
+                    className={`ml-2 text-sm ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}
+                  >
+                    Don&apos;t subscribe to newsletter
+                  </label>
+                </div>
                 <button
                   type="submit"
                   disabled={isSubmitting || !isDirty || !isValid}
-                  className={`ml-3 inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
+                  className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
                     ${
                       theme === 'dark'
                         ? 'text-white bg-blue-600 hover:bg-blue-700 border-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
@@ -540,6 +595,38 @@ export default function SurveyPage() {
           </form>
         </div>
       </div>
+
+      <Dialog open={showDontSubscribeDialog} onOpenChange={setShowDontSubscribeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you sure you want to unsubscribe from the newsletter?</DialogTitle>
+            <DialogDescription>
+              You will not receive any product updates, tips, or special offers.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <button
+              type="button"
+              className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2
+            ${theme === 'dark' ? 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-900' : 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-50'}`}
+              onClick={() => {
+                setDontSubscribe(true);
+                setShowDontSubscribeDialog(false);
+              }}
+            >
+              Yes, don&apos;t subscribe
+            </button>
+            <DialogClose asChild>
+              <button
+                type="button"
+                className="inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-700 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -4,17 +4,17 @@ import { db } from '@/server/db';
 import { z } from 'zod';
 
 const surveySchema = z.object({
-  companyName: z.string().min(1, 'Company name is required'),
+  companyName: z.string().trim().min(1, 'Company name is required'),
   companySize: z.enum(['1-10', '11-50', '51-200', '201-1000', '1000+']),
-  industry: z.string().min(1, 'Industry is required'),
-  role: z.string().min(1, 'Your role is required'),
-  usagePurpose: z.string().min(1, 'Please describe your purpose'),
-  hearAboutUs: z.string().min(1, 'This field is required'),
-  expectedFeatures: z.array(z.string()).nonempty('Select at least one feature'),
+  industry: z.string().trim().min(1, 'Industry is required'),
+  role: z.string().trim().min(1, 'Your role is required'),
+  usagePurpose: z.string().trim().min(1, 'Please describe your purpose'),
+  hearAboutUs: z.string().trim().min(1, 'This field is required'),
+  expectedFeatures: z.array(z.string().trim()).nonempty('Select at least one feature'),
   developmentExperience: z.number().min(1).max(5),
   githubExperience: z.number().min(1).max(5),
   feedbackFrequency: z.enum(['Weekly', 'Monthly', 'Quarterly', 'Never']),
-  additionalFeedback: z.string().optional(),
+  additionalFeedback: z.string().trim().optional(),
 });
 
 export async function POST(request: Request) {

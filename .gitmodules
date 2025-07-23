@@ -1,0 +1,3 @@
+[submodule "n8n"]
+	path = n8n
+	url = https://github.com/Saksham-Goel1107/n8n.git

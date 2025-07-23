@@ -90,7 +90,7 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
               )}
             </div>
             <a
-              href={`https://stats.uptimerobot.com/wJCBUwR5Cb`}
+              href={`https://stats.uptimerobot.com/${process.env.NEXT_PUBLIC_MONITOR_ID}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center text-xs font-medium text-primary hover:underline"

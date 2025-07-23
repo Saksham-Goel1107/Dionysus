@@ -1,19 +1,2 @@
-set -e
-
-OWNER_EMAIL="sakshamgoel1107@gmail.com"
-CURRENT_EMAIL=$(git config user.email)
-
-echo "🔒 [Husky] Loading secrets with Doppler..."
-doppler run -- true
-
-if [ "$CURRENT_EMAIL" = "$OWNER_EMAIL" ]; then
-  echo "⚡ [Husky] Skipping typecheck for owner ($CURRENT_EMAIL)..."
-else
-  echo "🔍 [Husky] Running TypeScript type check..."
-  doppler run -- npm run typecheck
-fi
-
-echo "🔧 [Husky] Building the project..."
-doppler run -- npm run build
-
-echo "✅ [Husky] Pre-push checks passed. Push allowed."
+#!/bin/bash
+doppler run -- npm run build && npm run typecheck

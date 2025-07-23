@@ -79,8 +79,8 @@ export default function LockPage() {
       setError('Passwords do not match.');
       return;
     }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+    if (password.length < 8 || password.length > 30) {
+      setError('Password must be at least 8 and atmost 30 characters.');
       return;
     }
     if (pwned) {
@@ -101,11 +101,15 @@ export default function LockPage() {
         setSuccess('Password set successfully! You can now use your account. Redirecting...');
         setPassword('');
         setConfirmPassword('');
-        fetch('/api/send-password-change-warning', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
+        try {
+          fetch('/api/send-password-change-warning', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+          });
+        } catch (err) {
+          console.error('Error sending email', err);
+        }
         setInterval(() => {
           router.replace('/dashboard');
         }, 1000);
@@ -118,6 +122,18 @@ export default function LockPage() {
       setLoading(false);
     }
   };
+
+  // Get Clerk user email for autofill
+  let clerkEmail = '';
+  try {
+    // @ts-ignore
+    clerkEmail =
+      window.Clerk?.user?.primaryEmailAddress?.emailAddress ||
+      window.Clerk?.user?.emailAddresses?.[0]?.emailAddress ||
+      '';
+  } catch (error) {
+    console.error('Error::getClerkEmail:', error);
+  }
 
   return (
     <>
@@ -152,6 +168,15 @@ export default function LockPage() {
               alignItems: 'center',
             }}
           >
+            <input
+              type="text"
+              name="username"
+              value={clerkEmail}
+              readOnly
+              autoComplete="username"
+              style={{ display: 'none' }}
+              tabIndex={-1}
+            />
             <span
               style={{
                 fontSize: '2.5rem',
@@ -209,6 +234,8 @@ export default function LockPage() {
                   outline: 'none',
                   paddingRight: 38,
                 }}
+                name="password"
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -240,6 +267,8 @@ export default function LockPage() {
               <input
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Confirm Password"
+                name="confirmNewPassword"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 style={{
