@@ -125,17 +125,14 @@ export default async function RootLayout({
       <body>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ClientOnly>
-              <ClerkProviderWithTheme>
+            <ClerkProviderWithTheme>
               {/* <MultisessionAppSupport> */}
               {isMaintenance ? (
                 <>
                   <MaintenanceScreen />
                   <BlockInspectAndContext />
                   <ClientOnly>
-                    <ClientOnly>
                     <CustomContextMenu />
-                  </ClientOnly>
                   </ClientOnly>
                   <Analytics />
                   <SpeedInsights />
@@ -154,9 +151,7 @@ export default async function RootLayout({
                   <Toaster richColors />
                   <ScrollToTopButton />
                   <ClientOnly>
-                    <ClientOnly>
                     <CustomContextMenu />
-                  </ClientOnly>
                   </ClientOnly>
                   <BlockInspectAndContext />
                   <Analytics />
@@ -207,8 +202,7 @@ export default async function RootLayout({
                 </>
               )}
               {/* </MultisessionAppSupport> */}
-              </ClerkProviderWithTheme>
-            </ClientOnly>
+            </ClerkProviderWithTheme>
           </ThemeProvider>
         </ErrorBoundary>
       </body>
