@@ -85,7 +85,7 @@ export function Navbar() {
             </Link>
             <ModeToggle />
             {!isLoaded ? (
-              <Loader2 />
+              <Loader2 className="animate-spin" />
             ) : (
               <Link
                 href={

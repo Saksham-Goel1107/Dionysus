@@ -46,7 +46,7 @@ export function Hero() {
             </div>
             <div className="flex flex-col gap-2 min-[400px]:flex-row">
               {!isLoaded ? (
-                <Loader2 />
+                <Loader2 className="animate-spin" />
               ) : (
                 <Link
                   href={

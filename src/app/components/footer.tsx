@@ -6,7 +6,6 @@ import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
-import { setUserId } from 'firebase/analytics';
 
 export function Footer() {
   const { user, isLoaded } = useUser();
@@ -67,7 +66,7 @@ export function Footer() {
             Terms & Conditions
           </Link>
           {!isLoaded ? (
-            <Loader2 />
+            <Loader2 className="animate-spin" />
           ) : (
             <Link
               href={`${userId ? '/supportAuth' : '/support'}`}
