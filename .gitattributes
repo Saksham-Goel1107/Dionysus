@@ -3,3 +3,4 @@
 *.ts linguist-language=TypeScript
 *.tsx linguist-language=TypeScript
 *.md linguist-language=Markdown
+*.mp4 filter=lfs diff=lfs merge=lfs -text

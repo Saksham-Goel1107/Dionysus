@@ -17,6 +17,21 @@
   <img src="https://img.shields.io/badge/Monitoring-Arcjet%20%26%20Sentry-362D59?style=flat-square&logo=sentry" alt="Monitoring" />
 </p>
 
+<!-- Demo Video Section -->
+<p align="center">
+  <video width="480" controls autoplay loop muted playbackRate="1.5">
+    <source src="Demo/Demo-Video(Made by someone from hackclub).mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <p align="center" style="font-size: 0.95em; color: #888;">
+    <em>If you don't see the video above, you can watch it directly at <a href="Demo/Demo-Video(Made%20by%20someone%20from%20hackclub).mp4">Demo/Demo-Video(Made by someone from hackclub).mp4</a>.</em>
+  </p>
+
+  <p align="center" style="font-size: 0.95em; color: #888;">
+    <em>Note: This video was created by a member of Hack Club. If you have any concerns or issues with the video, please contact me and I will address them promptly.</em>
+  </p>
+</p>
+
 ---
 
 ## 🏆 Why Dionysus?
