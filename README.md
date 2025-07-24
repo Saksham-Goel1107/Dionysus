@@ -318,15 +318,17 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
   <img src="Demo/image9.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image2.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image3.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image10.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image4.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image5.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image6.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image7.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image8.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image11.png" alt="Dionysus Platform" width="400" />
-  <img src="Demo/image12.png" alt="Dionysus Platform" width="400" />
+</p>
+
+<p align="center">
+  <p align="center">
+    <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
+  </p>
+  <p align="center" style="font-size: 0.95em; color: #888;">
+    <em>
+      The image above demonstrates Dionysus's seamless integration with <strong>n8n</strong>, a powerful workflow automation tool. By leveraging n8n, Dionysus enables engineering teams to automate complex newsletter delivery pipelines, streamline user onboarding communications, and orchestrate a wide range of workflow automations without manual intervention. This integration empowers organizations to set up automated triggers for sending newsletters based on user activity, segment audiences dynamically, and synchronize communications across multiple channels. As a result, teams benefit from increased productivity, reduced operational overhead, and more consistent, timely engagement with users and stakeholders. The n8n integration is fully configurable, allowing for custom workflows tailored to the unique needs of each enterprise, and is designed to scale with your organization's growth.
+    </em>
+  </p>
 </p>
 
 ---
