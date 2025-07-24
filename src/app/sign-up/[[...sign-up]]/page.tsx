@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/app/components/ThemeToggle';
 import { SignUp } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link';
@@ -49,6 +50,9 @@ export default async function Page({ searchParams }: { searchParams: { [key: str
       <div className="absolute bottom-0 right-0 w-80 h-80 bg-purple-700 opacity-20 rounded-full blur-2xl z-0 animate-pulse" />
       <div className="absolute top-1/2 left-1/2 w-1/2 h-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-tr from-blue-400 via-purple-400 to-pink-400 opacity-10 rounded-full blur-2xl z-0" />
       <div className="relative w-full max-w-md p-6 sm:p-8 rounded-2xl shadow-2xl bg-white/90 dark:bg-gray-950/90 border border-gray-200 dark:border-gray-800 flex flex-col items-center animate-fade-in z-10 backdrop-blur-md">
+        <div className="absolute right-2 top-2">
+          <ModeToggle />
+        </div>
         <div className="mb-6 flex flex-col items-center">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-blue-700 dark:text-blue-300 tracking-tight mb-1 text-center">
             Welcome To Dionysus

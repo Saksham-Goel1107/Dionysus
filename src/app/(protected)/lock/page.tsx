@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { myAction } from '../Settings/actions';
 import dynamic from 'next/dynamic';
-const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), { ssr: false });
+const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), {
+  ssr: false,
+});
 import { passwordCriteriaMet } from '@/components/PasswordStrengthMeter';
 import { useReverification } from '@clerk/nextjs';
 import Link from 'next/link';

@@ -1,6 +1,6 @@
 import TextGenerateEffect from '@/components/ui/typewriter';
 
-export default function GradientTypewriter({ words = "Gradient Text" }: { words?: string }) {
+export default function GradientTypewriter({ words = 'Gradient Text' }: { words?: string }) {
   return (
     <div className="flex items-center justify-center">
       <TextGenerateEffect

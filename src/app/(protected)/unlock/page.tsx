@@ -16,7 +16,9 @@ import { myAction } from '../Settings/actions';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
 import dynamic from 'next/dynamic';
-const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), { ssr: false });
+const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), {
+  ssr: false,
+});
 import { passwordCriteriaMet } from '@/components/PasswordStrengthMeter';
 
 declare global {

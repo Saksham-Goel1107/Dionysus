@@ -24,9 +24,7 @@ export function Footer() {
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
-              <GradientTypewriter
-                words="Dionysus"
-              />
+              <GradientTypewriter words="Dionysus" />
             </div>
           </Link>
           <ThemeSwitcher

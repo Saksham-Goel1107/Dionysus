@@ -51,7 +51,7 @@ export function Navbar() {
         <Link className="hidden md:flex" href="/">
           <div className="flex items-center gap-2">
             <Logo />
-           <GradientTypewriter words="Dionysus" />
+            <GradientTypewriter words="Dionysus" />
           </div>
         </Link>
 

@@ -264,7 +264,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
             alignItems: 'center',
           }}
         >
-            <div
+          <div
             style={{
               width: '100%',
               display: 'flex',
@@ -274,26 +274,26 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
               gap: 16,
               padding: '0 4px',
             }}
-            >
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Logo />
               <span
-              style={{
-                fontWeight: 700,
-                fontSize: 22,
-                letterSpacing: 1,
-                color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
-                marginLeft: 4,
-              }}
+                style={{
+                  fontWeight: 700,
+                  fontSize: 22,
+                  letterSpacing: 1,
+                  color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+                  marginLeft: 4,
+                }}
               >
-              <GradientTypewriter words="Dionysus" />
+                <GradientTypewriter words="Dionysus" />
               </span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <UserButton />
               <ModeToggle />
             </div>
-            </div>
+          </div>
           <span
             style={{
               fontSize: '2.5rem',
