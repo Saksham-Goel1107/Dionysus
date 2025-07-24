@@ -24,7 +24,6 @@ import {
   Cog,
   CreditCard,
   LayoutDashboard,
-  Loader2,
   Plus,
   Presentation,
 } from 'lucide-react';
@@ -32,6 +31,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
+import { Logo } from '@/app/components/logo';
 
 type Props = {};
 
@@ -147,8 +148,8 @@ const AppSidebar = ({}: Props) => {
       <SidebarHeader>
         <Link href={'/'}>
           <div className="flex items-center gap-2 justify-center">
-            <Image className="rounded-lg" src="/logo.png" alt="logo" width={40} height={40} />
-            {open && <h1 className="text-xl font-bold text-primary/80">Dionysus</h1>}
+            <Logo />
+            {open && <GradientTypewriter words="Dionysus" />}
           </div>
         </Link>
       </SidebarHeader>

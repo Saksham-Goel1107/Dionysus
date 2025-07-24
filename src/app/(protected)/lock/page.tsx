@@ -2,6 +2,9 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { myAction } from '../Settings/actions';
+import dynamic from 'next/dynamic';
+const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), { ssr: false });
+import { passwordCriteriaMet } from '@/components/PasswordStrengthMeter';
 import { useReverification } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -79,8 +82,12 @@ export default function LockPage() {
       setError('Passwords do not match.');
       return;
     }
+    if (!passwordCriteriaMet(password)) {
+      setError('Password does not meet all requirements.');
+      return;
+    }
     if (password.length < 8 || password.length > 30) {
-      setError('Password must be at least 8 and atmost 30 characters.');
+      setError('Password must be at least 8 and at most 30 characters.');
       return;
     }
     if (pwned) {
@@ -304,6 +311,10 @@ export default function LockPage() {
                 {showConfirm ? '🙈' : '👁️'}
               </button>
             </div>
+            {/* Password strength meter and criteria after both fields */}
+            <div style={{ width: '100%', marginBottom: 8 }}>
+              <PasswordStrengthMeter password={password} />
+            </div>
             {error && (
               <div style={{ color: '#f33', marginBottom: 12, fontWeight: 500 }}>{error}</div>
             )}
@@ -320,23 +331,41 @@ export default function LockPage() {
             )}
             <button
               type="submit"
-              disabled={loading}
+              disabled={
+                loading ||
+                !passwordCriteriaMet(password) ||
+                password !== confirmPassword ||
+                !password ||
+                !confirmPassword
+              }
               style={{
                 width: '100%',
                 padding: '0.9rem',
                 borderRadius: 8,
-                background: loading
-                  ? resolvedTheme === 'dark'
-                    ? '#444'
-                    : '#bcd'
-                  : resolvedTheme === 'dark'
-                    ? 'linear-gradient(90deg,#3af,#3a8cff)'
-                    : 'linear-gradient(90deg,#3a8cff,#3af)',
+                background:
+                  loading ||
+                  !passwordCriteriaMet(password) ||
+                  password !== confirmPassword ||
+                  !password ||
+                  !confirmPassword
+                    ? resolvedTheme === 'dark'
+                      ? '#444'
+                      : '#bcd'
+                    : resolvedTheme === 'dark'
+                      ? 'linear-gradient(90deg,#3af,#3a8cff)'
+                      : 'linear-gradient(90deg,#3a8cff,#3af)',
                 color: resolvedTheme === 'dark' ? '#fff' : '#222',
                 fontWeight: 700,
                 fontSize: '1.1rem',
                 border: 'none',
-                cursor: loading ? 'not-allowed' : 'pointer',
+                cursor:
+                  loading ||
+                  !passwordCriteriaMet(password) ||
+                  password !== confirmPassword ||
+                  !password ||
+                  !confirmPassword
+                    ? 'not-allowed'
+                    : 'pointer',
                 marginTop: 8,
                 boxShadow: resolvedTheme === 'dark' ? '0 2px 8px #3af4' : '0 2px 8px #3a8cff44',
                 transition: 'background 0.2s',

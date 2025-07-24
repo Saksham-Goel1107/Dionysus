@@ -11,6 +11,7 @@ import { usePathname } from 'next/navigation';
 import Battery from './Battery';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 
 export function Navbar() {
   const { user, isLoaded } = useUser();
@@ -41,7 +42,7 @@ export function Navbar() {
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
-              <span className="text-xl font-bold sm:inline-block">Dionysus</span>
+              <GradientTypewriter words="Dionysus" />
             </div>
           </Link>
           <ModeToggle />
@@ -50,7 +51,7 @@ export function Navbar() {
         <Link className="hidden md:flex" href="/">
           <div className="flex items-center gap-2">
             <Logo />
-            <span className="text-xl font-bold sm:inline-block">Dionysus</span>
+           <GradientTypewriter words="Dionysus" />
           </div>
         </Link>
 

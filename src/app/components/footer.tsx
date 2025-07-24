@@ -6,6 +6,7 @@ import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 
 export function Footer() {
   const { user, isLoaded } = useUser();
@@ -23,7 +24,9 @@ export function Footer() {
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
-              <span className="text-lg font-bold">Dionysus</span>
+              <GradientTypewriter
+                words="Dionysus"
+              />
             </div>
           </Link>
           <ThemeSwitcher

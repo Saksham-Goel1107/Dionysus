@@ -4,6 +4,8 @@ import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 import Script from 'next/script';
+import GradientTypewriter from './mvpblocks/gradient-typewriter';
+import { Logo } from '@/app/components/logo';
 
 declare global {
   interface Window {
@@ -262,18 +264,36 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
             alignItems: 'center',
           }}
         >
-          <div
+            <div
             style={{
               width: '100%',
               display: 'flex',
-              justifyContent: 'flex-end',
-              marginBottom: 8,
-              gap: 8,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 28,
+              gap: 16,
+              padding: '0 4px',
             }}
-          >
-            <UserButton />
-            <ModeToggle />
-          </div>
+            >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Logo />
+              <span
+              style={{
+                fontWeight: 700,
+                fontSize: 22,
+                letterSpacing: 1,
+                color: resolvedTheme === 'dark' ? '#3af' : '#3a8cff',
+                marginLeft: 4,
+              }}
+              >
+              <GradientTypewriter words="Dionysus" />
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <UserButton />
+              <ModeToggle />
+            </div>
+            </div>
           <span
             style={{
               fontSize: '2.5rem',

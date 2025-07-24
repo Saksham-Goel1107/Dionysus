@@ -15,6 +15,9 @@ import { useReverification } from '@clerk/nextjs';
 import { myAction } from '../Settings/actions';
 import Link from 'next/link';
 import { useUser } from '@clerk/nextjs';
+import dynamic from 'next/dynamic';
+const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengthMeter'), { ssr: false });
+import { passwordCriteriaMet } from '@/components/PasswordStrengthMeter';
 
 declare global {
   interface Window {
@@ -143,6 +146,11 @@ export default function UnlockPage() {
       }
       if (newPassword !== confirmPassword) {
         setError('Passwords do not match.');
+        setConfirmAction(null);
+        return false;
+      }
+      if (!passwordCriteriaMet(newPassword)) {
+        setError('Password does not meet all requirements.');
         setConfirmAction(null);
         return false;
       }
@@ -588,6 +596,10 @@ export default function UnlockPage() {
           >
             {showConfirm ? '🙈' : '👁️'}
           </button>
+        </div>
+        {/* Password strength meter and criteria after both fields */}
+        <div style={{ width: '100%', marginBottom: 8 }}>
+          <PasswordStrengthMeter password={newPassword} />
         </div>
         <Script
           src="https://www.google.com/recaptcha/api.js"
