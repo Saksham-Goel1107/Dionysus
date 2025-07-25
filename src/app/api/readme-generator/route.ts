@@ -5,7 +5,7 @@ import { auth } from '@clerk/nextjs/server';
 // Initialize genAI only at runtime to avoid build errors
 let genAI: GoogleGenerativeAI;
 
-const SYSTEM_CONTEXT = `You are an expert technical writer specializing in creating high-quality, visually appealing, and professional GitHub READMEs for software projects. 
+const SYSTEM_CONTEXT = `You are an expert technical writer specializing in creating high-quality, visually appealing, and professional GitHub READMEs for software projects.
 
 Your task is to create a compelling and detailed README that includes:
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     }
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       generationConfig: {
         temperature: 0.7,
         topP: 0.95,

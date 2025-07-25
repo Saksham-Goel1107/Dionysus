@@ -45,7 +45,7 @@ if (process.env.REDIS_URL_NEW) {
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
-  model: 'gemini-2.0-flash',
+  model: 'gemini-2.5-flash',
 });
 
 // Internal rate limiter for library functions
@@ -116,9 +116,9 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
   }
 
   const response = await model.generateContent([
-    `You are an expert programmer summarizing a git diff for the project "${projectName}". 
-    Only refer to changes relevant to this project. 
-    Ignore unrelated or external context. 
+    `You are an expert programmer summarizing a git diff for the project "${projectName}".
+    Only refer to changes relevant to this project.
+    Ignore unrelated or external context.
         \`\`\`
         diff -- git a/lib/index.js b/lib/index.js
         index aadf691 .. bfef603 100644
@@ -212,10 +212,10 @@ export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: 
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const context = `
-You are a professional DevOps engineer. 
+You are a professional DevOps engineer.
 Generate a production-ready CI/CD YAML file based on the user's request.
 Include a helpful tip at the end that starts with 'Tip:'.
 

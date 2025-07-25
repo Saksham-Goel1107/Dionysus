@@ -44,7 +44,7 @@ export async function askQuestion(question: string, projectId: string) {
 
   (async () => {
     const { textStream } = streamText({
-      model: google('gemini-2.0-flash'),
+      model: google('gemini-2.5-flash'),
       prompt: `You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern with a basic understanding of programming and software development.
             The AI assistant is a brand new, powerful, human-like artificial intelligence.
             The traits of the AI include expert knowledge, helpfulness, cleverness, and articulateness.
@@ -58,11 +58,11 @@ export async function askQuestion(question: string, projectId: string) {
 
             If the question asks about "my project" or "this project", always interpret it as referring to "${projectName}".
             If the question is about code or a specific file, the AI will provide a detailed answer, giving step-by-step instructions and explanations as needed.
-            
+
             CODEBASE CONTEXT:
             ${context}
             END OF CONTEXT BLOCK
-            
+
             START QUESTION
             ${question}
             END OF QUESTION
