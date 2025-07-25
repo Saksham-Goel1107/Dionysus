@@ -406,8 +406,17 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 ---
 
 ## 📄 Licensing
+This project is licensed under the [Dionysus Proprietary License](LICENSE). The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
+---
 
-This project is protected by a proprietary license. The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
+## 🔑 Environment Configuration
+
+<details>
+<summary><strong>Access to <code>.env.example</code></strong></summary>
+
+The <code>.env.example</code> file is encrypted with a password known only to the repository owner. If you require access for legitimate reasons (e.g., for development, testing, or contribution), please contact me directly with your request and a brief explanation of your intended use. Requests without a valid reason will not be considered.
+
+</details>
 
 <div align="center">
 Copyright © 2025 Dionysus. All Rights Reserved.
