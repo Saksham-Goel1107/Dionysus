@@ -12,6 +12,7 @@ import Battery from './Battery';
 import { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
+import Image from 'next/image';
 
 export function Navbar() {
   const { user, isLoaded } = useUser();
@@ -45,7 +46,22 @@ export function Navbar() {
               <GradientTypewriter words="Dionysus" />
             </div>
           </Link>
-          <ModeToggle />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <a
+              href="https://www.buymeacoffee.com/saksham07"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                className="rounded-full"
+                src="/Coffee.png"
+                alt="Buy me a coffee"
+                width={40}
+                height={40}
+              />
+            </a>
+          </div>
         </div>
 
         <Link className="hidden md:flex" href="/">
@@ -104,6 +120,19 @@ export function Navbar() {
             )}
             <StarOnGithub />
             <Battery />
+            <a
+              href="https://www.buymeacoffee.com/saksham07"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Image
+                className="rounded-full"
+                src="/Coffee.png"
+                alt="Buy me a coffee"
+                width={40}
+                height={40}
+              />
+            </a>
           </nav>
         )}
 

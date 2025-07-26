@@ -10,6 +10,7 @@ import { auth } from '@clerk/nextjs/server';
 import Battery from '@/app/components/Battery';
 import { shouldRedirectToSurvey } from '@/lib/survey';
 import { redirect } from 'next/navigation';
+import Image from 'next/image';
 
 type Props = {
   children: React.ReactNode;
@@ -46,8 +47,21 @@ const Layout = async ({ children }: Props) => {
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />
-              <div className="hidden sm:block">
+              <div className="hidden sm:block md:flex gap-2">
                 <Battery />
+                <a
+                  href="https://www.buymeacoffee.com/saksham07"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    className="rounded-full"
+                    src="/Coffee.png"
+                    alt="Buy me a coffee"
+                    width={40}
+                    height={40}
+                  />
+                </a>
               </div>
             </div>
           </div>

@@ -7,6 +7,7 @@ import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
+import Image from 'next/image';
 
 export function Footer() {
   const { user, isLoaded } = useUser();
@@ -106,6 +107,19 @@ export function Footer() {
           >
             <Linkedin className="h-5 w-5" />
             <span className="sr-only">LinkedIn</span>
+          </a>
+          <a
+            href="https://www.buymeacoffee.com/saksham07"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className="rounded-full"
+              src="/Coffee.png"
+              alt="Buy me a coffee"
+              width={40}
+              height={40}
+            />
           </a>
         </div>
       </div>
