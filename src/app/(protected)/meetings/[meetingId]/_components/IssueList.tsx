@@ -157,15 +157,35 @@ User Question: ${userMessage}`,
                             dangerouslySetInnerHTML={{
                               __html: DOMPurify.sanitize(
                                 msg.content
-                                  .replace(/^•\s+/gm, '• ') // Format bullet points
-                                  .replace(/\n\n/g, '</p><p>') // Convert double newlines to paragraphs
-                                  .replace(/^([^•].+?)$/gm, '$1') // Regular lines
-                                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-                                  .replace(/\*([^\*]+)\*/g, '<em>$1</em>') // Italic text
+                                  .replace(
+                                    /^### (.*?)$/gm,
+                                    '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>',
+                                  )
+                                  .replace(
+                                    /^## (.*?)$/gm,
+                                    '<h2 class="text-xl font-bold mt-5 mb-2">$1</h2>',
+                                  )
+                                  .replace(
+                                    /^# (.*?)$/gm,
+                                    '<h1 class="text-2xl font-bold mt-6 mb-3">$1</h1>',
+                                  )
+                                  .replace(/^•\s+/gm, '• ')
+                                  .replace(/\n\n/g, '</p><p>')
+                                  .replace(/^([^•].+?)$/gm, '$1')
+                                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                  .replace(/\*([^\*]+)\*/g, '<em>$1</em>')
+                                  .replace(
+                                    /```(.*?)\n([\s\S]*?)```/gm,
+                                    '<pre class="bg-muted p-2 rounded-md my-2 overflow-auto"><code>$2</code></pre>',
+                                  )
+                                  .replace(
+                                    /`([^`]+)`/g,
+                                    '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>',
+                                  )
                                   .split('\n')
                                   .map((line) => {
                                     if (line.startsWith('•')) {
-                                      return `<div class="flex gap-2 items-start"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
+                                      return `<div class="flex gap-2 items-start my-1"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
                                     }
                                     return line;
                                   })
@@ -441,20 +461,42 @@ const IssueList = ({ meetingId }: Props) => {
                         {msg.role === 'assistant' ? (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: msg.content
-                                .replace(/^•\s+/gm, '• ') // Format bullet points
-                                .replace(/\n\n/g, '</p><p>') // Convert double newlines to paragraphs
-                                .replace(/^([^•].+?)$/gm, '$1') // Regular lines
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold text
-                                .replace(/\*([^\*]+)\*/g, '<em>$1</em>') // Italic text
-                                .split('\n')
-                                .map((line) => {
-                                  if (line.startsWith('•')) {
-                                    return `<div class="flex gap-2 items-start"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
-                                  }
-                                  return line;
-                                })
-                                .join(''),
+                              __html: DOMPurify.sanitize(
+                                msg.content
+                                  .replace(
+                                    /^### (.*?)$/gm,
+                                    '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>',
+                                  )
+                                  .replace(
+                                    /^## (.*?)$/gm,
+                                    '<h2 class="text-xl font-bold mt-5 mb-2">$1</h2>',
+                                  )
+                                  .replace(
+                                    /^# (.*?)$/gm,
+                                    '<h1 class="text-2xl font-bold mt-6 mb-3">$1</h1>',
+                                  )
+                                  .replace(/^•\s+/gm, '• ')
+                                  .replace(/\n\n/g, '</p><p>')
+                                  .replace(/^([^•].+?)$/gm, '$1')
+                                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                  .replace(/\*([^\*]+)\*/g, '<em>$1</em>')
+                                  .replace(
+                                    /```(.*?)\n([\s\S]*?)```/gm,
+                                    '<pre class="bg-muted p-2 rounded-md my-2 overflow-auto"><code>$2</code></pre>',
+                                  )
+                                  .replace(
+                                    /`([^`]+)`/g,
+                                    '<code class="bg-muted px-1 py-0.5 rounded text-sm">$1</code>',
+                                  )
+                                  .split('\n')
+                                  .map((line) => {
+                                    if (line.startsWith('•')) {
+                                      return `<div class="flex gap-2 items-start my-1"><span class="text-primary">•</span><span>${line.substring(2)}</span></div>`;
+                                    }
+                                    return line;
+                                  })
+                                  .join(''),
+                              ),
                             }}
                           />
                         ) : (

@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { LangChainTracer } from 'langchain/callbacks';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const LANGSMITH_API_KEY = process.env.LANGCHAIN_API_KEY;
+let tracer: LangChainTracer | null = null;
+let model: ChatGoogleGenerativeAI | null = null;
 
 interface ChatHistoryItem {
   role: 'user' | 'ai';
@@ -19,7 +24,20 @@ async function callGemini({
   if (!GEMINI_API_KEY) {
     return 'AI backend not configured. Please set up Gemini API.';
   }
-
+  if (!LANGSMITH_API_KEY) {
+    return 'LangSmith API key not configured.';
+  }
+  if (!tracer) {
+    tracer = new LangChainTracer({ projectName: 'dionysus-gemini' });
+  }
+  if (!model) {
+    model = new ChatGoogleGenerativeAI({
+      apiKey: GEMINI_API_KEY,
+      model: 'gemini-2.5-flash',
+      temperature: 0.7,
+      maxOutputTokens: 1000,
+    });
+  }
   function formatAnalytics(obj: any, indent = 0) {
     if (!obj) return '';
     let result = '';
@@ -45,45 +63,27 @@ async function callGemini({
   const formattedAnalytics = formatAnalytics(analytics);
   const systemPrompt = `You are an expert codebase assistant. Here is the code analytics (formatted for readability):\n${formattedAnalytics}\nAnswer user questions about the codebase, code quality, and metrics. Use Markdown formatting (including bullet points and newlines) in your answer.`;
   const messages = [
-    { role: 'user', parts: [{ text: systemPrompt }] },
+    { role: 'system', content: systemPrompt },
     ...history.map((m: ChatHistoryItem) => ({
-      role: m.role === 'ai' ? 'model' : 'user',
-      parts: [{ text: m.content }],
+      role: m.role === 'ai' ? 'assistant' : 'user',
+      content: m.content,
     })),
-    { role: 'user', parts: [{ text: question }] },
+    { role: 'user', content: question },
   ];
-  const res = await fetch(
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' +
-      GEMINI_API_KEY,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: messages }),
-    },
-  );
-  const data = await res.json();
-  if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
-    return data.candidates[0].content.parts[0].text;
+  try {
+    const result = await model.invoke(messages);
+    if (typeof result.content === 'string') {
+      return result.content;
+    } else if (Array.isArray(result.content)) {
+      return result.content
+        .map((item: any) => (typeof item === 'string' ? item : item.text || ''))
+        .join('\n');
+    } else {
+      return String(result.content);
+    }
+  } catch (error: any) {
+    return `Gemini API error: ${error.message || error}`;
   }
-  if (data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
-    return data.candidates[0].content.parts[0].inlineData.data;
-  }
-  if (data?.candidates?.[0]?.content?.parts?.[0]) {
-    return JSON.stringify(data.candidates[0].content.parts[0]);
-  }
-  if (data?.candidates?.[0]?.content?.text) {
-    return data.candidates[0].content.text;
-  }
-  if (data?.candidates?.[0]?.content) {
-    return JSON.stringify(data.candidates[0].content);
-  }
-  if (data?.candidates?.[0]) {
-    return JSON.stringify(data.candidates[0]);
-  }
-  if (data?.error?.message) {
-    return `Gemini API error: ${data.error.message}`;
-  }
-  return 'No answer.';
 }
 
 export async function POST(req: NextRequest) {

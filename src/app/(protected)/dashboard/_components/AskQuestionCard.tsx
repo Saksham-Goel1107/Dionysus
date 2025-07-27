@@ -15,6 +15,7 @@ import useRefetch from '@/hooks/use-refetch';
 import { askQuestion } from '../actions';
 import CodeReferences from './CodeReferences';
 import Image from 'next/image';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
@@ -68,7 +69,7 @@ const AskQuestionCrad = () => {
                   width="40"
                   height="40"
                 />
-                Dionysus
+                <GradientTypewriter words="Dionysus" />
               </DialogTitle>
               <Button
                 variant={'outline'}

@@ -1,11 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { NextRequest, NextResponse } from 'next/server';
 import { getChat, setChat } from '../../utils/redis';
 import { db } from '@/server/db';
 import { auth } from '@clerk/nextjs/server';
+import { LangChainTracer } from 'langchain/callbacks';
 
-// Initialize genAI only at runtime to avoid build errors
-let genAI: GoogleGenerativeAI;
+// Initialize model only at runtime to avoid build errors
+let model: ChatGoogleGenerativeAI | null = null;
+let tracer: LangChainTracer | null = null;
 
 const SYSTEM_CONTEXT = `You are an AI meeting assistant for Dionysus, a powerful AI-powered GitHub SaaS client designed to help manage and analyze development meetings. Your primary role is to assist users with questions about the entire meeting, help them understand the overall context, and provide summaries and insights about all the issues discussed.
 
@@ -81,6 +83,8 @@ export async function POST(req: NextRequest) {
   }
   try {
     const apiKey = process.env.GEMINI_API_KEY;
+    const langsmithApiKey = process.env.LANGCHAIN_API_KEY;
+    
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
       console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
@@ -88,13 +92,25 @@ export async function POST(req: NextRequest) {
         { status: 500 },
       );
     }
-
-    // Initialize the API only when needed
-    if (!genAI) {
-      genAI = new GoogleGenerativeAI(apiKey);
+    
+    // Initialize LangSmith tracer if API key is available
+    if (langsmithApiKey && !tracer) {
+      tracer = new LangChainTracer({
+        projectName: 'dionysus-meeting',
+      });
     }
 
-    const {
+    // Initialize the model only when needed
+    if (!model) {
+      model = new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: 'gemini-2.5-flash',
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 1000,
+      });
+    }    const {
       message,
       meetingId,
       meetingName,
@@ -138,38 +154,41 @@ export async function POST(req: NextRequest) {
       meetingContext += `Summary: ${issue.summary}\n\n`;
     });
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40,
-        maxOutputTokens: 1000,
-      },
-    });
-
     const conversationContext: string =
       history.length > 0
         ? history.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n\n')
         : '';
 
-    // Create a chat with history
-    const chat = model.startChat({
-      history: [],
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
-    });
-
-    const result = await chat.sendMessage(
-      `${SYSTEM_CONTEXT}\n\n` +
+    let responseText = '';
+    try {
+      const systemMessage = `${SYSTEM_CONTEXT}\n\n` +
         `Meeting Context:\n${meetingContext}\n\n` +
-        `${conversationContext}\n\n` +
-        `User: ${message}`,
-    );
-
-    const response = await result.response;
-    let responseText = response.text();
+        `${conversationContext}`;
+        
+      const result = await model!.invoke([
+        { role: 'system', content: systemMessage },
+        ...(history.length > 0
+          ? history.map((msg: ChatMessage) => ({ role: msg.role, content: msg.content }))
+          : []),
+        { role: 'user', content: message },
+      ]);
+      
+      if (typeof result.content === 'string') {
+        responseText = result.content;
+      } else if (Array.isArray(result.content)) {
+        responseText = result.content
+          .map((item: any) => (typeof item === 'string' ? item : item.text || ''))
+          .join('\n');
+      } else {
+        responseText = String(result.content);
+      }
+    } catch (error) {
+      console.error('Meeting AI Error:', error);
+      return NextResponse.json(
+        { error: 'Failed to generate response. Please try again later.' },
+        { status: 500 },
+      );
+    }
 
     if (!responseText) {
       return NextResponse.json(

@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { LangChainTracer } from 'langchain/callbacks';
 import { Document } from '@langchain/core/documents';
 import { Redis } from 'ioredis';
 
 let redis: Redis | null = null;
+let tracer: LangChainTracer | null = null;
 const inMemoryStore: Map<string, { count: number; expires: number }> = new Map();
 let redisEnabled = false;
 
@@ -37,6 +39,13 @@ if (process.env.REDIS_URL_NEW) {
   }
 }
 
+if (!tracer && process.env.LANGCHAIN_API_KEY) {
+  tracer = new LangChainTracer({
+    projectName: 'dionysus-gemini',
+  });
+}
+
+// Initialize without the callbacks in the constructor
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
@@ -96,12 +105,13 @@ async function checkRateLimit(
 }
 
 export const aiSummariseCommit = async (diff: string, projectName: string) => {
-  const isAllowed = await checkRateLimit('commit-summary', 10, 60);
-  if (!isAllowed) {
+  const allowed = await checkRateLimit('commit-summary', 10, 60);
+  if (!allowed) {
     throw new Error('Rate limit exceeded for commit summaries. Please try again later.');
   }
-
-  const response = await model.generateContent([
+  
+  // Define the prompt content
+  const prompt = [
     `You are an expert programmer summarizing a git diff for the project "${projectName}".
     Only refer to changes relevant to this project.
     Ignore unrelated or external context.
@@ -122,7 +132,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
         \`\`\`
         . Raised the amount of returned recordings from \'10\ to \'100\' [packages/server/recordings_api.ts], [packages/server/constants.ts]
         . Fixed a typo in the github action name [.github/workflows/gpt-commit-summarizer.yml]
-        . Moved the \'octokit\ initialization to a separate file [src/ootokit.ts], [src/index.ts]
+        . Moved the \'octokit\' initialization to a separate file [src/ootokit.ts], [src/index.ts]
         . Added an OpenAI API for completions [packages/utils/apis/openai.ts]
         . Lowered numeric tolerance for test files
         Most commits will have less comments than this examples list.
@@ -133,20 +143,21 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
         Do not use Okay, I understand you're asking about but give direct answer
         It is given only as an example of appropriate comments. `,
     `Please summarise the following diff file: \n\n${diff}`,
-  ]);
-
+  ];
+  
+  // Use the tracer with the method call instead of in the model constructor
+  const response = await model.generateContent(prompt);
   return response.response.text();
 };
 
 export const summariseCode = async (doc: Document) => {
-  const isAllowed = await checkRateLimit('code-summary', 10, 60);
-  if (!isAllowed) {
+  const allowed = await checkRateLimit('code-summary', 10, 60);
+  if (!allowed) {
     throw new Error('Rate limit exceeded for code summaries. Please try again later.');
   }
-
   try {
     const code = doc.pageContent.slice(0, 10000);
-    const response = await model.generateContent([
+    const prompt = [
       `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects`,
       `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file
             Here is the code:
@@ -154,7 +165,10 @@ export const summariseCode = async (doc: Document) => {
             ${code}
             ---
             Give a summary no more than 100 words of the code above`,
-    ]);
+    ];
+    
+    // Use the tracer with the method call instead of in the model constructor
+    const response = await model.generateContent(prompt);
     return response.response.text();
   } catch (error) {
     return '';
@@ -162,43 +176,43 @@ export const summariseCode = async (doc: Document) => {
 };
 
 export const generateEmbedding = async (summary: string) => {
-  const isAllowed = await checkRateLimit('embedding', 50, 60);
-  if (!isAllowed) {
+  const allowed = await checkRateLimit('embedding', 50, 60);
+  if (!allowed) {
     throw new Error('Rate limit exceeded for embeddings generation. Please try again later.');
   }
-
-  const model = genAI.getGenerativeModel({
+  
+  // Create embedding model without tracer in constructor
+  const embeddingModel = genAI.getGenerativeModel({
     model: 'text-embedding-004',
   });
-
-  const result = await model.embedContent(summary);
+  
+  // Use the tracer with the method call instead
+  const result = await embeddingModel.embedContent(summary);
   const embedding = result.embedding;
-
   return embedding.values;
 };
 
 export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: string } | string> {
-  const isAllowed = await checkRateLimit('ask-gemini', 5, 60);
-  if (!isAllowed) {
+  const allowed = await checkRateLimit('ask-gemini', 5, 60);
+  if (!allowed) {
     return {
       yaml: '# ❌ Error: Rate limit exceeded.',
       tip: 'Please try again after some time. There is a limit to how many requests you can make per minute.',
     };
   }
-
   const apiKey = process.env.GEMINI_API_KEY;
-
   if (!apiKey) {
     return {
       yaml: '# ❌ Error: The GEMINI_API_KEY environment variable is missing.',
       tip: 'Set GEMINI_API_KEY in your environment to enable Gemini-powered YAML generation.',
     };
   }
-
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
+    // Create a local model instance for this function
+    const localGenAI = new GoogleGenerativeAI(apiKey);
+    const localModel = localGenAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+    });
     const context = `
 You are a professional DevOps engineer.
 Generate a production-ready CI/CD YAML file based on the user's request.
@@ -210,13 +224,10 @@ Respond in this format:
 1. YAML in a markdown code block (\`\`\`yaml ... \`\`\`)
 2. Tip at the end
 `;
-
-    const result = await model.generateContent(context);
+    const result = await localModel.generateContent(context);
     const text = await result.response.text();
-
     const yamlMatch = text.match(/```ya?ml([\s\S]*?)```/i);
     const tipMatch = text.match(/Tip:(.*)/i);
-
     return {
       yaml: yamlMatch?.[1]?.trim() ?? '# ⚠️ YAML block not detected in response.',
       tip:
@@ -225,14 +236,12 @@ Respond in this format:
     };
   } catch (error: any) {
     console.error('Gemini Error:', error?.message || error);
-
     if (error.message?.includes('API key not valid')) {
       return {
         yaml: '# ❌ Error: Invalid GEMINI_API_KEY.',
         tip: 'Check and regenerate your API key from https://makersuite.google.com/app/apikey',
       };
     }
-
     return {
       yaml: `# ❌ Gemini API Error: ${error.message || 'Unknown error occurred.'}`,
       tip: 'Please try again or verify your API status.',

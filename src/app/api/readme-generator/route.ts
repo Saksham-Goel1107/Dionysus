@@ -1,9 +1,10 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { LangChainTracer } from 'langchain/callbacks';
 
-// Initialize genAI only at runtime to avoid build errors
-let genAI: GoogleGenerativeAI;
+let model: ChatGoogleGenerativeAI | null = null;
+let tracer: LangChainTracer | null = null;
 
 const SYSTEM_CONTEXT = `You are an expert technical writer specializing in creating high-quality, visually appealing, and professional GitHub READMEs for software projects.
 
@@ -35,6 +36,8 @@ export async function POST(req: NextRequest) {
   try {
     // Check API key at runtime instead of build time
     const apiKey = process.env.GEMINI_API_KEY;
+    const langsmithApiKey = process.env.LANGCHAIN_API_KEY;
+
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
       console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
@@ -45,9 +48,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Initialize the API only when needed
-    if (!genAI) {
-      genAI = new GoogleGenerativeAI(apiKey);
+    // Initialize LangSmith tracer if API key is available
+    if (langsmithApiKey && !tracer) {
+      tracer = new LangChainTracer({
+        projectName: 'dionysus-readme',
+      });
+    }
+
+    // Initialize the model only when needed
+    if (!model) {
+      model = new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: 'gemini-2.5-flash',
+        temperature: 0.7,
+        topP: 0.95,
+        topK: 40,
+        maxOutputTokens: 4000,
+      });
     }
 
     const formData = await req.json();
@@ -56,22 +73,28 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Form data is required' }, { status: 400 });
     }
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.95,
-        topK: 40,
-        maxOutputTokens: 4000,
-      },
-    });
-
-    // Convert form data to a structured prompt
     const prompt = buildPrompt(formData);
-
-    const result = await model.generateContent([SYSTEM_CONTEXT, prompt]);
-    const response = await result.response;
-    let readmeContent = response.text();
+    
+    let readmeContent = '';
+    try {
+      const result = await model!.invoke([
+        { role: 'system', content: SYSTEM_CONTEXT },
+        { role: 'user', content: prompt }
+      ]);
+      
+      if (typeof result.content === 'string') {
+        readmeContent = result.content;
+      } else if (Array.isArray(result.content)) {
+        readmeContent = result.content
+          .map((item: any) => (typeof item === 'string' ? item : item.text || ''))
+          .join('\n');
+      } else {
+        readmeContent = String(result.content);
+      }
+    } catch (error) {
+      console.error('README Generator Error:', error);
+      throw error;
+    }
 
     if (!readmeContent) {
       return NextResponse.json(
