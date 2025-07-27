@@ -1,12 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { LangChainTracer } from 'langchain/callbacks';
 import { NextRequest, NextResponse } from 'next/server';
 import { getChat, setChat } from '../../utils/redis';
 import { v4 as uuidv4 } from 'uuid';
 import { withRateLimit } from '@/lib/rate-limit';
 import { auth } from '@clerk/nextjs/server';
 
-// Initialize genAI only at runtime to avoid build errors
-let genAI: GoogleGenerativeAI;
+let tracer: LangChainTracer | null = null;
+let model: ChatGoogleGenerativeAI | null = null;
 
 const SYSTEM_CONTEXT = `You are an AI assistant for Dionysus, a powerful AI-powered GitHub SaaS client designed to revolutionize project collaboration and management. Built with privacy and efficiency in mind, Dionysus helps users seamlessly integrate GitHub repositories, explore commit histories, interact with AI to learn about projects, and manage teams effectively.
 
@@ -91,33 +92,48 @@ interface ChatMessage {
 
 export async function POST(req: NextRequest) {
   try {
-    // Apply rate limiting - stricter for AI endpoints
     const { userId } = await auth();
     const isAuthenticated = !!userId;
 
-    // Different rate limits based on authentication status
     const rateLimitResult = await withRateLimit(req, 'api-ai-chat', {
-      limit: isAuthenticated ? 10 : 5, // 10 requests per minute for authenticated users, 5 for guests
-      window: 60, // 60 seconds window
+      limit: isAuthenticated ? 10 : 5,
+      window: 60,
       errorMessage: 'AI chat rate limit exceeded. Please try again later.',
     });
 
-    // If rate limit exceeded, return the rate limit response
     if (rateLimitResult) return rateLimitResult;
 
-    // Check API key at runtime instead of build time
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const langsmithApiKey = process.env.LANGCHAIN_API_KEY;
+    if (!geminiApiKey || typeof geminiApiKey !== 'string' || geminiApiKey.trim() === '') {
       console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
-        { error: 'Invalid API configuration. Please contact the administrator.' },
+        { error: 'Invalid Gemini API configuration. Please contact the administrator.' },
+        { status: 500 },
+      );
+    }
+    if (!langsmithApiKey || typeof langsmithApiKey !== 'string' || langsmithApiKey.trim() === '') {
+      console.error('LANGCHAIN_TRACING_API_KEY is not properly configured');
+      return NextResponse.json(
+        { error: 'Invalid LangSmith API configuration. Please contact the administrator.' },
         { status: 500 },
       );
     }
 
-    // Initialize the API only when needed
-    if (!genAI) {
-      genAI = new GoogleGenerativeAI(apiKey);
+    if (!tracer) {
+      tracer = new LangChainTracer({
+        projectName: 'dionysus-ai-chat',
+      });
+    }
+    if (!model) {
+      model = new ChatGoogleGenerativeAI({
+        apiKey: geminiApiKey,
+        model: 'gemini-2.5-flash',
+        temperature: 0.7,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 1000,
+      });
     }
 
     const { message, sessionId = uuidv4() } = await req.json();
@@ -126,35 +142,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
     const history = (await getChat(sessionId)) as ChatMessage[];
-
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.8,
-        topK: 40,
-        maxOutputTokens: 1000,
-      },
-    });
-
     const conversationContext: string =
       history.length > 0
         ? history.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n\n')
         : '';
 
-    // Create a chat with history
-    const chat = model.startChat({
-      history: [],
-      generationConfig: {
-        maxOutputTokens: 1000,
-      },
-    });
+    let responseText = '';
+    try {
+      const result = await model.invoke([
+        { role: 'system', content: SYSTEM_CONTEXT },
+        ...(history.length > 0
+          ? history.map((msg: ChatMessage) => ({ role: msg.role, content: msg.content }))
+          : []),
+        { role: 'user', content: message },
+      ]);
+      if (typeof result.content === 'string') {
+        responseText = result.content;
+      } else if (Array.isArray(result.content)) {
+        responseText = result.content
+          .map((item: any) => (typeof item === 'string' ? item : item.text || ''))
+          .join('\n');
+      } else {
+        responseText = String(result.content);
+      }
+    } catch (traceErr) {
+      console.error('LangSmith trace error:', traceErr);
+      return NextResponse.json(
+        { error: 'LangSmith tracing failed. Please try again later.' },
+        { status: 500 },
+      );
+    }
 
-    const result = await chat.sendMessage(
-      `${SYSTEM_CONTEXT}\n\n${conversationContext}\n\nUser: ${message}`,
-    );
-    const response = await result.response;
-    let responseText = response.text();
     if (!responseText) {
       return NextResponse.json(
         { error: 'No response generated. Please try again.' },
@@ -164,26 +182,21 @@ export async function POST(req: NextRequest) {
     responseText = responseText
       .replace(/\n{3,}/g, '\n\n')
       .replace(/([.!?])\s*(\w)/g, '$1 $2')
-
       .replace(/^[-*]\s/gm, '• ')
       .replace(/^\t[-*]\s/gm, '    • ')
       .replace(/^\d+\.\s/gm, (match) => match.trim() + ' ')
-
       .replace(/\*\*(.*?)\*\*/g, (_, text) => `**${text.trim()}**`)
       .replace(/\*(.*?)\*/g, (_, text) => `*${text.trim()}*`)
       .replace(/`(.*?)`/g, (_, text) => `\`${text.trim()}\``)
-      .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang: string | undefined, code: string) => {
+      .replace(/```(\w+)?\n([\s\S]*?)```/g, (_, lang, code) => {
         const formattedCode = code
           .split('\n')
           .map((line: string) => line.trim())
           .join('\n    ');
         return `\`\`\`${lang || ''}\n    ${formattedCode}\n\`\`\``;
       })
-
       .replace(/^(•|\d+\.)\s*/gm, '$1 ')
-
       .replace(/^(\s{2,})/gm, '    ')
-
       .trim();
 
     const updatedHistory = [
@@ -198,7 +211,7 @@ export async function POST(req: NextRequest) {
       sessionId,
     });
   } catch (err) {
-    const error = err as Error; // cast to Error type
+    const error = err as Error;
 
     console.error('AI Chat Error:', error);
 

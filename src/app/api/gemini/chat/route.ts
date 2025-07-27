@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// You should set your Gemini or OpenAI API key in an environment variable
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 interface ChatHistoryItem {
@@ -28,7 +27,6 @@ async function callGemini({
     for (const [key, value] of Object.entries(obj)) {
       let formattedValue;
       if (typeof value === 'object' && value !== null) {
-        // Recursively format nested objects as indented lists
         formattedValue = '\n' + formatAnalytics(value, indent + 1);
         result += `${indentation}- **${key}**:${formattedValue}\n`;
       } else if (typeof value === 'number') {
@@ -68,11 +66,9 @@ async function callGemini({
     return data.candidates[0].content.parts[0].text;
   }
   if (data?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data) {
-    // Sometimes Gemini returns inlineData for code or other content
     return data.candidates[0].content.parts[0].inlineData.data;
   }
   if (data?.candidates?.[0]?.content?.parts?.[0]) {
-    // Fallback: try to stringify whatever is there
     return JSON.stringify(data.candidates[0].content.parts[0]);
   }
   if (data?.candidates?.[0]?.content?.text) {

@@ -4,14 +4,12 @@ import { auth } from '@clerk/nextjs/server';
 import { withRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
-  // Apply rate limiting - stricter for AI endpoints
   const rateLimitResult = await withRateLimit(req, 'api-gemini', {
-    limit: 10, // 10 requests per minute
-    window: 60, // 60 seconds window
+    limit: 10,
+    window: 60,
     errorMessage: 'AI generation rate limit exceeded. Please try again later.',
   });
 
-  // If rate limit exceeded, return the rate limit response
   if (rateLimitResult) return rateLimitResult;
 
   const { has } = await auth();

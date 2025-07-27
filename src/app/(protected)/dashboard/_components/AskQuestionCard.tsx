@@ -29,10 +29,14 @@ const AskQuestionCrad = () => {
   const saveAnswer = api.project.saveAnswer.useMutation();
   const refetch = useRefetch();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (
+    e?: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
     setAnswer('');
     setFilesReferences([]);
-    e.preventDefault();
+    if (e) {
+      e.preventDefault();
+    }
     if (!project?.id) return;
 
     setLoading(true);
@@ -57,7 +61,13 @@ const AskQuestionCrad = () => {
           <DialogHeader>
             <div className="flex items-center gap-2">
               <DialogTitle className="flex items-center cursor-default">
-                <Image src="/logo.png" alt="Logo" width="40" height="40" />
+                <Image
+                  className="rounded-lg mr-2"
+                  src="/logo.png"
+                  alt="Logo"
+                  width="40"
+                  height="40"
+                />
                 Dionysus
               </DialogTitle>
               <Button
@@ -118,6 +128,14 @@ const AskQuestionCrad = () => {
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               required
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && question.trim().length >= 15 && !e.shiftKey) {
+                  onSubmit(e);
+                } else if (e.shiftKey && e.key === 'Enter') {
+                  e.preventDefault();
+                  setQuestion((q) => q + '\n');
+                }
+              }}
             />
             <div className="h-4"></div>
             <Button type="submit" disabled={loading || question.trim().length < 15}>

@@ -22,12 +22,13 @@ interface Command {
 }
 
 const formatMessageContent = (content: string) => {
-  // Handle bold text
   content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
-  // Handle links - matches URLs starting with http:// or https://
+  content = content.replace(/^### (.*)$/gm, '<h3 class="text-lg font-bold mt-2 mb-1">$1</h3>');
+  content = content.replace(/^## (.*)$/gm, '<h2 class="text-xl font-bold mt-2 mb-1">$1</h2>');
+  content = content.replace(/^# (.*)$/gm, '<h1 class="text-2xl font-bold mt-2 mb-1">$1</h1>');
+
   content = content.replace(/(https?:\/\/[^\s]+)/g, (match) => {
-    // Only create link if it's a valid URL
     try {
       new URL(match);
       return `<a href="${match}" class="text-blue-400 underline hover:text-blue-300" target="_blank" rel="noopener noreferrer">${match}</a>`;
@@ -36,18 +37,14 @@ const formatMessageContent = (content: string) => {
     }
   });
 
-  // First, split the content into lines
   const lines = content.split('\n');
   const formattedLines = lines.map((line) => {
-    // Handle main bullet points
     if (line.match(/^- /)) {
       return line.replace(
         /^- (.*?)$/,
         '<div class="flex mb-2"><span class="mr-2">•</span><div class="flex-1">$1</div></div>',
       );
-    }
-    // Handle sub-points (indented content)
-    else if (line.match(/^ {2}- /)) {
+    } else if (line.match(/^ {2}- /)) {
       return line.replace(
         /^ {2}- (.*?)$/,
         '<div class="flex mb-2 ml-6"><span class="mr-2">◦</span><div class="flex-1">$1</div></div>',
@@ -56,7 +53,6 @@ const formatMessageContent = (content: string) => {
     return line;
   });
 
-  // Join the lines back together
   content = formattedLines.join('\n');
 
   return content;
@@ -191,7 +187,6 @@ export default function AiChatSidebar({
       });
 
       if (!response.ok) {
-        // Handle rate limiting explicitly
         if (response.status === 429) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Rate limit exceeded. Please try again later.');
@@ -199,7 +194,6 @@ export default function AiChatSidebar({
         throw new Error('Failed to get AI response');
       }
 
-      // Check for rate limit headers to show warnings
       const remainingRequests = response.headers.get('X-RateLimit-Remaining');
       const rateLimitTotal = response.headers.get('X-RateLimit-Limit');
 
@@ -213,13 +207,11 @@ export default function AiChatSidebar({
         },
       ]);
 
-      // Show warning if user is approaching their rate limit
       if (remainingRequests && rateLimitTotal) {
         const remaining = parseInt(remainingRequests);
         const total = parseInt(rateLimitTotal);
 
         if (remaining <= Math.max(2, Math.floor(total * 0.2))) {
-          // Add rate limit warning when less than 20% of requests remain
           setChatHistory((prev) => [
             ...prev,
             {
@@ -366,7 +358,7 @@ export default function AiChatSidebar({
                   }
                   placeholder="Ask me anything..."
                   rows={1}
-                  className={`w-full p-2 pr-10 rounded-lg border 
+                  className={`w-full p-2 pr-10 rounded-lg border
                       bg-gray-800 border-gray-700 text-white
                       resize-none overflow-y-auto
                       focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]`}
