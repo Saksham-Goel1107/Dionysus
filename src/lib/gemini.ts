@@ -109,7 +109,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
   if (!allowed) {
     throw new Error('Rate limit exceeded for commit summaries. Please try again later.');
   }
-  
+
   // Define the prompt content
   const prompt = [
     `You are an expert programmer summarizing a git diff for the project "${projectName}".
@@ -144,7 +144,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
         It is given only as an example of appropriate comments. `,
     `Please summarise the following diff file: \n\n${diff}`,
   ];
-  
+
   // Use the tracer with the method call instead of in the model constructor
   const response = await model.generateContent(prompt);
   return response.response.text();
@@ -166,7 +166,7 @@ export const summariseCode = async (doc: Document) => {
             ---
             Give a summary no more than 100 words of the code above`,
     ];
-    
+
     // Use the tracer with the method call instead of in the model constructor
     const response = await model.generateContent(prompt);
     return response.response.text();
@@ -180,12 +180,12 @@ export const generateEmbedding = async (summary: string) => {
   if (!allowed) {
     throw new Error('Rate limit exceeded for embeddings generation. Please try again later.');
   }
-  
+
   // Create embedding model without tracer in constructor
   const embeddingModel = genAI.getGenerativeModel({
     model: 'text-embedding-004',
   });
-  
+
   // Use the tracer with the method call instead
   const result = await embeddingModel.embedContent(summary);
   const embedding = result.embedding;

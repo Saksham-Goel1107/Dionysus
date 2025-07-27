@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     const langsmithApiKey = process.env.LANGCHAIN_API_KEY;
-    
+
     if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
       console.error('GEMINI_API_KEY is not properly configured');
       return NextResponse.json(
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         { status: 500 },
       );
     }
-    
+
     // Initialize LangSmith tracer if API key is available
     if (langsmithApiKey && !tracer) {
       tracer = new LangChainTracer({
@@ -110,7 +110,8 @@ export async function POST(req: NextRequest) {
         topK: 40,
         maxOutputTokens: 1000,
       });
-    }    const {
+    }
+    const {
       message,
       meetingId,
       meetingName,
@@ -161,10 +162,11 @@ export async function POST(req: NextRequest) {
 
     let responseText = '';
     try {
-      const systemMessage = `${SYSTEM_CONTEXT}\n\n` +
+      const systemMessage =
+        `${SYSTEM_CONTEXT}\n\n` +
         `Meeting Context:\n${meetingContext}\n\n` +
         `${conversationContext}`;
-        
+
       const result = await model!.invoke([
         { role: 'system', content: systemMessage },
         ...(history.length > 0
@@ -172,7 +174,7 @@ export async function POST(req: NextRequest) {
           : []),
         { role: 'user', content: message },
       ]);
-      
+
       if (typeof result.content === 'string') {
         responseText = result.content;
       } else if (Array.isArray(result.content)) {

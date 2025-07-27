@@ -74,14 +74,14 @@ export async function POST(req: NextRequest) {
     }
 
     const prompt = buildPrompt(formData);
-    
+
     let readmeContent = '';
     try {
       const result = await model!.invoke([
         { role: 'system', content: SYSTEM_CONTEXT },
-        { role: 'user', content: prompt }
+        { role: 'user', content: prompt },
       ]);
-      
+
       if (typeof result.content === 'string') {
         readmeContent = result.content;
       } else if (Array.isArray(result.content)) {

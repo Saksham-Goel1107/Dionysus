@@ -43,7 +43,7 @@ export default function CookieBanner() {
           replays. These never include personal or sensitive data, and are only used to improve the
           service and user experience.
         </p>
-        <p className='text-sm'>
+        <p className="text-sm">
           Additionally, AI conversations may be recorded solely to help us improve business
           development and understanding of our services. These recordings do{' '}
           <strong className="font-semibold text-gray-900 dark:text-white">not</strong> include
