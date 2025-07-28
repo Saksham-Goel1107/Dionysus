@@ -402,6 +402,16 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 - **RecaptchaGate Improvements:** The RecaptchaGate component now handles API errors gracefully, with fallback and bypass logic for a smoother user experience.
 - **ESLint Config Fixes:** Config files (`postcss.config.js`, `prettier.config.js`) now export via variables to avoid ESLint warnings. The `.eslintignore` file ensures public assets are not linted.
 - **Autoprefixer Dependency:** The missing `autoprefixer` package is now installed, resolving build errors for PostCSS.
+- **Comprehensive System Visualizations:** Added full project architecture, process, and database diagrams on Eraser for onboarding, documentation, and technical clarity.
+- **Eraser Integration:** All diagrams are now available and viewable in [Eraser](https://app.eraser.io/workspace/KuPhKKF9Cnq19Jr0BMBd), enabling collaborative architecture and process design.
+
+---
+
+## 📊 Project Visualizations & Eraser Integration
+
+All system, process, and database diagrams are available in Eraser and can be viewed in [Eraser](https://app.eraser.io/workspace/KuPhKKF9Cnq19Jr0BMBd). This enables real-time architecture and process design with your team.
+
+<img src="Demo/Erasor-Structure.png" alt="Dionysus Platform" width="600" />
 
 ---
 
