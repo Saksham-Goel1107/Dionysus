@@ -8,6 +8,7 @@ import AiToolkitButton from './components/AiButton';
 import RecaptchaGate from './components/RecaptchaGate';
 import { useUser } from '@clerk/nextjs';
 import { app, analytics, perf } from '@/firebase-init';
+import CookieBanner from './components/CookieBanner';
 
 declare global {
   interface Window {
@@ -42,6 +43,12 @@ function Providers({ children }: { children: React.ReactNode }) {
     pathname?.startsWith('/sign-in') ||
     pathname?.startsWith('/sign-up') ||
     pathname?.startsWith('/onboarding');
+
+  const hideCookieBanner =
+    pathname === '/rate-limit' ||
+    pathname === '/block' ||
+    pathname === '/updates' ||
+    pathname === '/cookie-policy';
 
   const [showInactivityModal, setShowInactivityModal] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -201,6 +208,7 @@ function Providers({ children }: { children: React.ReactNode }) {
           checkReady();
         }}
       />
+      {!hideCookieBanner && <CookieBanner />}
       <div>
         {userId ? (
           <RecaptchaGate>

@@ -140,9 +140,6 @@ export default async function RootLayout({
               ) : (
                 <>
                   <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                  {pathname !== '/rate-limit' &&
-                    pathname !== '/block' &&
-                    pathname !== '/updates' && <CookieBanner />}
                   <TRPCReactProvider>
                     <Offline>
                       <Providers>{children}</Providers>

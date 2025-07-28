@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   '/status(.*)',
   '/api/uptime',
   '/api/maintenance-info',
+  '/cookie-policy(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
