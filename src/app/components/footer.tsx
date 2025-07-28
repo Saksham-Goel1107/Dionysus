@@ -66,6 +66,12 @@ export function Footer() {
           >
             Privacy
           </Link>
+          <Link
+            href="/cookie-policy"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            Cookies
+          </Link>
           <Link href="/terms" className="text-sm font-medium transition-colors hover:text-primary">
             Terms & Conditions
           </Link>
