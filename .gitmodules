@@ -1,3 +1,6 @@
 [submodule "n8n"]
 	path = n8n
 	url = https://github.com/Saksham-Goel1107/n8n.git
+[submodule "Photo-Editor"]
+	path = Photo-Editor
+	url = https://github.com/Saksham-Goel1107/Photo-Editor.git
