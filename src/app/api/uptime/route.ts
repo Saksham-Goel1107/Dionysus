@@ -46,15 +46,15 @@ export async function GET(request: Request) {
     const clerkRes = await fetch('https://api.clerk.dev/v1/health');
     if (!clerkRes.ok) throw new Error('Clerk Unavailable');
 
-    const pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    });
-    try {
-      await pool.query('SELECT 1');
-    } finally {
-      await pool.end();
-    }
+    // const pool = new Pool({
+    //   connectionString: process.env.DATABASE_URL,
+    //   ssl: { rejectUnauthorized: false },
+    // });                                                          // Just to Save the Compute Time Limit Of Neon. But this is a recommended Check Just Turn This off if you have limited compute limit. @Saksham-Goel1107
+    // try {
+    //   await pool.query('SELECT 1');
+    // } finally {
+    //   await pool.end();
+    // }
 
     const response = await fetch('https://api.uptimerobot.com/v2/getMonitors', {
       method: 'POST',

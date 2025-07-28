@@ -19,6 +19,22 @@ function Providers({ children }: { children: React.ReactNode }) {
   const user = useUser();
   const userId = user?.user?.id;
   const userData = user?.user;
+
+  useEffect(() => {
+    if (!userId) return;
+    const sync = async () => {
+      try {
+        await fetch('/api/sync-pro-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId }),
+        });
+      } catch (error) {
+        console.error('Failed to sync pro status', error);
+      }
+    };
+    sync();
+  }, [userId]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const pathname = usePathname();

@@ -3,21 +3,22 @@ import { auth, clerkClient } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
 export default async function Page() {
+  const { userId, sessionClaims } = await auth();
+  if (!userId) {
+    return redirect('/sign-in');
+  }
+
+  const client = await clerkClient();
+  const user = await client.users.getUser(userId);
+  const email = user.emailAddresses[0]?.emailAddress;
+
+  if (!email) {
+    return redirect('/sign-in');
+  }
+
+  let result;
   try {
-    const { userId, sessionClaims } = await auth();
-    if (!userId) {
-      return redirect('/sign-in');
-    }
-
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const email = user.emailAddresses[0]?.emailAddress;
-
-    if (!email) {
-      return redirect('/sign-in');
-    }
-
-    const result = await db.$transaction(async (tx) => {
+    result = await db.$transaction(async (tx) => {
       const upsertedUser = await tx.user.upsert({
         where: { id: userId },
         update: {
@@ -36,16 +37,6 @@ export default async function Page() {
       });
       return upsertedUser;
     });
-
-    if (userId && !sessionClaims?.metadata?.onboardingComplete) {
-      return redirect('/onboarding');
-    }
-
-    if (result.SurveyDone) {
-      return redirect('/dashboard');
-    } else {
-      return redirect('/survey-check');
-    }
   } catch (error) {
     console.error('Database error in syncUser:', error);
     if (
@@ -57,5 +48,15 @@ export default async function Page() {
       console.error('Unique constraint violation');
     }
     return redirect('/onboarding');
+  }
+
+  if (userId && !sessionClaims?.metadata?.onboardingComplete) {
+    return redirect('/onboarding');
+  }
+
+  if (result.SurveyDone) {
+    return redirect('/dashboard');
+  } else {
+    return redirect('/survey-check');
   }
 }
