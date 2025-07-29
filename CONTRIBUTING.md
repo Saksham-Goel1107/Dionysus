@@ -1,7 +1,9 @@
 # Contributing to Dionysus
 
-Thank you for your interest in contributing to Dionysus! 🚀  
-Your ideas and code help make this project better for everyone. We welcome all contributions—whether it’s code, documentation, bug reports, or suggestions.
+Thank you for your interest in contributing to Dionysus! 🚀
+Your ideas and code help make this project better for everyone. We welcome all contributions—whether it's code, documentation, bug reports, or suggestions.
+
+> **New**: We now use Husky for pre-commit hooks to ensure code quality and branch naming. See [HUSKY.md](./HUSKY.md) for details.
 
 ---
 
@@ -17,32 +19,66 @@ Your ideas and code help make this project better for everyone. We welcome all c
   cd Dionysus
   ```
 
-### 2. Create a Branch
+### 2. Environment Setup
 
-- Create a new branch for your feature or fix:
+- Install dependencies:
 
   ```bash
-  git checkout -b your-feature-name
+  npm install
   ```
 
-### 3. Make Your Changes
+- Set up environment variables:
+  - Copy `.env.example` to `.env.local` and fill in the required values
+  - For test environment, use `.env.test`
+
+- Configure Husky pre-commit hooks:
+  ```bash
+  npm run prepare
+  ```
+  This sets up automated checks that run before each commit (see [HUSKY.md](./HUSKY.md)).
+
+### 3. Create a Branch (Naming Required!)
+
+- **Branch names must follow this pattern:**
+  - `feature/<something>`
+  - `fix/<something>`
+  - `chore/<something>`
+  - `refactor/<something>`
+  - `test/<something>`
+  - `hotfix/<something>`
+  - `release/<something>`
+- Examples: `feature/login-page`, `fix/navbar-bug`, `chore/update-deps`
+- If you use an invalid branch name, Husky will block your commit. See [HUSKY.md](./HUSKY.md#branch-name-check-husky) for details and how to rename your branch.
+
+  ```bash
+  git checkout -b feature/your-branch-name
+  ```
+
+### 4. Make Your Changes
 
 - Follow the existing code style and conventions.
 - Write clear, maintainable code.
-- Add or update tests when relevant.
 - Update documentation as needed.
+- Ensure your code passes all automated checks:
+  ```bash
+  npm run lint
+  npm run typecheck
+  ```
 
-### 4. Commit & Push
+### 5. Commit & Push
 
-- Make atomic commits with clear messages:
+- Make atomic commits with clear messages following [Conventional Commits](https://www.conventionalcommits.org/):
+- Husky will check your commit message and run linting/formatting automatically.
 
   ```bash
   git add .
-  git commit -m "Describe your changes"
-  git push origin your-feature-name
+  git commit -m "feat: add new feature" # or fix:, docs:, chore:, etc.
+  git push origin your-branch-name
   ```
 
-### 5. Open a Pull Request
+> **Note**: If your commit fails, read the error message. Husky will tell you if your branch name or commit message is invalid, or if lint/type checks fail. See [HUSKY.md](./HUSKY.md#how-to-use) for troubleshooting.
+
+### 6. Open a Pull Request
 
 - Go to the [original repo](https://github.com/Saksham-Goel1107/Dionysus).
 - Click “New Pull Request.”
@@ -51,6 +87,15 @@ Your ideas and code help make this project better for everyone. We welcome all c
 
 ---
 
+## 🔐 Environment Variables & .env.example
+
+- The `.env.example` file in this repository is **encrypted** for security reasons.
+- If you need to work with environment variables, **do not commit any decrypted or custom `.env.example` files**.
+- If you do not have a `.env.example` file, contact Saksham Goel (Owner) with a valid reason to request the decryption key.
+- Once you receive the key, use it privately and never share it or the decrypted file publicly.
+- The `.env.example` file is **not for sharing** or public distribution—treat it as sensitive.
+- For any questions about environment setup, open an issue or contact the maintainer directly.
+
 ## 📝 Guidelines
 
 - **Be respectful** and constructive in all communications.
@@ -58,21 +103,29 @@ Your ideas and code help make this project better for everyone. We welcome all c
 - **Open an issue** for major changes to discuss your approach before submitting code.
 - **Keep pull requests focused**—smaller PRs are easier to review and merge.
 - For larger features or refactors, please describe your approach and reasoning in the pull request description.
+- **Follow our coding standards**—we use ESLint, Prettier, and TypeScript strict mode
+- **Update documentation** when changing APIs or user-facing features
 
----
+## 📋 Project Structure
 
-## 🤝 Code of Conduct
-
-Please read and follow our [Code of Conduct](https://github.com/Saksham-Goel1107/Dionysus/blob/main/CODE_OF_CONDUCT.md) to ensure a welcoming and respectful community for everyone.
-
-If you believe someone is violating the code of conduct, please report it by emailing [sakshamgoel1107@gmail.com](mailto:sakshamgoel1107@gmail.com).
-
----
-
+```
+dionysus/
+├── src/               # Source code
+│   ├── app/           # Next.js App Router pages
+│   ├── components/    # Reusable components
+│   ├── lib/           # Utility functions and helpers
+│   ├── server/        # Server-side code
+│   └── trpc/          # tRPC router definitions
+├── prisma/            # Prisma schema and migrations
+├── public/            # Static assets
 ## 💬 Need Help?
 
 - Open an [issue](https://github.com/Saksham-Goel1107/Dionysus/issues) if you have questions or need guidance.
 - Start a discussion to propose new features, share ideas, or seek collaborators.
+
+## 🚀 Deployment
+
+The project is deployed on Vercel. Changes merged to the main branch are automatically deployed to the staging environment. Production deployments are manual after QA.
 
 ---
 
