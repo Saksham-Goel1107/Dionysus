@@ -1,11 +1,11 @@
 #!/bin/sh
 
 BRANCH_NAME=$(git symbolic-ref --short HEAD)
-PATTERN="^(feature|fix|chore|refactor|test|hotfix|release)\/.+$"
+PATTERN="^(main|(feature|fix|chore|refactor|test|hotfix|release)\/.+)$"
 
 if ! echo "$BRANCH_NAME" | grep -Eq "$PATTERN"; then
   echo "❌ Invalid branch name: '$BRANCH_NAME'"
-  echo "✅ Use naming like: feature/login-page or fix/button-bug"
+  echo "✅ Use 'main' or naming like: feature/login-page or fix/button-bug"
   exit 1
 fi
 

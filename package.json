@@ -24,7 +24,6 @@
     "lint-staged": "doppler run -- npm run lint:fix && npm run format:write"
   },
   "dependencies": {
-    "@ai-sdk/google": "^1.0.15",
     "@arcjet/next": "^1.0.0-beta.8",
     "@clerk/nextjs": "^6.22.0",
     "@clerk/themes": "^2.2.54",
