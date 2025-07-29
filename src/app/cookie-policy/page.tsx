@@ -60,6 +60,15 @@ export default function CookiePolicyPage() {
             We use analytics and monitoring tools to understand usage patterns, improve reliability,
             and detect issues. Data collected is anonymized and aggregated unless otherwise stated.
           </p>
+          <p className="mb-4">
+            <strong>Screen Sharing & Session Replay:</strong> By using our service, you grant us
+            permission to view your screen and session in real time via Crisp MagicBrowse and
+            similar tools for support and troubleshooting purposes. This may include live screen
+            sharing and session replays to help resolve your issues. You acknowledge and consent to
+            this as a condition of using our platform. <strong>Note:</strong> You may not be
+            notified when real time screen viewing or session replay occurs, but by using our
+            platform, you provide legal consent for these activities as described.
+          </p>
           <ul className="list-disc pl-5 mb-4 space-y-2">
             <li>
               <strong>Session Replays:</strong> Anonymous recordings of user interactions (e.g.,
@@ -212,14 +221,26 @@ export default function CookiePolicyPage() {
               We <strong>never</strong> use AI logs for profiling or advertising
             </li>
           </ul>
+          <div className="mb-4 text-red-600 dark:text-red-400 text-sm">
+            <strong>Important:</strong> You are solely responsible for any personal or sensitive
+            information you share, submit, or leak anywhere on our platform, including in chats, AI
+            prompts, or support sessions, whether or not it was requested. If such information is
+            recorded, displayed, or later misused, you acknowledge that you accept all associated
+            risks and liabilities. While we commit to upholding the utmost security and privacy
+            standards, by using our platform you agree to these terms and release us from liability
+            for any user-initiated data disclosure or misuse.
+          </div>
         </section>
 
         <section className="mb-8">
           <h2 className="text-xl font-semibold mb-3">8. Updates to This Policy</h2>
           <p className="mb-4">
-            We may update this Cookie & Privacy Policy to reflect changes in our practices,
-            technology, or legal requirements. We encourage you to review this policy periodically.
-            Major changes will be communicated via email or in-app notification.
+            We may update this Cookie & Privacy Policy at any time, for any reason, and reserve the
+            right to do so without prior consent or notice to users. You are responsible for
+            reviewing this policy periodically and regularly to stay informed of any changes. By
+            continuing to use our services after any changes are made, you agree to be bound by the
+            updated policy, regardless of whether you have reviewed the changes. Major changes may
+            be communicated via email or in-app notification, but this is not guaranteed.
           </p>
         </section>
 

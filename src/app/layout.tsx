@@ -166,6 +166,7 @@ export default async function RootLayout({
                     id="crisp-chat"
                     type="text/javascript"
                     strategy="afterInteractive"
+                    data-magic-browse="true"
                     dangerouslySetInnerHTML={{
                       __html: `
                         window.$crisp = [];
