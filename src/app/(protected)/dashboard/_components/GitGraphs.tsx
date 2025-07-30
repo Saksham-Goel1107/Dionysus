@@ -43,9 +43,9 @@ const GitGraphs = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }
@@ -94,10 +94,10 @@ const GitGraphs = () => {
                   />
                 </svg>
               </span>
-              <h3 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+              <h3 className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-3xl font-extrabold text-transparent">
                 Download Your Git Architecture Diagram
               </h3>
-              <p className="text-center text-lg text-gray-500 dark:text-gray-300 max-w-xl">
+              <p className="max-w-xl text-center text-lg text-gray-500 dark:text-gray-300">
                 Instantly visualize your repository’s structure with a beautiful, premium-quality
                 diagram. Perfect for documentation, onboarding, and sharing insights with your team.
               </p>
@@ -124,11 +124,11 @@ const GitGraphs = () => {
                   alert('Failed to generate diagram: ' + err?.error || 'Unknown error');
                 }
               }}
-              className="relative mt-4 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white font-semibold text-lg shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-200 border-0"
+              className="relative mt-4 rounded-xl border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
             >
               <span className="flex items-center gap-2">
                 <svg
-                  className="h-6 w-6 text-white animate-bounce"
+                  className="h-6 w-6 animate-bounce text-white"
                   fill="none"
                   stroke="currentColor"
                   strokeWidth={2}
@@ -139,12 +139,12 @@ const GitGraphs = () => {
                 Download Diagram
               </span>
             </Button>
-            <span className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+            <span className="mt-2 text-xs text-gray-400 dark:text-gray-500">
               Exclusive to <span className="font-bold text-yellow-500">Dionysus Pro Pack</span>{' '}
               users
             </span>
-            <div className="flex justify-center pt-0 mt-0">
-              <span className="text-red-400 text-xs">
+            <div className="mt-0 flex justify-center pt-0">
+              <span className="text-xs text-red-400">
                 If your repo is private then you can not visualize your repo you will face errors
               </span>
             </div>

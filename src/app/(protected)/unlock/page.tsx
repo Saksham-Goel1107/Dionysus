@@ -662,10 +662,10 @@ export default function UnlockPage() {
             Disable Password
           </Button>
         </div>
-        <div className="text-xs text-center mt-3">
+        <div className="mt-3 text-center text-xs">
           If you forgot your password contact{' '}
           <Link
-            className="text-blue-500 font-bold"
+            className="font-bold text-blue-500"
             href={`${userId ? '/supportAuth' : '/support'}`}
           >
             Support

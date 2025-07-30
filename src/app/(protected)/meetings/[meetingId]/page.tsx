@@ -38,9 +38,9 @@ const MeetingDetailsPage = ({ params }: Props) => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }
@@ -48,14 +48,14 @@ const MeetingDetailsPage = ({ params }: Props) => {
   return (
     <>
       {!hasProPlan ? (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-          <div className="flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 dark:bg-yellow-900">
-            <Lock className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+        <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 dark:bg-yellow-900">
+            <Lock className="h-8 w-8 text-yellow-600 dark:text-yellow-400" />
           </div>
-          <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-100">
+          <h2 className="text-center text-2xl font-bold text-gray-800 dark:text-gray-100">
             Pro Plan Required
           </h2>
-          <p className="text-center text-gray-600 dark:text-gray-300 max-w-md">
+          <p className="max-w-md text-center text-gray-600 dark:text-gray-300">
             Access to meetings is available exclusively for{' '}
             <span className="font-semibold text-yellow-700 dark:text-yellow-300">
               Dionysus Pro Pack
@@ -67,7 +67,7 @@ const MeetingDetailsPage = ({ params }: Props) => {
           <Link href="/subscriptions">
             <Button
               size="lg"
-              className="mt-2 bg-yellow-600 hover:bg-yellow-700 text-white dark:bg-yellow-700 dark:hover:bg-yellow-800"
+              className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800"
             >
               Upgrade Now
             </Button>

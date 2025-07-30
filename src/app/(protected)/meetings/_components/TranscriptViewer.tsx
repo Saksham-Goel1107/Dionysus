@@ -114,7 +114,7 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline" className="flex items-center gap-1">
-          <FileText className="h-4 w-4 mr-1" />
+          <FileText className="mr-1 h-4 w-4" />
           View Transcript
         </Button>
       </DialogTrigger>
@@ -137,20 +137,20 @@ export default function TranscriptViewer({ meetingId }: TranscriptViewerProps) {
         </DialogHeader>
 
         <div
-          className={`mt-4 p-4 rounded-md ${resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}
+          className={`mt-4 rounded-md p-4 ${resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}
         >
           {loading ? (
-            <div className="flex justify-center items-center py-8">
+            <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : error ? (
-            <div className="text-center text-red-500 py-8">{error}</div>
+            <div className="py-8 text-center text-red-500">{error}</div>
           ) : transcript ? (
             <ScrollArea className="h-[400px] pr-4">
               <div className="space-y-1">{formatTranscript(transcript)}</div>
             </ScrollArea>
           ) : (
-            <div className="text-center text-muted-foreground py-8">
+            <div className="py-8 text-center text-muted-foreground">
               No transcript available for this meeting
             </div>
           )}

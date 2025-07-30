@@ -7,5 +7,12 @@
   "arrowParens": "always",
   "bracketSpacing": true,
   "endOfLine": "auto",
-  "proseWrap": "preserve"
+  "proseWrap": "preserve",
+
+  "embeddedLanguageFormatting": "auto",  
+  "htmlWhitespaceSensitivity": "css",   
+  "vueIndentScriptAndStyle": true,      
+  "quoteProps": "as-needed",            
+
+  "plugins": ["prettier-plugin-tailwindcss"]
 }

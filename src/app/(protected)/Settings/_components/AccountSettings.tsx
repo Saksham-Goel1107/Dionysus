@@ -2,11 +2,11 @@ import React from 'react';
 
 export default function AccountSettings() {
   return (
-    <section className="w-full max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg p-4 sm:p-6 md:p-10 flex flex-col gap-8">
-      <h2 className="text-2xl font-bold mb-4 text-blue-700">Account Settings</h2>
-      <form className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-8 rounded-xl bg-white p-4 shadow-lg dark:bg-gray-900 sm:p-6 md:p-10">
+      <h2 className="mb-4 text-2xl font-bold text-blue-700">Account Settings</h2>
+      <form className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
         <div>
-          <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-200 text-sm">
+          <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">
             Language
           </label>
           <select className="input input-bordered w-full text-sm" disabled>
@@ -17,7 +17,7 @@ export default function AccountSettings() {
           </select>
         </div>
         <div>
-          <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-200 text-sm">
+          <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">
             Timezone
           </label>
           <select className="input input-bordered w-full text-sm" disabled>
@@ -27,7 +27,7 @@ export default function AccountSettings() {
           </select>
         </div>
         <div>
-          <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-200 text-sm">
+          <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">
             Date Format
           </label>
           <select className="input input-bordered w-full text-sm" disabled>
@@ -36,7 +36,7 @@ export default function AccountSettings() {
           </select>
         </div>
         <div>
-          <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-200 text-sm">
+          <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">
             Theme
           </label>
           <select className="input input-bordered w-full text-sm" disabled>
@@ -45,8 +45,8 @@ export default function AccountSettings() {
             <option>Dark</option>
           </select>
         </div>
-        <div className="sm:col-span-2 flex flex-col gap-2 mt-2">
-          <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-200 text-sm">
+        <div className="mt-2 flex flex-col gap-2 sm:col-span-2">
+          <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-200">
             Account Status
           </label>
           <div className="flex items-center gap-2">
@@ -56,9 +56,9 @@ export default function AccountSettings() {
             </button>
           </div>
         </div>
-        <div className="sm:col-span-2 flex justify-end mt-4">
+        <div className="mt-4 flex justify-end sm:col-span-2">
           <button
-            className="btn btn-primary px-6 sm:px-8 w-full sm:w-auto text-xs sm:text-sm"
+            className="btn btn-primary w-full px-6 text-xs sm:w-auto sm:px-8 sm:text-sm"
             disabled
           >
             Save Changes

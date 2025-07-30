@@ -22,7 +22,7 @@ export default function RateLimitRedirector() {
   return (
     <div className="mt-8">
       <button
-        className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+        className="rounded-md bg-red-600 px-4 py-2 text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
         disabled
       >
         Redirecting in {secondsLeft}s...

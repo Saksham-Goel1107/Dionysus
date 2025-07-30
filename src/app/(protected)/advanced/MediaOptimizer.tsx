@@ -1275,12 +1275,12 @@ const MediaOptimizer: React.FC = () => {
     : repoFiles;
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-indigo-50 via-white to-indigo-100 dark:from-indigo-900/60 dark:via-indigo-950/80 dark:to-indigo-900/60 rounded-2xl border border-indigo-300 dark:border-indigo-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-200 dark:bg-indigo-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-100 dark:bg-indigo-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-indigo-300 bg-gradient-to-br from-indigo-50 via-white to-indigo-100 p-8 shadow-xl dark:border-indigo-700 dark:from-indigo-900/60 dark:via-indigo-950/80 dark:to-indigo-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-indigo-200 opacity-30 blur-2xl dark:bg-indigo-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-indigo-100 opacity-20 blur-2xl dark:bg-indigo-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-indigo-800 dark:text-indigo-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-indigo-800 drop-shadow-lg dark:text-indigo-100">
+        <span className="mr-2 inline-block align-middle">
           <svg
             width="28"
             height="28"
@@ -1300,14 +1300,14 @@ const MediaOptimizer: React.FC = () => {
         Media Optimizer & Converter
       </h2>
 
-      <p className="mb-6 text-indigo-700/80 dark:text-indigo-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-indigo-700/80 dark:text-indigo-200/80 md:text-base">
         Optimize images and videos, convert between formats, and reduce file size without losing
         quality. Upload from your device or fetch directly from your GitHub repositories!
       </p>
 
-      <div className="w-full z-10">
+      <div className="z-10 w-full">
         <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid w-full grid-cols-2">
             <TabsTrigger value="images" className="flex items-center gap-1">
               <ImageIcon size={16} /> Images
             </TabsTrigger>
@@ -1318,13 +1318,13 @@ const MediaOptimizer: React.FC = () => {
 
           {/* File Selection Area */}
           <div
-            className="w-full mb-6 border-2 border-dashed border-indigo-300 dark:border-indigo-700 rounded-xl p-6 flex flex-col items-center justify-center transition-colors hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30"
+            className="mb-6 flex w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-300 p-6 transition-colors hover:bg-indigo-100/50 dark:border-indigo-700 dark:hover:bg-indigo-900/30"
             onDrop={handleDrop}
             onDragOver={handleDragOver}
           >
             {!selectedFile ? (
               <>
-                <div className="text-indigo-500 dark:text-indigo-300 mb-4">
+                <div className="mb-4 text-indigo-500 dark:text-indigo-300">
                   <svg
                     width="48"
                     height="48"
@@ -1340,10 +1340,10 @@ const MediaOptimizer: React.FC = () => {
                     <path d="m16 16-4-4-4 4"></path>
                   </svg>
                 </div>
-                <p className="text-indigo-700 dark:text-indigo-300 text-center mb-4">
+                <p className="mb-4 text-center text-indigo-700 dark:text-indigo-300">
                   Drag & drop a file here or click to select
                 </p>
-                <div className="flex flex-wrap gap-3 justify-center">
+                <div className="flex flex-wrap justify-center gap-3">
                   <input
                     type="file"
                     className="hidden"
@@ -1367,22 +1367,22 @@ const MediaOptimizer: React.FC = () => {
                 </div>
               </>
             ) : (
-              <div className="w-full flex flex-col items-center">
-                <div className="relative w-full max-w-md mb-4">
+              <div className="flex w-full flex-col items-center">
+                <div className="relative mb-4 w-full max-w-md">
                   {activeTab === 'images' && previewUrl && (
                     <Image
                       width={width || 300}
                       height={height || 300}
                       src={previewUrl}
                       alt="Preview"
-                      className="w-full h-auto rounded-lg border border-indigo-200 dark:border-indigo-700 object-contain max-h-64"
+                      className="h-auto max-h-64 w-full rounded-lg border border-indigo-200 object-contain dark:border-indigo-700"
                       unoptimized={true}
                     />
                   )}
                   {activeTab === 'videos' && previewUrl && (
                     <video
                       ref={videoRef}
-                      className="w-full h-auto rounded-lg border border-indigo-200 dark:border-indigo-700 object-contain max-h-64"
+                      className="h-auto max-h-64 w-full rounded-lg border border-indigo-200 object-contain dark:border-indigo-700"
                       controls
                       playsInline
                       muted={false} // Enable sound
@@ -1394,13 +1394,13 @@ const MediaOptimizer: React.FC = () => {
                   <Button
                     size="icon"
                     variant="destructive"
-                    className="absolute -top-2 -right-2 rounded-full w-8 h-8"
+                    className="absolute -right-2 -top-2 h-8 w-8 rounded-full"
                     onClick={() => resetState()}
                   >
                     <X size={14} />
                   </Button>
                 </div>
-                <p className="text-sm text-indigo-700 dark:text-indigo-300 mb-2">
+                <p className="mb-2 text-sm text-indigo-700 dark:text-indigo-300">
                   {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                   {width && height ? ` - ${width}x${height}px` : ''}
                 </p>
@@ -1409,7 +1409,7 @@ const MediaOptimizer: React.FC = () => {
           </div>
 
           <TabsContent value="images" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
                   Output Format
@@ -1446,7 +1446,7 @@ const MediaOptimizer: React.FC = () => {
                     disabled={!selectedFile}
                     className="flex-1"
                   />
-                  <span className="text-sm w-12 text-center">{quality}%</span>
+                  <span className="w-12 text-center text-sm">{quality}%</span>
                 </div>
               </div>
             </div>
@@ -1508,7 +1508,7 @@ const MediaOptimizer: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="videos" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
                   Output Format
@@ -1545,7 +1545,7 @@ const MediaOptimizer: React.FC = () => {
                     disabled={!selectedFile}
                     className="flex-1"
                   />
-                  <span className="text-sm w-12 text-center">{quality}%</span>
+                  <span className="w-12 text-center text-sm">{quality}%</span>
                 </div>
               </div>
             </div>
@@ -1611,7 +1611,7 @@ const MediaOptimizer: React.FC = () => {
             <Button
               onClick={handleProcess}
               disabled={!selectedFile || processing}
-              className="bg-indigo-500 hover:bg-indigo-600 flex items-center gap-2"
+              className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600"
             >
               {processing ? (
                 <>
@@ -1639,14 +1639,14 @@ const MediaOptimizer: React.FC = () => {
 
           {/* Advanced Editor Button */}
           {activeTab === 'images' && selectedFile && (
-            <div className="mt-6 pt-4 border-t border-indigo-200 dark:border-indigo-700/50 text-center">
-              <p className="text-sm text-indigo-700/80 dark:text-indigo-300/80 mb-3">
+            <div className="mt-6 border-t border-indigo-200 pt-4 text-center dark:border-indigo-700/50">
+              <p className="mb-3 text-sm text-indigo-700/80 dark:text-indigo-300/80">
                 Need more advanced editing capabilities?
               </p>
               <Button
                 onClick={() => setShowAdvancedEditorModal(true)}
                 variant="outline"
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0"
+                className="border-0 bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
               >
                 <svg
                   className="mr-2 h-4 w-4"
@@ -1667,8 +1667,8 @@ const MediaOptimizer: React.FC = () => {
 
           {/* Result Preview */}
           {optimizedUrl && (
-            <div className="mt-6 border rounded-lg p-4 bg-white/50 dark:bg-gray-800/50">
-              <h3 className="text-sm font-medium mb-2 text-indigo-700 dark:text-indigo-300">
+            <div className="mt-6 rounded-lg border bg-white/50 p-4 dark:bg-gray-800/50">
+              <h3 className="mb-2 text-sm font-medium text-indigo-700 dark:text-indigo-300">
                 Result Preview
               </h3>
               <div className="flex justify-center">
@@ -1678,14 +1678,14 @@ const MediaOptimizer: React.FC = () => {
                     height={height || 300}
                     src={optimizedUrl}
                     alt="Optimized"
-                    className="max-h-64 object-contain rounded border border-indigo-200 dark:border-indigo-700"
+                    className="max-h-64 rounded border border-indigo-200 object-contain dark:border-indigo-700"
                     unoptimized={true}
                   />
                 )}
                 {activeTab === 'videos' && (
                   <video
                     ref={previewVideoRef}
-                    className="max-h-64 object-contain rounded border border-indigo-200 dark:border-indigo-700"
+                    className="max-h-64 rounded border border-indigo-200 object-contain dark:border-indigo-700"
                     controls
                     playsInline
                     muted={false} // Enable sound
@@ -1709,7 +1709,7 @@ const MediaOptimizer: React.FC = () => {
       {/* GitHub Modal */}
       <Dialog open={showGithubModal} onOpenChange={setShowGithubModal}>
         <DialogContent
-          className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col"
+          className="flex max-h-[80vh] max-w-3xl flex-col overflow-hidden"
           aria-describedby={undefined}
         >
           <DialogHeader>
@@ -1719,7 +1719,7 @@ const MediaOptimizer: React.FC = () => {
           </DialogHeader>
 
           <div className="flex flex-col space-y-4 overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <Input
                 placeholder="GitHub Username (for public repositories)"
                 value={githubUsername}
@@ -1733,15 +1733,15 @@ const MediaOptimizer: React.FC = () => {
               />
             </div>
 
-            <div className="flex flex-col md:flex-row md:justify-between gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:justify-between">
               <div>
                 <Button
                   onClick={fetchGithubRepos}
-                  className="bg-indigo-500 hover:bg-indigo-600 flex items-center gap-2 w-full"
+                  className="flex w-full items-center gap-2 bg-indigo-500 hover:bg-indigo-600"
                 >
                   <Search size={16} /> Find Repositories
                 </Button>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="mt-1 text-xs text-gray-500">
                   No token needed for public repositories
                 </p>
               </div>
@@ -1767,11 +1767,11 @@ const MediaOptimizer: React.FC = () => {
             </div>
 
             {repoFiles.length > 0 && (
-              <div className="flex flex-col h-80 overflow-hidden">
-                <div className="flex flex-col gap-2 mb-3">
+              <div className="flex h-80 flex-col overflow-hidden">
+                <div className="mb-3 flex flex-col gap-2">
                   {/* Breadcrumb navigation */}
-                  <div className="flex flex-wrap items-center text-sm bg-indigo-50 dark:bg-indigo-900/30 p-2 rounded-md overflow-x-auto">
-                    <span className="flex items-center gap-1 text-indigo-800 dark:text-indigo-300 font-medium">
+                  <div className="flex flex-wrap items-center overflow-x-auto rounded-md bg-indigo-50 p-2 text-sm dark:bg-indigo-900/30">
+                    <span className="flex items-center gap-1 font-medium text-indigo-800 dark:text-indigo-300">
                       <svg
                         width="16"
                         height="16"
@@ -1801,7 +1801,7 @@ const MediaOptimizer: React.FC = () => {
                         <span className="mx-1 text-gray-400">/</span>
                         <button
                           onClick={() => fetchRepoContents(selectedRepo, crumb.path)}
-                          className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                          className="text-indigo-600 hover:underline dark:text-indigo-400"
                         >
                           {crumb.name}
                         </button>
@@ -1809,7 +1809,7 @@ const MediaOptimizer: React.FC = () => {
                     ))}
                   </div>
 
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
@@ -1839,18 +1839,18 @@ const MediaOptimizer: React.FC = () => {
                       placeholder="Search files..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="max-w-xs h-8"
+                      className="h-8 max-w-xs"
                     />
                   </div>
                 </div>
 
-                <div className="border rounded-md overflow-y-auto flex-1 p-1">
+                <div className="flex-1 overflow-y-auto rounded-md border p-1">
                   {filteredFiles.length === 0 ? (
-                    <div className="flex items-center justify-center h-full text-sm text-gray-500">
+                    <div className="flex h-full items-center justify-center text-sm text-gray-500">
                       No files found
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    <div className="grid grid-cols-1 gap-1 md:grid-cols-2">
                       {filteredFiles.map((file) => {
                         const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
                         const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(
@@ -1873,7 +1873,7 @@ const MediaOptimizer: React.FC = () => {
                         return (
                           <div
                             key={file.sha}
-                            className={`flex justify-between p-2 text-sm rounded-md cursor-pointer ${isMedia ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : ''} hover:bg-indigo-100 dark:hover:bg-indigo-900/50`}
+                            className={`flex cursor-pointer justify-between rounded-md p-2 text-sm ${isMedia ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : ''} hover:bg-indigo-100 dark:hover:bg-indigo-900/50`}
                             onClick={() =>
                               file.type === 'dir'
                                 ? navigateFolder(file)
@@ -1924,7 +1924,7 @@ const MediaOptimizer: React.FC = () => {
                               <span className="truncate">{file.name}</span>
                             </div>
                             {file.size && !file.type.includes('dir') && (
-                              <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                              <span className="ml-2 flex-shrink-0 text-xs text-gray-500">
                                 {fileSize}
                               </span>
                             )}
@@ -1961,14 +1961,14 @@ const MediaOptimizer: React.FC = () => {
               </svg>
               Advanced Photo Editor
             </EditorDialogTitle>
-            <EditorDialogDescription className="text-base pt-2">
+            <EditorDialogDescription className="pt-2 text-base">
               You are about to access our premium Advanced Photo Editor, a separate product from us.
             </EditorDialogDescription>
           </EditorDialogHeader>
 
-          <div className="py-4 space-y-4">
-            <div className="rounded-lg bg-amber-50 dark:bg-amber-950/60 p-4 border border-amber-200 dark:border-amber-800">
-              <h4 className="text-amber-800 dark:text-amber-300 font-medium flex items-center mb-2">
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/60">
+              <h4 className="mb-2 flex items-center font-medium text-amber-800 dark:text-amber-300">
                 <svg
                   width="20"
                   height="20"
@@ -1986,7 +1986,7 @@ const MediaOptimizer: React.FC = () => {
                 </svg>
                 Important Information
               </h4>
-              <ul className="space-y-2 text-amber-700 dark:text-amber-300/90 text-sm pl-2">
+              <ul className="space-y-2 pl-2 text-sm text-amber-700 dark:text-amber-300/90">
                 <li>• This is a separate product requiring a separate subscription</li>
                 <li>
                   • You&apos;ll need to create a new account on editor-dionysus-gray.vercel.app
@@ -1995,8 +1995,8 @@ const MediaOptimizer: React.FC = () => {
               </ul>
             </div>
 
-            <div className="rounded-lg bg-purple-50 dark:bg-purple-950/60 p-4 border border-purple-200 dark:border-purple-800">
-              <h4 className="text-purple-800 dark:text-purple-300 font-medium flex items-center mb-2">
+            <div className="rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-950/60">
+              <h4 className="mb-2 flex items-center font-medium text-purple-800 dark:text-purple-300">
                 <svg
                   width="20"
                   height="20"
@@ -2014,14 +2014,14 @@ const MediaOptimizer: React.FC = () => {
                 </svg>
                 Advanced Features
               </h4>
-              <p className="text-purple-700 dark:text-purple-300/90 text-sm">
+              <p className="text-sm text-purple-700 dark:text-purple-300/90">
                 Gain access to professional-grade tools including advanced filters, croping, ai
                 powered features, and precision retouching tools.
               </p>
             </div>
           </div>
 
-          <EditorDialogFooter className="flex flex-col sm:flex-row sm:justify-between gap-3">
+          <EditorDialogFooter className="flex flex-col gap-3 sm:flex-row sm:justify-between">
             <Button
               variant="outline"
               onClick={() => setShowAdvancedEditorModal(false)}

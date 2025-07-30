@@ -115,29 +115,29 @@ export default function AboutPage() {
     <>
       <Navbar />
 
-      <main className="min-h-screen flex flex-col items-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 px-4 py-12">
+      <main className="flex min-h-screen flex-col items-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 px-4 py-12">
         {/* Hero Section */}
-        <section className="w-full max-w-4xl flex flex-col items-center text-center mb-16">
+        <section className="mb-16 flex w-full max-w-4xl flex-col items-center text-center">
           <Image
             src="https://avatars.githubusercontent.com/u/175415316?v=4"
             alt="Saksham Goel"
             width={120}
             height={120}
-            className="rounded-full border-4 border-white shadow-md mb-4"
+            className="mb-4 rounded-full border-4 border-white shadow-md"
           />
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight drop-shadow-lg">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-5xl">
             About Dionysus
           </h1>
-          <p className="text-lg md:text-xl text-gray-200 mb-4 max-w-2xl">
+          <p className="mb-4 max-w-2xl text-lg text-gray-200 md:text-xl">
             Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get
             instant help, code suggestions, and productivity tools for developers.
           </p>
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-4">
+          <div className="mt-4 flex flex-col items-center justify-center gap-4 md:flex-row">
             <a
               href="https://dionysus-gray.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow transition"
+              className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white shadow transition hover:bg-blue-700"
             >
               Visit Main Site
             </a>
@@ -145,7 +145,7 @@ export default function AboutPage() {
               href="https://github.com/sakshamgoel1107"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg font-medium shadow transition"
+              className="rounded-lg bg-gray-700 px-6 py-2 font-medium text-white shadow transition hover:bg-gray-800"
             >
               GitHub
             </a>
@@ -153,27 +153,27 @@ export default function AboutPage() {
         </section>
 
         {/* Animated Stats Section */}
-        <section className="w-full max-w-4xl mb-16 flex flex-wrap justify-center gap-8">
+        <section className="mb-16 flex w-full max-w-4xl flex-wrap justify-center gap-8">
           {stats.map((stat, i) => (
             <div
               key={i}
-              className="flex flex-col items-center bg-white/10 rounded-xl p-6 shadow min-w-[120px]"
+              className="flex min-w-[120px] flex-col items-center rounded-xl bg-white/10 p-6 shadow"
             >
-              <span className="text-3xl font-bold text-blue-400 mb-1 animate-pulse">
+              <span className="mb-1 animate-pulse text-3xl font-bold text-blue-400">
                 {stat.value}
               </span>
-              <span className="text-gray-200 text-sm uppercase tracking-wider">{stat.label}</span>
+              <span className="text-sm uppercase tracking-wider text-gray-200">{stat.label}</span>
             </div>
           ))}
         </section>
 
         {/* Features Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Key Features</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center shadow">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">Key Features</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="flex flex-col items-center rounded-xl bg-white/10 p-6 shadow">
               <svg
-                className="w-10 h-10 text-blue-400 mb-3"
+                className="mb-3 h-10 w-10 text-blue-400"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -182,15 +182,15 @@ export default function AboutPage() {
                 <path d="M12 20l9-5-9-5-9 5 9 5z" />
                 <path d="M12 12V4l9 5-9 5-9-5 9-5z" />
               </svg>
-              <h3 className="text-lg font-semibold text-white mb-1">AI Code Suggestions</h3>
-              <p className="text-gray-300 text-center text-sm">
+              <h3 className="mb-1 text-lg font-semibold text-white">AI Code Suggestions</h3>
+              <p className="text-center text-sm text-gray-300">
                 Get instant, context-aware code suggestions and explanations powered by advanced AI
                 models.
               </p>
             </div>
-            <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center shadow">
+            <div className="flex flex-col items-center rounded-xl bg-white/10 p-6 shadow">
               <svg
-                className="w-10 h-10 text-green-400 mb-3"
+                className="mb-3 h-10 w-10 text-green-400"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -199,15 +199,15 @@ export default function AboutPage() {
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 6v6l4 2" />
               </svg>
-              <h3 className="text-lg font-semibold text-white mb-1">Productivity Tools</h3>
-              <p className="text-gray-300 text-center text-sm">
+              <h3 className="mb-1 text-lg font-semibold text-white">Productivity Tools</h3>
+              <p className="text-center text-sm text-gray-300">
                 Automate repetitive tasks, manage issues, and boost your workflow with powerful
                 integrations.
               </p>
             </div>
-            <div className="bg-white/10 rounded-xl p-6 flex flex-col items-center shadow">
+            <div className="flex flex-col items-center rounded-xl bg-white/10 p-6 shadow">
               <svg
-                className="w-10 h-10 text-yellow-400 mb-3"
+                className="mb-3 h-10 w-10 text-yellow-400"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -216,8 +216,8 @@ export default function AboutPage() {
                 <path d="M9 12l2 2 4-4" />
                 <circle cx="12" cy="12" r="10" />
               </svg>
-              <h3 className="text-lg font-semibold text-white mb-1">Secure & Private</h3>
-              <p className="text-gray-300 text-center text-sm">
+              <h3 className="mb-1 text-lg font-semibold text-white">Secure & Private</h3>
+              <p className="text-center text-sm text-gray-300">
                 Your code and data stay private. Dionysus is built with security and privacy as top
                 priorities.
               </p>
@@ -226,16 +226,16 @@ export default function AboutPage() {
         </section>
 
         {/*Tech Stack Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Tech Stack</h2>
-          <div className="flex flex-wrap justify-center gap-8 items-center">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">Tech Stack</h2>
+          <div className="flex flex-wrap items-center justify-center gap-8">
             {partners.map((partner, i) => (
               <a
                 key={i}
                 href={partner.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white/10 rounded-xl p-6 shadow flex flex-col items-center hover:bg-white/20 transition"
+                className="flex flex-col items-center rounded-xl bg-white/10 p-6 shadow transition hover:bg-white/20"
               >
                 <Image
                   src={partner.logo}
@@ -244,19 +244,19 @@ export default function AboutPage() {
                   height={48}
                   className="mb-2"
                 />
-                <span className="text-gray-200 text-base font-semibold">{partner.name}</span>
+                <span className="text-base font-semibold text-gray-200">{partner.name}</span>
               </a>
             ))}
           </div>
         </section>
 
         {/* Fun Facts Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Fun Facts</h2>
-          <ul className="list-disc list-inside space-y-2 text-gray-300">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">Fun Facts</h2>
+          <ul className="list-inside list-disc space-y-2 text-gray-300">
             {funFacts.map((fact, i) => (
               <li key={i} className="flex items-center">
-                <span className="text-blue-400 mr-2">•</span>
+                <span className="mr-2 text-blue-400">•</span>
                 {fact}
               </li>
             ))}
@@ -264,109 +264,109 @@ export default function AboutPage() {
         </section>
 
         {/* Open Source Projects Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Open Source Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">Open Source Projects</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <a
               href="https://github.com/sakshamgoel1107/dionysus"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white/10 rounded-xl p-6 shadow flex flex-col hover:bg-white/20 transition"
+              className="flex flex-col rounded-xl bg-white/10 p-6 shadow transition hover:bg-white/20"
             >
-              <span className="text-blue-400 font-bold mb-2">Dionysus</span>
-              <p className="text-gray-300 text-sm mb-2">
+              <span className="mb-2 font-bold text-blue-400">Dionysus</span>
+              <p className="mb-2 text-sm text-gray-300">
                 The main AI GitHub assistant project. Open source and community-driven.
               </p>
-              <span className="text-gray-400 text-xs">TypeScript, Next.js, AI</span>
+              <span className="text-xs text-gray-400">TypeScript, Next.js, AI</span>
             </a>
             <a
               href="https://github.com/sakshamgoel1107/ai-copilot"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white/10 rounded-xl p-6 shadow flex flex-col hover:bg-white/20 transition"
+              className="flex flex-col rounded-xl bg-white/10 p-6 shadow transition hover:bg-white/20"
             >
-              <span className="text-green-400 font-bold mb-2">AI Copilot</span>
-              <p className="text-gray-300 text-sm mb-2">
+              <span className="mb-2 font-bold text-green-400">AI Copilot</span>
+              <p className="mb-2 text-sm text-gray-300">
                 A toolkit for building your own AI-powered developer tools.
               </p>
-              <span className="text-gray-400 text-xs">Node.js, AI, CLI</span>
+              <span className="text-xs text-gray-400">Node.js, AI, CLI</span>
             </a>
             <a
               href="https://github.com/sakshamgoel1107/oss-starter"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-white/10 rounded-xl p-6 shadow flex flex-col hover:bg-white/20 transition"
+              className="flex flex-col rounded-xl bg-white/10 p-6 shadow transition hover:bg-white/20"
             >
-              <span className="text-yellow-400 font-bold mb-2">OSS Starter</span>
-              <p className="text-gray-300 text-sm mb-2">
+              <span className="mb-2 font-bold text-yellow-400">OSS Starter</span>
+              <p className="mb-2 text-sm text-gray-300">
                 A starter kit for open source SaaS projects with best practices.
               </p>
-              <span className="text-gray-400 text-xs">SaaS, OSS, Boilerplate</span>
+              <span className="text-xs text-gray-400">SaaS, OSS, Boilerplate</span>
             </a>
           </div>
         </section>
 
         {/* Testimonials Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">What Developers Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">What Developers Say</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {testimonials.map((t, i) => (
-              <div key={i} className="bg-white/10 rounded-xl p-6 flex flex-col items-center shadow">
+              <div key={i} className="flex flex-col items-center rounded-xl bg-white/10 p-6 shadow">
                 <Image
                   src={t.avatar ?? '/about/default-avatar.svg'}
                   alt={t.name}
                   width={56}
                   height={56}
-                  className="rounded-full mb-3 border-2 border-white"
+                  className="mb-3 rounded-full border-2 border-white"
                   unoptimized
                 />
-                <p className="text-gray-200 text-sm mb-2">&quot;{t.text}&quot;</p>
-                <span className="text-white font-semibold text-sm">{t.name}</span>
-                <span className="text-gray-400 text-xs">{t.role}</span>
+                <p className="mb-2 text-sm text-gray-200">&quot;{t.text}&quot;</p>
+                <span className="text-sm font-semibold text-white">{t.name}</span>
+                <span className="text-xs text-gray-400">{t.role}</span>
               </div>
             ))}
           </div>
         </section>
 
         {/* FAQ Section */}
-        <section className="w-full max-w-4xl mb-16">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
+        <section className="mb-16 w-full max-w-4xl">
+          <h2 className="mb-6 text-center text-2xl font-bold text-white">
             Frequently Asked Questions
           </h2>
           <div className="space-y-4">
             {faqs.map((faq, idx) => (
-              <div key={idx} className="bg-white/10 rounded-lg p-4">
+              <div key={idx} className="rounded-lg bg-white/10 p-4">
                 <button
-                  className="w-full text-left flex justify-between items-center text-white font-medium text-lg focus:outline-none"
+                  className="flex w-full items-center justify-between text-left text-lg font-medium text-white focus:outline-none"
                   onClick={() => setOpenFAQ(openFAQ === idx ? null : idx)}
                 >
                   {faq.q}
                   <span className="ml-2 text-blue-400">{openFAQ === idx ? '-' : '+'}</span>
                 </button>
-                {openFAQ === idx && <p className="mt-2 text-gray-200 text-base">{faq.a}</p>}
+                {openFAQ === idx && <p className="mt-2 text-base text-gray-200">{faq.a}</p>}
               </div>
             ))}
           </div>
         </section>
 
         {/* About the Maker Section */}
-        <section className="w-full max-w-4xl mb-16 flex flex-col md:flex-row items-center gap-8">
-          <div className="flex-1 flex flex-col items-center md:items-start">
+        <section className="mb-16 flex w-full max-w-4xl flex-col items-center gap-8 md:flex-row">
+          <div className="flex flex-1 flex-col items-center md:items-start">
             <Image
               src="https://avatars.githubusercontent.com/u/175415316?v=4"
               alt="Saksham Goel"
               width={100}
               height={100}
-              className="rounded-full border-4 border-white shadow-md mb-4"
+              className="mb-4 rounded-full border-4 border-white shadow-md"
             />
-            <h2 className="text-2xl font-bold text-white mb-1">Saksham Goel</h2>
-            <p className="text-gray-300 text-base mb-2">Maker of Dionysus</p>
-            <p className="text-gray-400 text-sm max-w-md">
+            <h2 className="mb-1 text-2xl font-bold text-white">Saksham Goel</h2>
+            <p className="mb-2 text-base text-gray-300">Maker of Dionysus</p>
+            <p className="max-w-md text-sm text-gray-400">
               Hi! I&apos;m Saksham, a developer passionate about building tools that empower other
               developers. I love AI, open source, and creating products that make a difference.
               Always learning, always shipping.
             </p>
-            <div className="flex gap-4 mt-4">
+            <div className="mt-4 flex gap-4">
               <a
                 href="https://github.com/sakshamgoel1107"
                 target="_blank"
@@ -380,15 +380,15 @@ export default function AboutPage() {
               </a>
             </div>
           </div>
-          <div className="flex-1 flex flex-col items-center md:items-end">
-            <div className="bg-white/10 rounded-xl p-6 shadow w-full max-w-sm">
-              <h3 className="text-lg font-semibold text-white mb-2">Contact</h3>
-              <p className="text-gray-300 text-sm mb-2">
+          <div className="flex flex-1 flex-col items-center md:items-end">
+            <div className="w-full max-w-sm rounded-xl bg-white/10 p-6 shadow">
+              <h3 className="mb-2 text-lg font-semibold text-white">Contact</h3>
+              <p className="mb-2 text-sm text-gray-300">
                 Want to collaborate or have feedback? Reach out anytime!
               </p>
               <a
                 href="mailto:sakshamgoel1107@gmail.com"
-                className="block w-full text-center mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow transition"
+                className="mt-2 block w-full rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white shadow transition hover:bg-blue-700"
               >
                 Email Me
               </a>
@@ -397,7 +397,7 @@ export default function AboutPage() {
         </section>
 
         {/* Footer */}
-        <footer className="w-full max-w-4xl text-center text-gray-500 text-xs py-8 border-t border-white/10 mt-8">
+        <footer className="mt-8 w-full max-w-4xl border-t border-white/10 py-8 text-center text-xs text-gray-500">
           &copy; {new Date().getFullYear()} Dionysus by Saksham Goel. All rights reserved.
         </footer>
       </main>

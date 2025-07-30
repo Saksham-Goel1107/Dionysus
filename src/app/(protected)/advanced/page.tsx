@@ -66,11 +66,11 @@ const QRCodeGenerator: React.FC = () => {
 
   if (!appwriteUrl || !appwriteId) {
     return (
-      <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-red-50 dark:bg-red-900/60 rounded-2xl border border-red-300 dark:border-red-700 shadow-xl flex flex-col items-center">
-        <h2 className="text-2xl font-extrabold mb-3 text-red-800 dark:text-red-100">
+      <div className="mx-auto my-6 flex w-full max-w-2xl flex-col items-center rounded-2xl border border-red-300 bg-red-50 p-8 shadow-xl dark:border-red-700 dark:bg-red-900/60">
+        <h2 className="mb-3 text-2xl font-extrabold text-red-800 dark:text-red-100">
           QR Code Generator
         </h2>
-        <div className="text-red-600 font-semibold">
+        <div className="font-semibold text-red-600">
           QR code service is not configured. Please set APPWRITE_URL and APPWRITE_ID in your
           environment.
         </div>
@@ -79,19 +79,19 @@ const QRCodeGenerator: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-green-900/60 dark:via-green-950/80 dark:to-green-900/60 rounded-2xl border border-green-300 dark:border-green-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-200 dark:bg-green-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-green-100 dark:bg-green-900 rounded-full opacity-20 blur-2xl z-0" />
-      <h2 className="text-2xl font-extrabold mb-3 text-green-800 dark:text-green-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">🔳</span>
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-green-300 bg-gradient-to-br from-green-50 via-white to-green-100 p-8 shadow-xl dark:border-green-700 dark:from-green-900/60 dark:via-green-950/80 dark:to-green-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-green-200 opacity-30 blur-2xl dark:bg-green-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-green-100 opacity-20 blur-2xl dark:bg-green-900" />
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-green-800 drop-shadow-lg dark:text-green-100">
+        <span className="mr-2 inline-block align-middle">🔳</span>
         QR Code Generator
       </h2>
-      <p className="mb-6 text-green-700/80 dark:text-green-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-green-700/80 dark:text-green-200/80 md:text-base">
         Enter any text, URL, or data and instantly get a QR code you can scan or download!
       </p>
-      <form onSubmit={handleGenerate} className="flex flex-col items-center gap-4 w-full z-10">
+      <form onSubmit={handleGenerate} className="z-10 flex w-full flex-col items-center gap-4">
         <input
-          className="w-full max-w-md px-4 py-2 rounded-lg border border-green-300 dark:border-green-700 bg-white dark:bg-green-950 text-lg text-green-900 dark:text-green-100 focus:outline-none focus:ring-2 focus:ring-green-400"
+          className="w-full max-w-md rounded-lg border border-green-300 bg-white px-4 py-2 text-lg text-green-900 focus:outline-none focus:ring-2 focus:ring-green-400 dark:border-green-700 dark:bg-green-950 dark:text-green-100"
           type="text"
           placeholder="Enter text or URL..."
           value={input}
@@ -100,13 +100,13 @@ const QRCodeGenerator: React.FC = () => {
         />
         <button
           type="submit"
-          className="px-8 py-2 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-green-500 via-green-400 to-green-600 hover:from-green-600 hover:to-green-500/90 transition-all duration-200 border-0 z-10 flex items-center gap-2 text-white"
+          className="z-10 flex items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-green-500 via-green-400 to-green-600 px-8 py-2 text-lg font-bold text-white shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-500/90"
           disabled={loading}
         >
           {loading ? 'Generating...' : 'Generate QR Code'}
         </button>
       </form>
-      {error && <div className="text-red-600 mt-2 font-semibold">{error}</div>}
+      {error && <div className="mt-2 font-semibold text-red-600">{error}</div>}
       {qrUrl && (
         <div className="mt-6 flex flex-col items-center">
           <Image
@@ -114,12 +114,12 @@ const QRCodeGenerator: React.FC = () => {
             alt="QR Code"
             width={192}
             height={192}
-            className="w-48 h-48 rounded-lg border border-green-400 shadow-lg bg-white"
+            className="h-48 w-48 rounded-lg border border-green-400 bg-white shadow-lg"
           />
           <a
             href={qrUrl}
             download="qrcode.png"
-            className="mt-3 text-green-700 dark:text-green-200 underline text-sm"
+            className="mt-3 text-sm text-green-700 underline dark:text-green-200"
           >
             Download QR Code
           </a>
@@ -167,23 +167,23 @@ const Advanced = () => {
   }, []);
   return (
     <>
-      <div className="sticky top-2 z-40 w-full max-w-2xl mx-auto mb-4">
-        <div className="bg-gradient-to-r from-blue-50 via-white to-blue-100 dark:from-blue-900/60 dark:via-blue-950/80 dark:to-blue-900/60 border border-blue-300 dark:border-blue-700 rounded-2xl shadow-xl flex flex-col items-center p-2 sm:p-3 backdrop-blur-md">
+      <div className="sticky top-2 z-40 mx-auto mb-4 w-full max-w-2xl">
+        <div className="flex flex-col items-center rounded-2xl border border-blue-300 bg-gradient-to-r from-blue-50 via-white to-blue-100 p-2 shadow-xl backdrop-blur-md dark:border-blue-700 dark:from-blue-900/60 dark:via-blue-950/80 dark:to-blue-900/60 sm:p-3">
           <button
-            className="mb-2 text-blue-700 dark:text-blue-200 font-semibold text-base focus:outline-none hover:underline"
+            className="mb-2 text-base font-semibold text-blue-700 hover:underline focus:outline-none dark:text-blue-200"
             onClick={() => setShowIndex((v) => !v)}
             aria-label="Toggle feature index"
           >
             {showIndex ? 'Hide' : 'Show'} Feature Index
           </button>
           {showIndex && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 w-full px-1">
+            <div className="grid w-full grid-cols-2 gap-2 px-1 sm:grid-cols-3 md:grid-cols-4">
               {featureIndex.map((f) => (
                 <a
                   href={`#${f.id}`}
                   key={f.id}
                   onClick={() => setShowIndex(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-blue-100 dark:bg-blue-700/60 text-blue-900 dark:text-blue-100 text-xs font-semibold hover:bg-blue-200 dark:hover:bg-blue-600 transition-all duration-150 border border-blue-200 dark:border-blue-700 shadow-sm cursor-pointer"
+                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-blue-200 bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-900 shadow-sm transition-all duration-150 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-700/60 dark:text-blue-100 dark:hover:bg-blue-600"
                   style={{ minWidth: 0 }}
                 >
                   <span className="text-lg">{f.icon}</span>
@@ -248,13 +248,13 @@ const Advanced = () => {
               case 'gitignore':
                 content = (
                   <div>
-                    <p className="mb-6 text-blue-700/80 dark:text-blue-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+                    <p className="z-10 mb-6 max-w-lg text-center text-sm text-blue-700/80 dark:text-blue-200/80 md:text-base">
                       Instantly create the perfect <span className="font-semibold">.gitignore</span>{' '}
                       file for your project. Select your tech stack and OS, then copy or download
                       with one click!
                     </p>
                     <Button
-                      className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-blue-500 via-primary to-blue-600 hover:from-blue-600 hover:to-primary/90 transition-all duration-200 border-0 z-10 flex items-center gap-2"
+                      className="z-10 flex items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-blue-500 via-primary to-blue-600 px-8 py-3 text-lg font-bold shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-primary/90"
                       onClick={() => setShowGitignore(true)}
                       style={{ minWidth: 240 }}
                     >
@@ -281,14 +281,14 @@ const Advanced = () => {
               case 'markdown-gen':
                 content = (
                   <div>
-                    <p className="mb-6 text-purple-700/80 dark:text-purple-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+                    <p className="z-10 mb-6 max-w-lg text-center text-sm text-purple-700/80 dark:text-purple-200/80 md:text-base">
                       Instantly create <span className="font-semibold">SECURITY.md</span>,{' '}
                       <span className="font-semibold">CODE_OF_CONDUCT.md</span>,{' '}
                       <span className="font-semibold">CONTRIBUTING.md</span> and more for your repo.
                       Just enter your contact email and copy the result!
                     </p>
                     <Button
-                      className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600 hover:from-purple-600 hover:to-fuchsia-600 transition-all duration-200 border-0 z-10 flex items-center gap-2"
+                      className="z-10 flex items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600 px-8 py-3 text-lg font-bold shadow-lg transition-all duration-200 hover:from-purple-600 hover:to-fuchsia-600"
                       onClick={() => setShowMarkdownGen(true)}
                       style={{ minWidth: 240 }}
                     >
@@ -318,7 +318,7 @@ const Advanced = () => {
                     buttonVariant="default"
                     buttonText="Generate Logo"
                     buttonSize="lg"
-                    className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:from-amber-600 hover:to-yellow-500/90 transition-all duration-200 border-0 z-10"
+                    className="z-10 rounded-xl border-0 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 px-8 py-3 text-lg font-bold shadow-lg transition-all duration-200 hover:from-amber-600 hover:to-yellow-500/90"
                   />
                 );
                 break;
@@ -402,18 +402,18 @@ const Advanced = () => {
                       transition: { duration: 0.25 },
                     }
                   : {})}
-                className={`w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br ${colorMap[f.id] || 'from-white to-gray-100'} rounded-2xl border shadow-xl flex flex-col items-center relative overflow-hidden`}
+                className={`mx-auto my-6 w-full max-w-2xl bg-gradient-to-br p-8 ${colorMap[f.id] || 'from-white to-gray-100'} relative flex flex-col items-center overflow-hidden rounded-2xl border shadow-xl`}
                 style={{ scrollMarginTop: 90 }}
               >
                 <div
-                  className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-30 blur-2xl z-0"
+                  className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full opacity-30 blur-2xl"
                   style={{ background: 'inherit' }}
                 />
                 <div
-                  className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full opacity-20 blur-2xl z-0"
+                  className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full opacity-20 blur-2xl"
                   style={{ background: 'inherit' }}
                 />
-                <h2 className="text-2xl font-extrabold mb-3 drop-shadow-lg z-10 tracking-tight flex items-center gap-2">
+                <h2 className="z-10 mb-3 flex items-center gap-2 text-2xl font-extrabold tracking-tight drop-shadow-lg">
                   <span className="inline-block align-middle text-2xl">{f.icon}</span>
                   {f.label}
                 </h2>

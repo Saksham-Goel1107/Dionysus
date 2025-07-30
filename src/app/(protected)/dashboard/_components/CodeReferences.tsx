@@ -32,7 +32,7 @@ const CodeReferences = ({ filesReferences }: Props) => {
                 onClick={() => setTab(file.fileName)}
                 key={file.fileName}
                 className={cn(
-                  'max-w-[80vw] whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium file-name',
+                  'file-name max-w-[80vw] whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium',
                   {
                     'bg-primary': tab === file.fileName,
                   },

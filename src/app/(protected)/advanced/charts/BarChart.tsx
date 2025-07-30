@@ -22,7 +22,7 @@ const BarChartComponent = ({ analytics }: { analytics: any[] }) => {
         : a.aggregate?.sloc || 0,
   }));
   return (
-    <div className="w-full h-72">
+    <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -34,7 +34,7 @@ const BarChartComponent = ({ analytics }: { analytics: any[] }) => {
           <Bar dataKey="sloc" fill="#82ca9d" name="SLOC" />
         </BarChart>
       </ResponsiveContainer>
-      <div className="text-xs text-center mt-2">Cyclomatic Complexity & SLOC per file</div>
+      <div className="mt-2 text-center text-xs">Cyclomatic Complexity & SLOC per file</div>
     </div>
   );
 };

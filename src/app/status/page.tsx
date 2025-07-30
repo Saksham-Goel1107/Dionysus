@@ -149,7 +149,7 @@ export default function StatusPage() {
   return (
     <>
       <Navbar />
-      <div className="container mx-auto py-8 px-4 max-w-7xl">
+      <div className="container mx-auto max-w-7xl px-4 py-8">
         <StatusHeader
           status={systemStatus}
           isAllOperational={isAllOperational}
@@ -166,7 +166,7 @@ export default function StatusPage() {
                   <Skeleton className="h-6 w-1/3" />
                 </CardHeader>
                 <CardContent>
-                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="mb-2 h-4 w-full" />
                   <Skeleton className="h-4 w-2/3" />
                 </CardContent>
               </Card>
@@ -181,7 +181,7 @@ export default function StatusPage() {
               <p>{error}</p>
               <button
                 onClick={fetchMonitors}
-                className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
               >
                 Try Again
               </button>
@@ -190,7 +190,7 @@ export default function StatusPage() {
         ) : (
           <>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-              <TabsList className="grid grid-cols-2 mb-8">
+              <TabsList className="mb-8 grid grid-cols-2">
                 <TabsTrigger value="current">Current Status</TabsTrigger>
                 <TabsTrigger value="history">Incident History</TabsTrigger>
               </TabsList>

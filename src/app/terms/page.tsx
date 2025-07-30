@@ -241,7 +241,7 @@ export default function TermsPage() {
                 </CardWithGradient>
               </div>
 
-              <div className="prose max-w-none dark:prose-invert">
+              <div className="prose dark:prose-invert max-w-none">
                 <h2>Usage Restrictions</h2>
                 <p>
                   To maintain the quality and integrity of our services, the following restrictions
@@ -339,7 +339,7 @@ export default function TermsPage() {
                 </CardWithGradient>
               </div>
 
-              <div className="prose max-w-none dark:prose-invert">
+              <div className="prose dark:prose-invert max-w-none">
                 <h2>Liability and Disclaimers</h2>
 
                 <h3>5.1 Limitation of Liability</h3>

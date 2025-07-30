@@ -159,14 +159,14 @@ export default function UsersManagement({ users }: UsersManagementProps) {
 
   return (
     <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Users Management</h1>
           <p className="text-gray-500 dark:text-gray-400">
             Manage and view all users on the platform
           </p>
         </div>
-        <Button variant="outline" onClick={exportToCSV} className="flex gap-2 items-center">
+        <Button variant="outline" onClick={exportToCSV} className="flex items-center gap-2">
           <Download size={16} />
           Export to CSV
         </Button>
@@ -175,7 +175,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
       <Card className="shadow-md">
         <CardHeader className="pb-2">
           <CardTitle>Users ({filteredUsers.length})</CardTitle>
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mt-4">
+          <div className="mt-4 flex flex-col justify-between gap-4 sm:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
               <Input
@@ -262,7 +262,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                     <TableRow key={user.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-100">
                             {user.imageUrl ? (
                               <Image
                                 width={40}
@@ -292,7 +292,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                       </TableCell>
                       <TableCell className="text-center">
                         {user.isPro ? (
-                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800">
+                          <Badge className="border-green-200 bg-green-100 text-green-800 dark:border-green-800 dark:bg-green-900 dark:text-green-300">
                             Pro
                           </Badge>
                         ) : (
@@ -311,26 +311,26 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="flex gap-2 items-center cursor-pointer">
+                            <DropdownMenuItem className="flex cursor-pointer items-center gap-2">
                               <UserCheck size={16} />
                               View Details
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="flex gap-2 items-center cursor-pointer text-yellow-600"
+                              className="flex cursor-pointer items-center gap-2 text-yellow-600"
                               onClick={() => setDialog({ type: 'ban', user })}
                             >
                               <Shield size={16} />
                               Ban User
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="flex gap-2 items-center cursor-pointer text-blue-600"
+                              className="flex cursor-pointer items-center gap-2 text-blue-600"
                               onClick={() => setDialog({ type: 'lock', user })}
                             >
                               <Shield size={16} />
                               Lock User
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="flex gap-2 items-center cursor-pointer text-red-600"
+                              className="flex cursor-pointer items-center gap-2 text-red-600"
                               onClick={() => setDialog({ type: 'delete', user })}
                             >
                               <Shield size={16} />
@@ -343,7 +343,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-6 text-gray-500">
+                    <TableCell colSpan={6} className="py-6 text-center text-gray-500">
                       No users found matching your search criteria
                     </TableCell>
                   </TableRow>

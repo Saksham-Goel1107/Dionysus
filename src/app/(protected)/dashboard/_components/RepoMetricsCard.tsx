@@ -53,8 +53,8 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
   if (!githubUrl || error || loading || !metrics) return null;
 
   return (
-    <div className="mx-auto w-full max-w-2xl mt-2 mb-2 flex justify-center">
-      <div className="bg-white/90 dark:bg-black/80 rounded px-2 py-1 shadow text-[11px] flex flex-wrap gap-x-2 gap-y-1 border border-muted-foreground/10">
+    <div className="mx-auto mb-2 mt-2 flex w-full max-w-2xl justify-center">
+      <div className="flex flex-wrap gap-x-2 gap-y-1 rounded border border-muted-foreground/10 bg-white/90 px-2 py-1 text-[11px] shadow dark:bg-black/80">
         <span>
           🔢 <b>{metrics.size}</b> KB
         </span>

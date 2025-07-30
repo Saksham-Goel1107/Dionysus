@@ -277,11 +277,11 @@ const PlagiarismChecker: React.FC = () => {
   }, [modalOpen, cachedResults, cachedUrl, repoUrl, scanning]);
 
   return (
-    <div className="max-w-2xl mx-auto my-10 p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700">
-      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-2">
+    <div className="mx-auto my-10 max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
+      <h2 className="mb-2 text-2xl font-bold text-blue-700 dark:text-blue-200">
         🔍 GitHub Plagiarism Checker
       </h2>
-      <p className="text-sm text-blue-600 dark:text-blue-300 mb-4">
+      <p className="mb-4 text-sm text-blue-600 dark:text-blue-300">
         Check for code similarity in public GitHub repositories using GitHub Code Search.
       </p>
       <input
@@ -289,18 +289,18 @@ const PlagiarismChecker: React.FC = () => {
         value={repoUrl}
         onChange={(e) => setRepoUrl(e.target.value)}
         placeholder="e.g. https://github.com/user/repo"
-        className="w-full px-3 py-2 border rounded dark:bg-gray-800 dark:text-white mb-3"
+        className="mb-3 w-full rounded border px-3 py-2 dark:bg-gray-800 dark:text-white"
       />
       <Button onClick={() => handleCheck()} disabled={!repoUrl || loading} className="w-full">
         {loading ? 'Checking...' : 'Check Plagiarism'}
       </Button>
-      {error && <p className="text-red-500 text-sm mt-3">{error}</p>}
-      <div className="dark:text-gray-300 text-gray-500 text-xs mt-3">
+      {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+      <div className="mt-3 text-xs text-gray-500 dark:text-gray-300">
         This Process Takes Significant Time so Please don&apos;t leave this page. Till then have a
         coffee🍵
       </div>
       <Dialog open={modalOpen} onOpenChange={(open) => setModalOpen(open)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Plagiarism Check Results</DialogTitle>
             <DialogDescription>
@@ -321,16 +321,16 @@ const PlagiarismChecker: React.FC = () => {
               {results.map((file, i) => (
                 <div
                   key={i}
-                  className="p-4 bg-gray-50 dark:bg-gray-800 rounded border dark:border-gray-600"
+                  className="rounded border bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800"
                 >
-                  <div className="font-semibold mb-1 text-gray-900 dark:text-white">
+                  <div className="mb-1 font-semibold text-gray-900 dark:text-white">
                     {file.file}
                   </div>
-                  <div className="text-xs text-gray-500 mb-2">
+                  <div className="mb-2 text-xs text-gray-500">
                     Snippet: <code>{file.snippet.slice(0, 100)}...</code>
                   </div>
                   {file.matches.length > 0 ? (
-                    <ul className="list-disc ml-5 space-y-1 text-sm">
+                    <ul className="ml-5 list-disc space-y-1 text-sm">
                       {file.matches.map((match: any, j: number) => (
                         <li key={j}>
                           <a
@@ -348,7 +348,7 @@ const PlagiarismChecker: React.FC = () => {
                             <Image
                               src={match.avatar_url}
                               alt={match.user}
-                              className="w-4 h-4 rounded-full"
+                              className="h-4 w-4 rounded-full"
                             />
                             {match.user}
                           </a>
@@ -356,7 +356,7 @@ const PlagiarismChecker: React.FC = () => {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-xs text-gray-400 italic">No matches found for this file.</p>
+                    <p className="text-xs italic text-gray-400">No matches found for this file.</p>
                   )}
                 </div>
               ))}

@@ -68,7 +68,7 @@ const TeamMembers = () => {
           return (
             <Tooltip key={user.id}>
               <TooltipTrigger asChild>
-                <div className="relative group">
+                <div className="group relative">
                   <a href={`mailto:${user.emailAddress}`}>
                     <div className="relative">
                       <Image
@@ -80,11 +80,11 @@ const TeamMembers = () => {
                       />
                       {user.isPro && (
                         <span
-                          className="absolute -top-2.5 -right-1 text-yellow-400"
+                          className="absolute -right-1 -top-2.5 text-yellow-400"
                           title="Premium User"
                         >
                           <Crown
-                            className="md:w-5 md:h-5 w-4 h-4 text-yellow-400 drop-shadow"
+                            className="h-4 w-4 text-yellow-400 drop-shadow md:h-5 md:w-5"
                             fill="#facc15"
                           />
                         </span>
@@ -96,17 +96,17 @@ const TeamMembers = () => {
                             e.stopPropagation();
                             openRemoveDialog(user.id, user.emailAddress);
                           }}
-                          className="absolute -top-2 -right-1 bg-red-500 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute -right-1 -top-2 rounded-full bg-red-500 p-0.5 opacity-0 transition-opacity group-hover:opacity-100"
                           title="Remove member"
                         >
-                          <X className="w-3 h-3 text-white" />
+                          <X className="h-3 w-3 text-white" />
                         </button>
                       )}
                     </div>
                   </a>
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="bottom" align="center" className="break-all max-w-xs">
+              <TooltipContent side="bottom" align="center" className="max-w-xs break-all">
                 {user.emailAddress || 'No Email'}
                 {project?.creatorId === user.id && ' (Creator)'}
               </TooltipContent>

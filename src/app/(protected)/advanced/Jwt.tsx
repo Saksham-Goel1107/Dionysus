@@ -37,9 +37,9 @@ const JWTSecretGenerator = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-8 p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 shadow-md flex flex-col items-center">
-      <h2 className="text-xl font-bold mb-2">JWT Secret Generator</h2>
-      <div className="flex flex-col sm:flex-row items-center gap-3 mb-4 w-full">
+    <div className="mx-auto my-8 flex w-full max-w-2xl flex-col items-center rounded-xl border border-gray-200 bg-white p-6 shadow-md dark:border-gray-700 dark:bg-gray-900">
+      <h2 className="mb-2 text-xl font-bold">JWT Secret Generator</h2>
+      <div className="mb-4 flex w-full flex-col items-center gap-3 sm:flex-row">
         <label className="text-sm font-medium">Bytes:</label>
         <input
           type="range"
@@ -53,25 +53,25 @@ const JWTSecretGenerator = () => {
             setSecret(generateSecret(val));
             setCopied(false);
           }}
-          className="w-full sm:w-64 accent-blue-600 cursor-grab active:cursor-grabbing"
+          className="w-full cursor-grab accent-blue-600 active:cursor-grabbing sm:w-64"
         />
-        <span className="ml-2 font-mono text-xs bg-gray-200 dark:bg-gray-700 rounded px-2 py-1">
+        <span className="ml-2 rounded bg-gray-200 px-2 py-1 font-mono text-xs dark:bg-gray-700">
           {bytes} bytes
         </span>
-        <Button onClick={handleRegenerate} className="bg-blue-600 text-white px-3 py-1 text-xs">
+        <Button onClick={handleRegenerate} className="bg-blue-600 px-3 py-1 text-xs text-white">
           Regenerate
         </Button>
       </div>
-      <div className="w-full flex flex-col items-center">
+      <div className="flex w-full flex-col items-center">
         <pre
           ref={secretRef}
-          className="bg-gray-100 dark:bg-gray-800 rounded p-4 text-xs overflow-x-auto w-full select-all break-all mb-2"
+          className="mb-2 w-full select-all overflow-x-auto break-all rounded bg-gray-100 p-4 text-xs dark:bg-gray-800"
         >
           {secret}
         </pre>
         <Button
           onClick={handleCopy}
-          className="bg-blue-500 text-white px-3 py-1 text-xs w-full sm:w-auto"
+          className="w-full bg-blue-500 px-3 py-1 text-xs text-white sm:w-auto"
         >
           {copied ? 'Copied!' : 'Copy Secret'}
         </Button>

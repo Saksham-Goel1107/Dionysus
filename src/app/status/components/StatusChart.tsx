@@ -155,7 +155,7 @@ const generateDataPoints = (monitors: Monitor[]) => {
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-background border rounded p-3 shadow-lg">
+      <div className="rounded border bg-background p-3 shadow-lg">
         <p className="font-medium">{payload[0]?.payload.fullTime}</p>
         <div className="mt-2">
           {payload.map((entry, index) => {
@@ -163,8 +163,8 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
             const monitorData = payload[0]?.payload[`${entry.dataKey}_data`];
 
             return (
-              <div key={index} className="flex items-center gap-2 my-1">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
+              <div key={index} className="my-1 flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: entry.color }} />
                 <span className="text-sm">
                   {entry.name}:{' '}
                   {value === null || value === undefined
@@ -245,7 +245,7 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
 
   if (isLoading) {
     return (
-      <div className="h-[300px] w-full flex items-center justify-center">
+      <div className="flex h-[300px] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
@@ -253,38 +253,38 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
 
   if (!monitors || monitors.length === 0) {
     return (
-      <div className="h-[300px] w-full flex flex-col items-center justify-center border border-dashed rounded-lg">
-        <div className="text-center p-6">
+      <div className="flex h-[300px] w-full flex-col items-center justify-center rounded-lg border border-dashed">
+        <div className="p-6 text-center">
           <h3 className="text-lg font-medium">No monitors configured</h3>
-          <p className="text-muted-foreground mt-2">Add monitors to see uptime data</p>
+          <p className="mt-2 text-muted-foreground">Add monitors to see uptime data</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="flex justify-end mb-2">
+    <div className="w-full space-y-4">
+      <div className="mb-2 flex justify-end">
         <button
-          className={`px-3 py-1 rounded-l border ${!showResponseTime ? 'bg-primary text-primary-foreground' : 'bg-background text-foreground'}`}
+          className={`rounded-l border px-3 py-1 ${!showResponseTime ? 'bg-primary text-primary-foreground' : 'bg-background text-foreground'}`}
           onClick={() => setShowResponseTime(false)}
         >
           Status
         </button>
         <button
-          className={`px-3 py-1 rounded-r border-l-0 border ${showResponseTime ? 'bg-primary text-primary-foreground' : 'bg-background text-foreground'}`}
+          className={`rounded-r border border-l-0 px-3 py-1 ${showResponseTime ? 'bg-primary text-primary-foreground' : 'bg-background text-foreground'}`}
           onClick={() => setShowResponseTime(true)}
         >
           Response Time
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Overall Uptime</p>
-                <h3 className="text-2xl font-bold mt-1">{formatUptime(overallUptime)}</h3>
+                <h3 className="mt-1 text-2xl font-bold">{formatUptime(overallUptime)}</h3>
               </div>
               <Badge
                 variant={
@@ -314,7 +314,7 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Monitors</p>
-                <h3 className="text-2xl font-bold mt-1">{monitors.length}</h3>
+                <h3 className="mt-1 text-2xl font-bold">{monitors.length}</h3>
               </div>
               <div className="flex gap-1">
                 <Badge
@@ -337,7 +337,7 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
           <CardContent className="pt-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Avg Response Time</p>
-              <h3 className="text-2xl font-bold mt-1">
+              <h3 className="mt-1 text-2xl font-bold">
                 {formatResponseTime(
                   monitors.reduce((sum, m) => sum + (m.average_response_time || 0), 0) /
                     monitors.filter((m) => m.average_response_time).length || 0,
@@ -351,7 +351,7 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
           <CardContent className="pt-6">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Last 24h Status</p>
-              <div className="flex gap-2 mt-2">
+              <div className="mt-2 flex gap-2">
                 {hasDowntime ? (
                   <Badge
                     variant="outline"
@@ -496,12 +496,12 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
             </ResponsiveContainer>
           </div>
           {!hasDowntime && data.length > 0 && !showResponseTime && (
-            <div className="text-center text-xs text-muted-foreground mt-2">
+            <div className="mt-2 text-center text-xs text-muted-foreground">
               No downtime events in the last 24 hours.
             </div>
           )}
           {data.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground mt-2">
+            <div className="mt-2 text-center text-sm text-muted-foreground">
               No data available for the selected time period.
             </div>
           )}

@@ -28,10 +28,10 @@ export default function Page() {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       {/* Header Section */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+      <div className="mb-12 text-center">
+        <h1 className="mb-4 text-4xl font-bold">Choose Your Plan</h1>
         <p className="text-lg text-muted-foreground">
           Get started with the perfect plan for your needs
         </p>
@@ -44,22 +44,22 @@ export default function Page() {
 
       {/* Features Section */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Why Choose Us?</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-3">Advanced AI Integration</h3>
+        <h2 className="mb-8 text-center text-3xl font-bold">Why Choose Us?</h2>
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="rounded-lg border bg-card p-6">
+            <h3 className="mb-3 text-xl font-semibold">Advanced AI Integration</h3>
             <p className="text-muted-foreground">
               Leverage cutting-edge AI technology for smarter code analysis and insights
             </p>
           </div>
-          <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-3">Real-time Collaboration</h3>
+          <div className="rounded-lg border bg-card p-6">
+            <h3 className="mb-3 text-xl font-semibold">Real-time Collaboration</h3>
             <p className="text-muted-foreground">
               Work seamlessly with your team in real-time with built-in collaboration tools
             </p>
           </div>
-          <div className="p-6 rounded-lg border bg-card">
-            <h3 className="text-xl font-semibold mb-3">24/7 Support</h3>
+          <div className="rounded-lg border bg-card p-6">
+            <h3 className="mb-3 text-xl font-semibold">24/7 Support</h3>
             <p className="text-muted-foreground">
               Get help whenever you need it with our round-the-clock support team
             </p>
@@ -69,8 +69,8 @@ export default function Page() {
 
       {/* FAQ Section */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-        <Accordion type="single" collapsible className="max-w-3xl mx-auto">
+        <h2 className="mb-8 text-center text-3xl font-bold">Frequently Asked Questions</h2>
+        <Accordion type="single" collapsible className="mx-auto max-w-3xl">
           {faqs.map((faq, index) => (
             <AccordionItem key={index} value={`item-${index}`}>
               <AccordionTrigger>{faq.question}</AccordionTrigger>
@@ -81,18 +81,18 @@ export default function Page() {
       </section>
 
       {/* Support Section */}
-      <section className="text-center mb-16">
-        <h2 className="text-3xl font-bold mb-8">Need Help?</h2>
-        <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+      <section className="mb-16 text-center">
+        <h2 className="mb-8 text-3xl font-bold">Need Help?</h2>
+        <div className="flex flex-col items-center justify-center gap-6 md:flex-row">
           <Button asChild variant="outline" size="lg" className="gap-2">
             <Link href="mailto:sakshamgoel1107@gmail.com">
-              <Mail className="w-4 h-4" />
+              <Mail className="h-4 w-4" />
               Email Support
             </Link>
           </Button>
           <Button asChild size="lg" className="gap-2">
             <Link href="/docs">
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="h-4 w-4" />
               Documentation
             </Link>
           </Button>
@@ -103,7 +103,7 @@ export default function Page() {
       <section className="text-center">
         <div className="flex flex-col items-center gap-4">
           <p className="text-sm text-muted-foreground">Trusted by developers worldwide</p>
-          <div className="flex gap-4 items-center justify-center text-muted-foreground">
+          <div className="flex items-center justify-center gap-4 text-muted-foreground">
             <span>🔒 Secure payments</span>
             <span>•</span>
             <span>🛡️ Data protection</span>

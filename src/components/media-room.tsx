@@ -46,8 +46,8 @@ export const MediaRoom = ({ projectId, video, audio }: MediaRoomProps) => {
 
   if (loading || token === '') {
     return (
-      <div className="flex flex-col flex-1 justify-center items-center">
-        <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
+      <div className="flex flex-1 flex-col items-center justify-center">
+        <Loader2 className="my-4 h-7 w-7 animate-spin text-zinc-500" />
         <p className="text-xs text-zinc-500 dark:text-zinc-400">Loading...</p>
       </div>
     );

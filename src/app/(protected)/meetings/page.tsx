@@ -58,9 +58,9 @@ const MeetingsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }
@@ -99,34 +99,34 @@ const MeetingsPage = () => {
         <>
           <MeetingCard />
           <div className="h-6" />
-          <h1 className="text-xl font-semibold px-4 sm:px-0">Meetings</h1>
-          <ul className="divide-y divide-gray-200 mt-4 px-4 sm:px-0">
+          <h1 className="px-4 text-xl font-semibold sm:px-0">Meetings</h1>
+          <ul className="mt-4 divide-y divide-gray-200 px-4 sm:px-0">
             {meetings?.map((meeting) => (
               <li
                 key={meeting.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-5"
+                className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
                     <Link
                       href={`/meetings/${meeting.id}`}
-                      className="text-sm font-semibold break-all"
+                      className="break-all text-sm font-semibold"
                     >
                       {meeting.name}
                     </Link>
                     {meeting.status === 'PROCESSING' && (
-                      <Badge className="bg-yellow-500 text-white w-fit mt-1 sm:mt-0">
+                      <Badge className="mt-1 w-fit bg-yellow-500 text-white sm:mt-0">
                         Processing...
                       </Badge>
                     )}
                   </div>
-                  <div className="flex flex-wrap gap-x-2 text-xs text-gray-500 mt-1">
+                  <div className="mt-1 flex flex-wrap gap-x-2 text-xs text-gray-500">
                     <p className="whitespace-nowrap">{meeting.createdAt.toLocaleDateString()}</p>
                     <p className="truncate">{meeting.issues.length} issues</p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap sm:flex-nowrap gap-2 justify-end">
+                <div className="flex flex-wrap justify-end gap-2 sm:flex-nowrap">
                   <Link href={`/meetings/${meeting.id}`}>
                     <Button size="sm" variant="outline" className="w-full sm:w-auto">
                       View Meeting

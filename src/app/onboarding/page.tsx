@@ -198,23 +198,23 @@ function OnboardingPage() {
 
   if (showMeetDev) {
     return (
-      <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 transition-colors duration-300 flex justify-center">
+      <div className="flex min-h-screen w-full justify-center bg-gray-50 transition-colors duration-300 dark:bg-gray-900">
         <button
           aria-label="Toggle theme"
-          className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform"
+          className="absolute right-4 top-4 rounded-full border border-gray-300 bg-white p-2 text-gray-800 shadow transition-transform hover:scale-105 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
           onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
         >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <div className="w-full max-w-lg p-8 my-8 rounded-xl shadow-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-center animate-slide-up overflow-y-auto scrollbar-hide max-h-[90vh]">
-          <h1 className="text-3xl font-bold mb-4 text-blue-700 dark:text-blue-300">
+        <div className="animate-slide-up scrollbar-hide my-8 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <h1 className="mb-4 text-3xl font-bold text-blue-700 dark:text-blue-300">
             You&apos;re all set!
           </h1>
           <p className="mb-4 text-gray-700 dark:text-gray-200">
             You now know where to find every feature. Explore, build, and collaborate with
             confidence!
           </p>
-          <div className="relative w-fit mx-auto mb-4">
+          <div className="relative mx-auto mb-4 w-fit">
             <Image
               src="https://avatars.githubusercontent.com/u/175415316?v=4"
               alt="Dionysus Logo"
@@ -231,8 +231,8 @@ function OnboardingPage() {
               <Image src={'/Flag-India.webp'} alt="India Flag" width={28} height={28} />
             </span>
           </div>
-          <div className="mb-6 text-left text-gray-700 dark:text-gray-200 text-base">
-            <h2 className="text-xl font-semibold mb-2 text-blue-700 dark:text-blue-300 text-center">
+          <div className="mb-6 text-left text-base text-gray-700 dark:text-gray-200">
+            <h2 className="mb-2 text-center text-xl font-semibold text-blue-700 dark:text-blue-300">
               Meet the Developer
             </h2>
             <p className="mb-2">
@@ -241,12 +241,12 @@ function OnboardingPage() {
               ideas, or just want to say hi, feel free to reach out via the Help Center or connect
               on GitHub!
             </p>
-            <p className="italic text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm italic text-gray-500 dark:text-gray-400">
               Thank you for choosing Dionysus. Wishing you productive coding and seamless
               collaboration!
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-4">
+          <div className="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               onClick={() => {
                 setShowMeetDev(false);
@@ -254,14 +254,14 @@ function OnboardingPage() {
                   localStorage.removeItem(ONBOARDING_FINISHED_KEY);
                 }
               }}
-              className="px-6 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition-colors"
+              className="rounded bg-yellow-500 px-6 py-2 font-semibold text-white transition-colors hover:bg-yellow-600"
             >
               ← Back to Onboarding
             </button>
             <button
               onClick={() => setShowConfirm('finish')}
               disabled={redirecting}
-              className={`px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors${redirecting ? ' opacity-60 cursor-not-allowed' : ''}`}
+              className={`rounded bg-blue-600 px-6 py-2 font-semibold text-white hover:bg-blue-700 transition-colors${redirecting ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               {redirecting ? 'Redirecting...' : 'Go to Dashboard'}
             </button>
@@ -287,27 +287,27 @@ function OnboardingPage() {
   if (!current) return null;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-900/80 dark:bg-black/90 transition-colors duration-300 relative z-50 scrollbar-hide">
+    <div className="scrollbar-hide relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">
       <button
         aria-label="Toggle theme"
-        className="absolute top-4 right-4 p-2 rounded-full border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 shadow hover:scale-105 transition-transform z-50"
+        className="absolute right-4 top-4 z-50 rounded-full border border-gray-300 bg-white p-2 text-gray-800 shadow transition-transform hover:scale-105 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
         onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
       >
         {theme === 'light' ? '🌙' : '☀️'}
       </button>
       {/* Animated spotlight for the current feature */}
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-10 animate-fade-in" />
-      <div className="relative z-20 w-full max-w-lg mx-auto p-0 sm:p-8 rounded-xl shadow-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center animate-slide-up max-h-[90vh] overflow-y-auto scrollbar-hide">
-        <div className="w-full flex flex-col items-center animate-fade-in p-6 sm:p-0">
-          <span className="text-6xl mb-2 animate-bounce drop-shadow-lg">
+      <div className="animate-fade-in fixed inset-0 z-10 bg-black/70 backdrop-blur-sm" />
+      <div className="animate-slide-up scrollbar-hide relative z-20 mx-auto flex max-h-[90vh] w-full max-w-lg flex-col items-center overflow-y-auto rounded-xl border border-gray-200 bg-white p-0 shadow-2xl dark:border-gray-700 dark:bg-gray-800 sm:p-8">
+        <div className="animate-fade-in flex w-full flex-col items-center p-6 sm:p-0">
+          <span className="mb-2 animate-bounce text-6xl drop-shadow-lg">
             {FEATURE_ICONS[current.key]}
           </span>
-          <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2 animate-fade-in-slow text-center w-full flex items-center justify-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-400 dark:bg-blue-600 animate-pulse"></span>
+          <h2 className="animate-fade-in-slow mb-2 flex w-full items-center justify-center gap-2 text-center text-2xl font-bold text-blue-700 dark:text-blue-300">
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-blue-400 dark:bg-blue-600"></span>
             {current.title}
-            <span className="inline-block w-2 h-2 rounded-full bg-blue-400 dark:bg-blue-600 animate-pulse"></span>
+            <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-blue-400 dark:bg-blue-600"></span>
           </h2>
-          <div className="text-gray-700 dark:text-gray-200 text-lg animate-fade-in-slow w-full text-left prose dark:prose-invert max-w-none">
+          <div className="animate-fade-in-slow prose dark:prose-invert w-full max-w-none text-left text-lg text-gray-700 dark:text-gray-200">
             {current.desc.split('\n').map((line, i) =>
               line.trim().startsWith('-') ? (
                 <li key={i} className="ml-6 list-disc text-base leading-relaxed">
@@ -321,11 +321,11 @@ function OnboardingPage() {
             )}
           </div>
         </div>
-        <div className="flex gap-4 mt-6 mb-4">
+        <div className="mb-4 mt-6 flex gap-4">
           {step > 0 && (
             <button
               onClick={() => setStep((s) => s - 1)}
-              className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold transition-colors animate-fade-in"
+              className="animate-fade-in rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 transition-colors dark:bg-gray-700 dark:text-gray-200"
             >
               Previous
             </button>
@@ -333,14 +333,14 @@ function OnboardingPage() {
           {step < TOUR_STEPS.length - 1 ? (
             <button
               onClick={() => setStep((s) => s + 1)}
-              className="px-6 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors animate-fade-in"
+              className="animate-fade-in rounded bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
             >
               Next
             </button>
           ) : (
             <button
               onClick={() => setShowConfirm('finish')}
-              className="px-6 py-2 rounded bg-green-600 hover:bg-green-700 text-white font-semibold transition-colors animate-fade-in"
+              className="animate-fade-in rounded bg-green-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-green-700"
             >
               Finish
             </button>
@@ -348,26 +348,26 @@ function OnboardingPage() {
           {showSkip && step === 0 && (
             <button
               onClick={() => setShowConfirm('skip')}
-              className="px-6 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-semibold transition-colors animate-fade-in ml-2"
+              className="animate-fade-in ml-2 rounded bg-yellow-500 px-6 py-2 font-semibold text-white transition-colors hover:bg-yellow-600"
               title="You will never see this onboarding again."
             >
               Skip
             </button>
           )}
         </div>
-        <div className="mt-2 mb-4 text-xs text-gray-400 dark:text-gray-500 animate-fade-in">
+        <div className="animate-fade-in mb-4 mt-2 text-xs text-gray-400 dark:text-gray-500">
           Step {step + 1} of {TOUR_STEPS.length}
         </div>
-        <div className="w-full flex justify-center mb-4">
+        <div className="mb-4 flex w-full justify-center">
           {[...Array(TOUR_STEPS.length)].map((_, idx) => (
             <span
               key={idx}
-              className={`inline-block w-2 h-2 mx-1 rounded-full ${idx === step ? 'bg-blue-500 dark:bg-blue-300 scale-125' : 'bg-gray-300 dark:bg-gray-600'} transition-transform`}
+              className={`mx-1 inline-block h-2 w-2 rounded-full ${idx === step ? 'scale-125 bg-blue-500 dark:bg-blue-300' : 'bg-gray-300 dark:bg-gray-600'} transition-transform`}
             />
           ))}
         </div>
         {showSkip && step === 0 && (
-          <div className="mb-4 text-xs text-yellow-700 dark:text-yellow-300 text-center animate-fade-in">
+          <div className="animate-fade-in mb-4 text-center text-xs text-yellow-700 dark:text-yellow-300">
             <b>Warning:</b> If you skip, you will never see this onboarding again!
           </div>
         )}
@@ -464,14 +464,14 @@ function ConfirmModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full animate-slide-up">
-        <p className="mb-6 text-gray-900 dark:text-gray-100 text-center text-lg">{message}</p>
+      <div className="animate-slide-up w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+        <p className="mb-6 text-center text-lg text-gray-900 dark:text-gray-100">{message}</p>
         <div className="flex justify-center gap-4">
           <button
             onClick={async () => {
               await onCancel();
             }}
-            className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold transition-colors"
+            className="rounded bg-gray-200 px-4 py-2 font-semibold text-gray-800 transition-colors dark:bg-gray-700 dark:text-gray-200"
           >
             Cancel
           </button>
@@ -479,7 +479,7 @@ function ConfirmModal({
             onClick={async () => {
               await onConfirm();
             }}
-            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors"
+            className="rounded bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
           >
             Confirm
           </button>

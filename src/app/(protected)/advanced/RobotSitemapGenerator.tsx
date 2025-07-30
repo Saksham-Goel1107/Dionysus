@@ -381,7 +381,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             {selectedTab === 'robot' ? (
@@ -401,25 +401,25 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
+        <div className="mb-4 flex flex-col gap-4 md:flex-row">
           <Button
             onClick={() => setSelectedTab('robot')}
             variant={selectedTab === 'robot' ? 'default' : 'outline'}
             className="flex-1"
           >
-            <FileCode className="h-4 w-4 mr-2" /> robots.txt
+            <FileCode className="mr-2 h-4 w-4" /> robots.txt
           </Button>
           <Button
             onClick={() => setSelectedTab('sitemap')}
             variant={selectedTab === 'sitemap' ? 'default' : 'outline'}
             className="flex-1"
           >
-            <Code className="h-4 w-4 mr-2" /> sitemap.xml
+            <Code className="mr-2 h-4 w-4" /> sitemap.xml
           </Button>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid grid-cols-2">
             <TabsTrigger value="form">Form</TabsTrigger>
             <TabsTrigger value="result">Generated Code</TabsTrigger>
           </TabsList>
@@ -428,7 +428,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium border-b pb-2">Website Details</h3>
+                  <h3 className="border-b pb-2 text-lg font-medium">Website Details</h3>
 
                   <FormField
                     control={form.control}
@@ -451,9 +451,9 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
 
                   {selectedTab === 'robot' && (
                     <div className="space-y-6">
-                      <h3 className="text-lg font-medium border-b pb-2">Robots.txt Settings</h3>
+                      <h3 className="border-b pb-2 text-lg font-medium">Robots.txt Settings</h3>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="allowAll"
@@ -518,13 +518,13 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                           </div>
 
                           {form.watch('customRules').map((userAgent, uaIndex) => (
-                            <div key={uaIndex} className="border rounded-lg p-4 space-y-4">
+                            <div key={uaIndex} className="space-y-4 rounded-lg border p-4">
                               <div className="flex items-center justify-between">
                                 <FormField
                                   control={form.control}
                                   name={`customRules.${uaIndex}.userAgent`}
                                   render={({ field }) => (
-                                    <FormItem className="flex-1 mr-2">
+                                    <FormItem className="mr-2 flex-1">
                                       <FormLabel>User Agent</FormLabel>
                                       <FormControl>
                                         <Input placeholder="* (all bots) or Googlebot" {...field} />
@@ -548,7 +548,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                               </div>
 
                               <div className="space-y-2">
-                                <div className="flex justify-between items-center">
+                                <div className="flex items-center justify-between">
                                   <h5 className="text-sm font-medium">Rules</h5>
                                   <Button
                                     type="button"
@@ -640,7 +640,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                         </div>
                       )}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="sitemap"
@@ -680,8 +680,8 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
 
                   {selectedTab === 'sitemap' && (
                     <div className="space-y-6">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-medium border-b pb-2">Sitemap.xml Settings</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="border-b pb-2 text-lg font-medium">Sitemap.xml Settings</h3>
                         <Button type="button" variant="outline" size="sm" onClick={autoFillPages}>
                           Auto-fill Common Pages
                         </Button>
@@ -689,7 +689,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
 
                       <div className="space-y-4">
                         {form.watch('pages').map((page, index) => (
-                          <div key={index} className="border rounded-lg p-4 space-y-4">
+                          <div key={index} className="space-y-4 rounded-lg border p-4">
                             <div className="flex items-center justify-between">
                               <h4 className="font-medium">Page {index + 1}</h4>
                               {form.watch('pages').length > 1 && (
@@ -718,7 +718,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                               )}
                             />
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                               <FormField
                                 control={form.control}
                                 name={`pages.${index}.priority`}
@@ -832,13 +832,13 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                 >
                   Copy
                 </Button>
-                <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm min-h-[200px]">
+                <pre className="min-h-[200px] overflow-x-auto rounded-lg bg-slate-100 p-4 text-sm dark:bg-slate-800">
                   {selectedTab === 'robot' ? generatedRobotCode : generatedSitemapCode}
                 </pre>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                <h3 className="text-amber-800 dark:text-amber-300 font-medium flex items-center gap-2 mb-2">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+                <h3 className="mb-2 flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -852,17 +852,17 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                   Implementation Guide
                 </h3>
                 {selectedTab === 'robot' ? (
-                  <div className="text-amber-700 dark:text-amber-300/80 text-sm space-y-2">
+                  <div className="space-y-2 text-sm text-amber-700 dark:text-amber-300/80">
                     <p>
                       Place the{' '}
-                      <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">
+                      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
                         robots.txt
                       </code>{' '}
                       file in the root directory public folder of your website.
                     </p>
                     <p>
                       The file must be accessible at:{' '}
-                      <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">
+                      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
                         {form.getValues('siteUrl').replace(/\/+$/, '')}/robots.txt
                       </code>
                     </p>
@@ -872,17 +872,17 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
                     </p>
                   </div>
                 ) : (
-                  <div className="text-amber-700 dark:text-amber-300/80 text-sm space-y-2">
+                  <div className="space-y-2 text-sm text-amber-700 dark:text-amber-300/80">
                     <p>
                       Place the{' '}
-                      <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">
+                      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
                         sitemap.xml
                       </code>{' '}
                       file in the root directory public folder of your website.
                     </p>
                     <p>
                       The file must be accessible at:{' '}
-                      <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">
+                      <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
                         {form.getValues('siteUrl').replace(/\/+$/, '')}/sitemap.xml
                       </code>
                     </p>
@@ -939,12 +939,12 @@ const RobotSitemapGenerator = () => {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-cyan-50 via-white to-cyan-100 dark:from-cyan-900/60 dark:via-cyan-950/80 dark:to-cyan-900/60 rounded-2xl border border-cyan-300 dark:border-cyan-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-cyan-200 dark:bg-cyan-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-cyan-100 dark:bg-cyan-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-cyan-300 bg-gradient-to-br from-cyan-50 via-white to-cyan-100 p-8 shadow-xl dark:border-cyan-700 dark:from-cyan-900/60 dark:via-cyan-950/80 dark:to-cyan-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-cyan-200 opacity-30 blur-2xl dark:bg-cyan-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-cyan-100 opacity-20 blur-2xl dark:bg-cyan-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-cyan-800 dark:text-cyan-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-cyan-800 drop-shadow-lg dark:text-cyan-100">
+        <span className="mr-2 inline-block align-middle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="28"
@@ -965,14 +965,14 @@ const RobotSitemapGenerator = () => {
         Robots.txt & Sitemap Generator
       </h2>
 
-      <p className="mb-6 text-cyan-700/80 dark:text-cyan-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-cyan-700/80 dark:text-cyan-200/80 md:text-base">
         Create perfect robots.txt and sitemap.xml files for your website to improve SEO and control
         how search engines crawl your site.
       </p>
 
       <Button
         onClick={() => setShowModal(true)}
-        className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-cyan-500 via-sky-500 to-cyan-600 hover:from-cyan-600 hover:to-sky-600 transition-all duration-200 border-0 z-10 flex items-center gap-2"
+        className="z-10 flex items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-cyan-500 via-sky-500 to-cyan-600 px-8 py-3 text-lg font-bold shadow-lg transition-all duration-200 hover:from-cyan-600 hover:to-sky-600"
         style={{ minWidth: 240 }}
       >
         <ServerIcon className="h-5 w-5" />

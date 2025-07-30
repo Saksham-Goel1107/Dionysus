@@ -12,9 +12,9 @@ export default async function RateLimitPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-8">
-      <div className="max-w-lg w-full bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-red-600">
-        <h1 className="text-4xl font-bold mb-4 text-red-500">Security Restriction</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-900 p-8 text-white">
+      <div className="w-full max-w-lg rounded-xl border border-red-600 bg-gray-800 p-8 text-center shadow-lg">
+        <h1 className="mb-4 text-4xl font-bold text-red-500">Security Restriction</h1>
         <p className="mb-6 text-lg text-gray-200">
           Access to this service has been temporarily restricted for security reasons.
           <br />

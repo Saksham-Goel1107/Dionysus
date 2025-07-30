@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
     console.error('Stream API credentials missing');
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
+        <h2 className="mb-4 text-2xl font-bold">Configuration Error</h2>
         <p>Chat service is not properly configured. Please contact support.</p>
       </div>
     );
@@ -39,7 +39,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
       console.error('Failed to generate Stream token:', error);
       return (
         <div className="p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Unable to load chat</h2>
+          <h2 className="mb-4 text-2xl font-bold">Unable to load chat</h2>
           <p>There was a problem setting up your chat credentials. Please try again later.</p>
         </div>
       );
@@ -85,7 +85,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
     console.error('Error managing Stream channel:', error);
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Channel Error</h2>
+        <h2 className="mb-4 text-2xl font-bold">Channel Error</h2>
         <p>There was a problem accessing the chat channel. Please try again later.</p>
       </div>
     );

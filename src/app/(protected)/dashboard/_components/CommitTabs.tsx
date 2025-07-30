@@ -102,7 +102,7 @@ const CommitTabs = ({}: Props) => {
   return (
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2
             className={cn(
               'text-xl font-semibold',
@@ -112,13 +112,13 @@ const CommitTabs = ({}: Props) => {
             Project Activity
           </h2>
           {/* Desktop Tabs */}
-          <TabsList className="hidden sm:flex w-auto h-10 items-center gap-2">
+          <TabsList className="hidden h-10 w-auto items-center gap-2 sm:flex">
             {tabOptions.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  'flex items-center justify-center gap-2 px-4 py-2 h-full',
+                  'flex h-full items-center justify-center gap-2 px-4 py-2',
                   activeTab === tab.value && 'font-medium',
                 )}
               >
@@ -128,19 +128,19 @@ const CommitTabs = ({}: Props) => {
             ))}
           </TabsList>
           {/* Mobile Dropdown */}
-          <div className="sm:hidden w-full">
+          <div className="w-full sm:hidden">
             <Listbox value={activeTab} onChange={setActiveTab}>
               <div className="relative">
                 <Listbox.Button
                   className={cn(
-                    'relative w-full cursor-pointer rounded-lg bg-white dark:bg-gray-900/50 py-2 pl-3 pr-10 text-left shadow-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                    'relative w-full cursor-pointer rounded-lg border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900/50',
                   )}
                 >
                   <span className="flex items-center gap-2">
                     {tabOptions.find((t) => t.value === activeTab)?.icon}
                     {tabOptions.find((t) => t.value === activeTab)?.label}
                   </span>
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                     <svg
                       className="h-5 w-5 text-gray-400"
                       viewBox="0 0 20 20"
@@ -156,14 +156,14 @@ const CommitTabs = ({}: Props) => {
                     </svg>
                   </span>
                 </Listbox.Button>
-                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-900/90 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-900/90 sm:text-sm">
                   {tabOptions.map((tab) => (
                     <Listbox.Option
                       key={tab.value}
                       value={tab.value}
                       className={({ active }: { active: boolean }) =>
                         cn(
-                          'cursor-pointer select-none relative py-2 pl-10 pr-4',
+                          'relative cursor-pointer select-none py-2 pl-10 pr-4',
                           active
                             ? 'bg-blue-100 text-blue-900 dark:bg-gray-800 dark:text-white'
                             : 'text-gray-900 dark:text-gray-100',
@@ -197,7 +197,7 @@ const CommitTabs = ({}: Props) => {
         <TabsContent value="contributions" className="space-y-4">
           <div
             className={cn(
-              'rounded-lg p-4 overflow-hidden',
+              'overflow-hidden rounded-lg p-4',
               resolvedTheme === 'dark' ? 'bg-gray-900/50' : 'bg-white',
             )}
           >

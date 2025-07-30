@@ -67,7 +67,7 @@ export default function Battery() {
   return (
     <span
       title={isCharging ? 'Charging' : 'Battery'}
-      className="flex items-center gap-2 px-2 py-1 rounded bg-white/70 dark:bg-black/40 shadow-sm border border-gray-200 dark:border-gray-700"
+      className="flex items-center gap-2 rounded border border-gray-200 bg-white/70 px-2 py-1 shadow-sm dark:border-gray-700 dark:bg-black/40"
       style={{ minWidth: 60, maxWidth: 100 }}
     >
       <svg
@@ -92,7 +92,7 @@ export default function Battery() {
         {isCharging && <polygon points="12,4 8,10 13,10 11,13 16,7 11,7 12,4" fill="#f59e42" />}
       </svg>
       <span
-        className={`font-semibold text-xs sm:text-sm ${isCharging || batteryLevel > 80 ? 'text-green-600 dark:text-green-400' : batteryLevel < 30 ? 'text-red-500' : batteryLevel < 60 ? 'text-orange-500' : 'text-gray-800 dark:text-gray-100'}`}
+        className={`text-xs font-semibold sm:text-sm ${isCharging || batteryLevel > 80 ? 'text-green-600 dark:text-green-400' : batteryLevel < 30 ? 'text-red-500' : batteryLevel < 60 ? 'text-orange-500' : 'text-gray-800 dark:text-gray-100'}`}
         style={{ minWidth: 28, textAlign: 'right' }}
       >
         {batteryLevel}%

@@ -31,7 +31,7 @@ const NoProjectsCard = () => {
         <Plus className="h-6 w-6 text-primary" />
       </div>
       <h2 className="mt-4 text-lg font-semibold">No Projects Yet</h2>
-      <p className="mt-2 text-sm text-muted-foreground max-w-sm">
+      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
         Create a project first to start asking questions about your codebase. This will help us
         provide accurate and contextual answers.
       </p>
@@ -114,7 +114,7 @@ const QaPage = () => {
               <div
                 className={`flex items-center gap-4 rounded-lg border ${
                   resolvedTheme === 'dark' ? 'bg-gray-900' : 'bg-white'
-                } p-4 shadow-md shadow-border mb-2 relative`}
+                } relative mb-2 p-4 shadow-md shadow-border`}
               >
                 <Image
                   className="rounded-full"
@@ -123,7 +123,7 @@ const QaPage = () => {
                   src={question.user.imageUrl ?? ''}
                   alt="User avatar"
                 />
-                <div className="flex flex-col text-left overflow-hidden">
+                <div className="flex flex-col overflow-hidden text-left">
                   <div className="flex items-center gap-2">
                     <p
                       className={`line-clamp-1 text-lg font-medium ${
@@ -143,7 +143,7 @@ const QaPage = () => {
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="absolute top-2 right-2  group-hover:opacity-100  h-6 w-6"
+                    className="absolute right-2 top-2 h-6 w-6 group-hover:opacity-100"
                     onClick={(e) => openDeleteDialog(e, question.id)}
                   >
                     <Trash2 className="h-4 w-4 text-red-500" />
@@ -154,7 +154,7 @@ const QaPage = () => {
           </React.Fragment>
         ))}
         {questions?.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-8">
+          <div className="py-8 text-center text-sm text-muted-foreground">
             No questions asked yet. Start by asking a question about your codebase!
           </div>
         )}
@@ -187,18 +187,18 @@ const QaPage = () => {
       {question && (
         <SheetContent
           side="right"
-          className="h-screen w-full sm:max-w-[80vw] sm:p-6 p-3 flex flex-col overflow-y-auto"
+          className="flex h-screen w-full flex-col overflow-y-auto p-3 sm:max-w-[80vw] sm:p-6"
         >
           <SheetHeader>
-            <SheetTitle className="text-base sm:text-xl mb-1 sm:mb-2 font-semibold tracking-tight leading-tight">
+            <SheetTitle className="mb-1 text-base font-semibold leading-tight tracking-tight sm:mb-2 sm:text-xl">
               {question.question}
             </SheetTitle>
           </SheetHeader>
 
           <div data-color-mode={resolvedTheme} className="markdown-editor-container flex-1">
-            <ScrollArea className="flex-1 w-full max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+            <ScrollArea className="max-h-[60vh] w-full flex-1 overflow-y-auto sm:max-h-[70vh]">
               <div
-                className={`p-3 sm:p-5 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm bg-white dark:bg-gray-900 text-card-foreground text-sm sm:text-base`}
+                className={`rounded-lg border border-gray-200 bg-white p-3 text-sm text-card-foreground shadow-sm dark:border-gray-800 dark:bg-gray-900 sm:p-5 sm:text-base`}
                 style={{ minHeight: 60 }}
               >
                 <MDEditor.Markdown source={question.answer} className="md-preview-content" />
@@ -206,7 +206,7 @@ const QaPage = () => {
             </ScrollArea>
           </div>
 
-          <div className="my-1 sm:my-4 border-t border-gray-200 dark:border-gray-800 w-full" />
+          <div className="my-1 w-full border-t border-gray-200 dark:border-gray-800 sm:my-4" />
 
           <CodeReferences
             filesReferences={

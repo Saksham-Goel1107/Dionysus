@@ -21,7 +21,7 @@ export function Footer() {
   return (
     <footer className="w-full border-t bg-background px-20">
       <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
-        <div className="flex flex-col items-center gap-1 md:items-start min-w-[120px]">
+        <div className="flex min-w-[120px] flex-col items-center gap-1 md:items-start">
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
@@ -86,7 +86,7 @@ export function Footer() {
             </Link>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end w-full md:w-auto">
+        <div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-end">
           <a
             rel="noopener noreferrer"
             href="https://github.com/Saksham-Goel1107/Dionysus"

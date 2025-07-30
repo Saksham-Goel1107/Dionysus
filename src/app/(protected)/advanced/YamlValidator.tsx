@@ -54,12 +54,12 @@ const YamlValidator: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-cyan-50 via-white to-cyan-100 dark:from-cyan-900/60 dark:via-cyan-950/80 dark:to-cyan-900/60 rounded-2xl border border-cyan-300 dark:border-cyan-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-cyan-200 dark:bg-cyan-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-cyan-100 dark:bg-cyan-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-cyan-300 bg-gradient-to-br from-cyan-50 via-white to-cyan-100 p-8 shadow-xl dark:border-cyan-700 dark:from-cyan-900/60 dark:via-cyan-950/80 dark:to-cyan-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-cyan-200 opacity-30 blur-2xl dark:bg-cyan-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-cyan-100 opacity-20 blur-2xl dark:bg-cyan-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-cyan-800 dark:text-cyan-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-cyan-800 drop-shadow-lg dark:text-cyan-100">
+        <span className="mr-2 inline-block align-middle">
           <svg
             width="28"
             height="28"
@@ -85,38 +85,38 @@ const YamlValidator: React.FC = () => {
         YAML Formatter & Validator
       </h2>
 
-      <p className="mb-6 text-cyan-700/80 dark:text-cyan-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-cyan-700/80 dark:text-cyan-200/80 md:text-base">
         Validate, format, and convert YAML with real-time error detection. Perfect for configuration
         files and data interchange.
       </p>
 
-      <div className="w-full z-10">
+      <div className="z-10 w-full">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid grid-cols-2">
             <TabsTrigger value="validator">YAML Validator</TabsTrigger>
             <TabsTrigger value="converter">YAML to JSON</TabsTrigger>
           </TabsList>
 
           <TabsContent value="validator" className="w-full">
-            <div className="flex flex-col gap-4 w-full">
+            <div className="flex w-full flex-col gap-4">
               <div className="relative">
                 <textarea
-                  className="w-full h-64 p-4 rounded-md border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-cyan-950 text-sm font-mono text-cyan-900 dark:text-cyan-100 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                  className="h-64 w-full resize-none rounded-md border border-cyan-300 bg-white p-4 font-mono text-sm text-cyan-900 focus:outline-none focus:ring-2 focus:ring-cyan-400 dark:border-cyan-700 dark:bg-cyan-950 dark:text-cyan-100"
                   placeholder="Paste your YAML here..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                 />
                 {error && (
-                  <div className="mt-2 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 font-mono">
+                  <div className="mt-2 rounded-md border border-red-300 bg-red-100 p-3 font-mono text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                     <div className="flex items-start gap-2">
-                      <Info className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                      <span className="break-all whitespace-pre-wrap">{error}</span>
+                      <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
+                      <span className="whitespace-pre-wrap break-all">{error}</span>
                     </div>
                   </div>
                 )}
                 {output && !error && (
-                  <div className="mt-4 relative">
-                    <div className="absolute top-2 right-2 z-20">
+                  <div className="relative mt-4">
+                    <div className="absolute right-2 top-2 z-20">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -130,7 +130,7 @@ const YamlValidator: React.FC = () => {
                         )}
                       </Button>
                     </div>
-                    <pre className="p-4 bg-white dark:bg-cyan-950 rounded-md border border-green-300 dark:border-green-800 overflow-auto max-h-64 text-sm font-mono text-green-800 dark:text-green-200">
+                    <pre className="max-h-64 overflow-auto rounded-md border border-green-300 bg-white p-4 font-mono text-sm text-green-800 dark:border-green-800 dark:bg-cyan-950 dark:text-green-200">
                       {output}
                     </pre>
                   </div>
@@ -140,25 +140,25 @@ const YamlValidator: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="converter" className="w-full">
-            <div className="flex flex-col gap-4 w-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex w-full flex-col gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <h3 className="text-sm font-semibold mb-2 text-cyan-800 dark:text-cyan-200">
+                  <h3 className="mb-2 text-sm font-semibold text-cyan-800 dark:text-cyan-200">
                     YAML Input
                   </h3>
                   <textarea
-                    className="w-full h-64 p-4 rounded-md border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-cyan-950 text-sm font-mono text-cyan-900 dark:text-cyan-100 resize-none focus:outline-none focus:ring-2 focus:ring-cyan-400"
+                    className="h-64 w-full resize-none rounded-md border border-cyan-300 bg-white p-4 font-mono text-sm text-cyan-900 focus:outline-none focus:ring-2 focus:ring-cyan-400 dark:border-cyan-700 dark:bg-cyan-950 dark:text-cyan-100"
                     placeholder="Paste your YAML here..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                   />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold mb-2 text-cyan-800 dark:text-cyan-200">
+                  <h3 className="mb-2 text-sm font-semibold text-cyan-800 dark:text-cyan-200">
                     JSON Output
                   </h3>
                   <div className="relative h-64">
-                    <div className="absolute top-2 right-2 z-20">
+                    <div className="absolute right-2 top-2 z-20">
                       <Button
                         size="sm"
                         variant="ghost"
@@ -172,17 +172,17 @@ const YamlValidator: React.FC = () => {
                         )}
                       </Button>
                     </div>
-                    <pre className="h-full p-4 bg-white dark:bg-cyan-950 rounded-md border border-cyan-300 dark:border-cyan-700 overflow-auto text-sm font-mono text-cyan-900 dark:text-cyan-100">
+                    <pre className="h-full overflow-auto rounded-md border border-cyan-300 bg-white p-4 font-mono text-sm text-cyan-900 dark:border-cyan-700 dark:bg-cyan-950 dark:text-cyan-100">
                       {jsonOutput || 'Converted JSON will appear here...'}
                     </pre>
                   </div>
                 </div>
               </div>
               {error && (
-                <div className="mt-2 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 font-mono">
+                <div className="mt-2 rounded-md border border-red-300 bg-red-100 p-3 font-mono text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                   <div className="flex items-start gap-2">
-                    <Info className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
-                    <span className="break-all whitespace-pre-wrap">{error}</span>
+                    <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
+                    <span className="whitespace-pre-wrap break-all">{error}</span>
                   </div>
                 </div>
               )}

@@ -18,7 +18,7 @@ const FunctionBarChart = ({ analytics }: { analytics: any[] }) => {
   }));
   const allZero = data.every((d) => d.functions === 0);
   return (
-    <div className="w-full h-72 relative">
+    <div className="relative h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -30,11 +30,11 @@ const FunctionBarChart = ({ analytics }: { analytics: any[] }) => {
         </BarChart>
       </ResponsiveContainer>
       {allZero && (
-        <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm bg-white/80 dark:bg-gray-900/80 z-10">
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 text-sm text-gray-400 dark:bg-gray-900/80">
           No functions detected in analyzed files.
         </div>
       )}
-      <div className="text-xs text-center mt-2">Functions per file</div>
+      <div className="mt-2 text-center text-xs">Functions per file</div>
     </div>
   );
 };

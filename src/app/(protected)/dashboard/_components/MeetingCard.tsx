@@ -100,8 +100,8 @@ const MeetingCard = () => {
   if (loading) {
     return (
       <div className="col-span-2 flex flex-col items-center justify-center p-10">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }

@@ -40,9 +40,9 @@ const Code = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }
@@ -75,7 +75,7 @@ const Code = () => {
         </div>
       ) : (
         <div className="mx-auto max-w-xl rounded-lg border bg-background p-8 shadow-md">
-          <h2 className="mb-4 text-2xl font-bold text-center">
+          <h2 className="mb-4 text-center text-2xl font-bold">
             🚀 Open Your Project in CodeSandbox
           </h2>
           <ol className="mb-6 list-decimal space-y-3 pl-5 text-base">
@@ -131,7 +131,7 @@ const Code = () => {
           >
             Open in CodeSandbox
           </a>
-          <div className="mt-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+          <div className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             <span className="font-semibold text-yellow-700">Tip:</span> This premium feature is
             available only to <span className="font-semibold">Dionysus Pro Pack</span> subscribers.
             <br />

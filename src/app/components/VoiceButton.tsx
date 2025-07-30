@@ -9,13 +9,13 @@ export default function VoiceButton({ isListening, onClick }: VoiceButtonProps) 
   return (
     <button
       onClick={onClick}
-      className={`p-1.5 rounded-full transition-colors ${
-        isListening ? 'bg-red-500 hover:bg-red-600 text-white' : 'text-white hover:bg-gray-700'
+      className={`rounded-full p-1.5 transition-colors ${
+        isListening ? 'bg-red-500 text-white hover:bg-red-600' : 'text-white hover:bg-gray-700'
       }`}
       suppressHydrationWarning
       title={isListening ? 'Stop voice input' : 'Start voice input'}
     >
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         {isListening ? (
           <path
             strokeLinecap="round"

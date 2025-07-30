@@ -75,7 +75,7 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
   if (!apiKey) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Configuration Error</h2>
+        <h2 className="mb-4 text-2xl font-bold">Configuration Error</h2>
         <p>
           Chat service is not properly configured. Please contact{' '}
           <Link href="/supportAuth">support</Link>.
@@ -87,7 +87,7 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
   if (!clerkUser.token) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Authentication Error</h2>
+        <h2 className="mb-4 text-2xl font-bold">Authentication Error</h2>
         <p>Could not authenticate with chat service. Missing user token.</p>
       </div>
     );
@@ -96,7 +96,7 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
   if (error) {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold mb-4">Chat Error</h2>
+        <h2 className="mb-4 text-2xl font-bold">Chat Error</h2>
         <p>{error}</p>
       </div>
     );
@@ -104,8 +104,8 @@ const ChatClient = ({ clerkUser, slug }: ChatClientProps) => {
 
   if (!client) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex h-full items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
         <p className="ml-3">Setting up chat connection...</p>
       </div>
     );

@@ -96,7 +96,7 @@ const CommitLog = ({}: Props) => {
                 >
                   {commit.commitMessage}
                 </span>
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="mt-1 text-xs text-gray-400">
                   {new Date(commit.commitDate).toLocaleString(undefined, {
                     year: 'numeric',
                     month: 'short',

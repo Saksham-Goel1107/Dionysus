@@ -40,14 +40,14 @@ export default function StatusHeader({
               : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20'
         }`}
       >
-        <CardContent className="pt-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <CardContent className="flex flex-col gap-4 pt-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center">
             {status === 'No Monitors Configured' ? (
-              <RefreshCcw className="h-8 w-8 text-blue-500 mr-3" />
+              <RefreshCcw className="mr-3 h-8 w-8 text-blue-500" />
             ) : isAllOperational ? (
-              <CheckCircle className="h-8 w-8 text-green-500 mr-3" />
+              <CheckCircle className="mr-3 h-8 w-8 text-green-500" />
             ) : (
-              <AlertTriangle className="h-8 w-8 text-yellow-500 mr-3" />
+              <AlertTriangle className="mr-3 h-8 w-8 text-yellow-500" />
             )}
             <div>
               <h2 className="text-2xl font-bold">{status}</h2>
@@ -60,7 +60,7 @@ export default function StatusHeader({
           </div>
 
           <div className="w-full md:w-36">
-            <p className="text-sm font-medium mb-1">Overall Uptime</p>
+            <p className="mb-1 text-sm font-medium">Overall Uptime</p>
             <div className="flex items-center gap-2">
               {uptime > 0 ? (
                 <>

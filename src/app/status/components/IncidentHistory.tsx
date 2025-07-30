@@ -58,8 +58,8 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-10 text-center">
-            <Activity className="h-12 w-12 text-green-500 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No incidents recorded</h3>
+            <Activity className="mb-4 h-12 w-12 text-green-500" />
+            <h3 className="mb-2 text-xl font-semibold">No incidents recorded</h3>
             <p className="text-muted-foreground">All systems have been operating normally.</p>
           </div>
         </CardContent>
@@ -76,14 +76,14 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
         <div className="space-y-8">
           {incidents.map((incident) => (
             <div key={incident.id} className="border-b pb-6 last:border-0">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+              <div className="mb-2 flex flex-col md:flex-row md:items-center md:justify-between">
                 <h3 className="text-lg font-semibold">{incident.monitorName} Outage</h3>
                 <Badge variant={incident.status === 'resolved' ? 'outline' : 'secondary'}>
                   {incident.status === 'resolved' ? 'Resolved' : 'Investigating'}
                 </Badge>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+              <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>
                   {incident.startTime
@@ -101,8 +101,8 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
               </div>
 
               <div className="space-y-3">
-                <div className="bg-muted/50 p-3 rounded-md">
-                  <p className="text-sm font-medium mb-1">
+                <div className="rounded-md bg-muted/50 p-3">
+                  <p className="mb-1 text-sm font-medium">
                     {format(incident.startTime, 'HH:mm')} - System detected issues
                   </p>
                   <p className="text-sm text-muted-foreground">
@@ -112,8 +112,8 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                 </div>
 
                 {incident.status === 'resolved' && incident.endTime && (
-                  <div className="bg-muted/50 p-3 rounded-md">
-                    <p className="text-sm font-medium mb-1">
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="mb-1 text-sm font-medium">
                       {format(incident.endTime, 'HH:mm')} - Issue resolved
                     </p>
                     <p className="text-sm text-muted-foreground">
@@ -123,8 +123,8 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                   </div>
                 )}
                 {incident.status === 'resolved' && !incident.endTime && (
-                  <div className="bg-muted/50 p-3 rounded-md">
-                    <p className="text-sm font-medium mb-1">Resolution time unknown</p>
+                  <div className="rounded-md bg-muted/50 p-3">
+                    <p className="mb-1 text-sm font-medium">Resolution time unknown</p>
                     <p className="text-sm text-muted-foreground">
                       The issue was resolved, but the exact resolution time is unavailable.
                     </p>

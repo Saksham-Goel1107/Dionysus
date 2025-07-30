@@ -17,20 +17,20 @@ export default function SettingsSidebar({
   onSelect: (id: string) => void;
 }) {
   return (
-    <aside className="w-full md:w-64 border-b md:border-b-0 md:border-r bg-white dark:bg-gray-900 py-4 px-2 md:px-4 flex flex-col md:min-h-[70vh] shadow-sm">
-      <h1 className="text-xl md:text-2xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center md:text-left">
+    <aside className="flex w-full flex-col border-b bg-white px-2 py-4 shadow-sm dark:bg-gray-900 md:min-h-[70vh] md:w-64 md:border-b-0 md:border-r md:px-4">
+      <h1 className="mb-4 text-center text-xl font-bold text-blue-700 dark:text-blue-300 md:text-left md:text-2xl">
         Settings
       </h1>
 
       {/* Scrollable nav on mobile with snap */}
-      <nav className="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible justify-start md:justify-start scroll-snap-x scroll-smooth whitespace-nowrap">
+      <nav className="scroll-snap-x flex flex-row justify-start gap-2 overflow-x-auto scroll-smooth whitespace-nowrap md:flex-col md:justify-start md:overflow-visible">
         {sections.map((section) => (
           <button
             key={section.id}
-            className={`flex items-center gap-2 px-3 py-2 text-sm md:text-base rounded-lg transition font-medium scroll-snap-align-start ${
+            className={`scroll-snap-align-start flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition md:text-base ${
               current === section.id
-                ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-white'
-                : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-white'
+                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
             }`}
             onClick={() => onSelect(section.id)}
           >

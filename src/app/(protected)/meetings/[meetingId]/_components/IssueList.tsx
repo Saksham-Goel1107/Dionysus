@@ -83,7 +83,7 @@ User Question: ${userMessage}`,
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+        <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col">
           <div className="flex-none">
             <DialogTitle className="text-xl font-semibold">{issue.gist}</DialogTitle>
             <DialogDescription className="text-muted-foreground">
@@ -103,14 +103,14 @@ User Question: ${userMessage}`,
                 </button>
               </div>
               {isSummaryExpanded && (
-                <p className="font-medium italic leading-relaxed text-foreground p-4 pt-0">
+                <p className="p-4 pt-0 font-medium italic leading-relaxed text-foreground">
                   {issue.summary}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="mt-6 border-t border-border pt-4 flex-1 min-h-0 flex flex-col">
+          <div className="mt-6 flex min-h-0 flex-1 flex-col border-t border-border pt-4">
             <div className="flex-1 overflow-y-auto pr-2">
               <div className="flex flex-col gap-4">
                 {chatHistory.map((msg, i) => (
@@ -148,7 +148,7 @@ User Question: ${userMessage}`,
                       </div>
                       <div
                         className={cn(
-                          'text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none',
+                          'prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed',
                           msg.isExpanded === false && 'line-clamp-2',
                         )}
                       >
@@ -209,7 +209,7 @@ User Question: ${userMessage}`,
               </div>
             </div>
 
-            <div className="flex-none mt-4 flex gap-2">
+            <div className="mt-4 flex flex-none gap-2">
               <input
                 type="text"
                 value={message}
@@ -221,7 +221,7 @@ User Question: ${userMessage}`,
                   }
                 }}
                 placeholder="Ask me anything about this issue..."
-                className="flex-1 border:gray-300 rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="border:gray-300 flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
               <button
                 onClick={handleSendMessage}
@@ -248,10 +248,10 @@ User Question: ${userMessage}`,
           </div>
         </DialogContent>
       </Dialog>
-      <Card className="relative hover:shadow-md transition-shadow flex flex-col">
+      <Card className="relative flex flex-col transition-shadow hover:shadow-md">
         <CardHeader className="flex-1">
           <CardTitle className="text-lg font-semibold text-foreground">{issue.gist}</CardTitle>
-          <div className="border-b border-border my-2"></div>
+          <div className="my-2 border-b border-border"></div>
           <CardDescription className="line-clamp-2">{issue.headline}</CardDescription>
         </CardHeader>
         <CardContent className="mt-auto pt-0">
@@ -349,13 +349,13 @@ const IssueList = ({ meetingId }: Props) => {
 
   if (isLoading || !meeting)
     return (
-      <div className="flex items-center justify-center h-[80vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   return (
     <div className="p-4 sm:p-8">
-      <div className="mx-auto flex max-w-2xl flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-x-8 border-b border-border pb-6 lg:mx-0 lg:max-w-none">
+      <div className="mx-auto flex max-w-2xl flex-col items-start justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:gap-x-8 lg:mx-0 lg:max-w-none">
         <div className="flex items-center gap-x-4 sm:gap-x-6">
           <div className="rounded-full border border-border bg-card p-3">
             <VideoIcon className="h-6 w-6 text-foreground/80" />
@@ -369,7 +369,7 @@ const IssueList = ({ meetingId }: Props) => {
         </div>
         <Button
           variant="outline"
-          className="flex items-center gap-2 w-full sm:w-auto mt-4 sm:mt-0"
+          className="mt-4 flex w-full items-center gap-2 sm:mt-0 sm:w-auto"
           onClick={() => setMeetingAIOpen(true)}
         >
           <span className="flex h-5 w-5 items-center justify-center rounded-full border bg-background">
@@ -387,15 +387,15 @@ const IssueList = ({ meetingId }: Props) => {
 
       {/* Meeting AI Dialog */}
       <Dialog open={meetingAIOpen} onOpenChange={setMeetingAIOpen}>
-        <DialogContent className="max-w-full sm:max-w-2xl w-full sm:w-auto max-h-[90vh] flex flex-col px-2 sm:px-6 py-2 sm:py-8">
+        <DialogContent className="flex max-h-[90vh] w-full max-w-full flex-col px-2 py-2 sm:w-auto sm:max-w-2xl sm:px-6 sm:py-8">
           <div className="flex-none">
             <DialogTitle className="text-xl font-semibold">Meeting AI</DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Ask questions about the meeting, or get summaries and action items.
             </DialogDescription>
-            <div className="mt-3 p-2 sm:p-3 bg-muted/30 rounded-md border border-border">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                <h2 className="font-bold text-base mb-2 sm:mb-0">Meeting Summary</h2>
+            <div className="mt-3 rounded-md border border-border bg-muted/30 p-2 sm:p-3">
+              <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
+                <h2 className="mb-2 text-base font-bold sm:mb-0">Meeting Summary</h2>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -408,7 +408,7 @@ const IssueList = ({ meetingId }: Props) => {
               <span className="text-sm text-muted-foreground">
                 Meeting: <strong>{meeting.name}</strong>
               </span>
-              <div className="mt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div className="mt-2 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
                 <span>
                   Total Issues: <strong>{meeting.issues.length}</strong>
                 </span>
@@ -416,7 +416,7 @@ const IssueList = ({ meetingId }: Props) => {
             </div>
           </div>
 
-          <div className="mt-6 border-t border-border pt-4 flex-1 min-h-0 flex flex-col">
+          <div className="mt-6 flex min-h-0 flex-1 flex-col border-t border-border pt-4">
             <div className="flex-1 overflow-y-auto pr-0 sm:pr-2">
               <div className="flex flex-col gap-4">
                 {meetingChatHistory.map((msg, i) => (
@@ -454,7 +454,7 @@ const IssueList = ({ meetingId }: Props) => {
                       </div>
                       <div
                         className={cn(
-                          'text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none',
+                          'prose prose-sm dark:prose-invert max-w-none text-sm leading-relaxed',
                           msg.isExpanded === false && 'line-clamp-2',
                         )}
                       >
@@ -515,7 +515,7 @@ const IssueList = ({ meetingId }: Props) => {
               </div>
             </div>
 
-            <div className="flex-none mt-4 flex flex-col sm:flex-row gap-2 w-full">
+            <div className="mt-4 flex w-full flex-none flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 value={meetingMessage}
@@ -533,7 +533,7 @@ const IssueList = ({ meetingId }: Props) => {
                 onClick={handleSendMeetingMessage}
                 disabled={!meetingMessage.trim() || meetingAILoading}
                 className={cn(
-                  'inline-flex items-center justify-center rounded-md p-2 w-full sm:w-auto',
+                  'inline-flex w-full items-center justify-center rounded-md p-2 sm:w-auto',
                   'bg-primary text-primary-foreground hover:bg-primary/90',
                   'disabled:pointer-events-none disabled:opacity-50',
                 )}

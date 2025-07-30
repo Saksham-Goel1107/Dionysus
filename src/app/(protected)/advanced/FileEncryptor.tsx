@@ -287,25 +287,25 @@ const FileEncryptor: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900/60 dark:via-slate-950/80 dark:to-slate-900/60 rounded-2xl border border-slate-300 dark:border-slate-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-slate-200 dark:bg-slate-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-slate-100 dark:bg-slate-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-8 shadow-xl dark:border-slate-700 dark:from-slate-900/60 dark:via-slate-950/80 dark:to-slate-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-slate-200 opacity-30 blur-2xl dark:bg-slate-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-slate-100 opacity-20 blur-2xl dark:bg-slate-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-slate-800 dark:text-slate-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-slate-800 drop-shadow-lg dark:text-slate-100">
+        <span className="mr-2 inline-block align-middle">
           <Lock className="h-6 w-6 text-slate-500 dark:text-slate-300" />
         </span>
         File Encryption & Decryption
       </h2>
 
-      <p className="mb-6 text-slate-700/80 dark:text-slate-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-slate-700/80 dark:text-slate-200/80 md:text-base">
         Securely encrypt and decrypt your files with password protection using AES-256 encryption.
         Your files never leave your browser.
       </p>
 
-      <div className="w-full z-10">
+      <div className="z-10 w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid grid-cols-2">
             <TabsTrigger value="encrypt" className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
               <span>Encrypt Files</span>
@@ -321,7 +321,7 @@ const FileEncryptor: React.FC = () => {
             <div className="flex flex-col gap-4">
               {/* File Selection */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Select File to Encrypt
                 </label>
                 <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ const FileEncryptor: React.FC = () => {
                     className="hidden"
                   />
                   {encryptFile && (
-                    <span className="text-sm text-slate-700 dark:text-slate-300 overflow-hidden text-ellipsis">
+                    <span className="overflow-hidden text-ellipsis text-sm text-slate-700 dark:text-slate-300">
                       {encryptFile.name} ({(encryptFile.size / 1024).toFixed(2)} KB)
                     </span>
                   )}
@@ -349,13 +349,13 @@ const FileEncryptor: React.FC = () => {
 
               {/* Password Input */}
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Key className="h-4 w-4" />
                   <span>Encryption Password</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-slate-400 cursor-help" />
+                        <Info className="h-4 w-4 cursor-help text-slate-400" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-sm">
                         <p>
@@ -379,14 +379,14 @@ const FileEncryptor: React.FC = () => {
               <Button
                 onClick={encryptFileWithPassword}
                 disabled={encryptLoading || !encryptFile || !encryptPassword}
-                className="w-full bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-950 text-white"
+                className="w-full bg-gradient-to-r from-slate-700 to-slate-900 text-white hover:from-slate-800 hover:to-slate-950"
               >
                 {encryptLoading ? 'Encrypting...' : 'Encrypt File'}
               </Button>
 
               {/* Error Message */}
               {encryptError && (
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-100 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                   <span>{encryptError}</span>
                 </div>
@@ -394,9 +394,9 @@ const FileEncryptor: React.FC = () => {
 
               {/* Success Message */}
               {encryptSuccess && encryptedUrl && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-800 rounded-md">
-                  <h3 className="font-medium text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
-                    <span className="bg-green-200 dark:bg-green-800 rounded-full p-1">
+                <div className="rounded-md border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/30">
+                  <h3 className="mb-2 flex items-center gap-2 font-medium text-green-800 dark:text-green-200">
+                    <span className="rounded-full bg-green-200 p-1 dark:bg-green-800">
                       <svg
                         width="16"
                         height="16"
@@ -410,18 +410,18 @@ const FileEncryptor: React.FC = () => {
                     </span>
                     File Encrypted Successfully!
                   </h3>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-3">
+                  <p className="mb-3 text-sm text-green-700 dark:text-green-300">
                     Your file has been encrypted. Download it and keep it safe.
                   </p>
                   <a
                     href={encryptedUrl}
                     download={`${encryptFile?.name || 'file'}.encrypted`}
-                    className="flex items-center justify-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
+                    className="flex items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                   >
                     <Save className="h-4 w-4" />
                     Download Encrypted File
                   </a>
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-2">
+                  <p className="mt-2 text-xs text-green-600 dark:text-green-400">
                     Important: Keep your password in a safe place. If you lose it, the file cannot
                     be decrypted.
                   </p>
@@ -435,7 +435,7 @@ const FileEncryptor: React.FC = () => {
             <div className="flex flex-col gap-4">
               {/* File Selection */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Select Encrypted File
                 </label>
                 <div className="flex items-center gap-2">
@@ -454,7 +454,7 @@ const FileEncryptor: React.FC = () => {
                     className="hidden"
                   />
                   {decryptFile && (
-                    <span className="text-sm text-slate-700 dark:text-slate-300 overflow-hidden text-ellipsis">
+                    <span className="overflow-hidden text-ellipsis text-sm text-slate-700 dark:text-slate-300">
                       {decryptFile.name} ({(decryptFile.size / 1024).toFixed(2)} KB)
                     </span>
                   )}
@@ -463,7 +463,7 @@ const FileEncryptor: React.FC = () => {
 
               {/* Password Input */}
               <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <Key className="h-4 w-4" />
                   <span>Decryption Password</span>
                 </label>
@@ -480,14 +480,14 @@ const FileEncryptor: React.FC = () => {
               <Button
                 onClick={decryptFileWithPassword}
                 disabled={decryptLoading || !decryptFile || !decryptPassword}
-                className="w-full bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-950 text-white"
+                className="w-full bg-gradient-to-r from-slate-700 to-slate-900 text-white hover:from-slate-800 hover:to-slate-950"
               >
                 {decryptLoading ? 'Decrypting...' : 'Decrypt File'}
               </Button>
 
               {/* Error Message */}
               {decryptError && (
-                <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-100 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                   <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                   <span>{decryptError}</span>
                 </div>
@@ -495,9 +495,9 @@ const FileEncryptor: React.FC = () => {
 
               {/* Success Message */}
               {decryptSuccess && decryptedUrl && (
-                <div className="p-4 bg-green-50 dark:bg-green-900/30 border border-green-300 dark:border-green-800 rounded-md">
-                  <h3 className="font-medium text-green-800 dark:text-green-200 mb-2 flex items-center gap-2">
-                    <span className="bg-green-200 dark:bg-green-800 rounded-full p-1">
+                <div className="rounded-md border border-green-300 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/30">
+                  <h3 className="mb-2 flex items-center gap-2 font-medium text-green-800 dark:text-green-200">
+                    <span className="rounded-full bg-green-200 p-1 dark:bg-green-800">
                       <svg
                         width="16"
                         height="16"
@@ -511,13 +511,13 @@ const FileEncryptor: React.FC = () => {
                     </span>
                     File Decrypted Successfully!
                   </h3>
-                  <p className="text-sm text-green-700 dark:text-green-300 mb-3">
+                  <p className="mb-3 text-sm text-green-700 dark:text-green-300">
                     Your file has been decrypted and is ready to download.
                   </p>
                   <a
                     href={decryptedUrl}
                     download={decryptedFileName}
-                    className="flex items-center justify-center gap-2 py-2 px-4 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
+                    className="flex items-center justify-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
                   >
                     <Save className="h-4 w-4" />
                     Download Decrypted File
@@ -529,8 +529,8 @@ const FileEncryptor: React.FC = () => {
         </Tabs>
 
         {/* Security Notice */}
-        <div className="mt-6 p-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 rounded-md">
-          <h3 className="font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-2 text-sm">
+        <div className="mt-6 rounded-md border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900/50">
+          <h3 className="mb-1 flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
             <svg
               width="16"
               height="16"
@@ -548,7 +548,7 @@ const FileEncryptor: React.FC = () => {
             </svg>
             Security Information:
           </h3>
-          <ul className="text-xs text-slate-600 dark:text-slate-400 list-disc list-inside space-y-1">
+          <ul className="list-inside list-disc space-y-1 text-xs text-slate-600 dark:text-slate-400">
             <li>All encryption/decryption happens locally in your browser</li>
             <li>Files are never uploaded to any server</li>
             <li>Uses AES-256-GCM encryption with PBKDF2 key derivation</li>

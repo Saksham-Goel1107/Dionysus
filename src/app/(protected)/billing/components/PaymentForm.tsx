@@ -232,7 +232,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+      <div className="flex flex-col items-center justify-center space-y-4 p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-sm text-muted-foreground">Setting up your payment...</p>
       </div>
@@ -241,7 +241,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
 
   if (isRedirecting) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 space-y-4">
+      <div className="flex flex-col items-center justify-center space-y-4 p-8">
         <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
         <p className="text-sm font-medium text-emerald-600">Payment successful!</p>
         <p className="text-sm text-muted-foreground">Redirecting to confirmation page...</p>
@@ -260,7 +260,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
       )}
       {/* Show discount breakdown if present */}
       {discountBreakdown && (
-        <div className="py-2 px-3 bg-green-50 rounded-md text-green-700 text-sm font-medium">
+        <div className="rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
           Discount applied: {discountBreakdown}
         </div>
       )}
@@ -272,7 +272,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
           </label>{' '}
           <div
             id="card-element-container"
-            className="rounded-md border border-input bg-background p-6 focus-within:ring-1 focus-within:ring-ring relative min-h-[60px]"
+            className="relative min-h-[60px] rounded-md border border-input bg-background p-6 focus-within:ring-1 focus-within:ring-ring"
           >
             <CardElement
               id="card-element"
@@ -303,7 +303,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
           </div>
         </div>
 
-        <div className="py-2 px-3 bg-muted/50 rounded-md flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2">
           <div className="flex items-center space-x-2">
             <CreditCard className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">Payment summary</span>

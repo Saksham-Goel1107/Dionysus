@@ -52,7 +52,7 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
     <Card className="overflow-hidden transition-all hover:shadow-md">
       <div className={`h-1 ${getStatusColor(monitor.status)}`} />
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
+        <div className="flex items-start justify-between">
           <CardTitle className="truncate">{monitor.friendly_name}</CardTitle>
           <Badge variant={badgeVariant as any}>{statusText}</Badge>
         </div>
@@ -82,7 +82,7 @@ export default function MonitorCard({ monitor, getStatusColor, getStatusBadge }:
 
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center text-muted-foreground">
-              <Clock className="h-3 w-3 mr-1" />
+              <Clock className="mr-1 h-3 w-3" />
               {lastChecked ? (
                 <span>Last checked {formatDistanceToNow(lastChecked, { addSuffix: true })}</span>
               ) : (

@@ -146,7 +146,7 @@ export default function FeedbackForm() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Feedback</DialogTitle>
           <DialogDescription>
@@ -186,7 +186,7 @@ export default function FeedbackForm() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={true}
             />
-            <div className="flex items-center gap-2 mb-1">
+            <div className="mb-1 flex items-center gap-2">
               <Label htmlFor="useClerkEmail" className="cursor-pointer select-none">
                 Use my Clerk email
               </Label>

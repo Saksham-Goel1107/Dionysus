@@ -132,22 +132,22 @@ const LicenseMakerPage = () => {
   }, [selected, name, year, clauses]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-8 p-6 bg-green-50 dark:bg-green-900/40 rounded-xl border border-green-300 dark:border-green-700 shadow-md flex flex-col items-center">
-      <h2 className="text-xl font-bold mb-2 text-green-700 dark:text-green-200">
+    <div className="mx-auto my-8 flex w-full max-w-2xl flex-col items-center rounded-xl border border-green-300 bg-green-50 p-6 shadow-md dark:border-green-700 dark:bg-green-900/40">
+      <h2 className="mb-2 text-xl font-bold text-green-700 dark:text-green-200">
         License Generator
       </h2>
-      <div className="w-full flex flex-col gap-4">
+      <div className="flex w-full flex-col gap-4">
         <label className="font-semibold">Your Name (for copyright):</label>
         <input
           type="text"
-          className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="e.g. John Doe or Company Name"
         />
         <label className="font-semibold">Choose a license type:</label>
         <select
-          className="border rounded px-3 py-2 text-sm bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+          className="rounded border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >
@@ -158,8 +158,8 @@ const LicenseMakerPage = () => {
           ))}
         </select>
         {selected === 'custom' && (
-          <div className="flex flex-col gap-2 mt-2">
-            <label className="font-semibold flex items-center gap-2">
+          <div className="mt-2 flex flex-col gap-2">
+            <label className="flex items-center gap-2 font-semibold">
               Select clauses to include:
               <Button
                 onClick={() => {
@@ -178,12 +178,12 @@ const LicenseMakerPage = () => {
                   }
                 }}
                 variant="outline"
-                className="text-xs px-2 py-1 ml-2"
+                className="ml-2 px-2 py-1 text-xs"
               >
                 {CLAUSES.every((c) => clauses[c.key]) ? 'Deselect All' : 'Select All'}
               </Button>
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {CLAUSES.map((clause) => (
                 <label key={clause.key} className="flex items-center gap-2">
                   <input
@@ -203,51 +203,51 @@ const LicenseMakerPage = () => {
             </div>
           </div>
         )}
-        <label className="font-semibold mt-4">Generated License:</label>
+        <label className="mt-4 font-semibold">Generated License:</label>
         <Button
           onClick={() => setModalOpen(true)}
           variant="default"
-          className="bg-blue-500 text-white px-3 py-1 text-xs w-full sm:w-auto"
+          className="w-full bg-blue-500 px-3 py-1 text-xs text-white sm:w-auto"
         >
           Show License
         </Button>
         {/* Modal for license code/preview */}
         {modalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white dark:bg-[#22272e] rounded-lg shadow-lg max-w-2xl w-full p-6 relative border border-green-300 dark:border-green-700 max-h-[90vh] overflow-y-auto">
+            <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-green-300 bg-white p-6 shadow-lg dark:border-green-700 dark:bg-[#22272e]">
               <button
                 onClick={() => setModalOpen(false)}
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white text-lg font-bold"
+                className="absolute right-2 top-2 text-lg font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white"
                 aria-label="Close"
               >
                 &times;
               </button>
-              <div className="flex gap-2 mb-2">
+              <div className="mb-2 flex gap-2">
                 <Button
                   onClick={() => setPreview(false)}
                   variant={preview ? 'outline' : 'default'}
-                  className="text-xs px-2 py-1"
+                  className="px-2 py-1 text-xs"
                 >
                   Raw
                 </Button>
                 <Button
                   onClick={() => setPreview(true)}
                   variant={preview ? 'default' : 'outline'}
-                  className="text-xs px-2 py-1"
+                  className="px-2 py-1 text-xs"
                 >
                   Preview
                 </Button>
               </div>
               {preview ? (
                 <div
-                  className="rounded-lg p-8 overflow-x-auto w-full min-h-[220px] border border-gray-200 dark:border-gray-700 shadow-sm prose prose-lg prose-neutral max-w-none dark:prose-invert transition-colors duration-200"
+                  className="prose prose-lg prose-neutral dark:prose-invert min-h-[220px] w-full max-w-none overflow-x-auto rounded-lg border border-gray-200 p-8 shadow-sm transition-colors duration-200 dark:border-gray-700"
                   style={{ fontFamily: 'system-ui, Segoe UI, Arial, sans-serif' }}
                 >
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{licenseText}</ReactMarkdown>
                 </div>
               ) : (
                 <pre
-                  className="bg-gray-100 dark:bg-gray-800 rounded p-4 text-xs overflow-x-auto w-full select-all break-all mb-2"
+                  className="mb-2 w-full select-all overflow-x-auto break-all rounded bg-gray-100 p-4 text-xs dark:bg-gray-800"
                   style={{ minHeight: 200 }}
                 >
                   {licenseText}
@@ -259,7 +259,7 @@ const LicenseMakerPage = () => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1200);
                 }}
-                className="bg-blue-500 text-white px-3 py-1 text-xs w-full sm:w-auto mt-4"
+                className="mt-4 w-full bg-blue-500 px-3 py-1 text-xs text-white sm:w-auto"
               >
                 {copied ? 'Copied!' : 'Copy License'}
               </Button>
@@ -275,7 +275,7 @@ const LicenseMakerPage = () => {
                   document.body.removeChild(a);
                   URL.revokeObjectURL(url);
                 }}
-                className="bg-blue-500 text-white px-3 py-1 text-xs w-full sm:w-auto mt-2 ml-2"
+                className="ml-2 mt-2 w-full bg-blue-500 px-3 py-1 text-xs text-white sm:w-auto"
               >
                 Download License
               </Button>

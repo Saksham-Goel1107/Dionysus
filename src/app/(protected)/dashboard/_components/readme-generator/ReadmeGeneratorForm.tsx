@@ -460,21 +460,21 @@ export default function ReadmeGeneratorForm() {
     toast.success('README downloaded!');
   };
   return (
-    <Card className="w-full sm:max-w-3xl mx-auto">
+    <Card className="mx-auto w-full sm:max-w-3xl">
       <CardHeader>
-        <div className="flex sm:flex-row flex-col items-start sm:items-center justify-between gap-2 sm:gap-0">
+        <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
           <div>
             <CardTitle className="text-2xl">README Generator</CardTitle>
             <CardDescription>
               Create a beautiful and comprehensive README for your project
             </CardDescription>
           </div>
-          <div className="flex gap-2 sm:mt-0 mt-2 w-full sm:w-auto">
+          <div className="mt-2 flex w-full gap-2 sm:mt-0 sm:w-auto">
             {project && !isCurrentProject && (
               <Button
                 onClick={populateFromCurrentProject}
                 variant="outline"
-                className="gap-2 border-black dark:border-white sm:w-auto w-full"
+                className="w-full gap-2 border-black dark:border-white sm:w-auto"
               >
                 Use Current Project
               </Button>
@@ -483,7 +483,7 @@ export default function ReadmeGeneratorForm() {
               <Button
                 onClick={clearForm}
                 variant="outline"
-                className="gap-2 border-red-500 dark:border-red-700 text-red-500 dark:text-red-400 hover:bg-red-500/10 sm:w-auto w-full"
+                className="w-full gap-2 border-red-500 text-red-500 hover:bg-red-500/10 dark:border-red-700 dark:text-red-400 sm:w-auto"
               >
                 Clear Form
               </Button>
@@ -492,7 +492,7 @@ export default function ReadmeGeneratorForm() {
         </div>
       </CardHeader>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 sm:mx-6 mx-0">
+        <TabsList className="mx-0 grid grid-cols-3 sm:mx-6">
           <TabsTrigger value="form" className="flex items-center gap-1">
             <FileText className="h-4 w-4" />
             <span>Form</span>
@@ -516,15 +516,15 @@ export default function ReadmeGeneratorForm() {
             <div className="space-y-6">
               <div className="space-y-4">
                 {isCurrentProject && (
-                  <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-900">
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-900/20">
                     <p className="text-sm text-green-800 dark:text-green-300">
                       Form populated with data from: <strong>{project?.name}</strong>
                     </p>
                   </div>
                 )}
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 p-4 bg-muted/50 rounded-lg">
-                  <Label className="whitespace-nowrap mr-2">Generation Method:</Label>
-                  <div className="flex border rounded-md overflow-hidden sm:w-auto w-full sm:mt-0 mt-2 sm:whitespace-nowrap sm:min-w-0">
+                <div className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/50 p-4 sm:flex-nowrap">
+                  <Label className="mr-2 whitespace-nowrap">Generation Method:</Label>
+                  <div className="mt-2 flex w-full overflow-hidden rounded-md border sm:mt-0 sm:w-auto sm:min-w-0 sm:whitespace-nowrap">
                     <button
                       type="button"
                       onClick={() => setGenerationMethod('manual')}
@@ -555,7 +555,7 @@ export default function ReadmeGeneratorForm() {
                     </button>
                   </div>
                   {generationMethod === 'ai' && (
-                    <p className="text-xs text-muted-foreground sm:mt-0 mt-2">
+                    <p className="mt-2 text-xs text-muted-foreground sm:mt-0">
                       AI will generate a comprehensive README based on your input
                     </p>
                   )}
@@ -585,7 +585,7 @@ export default function ReadmeGeneratorForm() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="projectLink">GitHub Repository URL</Label>
                   <Input
@@ -795,19 +795,19 @@ export default function ReadmeGeneratorForm() {
               </Accordion>
             </div>
           </CardContent>
-          <CardFooter className="flex sm:flex-row flex-col flex-wrap gap-3 justify-between items-stretch sm:items-center">
+          <CardFooter className="flex flex-col flex-wrap items-stretch justify-between gap-3 sm:flex-row sm:items-center">
             <Button
               variant="outline"
               onClick={() => {
                 window.open('https://youtu.be/5JoEB2YTlpw?si=X5JX8Xd_8ERLXJhG', '_blank');
               }}
-              className="gap-2 sm:w-auto w-full"
+              className="w-full gap-2 sm:w-auto"
             >
               <Youtube size={16} />
               How to write a good README
             </Button>
-            <div className="flex gap-2 sm:w-auto w-full">
-              <Button onClick={generateReadme} disabled={isGenerating} className="sm:w-auto w-full">
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button onClick={generateReadme} disabled={isGenerating} className="w-full sm:w-auto">
                 {isGenerating
                   ? generationMethod === 'ai'
                     ? 'AI is working...'
@@ -821,11 +821,11 @@ export default function ReadmeGeneratorForm() {
         </TabsContent>
         <TabsContent value="code">
           <CardContent>
-            <div className="flex sm:flex-row flex-col justify-end sm:space-y-0 space-y-2 sm:space-x-2 mb-4">
+            <div className="mb-4 flex flex-col justify-end space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
               <Button
                 variant="outline"
                 onClick={() => setActiveTab('form')}
-                className="gap-2 sm:w-auto w-full"
+                className="w-full gap-2 sm:w-auto"
               >
                 <FileText size={16} />
                 Edit Form
@@ -833,26 +833,26 @@ export default function ReadmeGeneratorForm() {
               <Button
                 variant="outline"
                 onClick={copyToClipboard}
-                className="gap-2 sm:w-auto w-full"
+                className="w-full gap-2 sm:w-auto"
               >
                 <Copy size={16} />
                 Copy
               </Button>
-              <Button variant="outline" onClick={downloadReadme} className="gap-2 sm:w-auto w-full">
+              <Button variant="outline" onClick={downloadReadme} className="w-full gap-2 sm:w-auto">
                 <Download size={16} />
                 Download README.md
               </Button>
             </div>
-            <div className="bg-muted rounded-md sm:p-4 p-2 overflow-x-auto">
+            <div className="overflow-x-auto rounded-md bg-muted p-2 sm:p-4">
               <div className="space-y-4">
-                <div className="flex sm:flex-row flex-col items-start sm:items-center justify-between sm:gap-0 gap-2">
+                <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center sm:gap-0">
                   <h3 className="text-xl font-semibold">Markdown Code</h3>
                   <p className="text-xs text-muted-foreground">
                     Edit markdown directly and see changes in preview
                   </p>
                 </div>
                 <Textarea
-                  className="font-mono text-sm sm:min-h-[500px] min-h-[300px] bg-background resize-y"
+                  className="min-h-[300px] resize-y bg-background font-mono text-sm sm:min-h-[500px]"
                   value={generatedReadme}
                   onChange={(e) => setGeneratedReadme(e.target.value)}
                   spellCheck="false"
@@ -863,12 +863,12 @@ export default function ReadmeGeneratorForm() {
 
             <div className="mt-6 space-y-4">
               <h3 className="text-lg font-medium">Resources to Improve Your README</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <a
                   href="https://youtu.be/5JoEB2YTlpw?si=X5JX8Xd_8ERLXJhG"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 border rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center rounded-lg border p-3 transition-colors hover:bg-muted"
                 >
                   <Youtube className="mr-2" size={20} />
                   <span>How to Write a Good README</span>
@@ -877,7 +877,7 @@ export default function ReadmeGeneratorForm() {
                   href="https://shields.io/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center p-3 border rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center rounded-lg border p-3 transition-colors hover:bg-muted"
                 >
                   <InfoIcon className="mr-2" size={20} />
                   <span>Create Custom Badges with Shields.io</span>
@@ -894,28 +894,28 @@ export default function ReadmeGeneratorForm() {
         </TabsContent>
         <TabsContent value="preview">
           <CardContent>
-            <div className="flex sm:flex-row flex-col justify-end sm:space-y-0 space-y-2 sm:space-x-2 mb-4">
+            <div className="mb-4 flex flex-col justify-end space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
               <Button
                 variant="outline"
                 onClick={() => setActiveTab('code')}
-                className="gap-2 sm:w-auto w-full"
+                className="w-full gap-2 sm:w-auto"
               >
                 <Code size={16} />
                 View Markdown
               </Button>
-              <Button variant="outline" onClick={downloadReadme} className="gap-2 sm:w-auto w-full">
+              <Button variant="outline" onClick={downloadReadme} className="w-full gap-2 sm:w-auto">
                 <Download size={16} />
                 Download
               </Button>
             </div>
-            <div className="bg-white dark:bg-gray-900 border rounded-md sm:p-6 p-2 overflow-x-auto shadow-sm mb-4">
-              <div className="prose dark:prose-invert max-w-none readme-preview">
+            <div className="mb-4 overflow-x-auto rounded-md border bg-white p-2 shadow-sm dark:bg-gray-900 sm:p-6">
+              <div className="prose dark:prose-invert readme-preview max-w-none">
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                   {generatedReadme}
                 </ReactMarkdown>
               </div>
             </div>
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 sm:p-4 p-2 rounded-md border border-yellow-200 dark:border-yellow-900/50">
+            <div className="rounded-md border border-yellow-200 bg-yellow-50 p-2 dark:border-yellow-900/50 dark:bg-yellow-900/20 sm:p-4">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
                 <strong>Note:</strong> The actual appearance on GitHub may differ slightly from this
                 preview. And believe me it will be much better there then here.
@@ -932,14 +932,14 @@ export default function ReadmeGeneratorForm() {
       </Tabs>
       {showProPrompt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-2">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg sm:p-8 p-4 max-w-sm w-full text-center border">
-            <h2 className="text-xl font-bold mb-2 text-yellow-700">Pro Required</h2>
+          <div className="w-full max-w-sm rounded-lg border bg-white p-4 text-center shadow-lg dark:bg-gray-900 sm:p-8">
+            <h2 className="mb-2 text-xl font-bold text-yellow-700">Pro Required</h2>
             <p className="mb-4 text-muted-foreground">
               Upgrade to <span className="font-semibold">Pro</span> to unlock AI-powered README
               generation.
             </p>
             <Link href="/subscriptions">
-              <Button className="w-full mb-2">Get Pro</Button>
+              <Button className="mb-2 w-full">Get Pro</Button>
             </Link>
             <Button variant="outline" className="w-full" onClick={() => setShowProPrompt(false)}>
               Cancel

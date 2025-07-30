@@ -234,9 +234,9 @@ export default function UserAvatarMenu() {
         <UserButton />
       </div>
       {showMenu && (
-        <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-900 border z-50 animate-fade-in">
+        <div className="animate-fade-in absolute right-0 z-50 mt-2 w-56 rounded-lg border bg-white shadow-lg dark:bg-gray-900">
           <Button
-            className="w-full justify-start rounded-lg text-base font-semibold py-3 text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900"
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900"
             variant="ghost"
             onClick={() => {
               setShowProductsModal(true);
@@ -260,28 +260,28 @@ export default function UserAvatarMenu() {
                   Discover more tools and products by our team and the community:
                 </DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-2 max-h-80 overflow-y-auto pr-2">
+              <div className="grid max-h-80 gap-4 overflow-y-auto py-2 pr-2">
                 {PRODUCT_LINKS.map((prod) => (
                   <a
                     key={prod.url}
                     href={prod.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors shadow-sm"
+                    className="flex items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm transition-colors hover:bg-blue-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-blue-950"
                   >
                     <span className="text-2xl">{prod.icon}</span>
                     <div>
-                      <div className="font-bold text-lg text-gray-900 dark:text-gray-100">
+                      <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
                         {prod.name}
                       </div>
-                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {prod.description}
                       </div>
                     </div>
                   </a>
                 ))}
               </div>
-              <div className="text-xs text-center text-red-500 dark:text-red-300 mt-4 px-2">
+              <div className="mt-4 px-2 text-center text-xs text-red-500 dark:text-red-300">
                 <b>Note:</b> After leaving this platform, your security is not our responsibility.
                 We cannot ensure any security or privacy for external tools or products.
               </div>
@@ -293,7 +293,7 @@ export default function UserAvatarMenu() {
             </DialogContent>
           </Dialog>
           <Button
-            className="w-full justify-start rounded-lg text-base font-semibold py-3"
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold"
             variant="ghost"
             onClick={() => {
               setShowMenu(false);
@@ -303,7 +303,7 @@ export default function UserAvatarMenu() {
             See your data with us
           </Button>
           <Button
-            className="w-full justify-start rounded-lg text-base font-semibold py-3"
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold"
             variant="ghost"
             onClick={() => {
               setShowMenu(false);
@@ -313,7 +313,7 @@ export default function UserAvatarMenu() {
             Check Dionysus Status
           </Button>
           <Button
-            className="w-full justify-start rounded-lg text-base font-semibold py-3 text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
             variant="ghost"
             onClick={() => {
               setShowMenu(false);
@@ -330,7 +330,7 @@ export default function UserAvatarMenu() {
             {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
           </Button>
           <Button
-            className="w-full justify-start rounded-lg text-base font-semibold py-3 text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
             variant="ghost"
             onClick={() => {
               setShowMenu(false);
@@ -349,22 +349,22 @@ export default function UserAvatarMenu() {
       )}
 
       {showNewsletterPopup && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-gray-900">
+            <div className="relative p-6">
               <button
                 onClick={() => setShowNewsletterPopup(false)}
-                className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="absolute right-4 top-4 rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
               >
-                <X className="w-5 h-5" />
+                <X className="h-5 w-5" />
               </button>
 
-              <h2 className="text-2xl font-bold mb-6 text-center">Dionysus Newsletter</h2>
+              <h2 className="mb-6 text-center text-2xl font-bold">Dionysus Newsletter</h2>
 
-              <div className="space-y-6 mb-8">
-                <div className="p-5 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-3">📬 Why Subscribe?</h3>
-                  <ul className="list-disc pl-5 space-y-2">
+              <div className="mb-8 space-y-6">
+                <div className="rounded-lg bg-blue-50 p-5 dark:bg-blue-900/30">
+                  <h3 className="mb-3 text-lg font-semibold">📬 Why Subscribe?</h3>
+                  <ul className="list-disc space-y-2 pl-5">
                     <li>Get early access to new features and updates</li>
                     <li>Receive exclusive tips and best practices</li>
                     <li>Stay informed about important security updates</li>
@@ -374,9 +374,9 @@ export default function UserAvatarMenu() {
                 </div>
 
                 {isSubscribed && (
-                  <div className="p-5 bg-red-50 dark:bg-red-900/30 rounded-lg">
-                    <h3 className="text-lg font-semibold mb-3">⚠️ What You&apos;ll Miss</h3>
-                    <ul className="list-disc pl-5 space-y-2">
+                  <div className="rounded-lg bg-red-50 p-5 dark:bg-red-900/30">
+                    <h3 className="mb-3 text-lg font-semibold">⚠️ What You&apos;ll Miss</h3>
+                    <ul className="list-disc space-y-2 pl-5">
                       <li>Important product announcements and updates</li>
                       <li>Exclusive content and learning resources</li>
                       <li>Community events and networking opportunities</li>
@@ -386,8 +386,8 @@ export default function UserAvatarMenu() {
                   </div>
                 )}
 
-                <div className="p-5 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-2">🔒 Privacy Commitment</h3>
+                <div className="rounded-lg bg-gray-100 p-5 dark:bg-gray-800">
+                  <h3 className="mb-2 text-lg font-semibold">🔒 Privacy Commitment</h3>
                   <p>
                     We respect your inbox. We send newsletters monthly, never share your email, and
                     make it easy to unsubscribe at any time.
@@ -406,8 +406,8 @@ export default function UserAvatarMenu() {
                   {isLoading ? 'Processing...' : isSubscribed ? 'Unsubscribe' : 'Subscribe Now'}
                 </Button>
               </div>
-              <div className="flex flex-col justify-center items-center w-full gap-2">
-                <span className=" text-gray-500 dark:text-gray-300 mt-2 font-bold text-lg">
+              <div className="flex w-full flex-col items-center justify-center gap-2">
+                <span className="mt-2 text-lg font-bold text-gray-500 dark:text-gray-300">
                   Join other Subscribers
                 </span>
                 <AvatarStack animate>

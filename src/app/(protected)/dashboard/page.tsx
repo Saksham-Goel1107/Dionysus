@@ -61,12 +61,12 @@ const Page = ({}: Props) => {
 
   if (!projects || projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <h2 className="text-xl font-semibold mb-4">No Projects Found</h2>
+      <div className="flex h-full flex-col items-center justify-center">
+        <h2 className="mb-4 text-xl font-semibold">No Projects Found</h2>
         <p className="mb-4">You don&apos;t have any projects yet.</p>
         <Link
           href="/create"
-          className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+          className="rounded-md bg-primary px-4 py-2 text-white hover:bg-primary/90"
         >
           Create a Project
         </Link>
@@ -76,8 +76,8 @@ const Page = ({}: Props) => {
 
   if (!project) {
     return (
-      <div className="flex flex-col items-center justify-center h-full">
-        <h2 className="text-xl font-semibold mb-4">Select a Project</h2>
+      <div className="flex h-full flex-col items-center justify-center">
+        <h2 className="mb-4 text-xl font-semibold">Select a Project</h2>
         <p className="mb-4">Please select a project to continue.</p>
       </div>
     );
@@ -91,7 +91,7 @@ const Page = ({}: Props) => {
     <div>
       {maintenanceScheduled === 'true' && maintenanceDate && maintenanceTime && (
         <div
-          className="mb-4 rounded-md px-4 py-2 text-sm font-medium bg-yellow-100 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 flex items-center"
+          className="mb-4 flex items-center rounded-md bg-yellow-100 px-4 py-2 text-sm font-medium text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100"
           role="alert"
         >
           <span className="mr-2">⚠️</span>
@@ -149,7 +149,7 @@ const Page = ({}: Props) => {
                 </Button>
                 {showConfirm && (
                   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                    <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
                       <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Leave Project?
                       </h3>

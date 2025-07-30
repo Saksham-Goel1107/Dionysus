@@ -7,7 +7,7 @@ export function Logo() {
         src="/logo.png"
         alt="Dionysus Logo"
         fill
-        className="object-contain rounded-lg"
+        className="rounded-lg object-contain"
         priority
       />
     </div>

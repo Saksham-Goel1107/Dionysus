@@ -262,16 +262,16 @@ function Providers({ children }: { children: React.ReactNode }) {
 
             {showInactivityModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-sm text-center shadow-xl">
-                  <h2 className="text-xl font-semibold mb-2 text-gray-800 dark:text-white">
+                <div className="max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl dark:bg-gray-900">
+                  <h2 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white">
                     Inactivity Detected
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  <p className="mb-4 text-gray-600 dark:text-gray-300">
                     Redirecting to Google in <span className="font-bold">{countdown}</span>{' '}
                     seconds...
                   </p>
                   <button
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
                     onClick={() => {
                       setShowInactivityModal(false);
                       setCountdown(10);

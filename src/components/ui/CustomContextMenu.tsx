@@ -338,7 +338,7 @@ const CustomContextMenu = () => {
     <div
       style={getMenuStyle() as React.CSSProperties}
       onContextMenu={(e) => e.preventDefault()}
-      className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-lg shadow-xl"
+      className="rounded-lg border border-gray-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
     >
       {canCut && (
         <button onClick={handleCut} className={buttonClass}>
@@ -413,19 +413,19 @@ const CustomContextMenu = () => {
         </button>
       )}
 
-      <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
+      <div className="my-2 border-t border-gray-200 dark:border-zinc-700" />
 
       <button onClick={handleReload} className={buttonClass}>
         Reload
       </button>
       <button onClick={handleBack} className={buttonClass}>
-        Back <span className="ml-[76px] text-slate-500 text-[10px]">Alt + ←</span>
+        Back <span className="ml-[76px] text-[10px] text-slate-500">Alt + ←</span>
       </button>
       <button onClick={handleForward} className={buttonClass}>
-        Forward <span className="ml-[57px] text-slate-500 text-[10px]">Alt + →</span>
+        Forward <span className="ml-[57px] text-[10px] text-slate-500">Alt + →</span>
       </button>
       <button onClick={handleSaveAs} className={buttonClass}>
-        Save As <span className="ml-[60px] text-slate-500 text-[10px]">Ctrl + S</span>
+        Save As <span className="ml-[60px] text-[10px] text-slate-500">Ctrl + S</span>
       </button>
       <button
         onClick={() => {
@@ -435,10 +435,10 @@ const CustomContextMenu = () => {
         }}
         className={buttonClass}
       >
-        Print Screen <span className="ml-[36px] text-slate-500 text-[10px]">Ctrl + P</span>
+        Print Screen <span className="ml-[36px] text-[10px] text-slate-500">Ctrl + P</span>
       </button>
 
-      <div className="border-t border-gray-200 dark:border-zinc-700 my-2" />
+      <div className="my-2 border-t border-gray-200 dark:border-zinc-700" />
 
       <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
         Share Site

@@ -263,12 +263,11 @@ export default function Home() {
 
   return (
     <>
-      <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative">
-        <div className="flex flex-col items-center justify-center mb-8">
+      <main className="relative flex min-h-screen flex-col items-center justify-center bg-black text-white">
+        <div className="mb-8 flex flex-col items-center justify-center">
           <div
             onClick={handleBallClick}
-            className={`mx-auto mb-4 w-48 h-48 rounded-full bg-blue-500 shadow-2xl cursor-pointer transition-all duration-300
-              ${assistantSpeaking ? 'animate-pulse-ball' : ''} ${listening ? 'animate-listen-ball' : ''}`}
+            className={`mx-auto mb-4 h-48 w-48 cursor-pointer rounded-full bg-blue-500 shadow-2xl transition-all duration-300 ${assistantSpeaking ? 'animate-pulse-ball' : ''} ${listening ? 'animate-listen-ball' : ''}`}
             style={{
               filter:
                 `blur(${assistantSpeaking ? 8 : listening ? 4 : 2}px) brightness(${assistantSpeaking ? 1.2 : 1})` +
@@ -286,10 +285,10 @@ export default function Home() {
             title={listening ? 'Listening...' : assistantSpeaking ? 'Speaking...' : 'Click to talk'}
           />
           {assistantSpeaking && (
-            <div className="text-blue-300 text-lg font-bold animate-pulse">Speaking...</div>
+            <div className="animate-pulse text-lg font-bold text-blue-300">Speaking...</div>
           )}
           {listening && !assistantSpeaking && (
-            <div className="text-blue-200 text-lg font-bold animate-pulse">Listening...</div>
+            <div className="animate-pulse text-lg font-bold text-blue-200">Listening...</div>
           )}
         </div>
       </main>

@@ -39,7 +39,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 px-5 backdrop-blur supports-[backdrop-filter]:bg-background/60 sm:px-16">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex justify-between items-center px-2 md:hidden w-full">
+        <div className="flex w-full items-center justify-between px-2 md:hidden">
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
@@ -137,7 +137,7 @@ export function Navbar() {
         )}
 
         {!isHome && (
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden items-center gap-5 md:flex">
             <ModeToggle />
             <Link
               href={

@@ -258,26 +258,26 @@ const CodeFormatter = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900/80 dark:via-gray-950/90 dark:to-gray-900/80 rounded-2xl border border-gray-300 dark:border-gray-700 shadow-2xl flex flex-col items-center relative overflow-hidden">
-      <h2 className="text-2xl font-extrabold mb-3 text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-2">
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-gray-300 bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8 shadow-2xl dark:border-gray-700 dark:from-gray-900/80 dark:via-gray-950/90 dark:to-gray-900/80">
+      <h2 className="mb-3 flex items-center gap-2 text-2xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">
         <Sparkles className="h-6 w-6 text-gray-400 dark:text-gray-500" />
         Code Beautifier
       </h2>
-      <p className="mb-6 text-gray-600 dark:text-gray-300 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-gray-600 dark:text-gray-300 md:text-base">
         Paste your code, select a language, and create beautiful, shareable code snippets with
         syntax highlighting. Perfect for documentation and social media!
       </p>
-      <div className="w-full grid gap-4 z-10">
-        <div className="flex flex-col sm:flex-row gap-2 justify-between">
-          <div className="flex-1 min-w-[180px]">
+      <div className="z-10 grid w-full gap-4">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row">
+          <div className="min-w-[180px] flex-1">
             <Label
               htmlFor="language-select"
-              className="text-gray-800 dark:text-gray-100 mb-1 block"
+              className="mb-1 block text-gray-800 dark:text-gray-100"
             >
               Language
             </Label>
             <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger className="w-full bg-white/90 dark:bg-gray-950/90 border-gray-300 dark:border-gray-700">
+              <SelectTrigger className="w-full border-gray-300 bg-white/90 dark:border-gray-700 dark:bg-gray-950/90">
                 <SelectValue placeholder="Select Language" />
               </SelectTrigger>
               <SelectContent>
@@ -291,28 +291,28 @@ const CodeFormatter = () => {
           </div>
 
           <div className="flex-1">
-            <Label htmlFor="filename" className="text-gray-800 dark:text-gray-100 mb-1 block">
+            <Label htmlFor="filename" className="mb-1 block text-gray-800 dark:text-gray-100">
               File Name (for download)
             </Label>
             <input
               id="filename"
-              className="w-full px-3 py-2 rounded-md border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-950/90 text-gray-900 dark:text-gray-100"
+              className="w-full rounded-md border border-gray-300 bg-white/90 px-3 py-2 text-gray-900 dark:border-gray-700 dark:bg-gray-950/90 dark:text-gray-100"
               value={fileName}
               onChange={(e) => setFileName(e.target.value)}
             />
           </div>
 
-          <div className="flex items-end mb-1">
+          <div className="mb-1 flex items-end">
             <div className="flex items-center space-x-2">
               <Switch id="show-errors" checked={showErrors} onCheckedChange={setShowErrors} />
               <Label htmlFor="show-errors" className="text-gray-800 dark:text-gray-100">
                 {showErrors ? (
                   <span className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" /> Show Errors
+                    <Eye className="h-4 w-4" /> Show Errors
                   </span>
                 ) : (
                   <span className="flex items-center gap-1">
-                    <EyeOff className="w-4 h-4" /> Hide Errors
+                    <EyeOff className="h-4 w-4" /> Hide Errors
                   </span>
                 )}
               </Label>
@@ -321,7 +321,7 @@ const CodeFormatter = () => {
         </div>
 
         <Textarea
-          className="min-h-[200px] font-mono text-sm p-4 bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600 transition-all"
+          className="min-h-[200px] border border-gray-300 bg-gray-100 p-4 font-mono text-sm text-gray-900 transition-all focus:ring-2 focus:ring-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:focus:ring-gray-600"
           placeholder={`Paste your ${languageOptions.find((l) => l.value === language)?.label || language} code here...`}
           value={code}
           onChange={(e) => setCode(e.target.value)}
@@ -331,11 +331,11 @@ const CodeFormatter = () => {
         />
 
         {/* Simple file header for context */}
-        <div className="flex items-center justify-between px-4 py-1 bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-t-lg">
-          <span className="text-xs font-mono text-gray-700 dark:text-gray-300">
+        <div className="flex items-center justify-between rounded-t-lg border border-gray-300 bg-gray-200 px-4 py-1 dark:border-gray-700 dark:bg-gray-800">
+          <span className="font-mono text-xs text-gray-700 dark:text-gray-300">
             {fileName}.{language}
           </span>
-          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+          <span className="text-xs font-semibold uppercase text-gray-600 dark:text-gray-400">
             {languageOptions.find((l) => l.value === language)?.label || language}
           </span>
         </div>
@@ -343,7 +343,7 @@ const CodeFormatter = () => {
         {/* Preview Section */}
         <div
           ref={codeRef}
-          className="overflow-hidden border border-t-0 border-gray-300 dark:border-gray-700 shadow-lg rounded-b-lg bg-white dark:bg-gray-950"
+          className="overflow-hidden rounded-b-lg border border-t-0 border-gray-300 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-950"
         >
           <SyntaxHighlighter
             language={language}
@@ -396,12 +396,12 @@ const CodeFormatter = () => {
             {errors.length > 0 ? (
               <details
                 open
-                className="bg-gray-100 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md p-3"
+                className="rounded-md border border-gray-300 bg-gray-100 p-3 dark:border-gray-700 dark:bg-gray-900"
               >
-                <summary className="text-red-700 dark:text-red-300 font-medium mb-2 cursor-pointer select-none">
+                <summary className="mb-2 cursor-pointer select-none font-medium text-red-700 dark:text-red-300">
                   Found {errors.length} {errors.length === 1 ? 'issue' : 'issues'} (click to toggle)
                 </summary>
-                <ul className="text-red-600 dark:text-red-400 text-sm space-y-1 list-disc pl-5">
+                <ul className="list-disc space-y-1 pl-5 text-sm text-red-600 dark:text-red-400">
                   {errors.map((error, index) => (
                     <li key={index}>
                       Line {error.line}: {error.message}
@@ -410,7 +410,7 @@ const CodeFormatter = () => {
                 </ul>
               </details>
             ) : (
-              <div className="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-md p-3 text-gray-700 dark:text-gray-300 text-sm text-center">
+              <div className="rounded-md border border-gray-300 bg-gray-50 p-3 text-center text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                 <span className="font-medium">No errors found!</span>
               </div>
             )}
@@ -418,18 +418,18 @@ const CodeFormatter = () => {
         )}
 
         {/* Action buttons */}
-        <div className="flex flex-wrap gap-3 justify-center mt-4">
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
           <Button
             onClick={handleCopyToClipboard}
             variant="outline"
-            className="flex items-center gap-2 border-gray-400 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-900/40"
+            className="flex items-center gap-2 border-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-900/40"
           >
             {copied ? <Check className="h-4 w-4" /> : <ClipboardCopy className="h-4 w-4" />}
             {copied ? 'Copied!' : 'Copy Code'}
           </Button>
           <Button
             onClick={downloadAsImage}
-            className="flex items-center gap-2 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 hover:bg-gray-900 dark:hover:bg-gray-100 border border-gray-700 dark:border-gray-300"
+            className="flex items-center gap-2 border border-gray-700 bg-gray-800 text-white hover:bg-gray-900 dark:border-gray-300 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-gray-100"
           >
             <Download className="h-4 w-4" />
             Download as Image

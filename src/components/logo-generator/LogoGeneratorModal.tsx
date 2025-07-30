@@ -165,12 +165,12 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-h-[95vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-2xl font-bold">
             <div className="flex items-center gap-3 pr-3">
               <Image src={'/logo.png'} height={40} width={40} alt="Logo" />
-              <span className="font-extrabold ">Dionysus</span>
+              <span className="font-extrabold">Dionysus</span>
             </div>
             Logo Generator
           </DialogTitle>
@@ -181,11 +181,11 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+        <div className="grid grid-cols-1 gap-6 py-4 md:grid-cols-2">
           {/* Left side - Form */}
           <div className="space-y-5">
             <Tabs defaultValue="basics" className="w-full">
-              <TabsList className="grid grid-cols-3 mb-4">
+              <TabsList className="mb-4 grid grid-cols-3">
                 <TabsTrigger value="basics">Basics</TabsTrigger>
                 <TabsTrigger value="style">Style</TabsTrigger>
                 <TabsTrigger value="colors">Colors</TabsTrigger>
@@ -309,20 +309,19 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
 
           {/* Right side - Preview */}
           <div
-            className={`flex flex-col items-center justify-center rounded-lg border border-dashed p-6 h-[400px]
-            ${resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900/50' : 'border-gray-300 bg-gray-50'}`}
+            className={`flex h-[400px] flex-col items-center justify-center rounded-lg border border-dashed p-6 ${resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900/50' : 'border-gray-300 bg-gray-50'}`}
           >
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center text-center">
-                <Loader2 className="h-12 w-12 animate-spin mb-4" />
+                <Loader2 className="mb-4 h-12 w-12 animate-spin" />
                 <p className="text-lg font-medium">Creating your logo...</p>
-                <p className="text-sm text-muted-foreground mt-2">This may take a moment</p>
+                <p className="mt-2 text-sm text-muted-foreground">This may take a moment</p>
               </div>
             ) : logoImages.length > 0 ? (
               <div className="flex flex-col items-center">
                 <div className="relative mb-4 w-full">
                   {/* Image carousel container */}
-                  <div className="flex justify-center items-center">
+                  <div className="flex items-center justify-center">
                     {/* Navigation arrows */}
                     {logoImages.length > 1 && (
                       <Button
@@ -352,7 +351,7 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                     <Image
                       src={logoImages[currentImageIndex] ?? ''}
                       alt={`Generated logo ${currentImageIndex + 1}`}
-                      className="max-h-[300px] max-w-full object-contain rounded-md shadow-md"
+                      className="max-h-[300px] max-w-full rounded-md object-contain shadow-md"
                     />
 
                     {/* Navigation arrows */}
@@ -384,14 +383,14 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
                   {/* Image counter if multiple images */}
                   {logoImages.length > 1 && (
                     <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                      <div className="bg-background/80 px-2 py-1 rounded-full text-xs">
+                      <div className="rounded-full bg-background/80 px-2 py-1 text-xs">
                         {currentImageIndex + 1} / {logoImages.length}
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="flex gap-2 mt-2">
+                <div className="mt-2 flex gap-2">
                   <Button size="sm" variant="outline" onClick={generateLogo}>
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Regenerate
@@ -405,12 +404,12 @@ const LogoGeneratorModal = ({ open, onClose }: LogoGeneratorModalProps) => {
             ) : (
               <div className="flex flex-col items-center justify-center text-center">
                 <div
-                  className={`rounded-full p-4 mb-4 ${resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}
+                  className={`mb-4 rounded-full p-4 ${resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}
                 >
                   <ImageIcon className="h-8 w-8 opacity-50" />
                 </div>
                 <p className="text-lg font-medium">Your logo will appear here</p>
-                <p className="text-sm text-muted-foreground mt-2 max-w-xs">
+                <p className="mt-2 max-w-xs text-sm text-muted-foreground">
                   Fill in the details on the left and click &apos;Generate Logo&apos;
                 </p>
               </div>

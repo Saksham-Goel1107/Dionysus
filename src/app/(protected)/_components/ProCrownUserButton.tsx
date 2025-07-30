@@ -7,8 +7,8 @@ export default function ProCrownUserButton({ isPro }: { isPro: boolean }) {
     <div className="relative inline-block">
       <UserAvatarMenu />
       {isPro && (
-        <span className="absolute -top-2 -right-2 z-10">
-          <Crown className="w-5 h-5 text-yellow-400 drop-shadow" fill="#facc15" />
+        <span className="absolute -right-2 -top-2 z-10">
+          <Crown className="h-5 w-5 text-yellow-400 drop-shadow" fill="#facc15" />
         </span>
       )}
     </div>

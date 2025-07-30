@@ -147,7 +147,7 @@ const AppSidebar = ({}: Props) => {
     <Sidebar collapsible="icon" variant="floating">
       <SidebarHeader>
         <Link href={'/'}>
-          <div className="flex items-center gap-2 justify-center">
+          <div className="flex items-center justify-center gap-2">
             <Logo />
             {open && <GradientTypewriter words="Dionysus" />}
           </div>
@@ -225,10 +225,10 @@ const AppSidebar = ({}: Props) => {
                     placeholder="Search projects..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-20"
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-1 pr-20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
                   />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 text-xs font-mono text-muted-foreground">
+                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
                       ⌘ <span className="ml-0.5">K</span>
                     </span>
                   </div>
@@ -246,9 +246,9 @@ const AppSidebar = ({}: Props) => {
                         <div onClick={() => setProjectId(project.id)}>
                           <div
                             className={cn(
-                              'cursor-pointer flex size-6 items-center justify-center rounded-sm border bg-white text-sm text-primary',
+                              'flex size-6 cursor-pointer items-center justify-center rounded-sm border bg-white text-sm text-primary',
                               {
-                                'bg-primary text-white cursor-pointer': project.id === projectId,
+                                'cursor-pointer bg-primary text-white': project.id === projectId,
                                 'px-2': !open,
                               },
                             )}
@@ -278,7 +278,7 @@ const AppSidebar = ({}: Props) => {
                 <>
                   <SidebarMenuItem>
                     <div
-                      className={`text-xs px-2 py-1 ${!hasProPlan && projects.length >= 3 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
+                      className={`px-2 py-1 text-xs ${!hasProPlan && projects.length >= 3 ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'}`}
                     >
                       {hasProPlan
                         ? `${projects?.length || 0}/Unlimited projects`
@@ -299,7 +299,7 @@ const AppSidebar = ({}: Props) => {
               )}
               {showProModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                  <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-sm">
+                  <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900">
                     <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                       Premium Required
                     </h3>

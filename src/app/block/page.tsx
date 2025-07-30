@@ -14,9 +14,9 @@ export default async function BlockPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-8">
-      <div className="max-w-lg w-full bg-gray-800 rounded-xl shadow-lg p-8 text-center border border-gray-700">
-        <h1 className="text-4xl font-bold mb-4 text-red-500">Access Restricted</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-900 p-8 text-white">
+      <div className="w-full max-w-lg rounded-xl border border-gray-700 bg-gray-800 p-8 text-center shadow-lg">
+        <h1 className="mb-4 text-4xl font-bold text-red-500">Access Restricted</h1>
         <p className="mb-6 text-lg text-gray-200">
           Sorry, our service is not available in your country at this time.
           <br />

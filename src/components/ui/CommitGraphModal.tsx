@@ -129,20 +129,20 @@ const CommitGraphModal: React.FC = () => {
   return (
     <>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="w-full max-w-5xl px-0 py-0 border-none bg-transparent max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] w-full max-w-5xl overflow-y-auto border-none bg-transparent px-0 py-0">
           <div
-            className={`rounded-3xl shadow-2xl border-2 ${cardBorder} ${cardBg} w-full p-0 overflow-hidden`}
+            className={`rounded-3xl border-2 shadow-2xl ${cardBorder} ${cardBg} w-full overflow-hidden p-0`}
           >
             {/* Header */}
-            <div className="flex items-center gap-4 px-8 py-6 bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-950 shadow-md">
+            <div className="flex items-center gap-4 bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-700 px-8 py-6 shadow-md dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-950">
               <Image
                 src="/logo.png"
                 alt="Logo"
                 width={44}
                 height={44}
-                className="rounded shadow-lg border-2 border-white dark:border-indigo-900"
+                className="rounded border-2 border-white shadow-lg dark:border-indigo-900"
               />
-              <DialogTitle className="text-2xl md:text-3xl font-extrabold text-white tracking-tight flex-1 drop-shadow-lg">
+              <DialogTitle className="flex-1 text-2xl font-extrabold tracking-tight text-white drop-shadow-lg md:text-3xl">
                 {project?.name || 'Repository'}{' '}
                 <span className="font-light">– Commit Graph & Repo AI</span>
               </DialogTitle>
@@ -151,21 +151,21 @@ const CommitGraphModal: React.FC = () => {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-indigo-100 hover:text-yellow-200 text-sm font-semibold underline underline-offset-2 transition-all duration-150"
+                  className="text-sm font-semibold text-indigo-100 underline underline-offset-2 transition-all duration-150 hover:text-yellow-200"
                 >
                   View on GitHub
                 </a>
               )}
             </div>
             {/* Main content */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-8 px-4 md:px-10 py-8 w-full">
+            <div className="grid w-full grid-cols-1 gap-0 px-4 py-8 md:grid-cols-2 md:gap-8 md:px-10">
               {/* AI Summary & QnA */}
               <div className="flex flex-col gap-6">
                 <div
-                  className={`rounded-2xl border-2 ${cardBorder} bg-white/80 dark:bg-[#23272f]/80 shadow-lg p-6 flex flex-col gap-3`}
+                  className={`rounded-2xl border-2 ${cardBorder} flex flex-col gap-3 bg-white/80 p-6 shadow-lg dark:bg-[#23272f]/80`}
                 >
-                  <h3 className={`text-xl font-bold mb-2 ${textMain}`}>AI Repository Summary</h3>
-                  <ScrollArea className="h-48 rounded border border-indigo-200 dark:border-indigo-800 p-3 text-base font-medium bg-white dark:bg-zinc-800">
+                  <h3 className={`mb-2 text-xl font-bold ${textMain}`}>AI Repository Summary</h3>
+                  <ScrollArea className="h-48 rounded border border-indigo-200 bg-white p-3 text-base font-medium dark:border-indigo-800 dark:bg-zinc-800">
                     {summaryLoading ? (
                       <p className="animate-pulse text-indigo-400">Loading summary...</p>
                     ) : summaryError ? (
@@ -179,10 +179,10 @@ const CommitGraphModal: React.FC = () => {
                   </ScrollArea>
                 </div>
                 <div
-                  className={`rounded-2xl border-2 ${cardBorder} bg-white/80 dark:bg-[#23272f]/80 shadow-lg p-6 flex flex-col gap-3`}
+                  className={`rounded-2xl border-2 ${cardBorder} flex flex-col gap-3 bg-white/80 p-6 shadow-lg dark:bg-[#23272f]/80`}
                 >
-                  <h3 className={`text-lg font-semibold mb-2 ${textMain}`}>Ask the Repo AI</h3>
-                  <div className="text-xs text-indigo-500 dark:text-indigo-300 mb-2">
+                  <h3 className={`mb-2 text-lg font-semibold ${textMain}`}>Ask the Repo AI</h3>
+                  <div className="mb-2 text-xs text-indigo-500 dark:text-indigo-300">
                     Tip: For concise suggestions, ask specific questions (e.g., “How do I fix this
                     error?” or “Suggest a function name”).
                   </div>
@@ -191,18 +191,18 @@ const CommitGraphModal: React.FC = () => {
                       value={question}
                       onChange={(e) => setQuestion(e.target.value)}
                       placeholder="Ask a question about this repo..."
-                      className={`w-full rounded-xl border-2 px-3 py-2 text-base font-medium focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition-all duration-150 ${inputBg} ${inputBorder} shadow-sm`}
+                      className={`w-full rounded-xl border-2 px-3 py-2 text-base font-medium transition-all duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400 ${inputBg} ${inputBorder} shadow-sm`}
                       rows={2}
                     ></textarea>
                     <Button
-                      className={`mt-1 px-6 py-2 rounded-lg font-semibold ${buttonMain} shadow-md disabled:opacity-60`}
+                      className={`mt-1 rounded-lg px-6 py-2 font-semibold ${buttonMain} shadow-md disabled:opacity-60`}
                       size="sm"
                       onClick={handleAskMore}
                       disabled={answerLoading || !question.trim()}
                     >
                       {answerLoading ? (
                         <span className="flex items-center gap-2">
-                          <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>{' '}
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>{' '}
                           Asking...
                         </span>
                       ) : (
@@ -211,14 +211,14 @@ const CommitGraphModal: React.FC = () => {
                     </Button>
                   </div>
                   {answer && (
-                    <div className="mt-3 flex flex-col gap-2 max-h-[320px] overflow-y-auto w-full">
-                      <div className="flex items-end gap-2 w-full">
-                        <div className="rounded-xl px-4 py-2 bg-indigo-100 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-100 shadow w-full text-base font-medium self-end ml-auto">
+                    <div className="mt-3 flex max-h-[320px] w-full flex-col gap-2 overflow-y-auto">
+                      <div className="flex w-full items-end gap-2">
+                        <div className="ml-auto w-full self-end rounded-xl bg-indigo-100 px-4 py-2 text-base font-medium text-indigo-900 shadow dark:bg-indigo-900 dark:text-indigo-100">
                           {question}
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 w-full">
-                        <div className="rounded-xl px-4 py-2 bg-white dark:bg-zinc-800 text-indigo-900 dark:text-indigo-100 shadow w-full text-base font-medium">
+                      <div className="flex w-full items-start gap-2">
+                        <div className="w-full rounded-xl bg-white px-4 py-2 text-base font-medium text-indigo-900 shadow dark:bg-zinc-800 dark:text-indigo-100">
                           <MDEditor.Markdown
                             source={answer}
                             className="prose dark:prose-invert max-w-none"
@@ -231,27 +231,27 @@ const CommitGraphModal: React.FC = () => {
               </div>
               {/* Commit Graph */}
               <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <h3 className={`text-xl font-bold ${textMain}`}>Commit Graph</h3>
                   <Button
                     onClick={handleDownload}
-                    className="text-xs px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-indigo-100 via-indigo-200 to-indigo-300 dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-950 text-indigo-800 dark:text-white border border-indigo-300 dark:border-indigo-700 shadow"
+                    className="rounded-lg border border-indigo-300 bg-gradient-to-r from-indigo-100 via-indigo-200 to-indigo-300 px-4 py-2 text-xs font-semibold text-indigo-800 shadow dark:border-indigo-700 dark:from-indigo-900 dark:via-indigo-800 dark:to-indigo-950 dark:text-white"
                   >
                     Download PNG
                   </Button>
                 </div>
                 <div
                   ref={graphRef}
-                  className="rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 p-4 bg-white dark:bg-zinc-800 shadow-lg"
+                  className="rounded-2xl border-2 border-indigo-200 bg-white p-4 shadow-lg dark:border-indigo-800 dark:bg-zinc-800"
                 >
                   <CommitGraph />
                 </div>
               </div>
             </div>
-            <div className="px-8 pb-8 pt-4 flex flex-col md:flex-row gap-3">
+            <div className="flex flex-col gap-3 px-8 pb-8 pt-4 md:flex-row">
               <Button
                 onClick={() => setOpen(false)}
-                className="w-full md:w-auto px-8 py-3 rounded-xl font-bold bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white shadow-lg text-lg mt-2 md:mt-0"
+                className="mt-2 w-full rounded-xl bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-600 px-8 py-3 text-lg font-bold text-white shadow-lg hover:from-indigo-600 hover:to-indigo-700 md:mt-0 md:w-auto"
               >
                 Close
               </Button>
@@ -259,7 +259,7 @@ const CommitGraphModal: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="max-w-2xl mx-auto my-10 p-6 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 flex justify-center items-center gap-3 flex-col">
+      <div className="mx-auto my-10 flex max-w-2xl flex-col items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
         <div className="flex items-center gap-2">
           <svg
             width="32"
@@ -272,18 +272,18 @@ const CommitGraphModal: React.FC = () => {
             <circle cx="12" cy="12" r="10" stroke="#fff" strokeWidth="2" fill="#3b82f6" />
             <circle cx="12" cy="12" r="4" fill="#6366f1" />
           </svg>
-          <span className="text-2xl font-extrabold tracking-tight dark:text-white text-black drop-shadow-lg">
+          <span className="text-2xl font-extrabold tracking-tight text-black drop-shadow-lg dark:text-white">
             Commit Graph & Repo AI
           </span>
         </div>
-        <p className="text-base dark:text-indigo-100/90 text-gray-500 font-medium text-center max-w-xl">
+        <p className="max-w-xl text-center text-base font-medium text-gray-500 dark:text-indigo-100/90">
           Visualize your repository&apos;s commit history and get instant AI-powered insights. Click
           below to open the interactive commit graph and ask questions about your codebase.
         </p>
         <Button
           variant="outline"
           onClick={() => setOpen(true)}
-          className="px-8 py-3 rounded-2xl text-lg font-bold shadow-lg bg-gradient-to-r from-blue-500 via-primary to-blue-600 hover:from-blue-600 hover:to-primary/90 transition-all duration-200 border-0 flex items-center gap-2 text-white tracking-tight"
+          className="flex items-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-blue-500 via-primary to-blue-600 px-8 py-3 text-lg font-bold tracking-tight text-white shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-primary/90"
           style={{ minWidth: 240 }}
         >
           <svg

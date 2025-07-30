@@ -22,7 +22,7 @@ const PieChartComponent = ({ analytics }: { analytics: any[] }) => {
     }))
     .filter((d) => d.functions > 0);
   return (
-    <div className="w-full h-72">
+    <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
@@ -43,7 +43,7 @@ const PieChartComponent = ({ analytics }: { analytics: any[] }) => {
           <Legend />
         </PieChart>
       </ResponsiveContainer>
-      <div className="text-xs text-center mt-2">Functions per file</div>
+      <div className="mt-2 text-center text-xs">Functions per file</div>
     </div>
   );
 };

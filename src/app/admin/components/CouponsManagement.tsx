@@ -177,7 +177,7 @@ export default function CouponsManagement() {
 
   return (
     <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Coupon Management</h1>
           <p className="text-gray-500 dark:text-gray-400">Create and manage discount coupons</p>
@@ -185,7 +185,7 @@ export default function CouponsManagement() {
         <Button
           variant="outline"
           onClick={exportToCSV}
-          className="flex gap-2 items-center"
+          className="flex items-center gap-2"
           disabled={couponHistory.length === 0}
         >
           <Download size={16} />
@@ -193,7 +193,7 @@ export default function CouponsManagement() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Coupon Generator */}
         <Card>
           <CardHeader>
@@ -241,7 +241,7 @@ export default function CouponsManagement() {
                     onValueChange={(values) => setMinutes(values[0] ?? discount)}
                   />
                 </div>
-                <div className="flex gap-2 mt-2">
+                <div className="mt-2 flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -293,7 +293,7 @@ export default function CouponsManagement() {
           <CardHeader>
             <CardTitle>Coupon History</CardTitle>
             <CardDescription>Manage your generated coupons</CardDescription>
-            <div className="flex items-center justify-between gap-4 mt-2">
+            <div className="mt-2 flex items-center justify-between gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
                 <Input
@@ -347,11 +347,11 @@ export default function CouponsManagement() {
               Coupon code has been generated successfully. Copy the code to share with users.
             </DialogDescription>
           </DialogHeader>
-          <div className="p-4 bg-gray-100 dark:bg-gray-900 rounded-md mt-4">
+          <div className="mt-4 rounded-md bg-gray-100 p-4 dark:bg-gray-900">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Discount</p>
-                <p className="font-bold text-lg">{discount}% OFF</p>
+                <p className="text-lg font-bold">{discount}% OFF</p>
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Valid for</p>
@@ -367,11 +367,11 @@ export default function CouponsManagement() {
               </div>
             </div>
             <div className="mt-4">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+              <p className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
                 Coupon Code
               </p>
-              <div className="flex items-center justify-between bg-white dark:bg-gray-950 p-2 rounded-md border">
-                <code className="text-blue-600 dark:text-blue-400 font-mono break-all text-sm">
+              <div className="flex items-center justify-between rounded-md border bg-white p-2 dark:bg-gray-950">
+                <code className="break-all font-mono text-sm text-blue-600 dark:text-blue-400">
                   {newCouponCode}
                 </code>
                 <Button variant="ghost" size="icon" onClick={() => copyToClipboard(newCouponCode)}>
@@ -465,7 +465,7 @@ function CouponTable({
             <TableRow>
               <TableCell colSpan={6} className="h-24 text-center">
                 <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                  <AlertCircle className="h-8 w-8 mb-2 opacity-50" />
+                  <AlertCircle className="mb-2 h-8 w-8 opacity-50" />
                   <span>No coupons found</span>
                   <span className="text-sm">Generate your first coupon to get started</span>
                 </div>

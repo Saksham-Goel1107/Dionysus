@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 const PromptBox = ({ prompt }: { prompt: string }) => {
   const [copied, setCopied] = useState(false);
   return (
-    <div className="flex items-center gap-2 bg-blue-100 dark:bg-blue-800/40 rounded px-3 py-2 my-1">
-      <span className="font-mono text-xs break-all select-all flex-1">{prompt}</span>
+    <div className="my-1 flex items-center gap-2 rounded bg-blue-100 px-3 py-2 dark:bg-blue-800/40">
+      <span className="flex-1 select-all break-all font-mono text-xs">{prompt}</span>
       <Button
         size="sm"
-        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 text-xs"
+        className="bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
         onClick={() => {
           navigator.clipboard.writeText(prompt);
           setCopied(true);
@@ -49,27 +49,27 @@ const Wiki = () => {
   const [showModal, setShowModal] = useState(false);
   return (
     <>
-      <div className="w-full max-w-2xl mx-auto my-2 p-6 bg-blue-50 dark:bg-blue-900/40 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md flex flex-col items-center">
-        <h2 className="text-xl font-bold mb-2 text-blue-700 dark:text-blue-200">
+      <div className="mx-auto my-2 flex w-full max-w-2xl flex-col items-center rounded-xl border border-blue-300 bg-blue-50 p-6 shadow-md dark:border-blue-700 dark:bg-blue-900/40">
+        <h2 className="mb-2 text-xl font-bold text-blue-700 dark:text-blue-200">
           Wiki Generation Tips & Tricks
         </h2>
-        <Button onClick={() => setShowModal(true)} className="bg-blue-600 text-white mb-2">
+        <Button onClick={() => setShowModal(true)} className="mb-2 bg-blue-600 text-white">
           Show Detailed Guide
         </Button>
       </div>
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-auto">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl p-6 w-full max-w-2xl relative max-h-[98vh] overflow-y-auto mx-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-auto bg-black/40">
+          <div className="relative mx-2 max-h-[98vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl dark:bg-gray-900">
             <button
               onClick={() => setShowModal(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white text-2xl"
+              className="absolute right-2 top-2 text-2xl text-gray-500 hover:text-gray-900 dark:hover:text-white"
             >
               &times;
             </button>
-            <h3 className="font-bold text-lg mb-4 text-center text-blue-700 dark:text-blue-200">
+            <h3 className="mb-4 text-center text-lg font-bold text-blue-700 dark:text-blue-200">
               Premium Wiki Generation: Step-by-Step Guide
             </h3>
-            <div className="w-full text-blue-900 dark:text-blue-100 text-sm space-y-4">
+            <div className="w-full space-y-4 text-sm text-blue-900 dark:text-blue-100">
               <div>
                 <b>What is Wiki Generation?</b>
                 <p className="mt-1">
@@ -81,7 +81,7 @@ const Wiki = () => {
               </div>
               <div>
                 <b>Why Use GitHub Copilot for Wiki?</b>
-                <ul className="list-disc pl-5 mt-1">
+                <ul className="mt-1 list-disc pl-5">
                   <li>
                     Copilot leverages AI to suggest, summarize, and improve documentation content in
                     real time.
@@ -98,14 +98,14 @@ const Wiki = () => {
               </div>
               <div>
                 <b>How to Enable Copilot for Wiki Generation (Step-by-Step):</b>
-                <ol className="list-decimal pl-5 mt-1 space-y-1">
+                <ol className="mt-1 list-decimal space-y-1 pl-5">
                   <li>
                     Go to{' '}
                     <a
                       href="https://github.com/features/copilot"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="underline text-blue-600"
+                      className="text-blue-600 underline"
                     >
                       GitHub Copilot
                     </a>{' '}
@@ -148,7 +148,7 @@ const Wiki = () => {
               </div>
               <div>
                 <b>Best Prompts for Copilot Wiki Generation (Advanced & Sequential):</b>
-                <div className="space-y-1 mt-1">
+                <div className="mt-1 space-y-1">
                   {promptList.map((prompt, i) => (
                     <PromptBox key={i} prompt={prompt} />
                   ))}
@@ -162,7 +162,7 @@ const Wiki = () => {
               </div>
               <div>
                 <b>How to Get Copilot to Use Code Context Effectively:</b>
-                <ul className="list-disc pl-5 mt-1">
+                <ul className="mt-1 list-disc pl-5">
                   <li>
                     Open the relevant code files in your editor or GitHub web interface before
                     prompting Copilot. This increases the chance Copilot will use the code context.
@@ -187,7 +187,7 @@ const Wiki = () => {
               </div>
               <div>
                 <b>Pro Tips for Premium Users:</b>
-                <ul className="list-disc pl-5 mt-1">
+                <ul className="mt-1 list-disc pl-5">
                   <li>
                     Always review and edit Copilot&apos;s suggestions for accuracy and
                     project-specific details.
@@ -209,7 +209,7 @@ const Wiki = () => {
                   </li>
                 </ul>
               </div>
-              <div className="mt-4 text-xs text-blue-700 dark:text-blue-200 bg-blue-100 dark:bg-blue-800/40 rounded p-2">
+              <div className="mt-4 rounded bg-blue-100 p-2 text-xs text-blue-700 dark:bg-blue-800/40 dark:text-blue-200">
                 <b>Note:</b> These steps are designed for premium users who want to maximize the
                 value of GitHub Copilot for documentation. Even though Copilot is powerful, always
                 use your expertise to ensure the highest quality and accuracy.

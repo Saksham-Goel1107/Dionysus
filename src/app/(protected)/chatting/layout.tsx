@@ -15,10 +15,10 @@ export default async function ChattingLayout({ children }: { children: React.Rea
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
           <Lock className="h-8 w-8 text-yellow-600" />
         </div>
-        <h2 className={`text-center text-2xl font-bold dark:text-white text-gray-800`}>
+        <h2 className={`text-center text-2xl font-bold text-gray-800 dark:text-white`}>
           Pro Plan Required
         </h2>
-        <p className={`text-center dark:text-gray-200 text-gray-600 max-w-md`}>
+        <p className={`max-w-md text-center text-gray-600 dark:text-gray-200`}>
           Access to Chatting is available exclusively for{' '}
           <span className="font-semibold text-yellow-700">Dionysus Pro Pack</span> users.
           <br />
@@ -27,7 +27,7 @@ export default async function ChattingLayout({ children }: { children: React.Rea
         <Link href="/subscriptions">
           <Button
             size="lg"
-            className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs"
+            className="mt-2 w-full max-w-xs bg-yellow-600 text-white hover:bg-yellow-700"
           >
             Upgrade Now
           </Button>
@@ -39,10 +39,10 @@ export default async function ChattingLayout({ children }: { children: React.Rea
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Mobile: Sidebar on top, Chat below; Desktop: Sidebar left, Chat right */}
-      <div className="flex flex-col md:flex-row h-screen md:h-[100dvh] w-full">
+      <div className="flex h-screen w-full flex-col md:h-[100dvh] md:flex-row">
         <CommunitySidebar />
         <main
-          className="flex-1 flex justify-center items-start md:items-center px-0 md:px-8 py-0 md:py-0 overflow-x-auto overflow-y-hidden"
+          className="flex flex-1 items-start justify-center overflow-x-auto overflow-y-hidden px-0 py-0 md:items-center md:px-8 md:py-0"
           style={{
             height: '80vh',
             minHeight: '80vh',
@@ -50,7 +50,7 @@ export default async function ChattingLayout({ children }: { children: React.Rea
             overflowX: 'auto', // Allow x-scroll on mobile
           }}
         >
-          <div className="w-full h-full min-w-[400px] max-w-full md:max-w-2xl lg:max-w-3xl xl:max-w-4xl flex flex-col">
+          <div className="flex h-full w-full min-w-[400px] max-w-full flex-col md:max-w-2xl lg:max-w-3xl xl:max-w-4xl">
             {children}
           </div>
         </main>

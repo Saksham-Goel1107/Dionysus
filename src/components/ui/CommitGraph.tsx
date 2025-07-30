@@ -109,11 +109,11 @@ const CommitGraph: React.FC = () => {
 
   return (
     <div
-      className="relative max-h-[420px] min-h-[180px] overflow-y-auto overflow-x-auto bg-gradient-to-br from-blue-50 via-white to-blue-100 dark:from-[#181a20] dark:via-[#23272f] dark:to-[#181a20] rounded-xl shadow-inner border border-blue-100 dark:border-blue-800 p-2"
+      className="relative max-h-[420px] min-h-[180px] overflow-x-auto overflow-y-auto rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 p-2 shadow-inner dark:border-blue-800 dark:from-[#181a20] dark:via-[#23272f] dark:to-[#181a20]"
       style={{ scrollbarWidth: 'thin', scrollbarColor: '#6366f1 #e0e7ff' }}
     >
       {loading ? (
-        <p className="text-gray-400 dark:text-gray-500 animate-pulse">Loading commit graph...</p>
+        <p className="animate-pulse text-gray-400 dark:text-gray-500">Loading commit graph...</p>
       ) : (
         <svg
           width={900}
@@ -160,7 +160,7 @@ const CommitGraph: React.FC = () => {
                 height={rowHeight - 2}
                 rx={12}
                 fill="transparent"
-                className="group-hover:fill-blue-50 dark:group-hover:fill-[#23272f] transition-colors duration-150"
+                className="transition-colors duration-150 group-hover:fill-blue-50 dark:group-hover:fill-[#23272f]"
               />
             );
           })}
@@ -187,7 +187,7 @@ const CommitGraph: React.FC = () => {
                   stroke="#fff"
                   strokeWidth={2.5}
                   style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.10))' }}
-                  className="group-hover:stroke-blue-400 group-hover:stroke-2 transition-all duration-150"
+                  className="transition-all duration-150 group-hover:stroke-blue-400 group-hover:stroke-2"
                 />
                 {branchBadges[commit.sha]?.map((badge, idx) => (
                   <g key={badge}>
@@ -249,7 +249,7 @@ const CommitGraph: React.FC = () => {
         </svg>
       )}
       {!loading && commits.length === 0 && (
-        <p className="text-gray-500 dark:text-gray-400 text-sm">No commits found.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">No commits found.</p>
       )}
     </div>
   );

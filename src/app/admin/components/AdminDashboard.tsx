@@ -65,13 +65,13 @@ export default function AdminDashboard({
   const proUserPercentage = totalUsers > 0 ? (proUsers / totalUsers) * 100 : 0;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
           <Link
             href="/admin/surveys"
-            className="flex items-center px-4 py-2 text-sm font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-md hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors"
+            className="flex items-center rounded-md bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50"
           >
             <BarChart2 size={16} className="mr-2" />
             Survey Analytics
@@ -83,15 +83,15 @@ export default function AdminDashboard({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
-                <h3 className="text-2xl font-bold mt-1">{totalUsers}</h3>
+                <h3 className="mt-1 text-2xl font-bold">{totalUsers}</h3>
               </div>
-              <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                 <Users size={24} />
               </div>
             </div>
@@ -103,12 +103,12 @@ export default function AdminDashboard({
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pro Users</p>
-                <h3 className="text-2xl font-bold mt-1">
+                <h3 className="mt-1 text-2xl font-bold">
                   {proUsers}{' '}
                   <span className="text-sm text-gray-500">({proUserPercentage.toFixed(1)}%)</span>
                 </h3>
               </div>
-              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
                 <BadgeCheck size={24} />
               </div>
             </div>
@@ -122,9 +122,9 @@ export default function AdminDashboard({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Projects
                 </p>
-                <h3 className="text-2xl font-bold mt-1">{totalProjects}</h3>
+                <h3 className="mt-1 text-2xl font-bold">{totalProjects}</h3>
               </div>
-              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                 <Folder size={24} />
               </div>
             </div>
@@ -138,9 +138,9 @@ export default function AdminDashboard({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Revenue (est.)
                 </p>
-                <h3 className="text-2xl font-bold mt-1">₹{estimatedRevenue.toLocaleString()}</h3>
+                <h3 className="mt-1 text-2xl font-bold">₹{estimatedRevenue.toLocaleString()}</h3>
               </div>
-              <div className="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
                 <CreditCard size={24} />
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function AdminDashboard({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>User Growth</CardTitle>
@@ -194,7 +194,7 @@ export default function AdminDashboard({
           </CardHeader>
           <CardContent className="pt-2">
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm font-medium">Pro Users</span>
                 <span className="text-sm font-medium">{proUserPercentage.toFixed(1)}%</span>
               </div>
@@ -234,7 +234,7 @@ export default function AdminDashboard({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent Transactions</CardTitle>
@@ -249,7 +249,7 @@ export default function AdminDashboard({
                     className="flex items-center justify-between border-b pb-2 last:border-0"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                         <Activity size={18} />
                       </div>
                       <div>
@@ -273,7 +273,7 @@ export default function AdminDashboard({
                   </div>
                 ))
               ) : (
-                <p className="text-center text-gray-500 dark:text-gray-400 py-4">
+                <p className="py-4 text-center text-gray-500 dark:text-gray-400">
                   No recent transactions
                 </p>
               )}
@@ -291,10 +291,10 @@ export default function AdminDashboard({
               {topUsersByCredits.map((user, index) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-md"
+                  className="flex items-center justify-between rounded-md bg-gray-50 p-3 dark:bg-gray-900"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 dark:bg-blue-900/30 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm text-blue-600 dark:text-blue-400">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                       {index + 1}
                     </div>
                     <div>
@@ -303,7 +303,7 @@ export default function AdminDashboard({
                         {user.isPro && (
                           <Badge
                             variant="outline"
-                            className="ml-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800"
+                            className="ml-2 border-green-200 bg-green-100 text-green-600 dark:border-green-800 dark:bg-green-900/30 dark:text-green-400"
                           >
                             PRO
                           </Badge>

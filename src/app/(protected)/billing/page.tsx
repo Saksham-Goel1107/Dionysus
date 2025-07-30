@@ -223,18 +223,18 @@ const BillingPage = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0">
+    <div className="mx-auto w-full max-w-4xl px-2 sm:px-4 md:px-0">
       <div className="rounded-lg border bg-card p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold">Buy Credits</h2>
+        <h2 className="text-lg font-semibold sm:text-xl">Buy Credits</h2>
         <div className="h-2"></div>
         <p className="text-sm text-muted-foreground">You currently have {user?.credits} credits.</p>
         <div className="h-2"></div>
-        <div className="rounded-md border-blue-200 bg-blue-50 px-2 py-2 sm:px-4 text-blue-700">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <div className="rounded-md border-blue-200 bg-blue-50 px-2 py-2 text-blue-700 sm:px-4">
+          <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
             <InfoIcon className="size-4" />
             <p className="text-sm">Each credit allows you to index 1 file in a repository.</p>
           </div>
-          <p className="text-xs sm:text-sm mt-1">
+          <p className="mt-1 text-xs sm:text-sm">
             E.g. If your project has 100 files, you will need 100 credits to index it.
           </p>
         </div>
@@ -248,8 +248,8 @@ const BillingPage = () => {
           {checkingDiscount ? 'Checking...' : 'Check for Discounts'}
         </Button>
         {mfaEnabled && (
-          <div className="text-green-700 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
-            <span className="block w-full sm:w-auto text-left">
+          <div className="mt-1 flex w-full flex-col items-start gap-2 text-sm text-green-700 sm:flex-row sm:items-center sm:gap-2">
+            <span className="block w-full text-left sm:w-auto">
               Multi Factor Authentication is enabled. You get additional 10% discount on every
               purchase.
             </span>
@@ -257,23 +257,23 @@ const BillingPage = () => {
         )}
 
         {!mfaEnabled && (
-          <div className="text-red-600 text-sm mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2 w-full">
-            <span className="block w-full sm:w-auto text-left">
+          <div className="mt-1 flex w-full flex-col items-start gap-2 text-sm text-red-600 sm:flex-row sm:items-center sm:gap-2">
+            <span className="block w-full text-left sm:w-auto">
               Enable Multi Factor Authentication to get additional 10% discount on every purchase.
             </span>
             <Button
               size="sm"
               variant="outline"
-              className="ml-0 sm:ml-2 mt-2 sm:mt-0 w-full sm:w-auto"
+              className="ml-0 mt-2 w-full sm:ml-2 sm:mt-0 sm:w-auto"
               onClick={() => setShowProfile(true)}
             >
               Open Security Settings &rarr;
             </Button>
             {showProfile && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-2 sm:p-0">
-                <div className="relative bg-white rounded-2xl shadow-2xl w-[80vw] h-[90vh] max-w-none max-h-none flex flex-col overflow-hidden border border-gray-200 mx-0 sm:mx-2 my-4">
+                <div className="relative mx-0 my-4 flex h-[90vh] max-h-none w-[80vw] max-w-none flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:mx-2">
                   <button
-                    className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-500 hover:text-gray-700 text-2xl z-10 focus:outline-none bg-white rounded-full w-10 h-10 flex items-center justify-center shadow"
+                    className="absolute right-2 top-2 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-2xl text-gray-500 shadow hover:text-gray-700 focus:outline-none sm:right-3 sm:top-3"
                     onClick={() => {
                       setShowProfile(false);
                       router.push('/billing');
@@ -283,7 +283,7 @@ const BillingPage = () => {
                   >
                     ×
                   </button>
-                  <div className="flex-1 min-h-0 overflow-auto p-2 sm:p-4 scrollbar-hide">
+                  <div className="scrollbar-hide min-h-0 flex-1 overflow-auto p-2 sm:p-4">
                     <UserProfile />
                   </div>
                 </div>
@@ -292,27 +292,27 @@ const BillingPage = () => {
           </div>
         )}
         {hasProPlan && (
-          <div className="text-green-700 text-sm mt-1">
+          <div className="mt-1 text-sm text-green-700">
             Pro/Advance Plan: Additional 10% discount applied!
           </div>
         )}
         {discountCountry && (
-          <div className="text-sm mt-1">
+          <div className="mt-1 text-sm">
             Location: <span className="font-semibold">{discountCountry}</span>
           </div>
         )}
         {totalDiscount > 0 && (
-          <div className="text-green-700 text-sm mt-1">
+          <div className="mt-1 text-sm text-green-700">
             🎉 {totalDiscount}% discount applied! New price:{' '}
             <span className="font-bold">₹{discountedPrice}</span>
             {discountBreakdown && (
-              <span className="block text-xs text-green-700 mt-1">
+              <span className="mt-1 block text-xs text-green-700">
                 (Includes {discountBreakdown})
               </span>
             )}
           </div>
         )}
-        {discountError && <div className="text-red-600 text-sm mt-1">{discountError}</div>}
+        {discountError && <div className="mt-1 text-sm text-red-600">{discountError}</div>}
         <div className="h-2"></div>
         <Slider
           defaultValue={[100]}
@@ -325,19 +325,19 @@ const BillingPage = () => {
         />
         <div className="h-4"></div>
         {/* Coupon code UI */}
-        <div className="mb-4 flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+        <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
           <input
             type="text"
             value={couponInput}
             onChange={(e) => setCouponInput(e.target.value)}
             placeholder="Enter coupon code"
-            className="border rounded px-2 py-1 w-full sm:w-64"
+            className="w-full rounded border px-2 py-1 sm:w-64"
           />
           <Button onClick={handleApplyCoupon} variant="outline">
             Apply Coupon
           </Button>
         </div>
-        {couponStatus && <div className="text-sm mt-1 mb-2">{couponStatus}</div>}
+        {couponStatus && <div className="mb-2 mt-1 text-sm">{couponStatus}</div>}
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
@@ -365,9 +365,9 @@ const BillingPage = () => {
 
       <div className="h-8"></div>
       <div className="rounded-lg border bg-card shadow-sm">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 pb-2 sm:pb-4 border-b gap-2 sm:gap-0">
+        <div className="flex flex-col items-start justify-between gap-2 border-b p-4 pb-2 sm:flex-row sm:items-center sm:gap-0 sm:p-6 sm:pb-4">
           <div className="w-full">
-            <h2 className="text-lg sm:text-xl font-semibold flex items-center gap-2">
+            <h2 className="flex items-center gap-2 text-lg font-semibold sm:text-xl">
               Purchase History
               <Dialog open={isGraphOpen} onOpenChange={setIsGraphOpen}>
                 <DialogTrigger asChild>
@@ -387,7 +387,7 @@ const BillingPage = () => {
                       This graph shows the number of credits you have purchased in each transaction.
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="w-full flex flex-col items-center">
+                  <div className="flex w-full flex-col items-center">
                     {transactions && transactions.length > 1 ? (
                       <svg
                         width="100%"
@@ -423,7 +423,7 @@ const BillingPage = () => {
                         })()}
                       </svg>
                     ) : (
-                      <div className="text-center w-full text-muted-foreground">
+                      <div className="w-full text-center text-muted-foreground">
                         Not enough data <br /> Buy more credits to see it
                       </div>
                     )}
@@ -431,15 +431,15 @@ const BillingPage = () => {
                 </DialogContent>
               </Dialog>
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
               View your credit purchase history
             </p>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
               It may show full price instead of discountedPrice but the price deducted was
               discounted if the discount got applied
             </p>
           </div>
-          <div className="w-full sm:w-auto flex justify-end">
+          <div className="flex w-full justify-end sm:w-auto">
             <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
               {transactions?.length ?? 0} {transactions?.length === 1 ? 'purchase' : 'purchases'}
             </span>
@@ -458,7 +458,7 @@ const BillingPage = () => {
             <TableBody>
               {transactions?.length ? (
                 transactions.map((transaction: Transaction) => (
-                  <TableRow key={transaction.id} className="hover:bg-muted transition">
+                  <TableRow key={transaction.id} className="transition hover:bg-muted">
                     <TableCell>
                       <div>
                         <span className="font-medium">
@@ -470,7 +470,7 @@ const BillingPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="font-semibold text-green-700 bg-green-50 px-2 py-1 rounded">
+                      <span className="rounded bg-green-50 px-2 py-1 font-semibold text-green-700">
                         +{transaction.credits} credits
                       </span>
                     </TableCell>
@@ -488,7 +488,7 @@ const BillingPage = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
                       <svg
                         width="32"

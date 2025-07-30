@@ -131,7 +131,7 @@ const RegexTester: React.FC = () => {
 
       // Add highlighted match
       result.push(
-        <mark key={`match-${i}`} className="bg-green-200 dark:bg-green-700 px-0.5 rounded">
+        <mark key={`match-${i}`} className="rounded bg-green-200 px-0.5 dark:bg-green-700">
           {testText.substring(match.index, match.index + match.length)}
         </mark>,
       );
@@ -188,12 +188,12 @@ const RegexTester: React.FC = () => {
   ];
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-violet-50 via-white to-violet-100 dark:from-violet-900/60 dark:via-violet-950/80 dark:to-violet-900/60 rounded-2xl border border-violet-300 dark:border-violet-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-violet-200 dark:bg-violet-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-violet-100 dark:bg-violet-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-violet-300 bg-gradient-to-br from-violet-50 via-white to-violet-100 p-8 shadow-xl dark:border-violet-700 dark:from-violet-900/60 dark:via-violet-950/80 dark:to-violet-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-violet-200 opacity-30 blur-2xl dark:bg-violet-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-violet-100 opacity-20 blur-2xl dark:bg-violet-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-violet-800 dark:text-violet-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-violet-800 drop-shadow-lg dark:text-violet-100">
+        <span className="mr-2 inline-block align-middle">
           <svg
             width="28"
             height="28"
@@ -213,14 +213,14 @@ const RegexTester: React.FC = () => {
         RegEx Tester
       </h2>
 
-      <p className="mb-6 text-violet-700/80 dark:text-violet-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-violet-700/80 dark:text-violet-200/80 md:text-base">
         Test and debug regular expressions with live match highlighting and a handy cheatsheet. Find
         and replace text patterns with ease.
       </p>
 
-      <div className="w-full z-10">
+      <div className="z-10 w-full">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
+          <TabsList className="mb-4 grid grid-cols-2">
             <TabsTrigger value="tester">Pattern Tester</TabsTrigger>
             <TabsTrigger value="replace">Find & Replace</TabsTrigger>
           </TabsList>
@@ -228,13 +228,13 @@ const RegexTester: React.FC = () => {
           <TabsContent value="tester" className="space-y-4">
             {/* Regex input */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-violet-700 dark:text-violet-300 flex items-center gap-2">
+              <div className="mb-2 flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm font-medium text-violet-700 dark:text-violet-300">
                   <span>RegEx Pattern</span>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-violet-400 cursor-help" />
+                        <Info className="h-4 w-4 cursor-help text-violet-400" />
                       </TooltipTrigger>
                       <TooltipContent className="max-w-sm">
                         <p>Enter your regular expression pattern without the slashes and flags.</p>
@@ -245,7 +245,7 @@ const RegexTester: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-xs px-2 flex items-center gap-1"
+                  className="flex h-6 items-center gap-1 px-2 text-xs"
                   onClick={handleCopy}
                   disabled={!pattern}
                 >
@@ -263,7 +263,7 @@ const RegexTester: React.FC = () => {
                 </Button>
               </div>
               <div className="flex">
-                <span className="bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200 px-3 py-2 rounded-l-md border border-r-0 border-violet-300 dark:border-violet-700 font-mono">
+                <span className="rounded-l-md border border-r-0 border-violet-300 bg-violet-100 px-3 py-2 font-mono text-violet-800 dark:border-violet-700 dark:bg-violet-900 dark:text-violet-200">
                   /
                 </span>
                 <input
@@ -271,9 +271,9 @@ const RegexTester: React.FC = () => {
                   value={pattern}
                   onChange={(e) => setPattern(e.target.value)}
                   placeholder="Enter your regex pattern..."
-                  className="flex-1 p-2 border border-violet-300 dark:border-violet-700 bg-white dark:bg-violet-950 text-violet-900 dark:text-violet-100 focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono text-sm"
+                  className="flex-1 border border-violet-300 bg-white p-2 font-mono text-sm text-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100"
                 />
-                <span className="bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200 px-3 py-2 rounded-r-md border border-l-0 border-violet-300 dark:border-violet-700 font-mono flex items-center">
+                <span className="flex items-center rounded-r-md border border-l-0 border-violet-300 bg-violet-100 px-3 py-2 font-mono text-violet-800 dark:border-violet-700 dark:bg-violet-900 dark:text-violet-200">
                   /
                   {flags
                     .filter((flag) => flag.checked)
@@ -286,7 +286,7 @@ const RegexTester: React.FC = () => {
             {/* Flags */}
             <div className="flex flex-wrap gap-3">
               {flags.map((flag) => (
-                <label key={flag.value} className="flex items-center gap-1 cursor-pointer">
+                <label key={flag.value} className="flex cursor-pointer items-center gap-1">
                   <input
                     type="checkbox"
                     checked={flag.checked}
@@ -298,7 +298,7 @@ const RegexTester: React.FC = () => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Info className="inline-block h-3 w-3 ml-1 text-violet-400 cursor-help" />
+                          <Info className="ml-1 inline-block h-3 w-3 cursor-help text-violet-400" />
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>{flag.description}</p>
@@ -312,20 +312,20 @@ const RegexTester: React.FC = () => {
 
             {/* Test string */}
             <div>
-              <label className="block text-sm font-medium text-violet-700 dark:text-violet-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-violet-700 dark:text-violet-300">
                 Test String
               </label>
               <textarea
                 value={testText}
                 onChange={(e) => setTestText(e.target.value)}
                 placeholder="Enter text to test against your regex..."
-                className="w-full min-h-[100px] p-3 border border-violet-300 dark:border-violet-700 rounded-md bg-white dark:bg-violet-950 text-violet-900 dark:text-violet-100 focus:outline-none focus:ring-1 focus:ring-violet-500 text-sm"
+                className="min-h-[100px] w-full rounded-md border border-violet-300 bg-white p-3 text-sm text-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100"
               />
             </div>
 
             {/* Error message */}
             {error && (
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-100 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                 <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                 <span>{error}</span>
               </div>
@@ -333,33 +333,33 @@ const RegexTester: React.FC = () => {
 
             {/* Matches */}
             {pattern && testText && !error && (
-              <div className="border border-violet-300 dark:border-violet-700 rounded-md overflow-hidden">
-                <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 border-b border-violet-300 dark:border-violet-700 flex justify-between items-center">
-                  <span className="font-medium text-sm text-violet-800 dark:text-violet-200">
+              <div className="overflow-hidden rounded-md border border-violet-300 dark:border-violet-700">
+                <div className="flex items-center justify-between border-b border-violet-300 bg-violet-100 px-4 py-2 dark:border-violet-700 dark:bg-violet-900">
+                  <span className="text-sm font-medium text-violet-800 dark:text-violet-200">
                     Matches ({matchCount})
                   </span>
                 </div>
-                <div className="p-4 bg-white dark:bg-violet-950 max-h-[200px] overflow-auto">
+                <div className="max-h-[200px] overflow-auto bg-white p-4 dark:bg-violet-950">
                   {matches.length > 0 ? (
                     <div className="whitespace-pre-wrap font-mono text-sm text-violet-900 dark:text-violet-100">
                       {getHighlightedText()}
                     </div>
                   ) : (
-                    <div className="text-center text-violet-500 dark:text-violet-400 text-sm py-4">
+                    <div className="py-4 text-center text-sm text-violet-500 dark:text-violet-400">
                       No matches found
                     </div>
                   )}
                 </div>
                 {matches.length > 0 && (
-                  <div className="bg-violet-50 dark:bg-violet-900/50 px-4 py-2 border-t border-violet-300 dark:border-violet-700">
-                    <h4 className="font-medium text-sm text-violet-800 dark:text-violet-200 mb-2">
+                  <div className="border-t border-violet-300 bg-violet-50 px-4 py-2 dark:border-violet-700 dark:bg-violet-900/50">
+                    <h4 className="mb-2 text-sm font-medium text-violet-800 dark:text-violet-200">
                       Match Details:
                     </h4>
                     <div className="max-h-[150px] overflow-auto">
                       {matches.map((match, index) => (
                         <div
                           key={index}
-                          className="text-xs mb-1 p-1 bg-violet-100 dark:bg-violet-900 rounded"
+                          className="mb-1 rounded bg-violet-100 p-1 text-xs dark:bg-violet-900"
                         >
                           <span className="font-mono text-violet-700 dark:text-violet-300">
                             {index + 1}: &quot;{match.value}&quot; (index: {match.index}, length:{' '}
@@ -377,13 +377,13 @@ const RegexTester: React.FC = () => {
           <TabsContent value="replace" className="space-y-4">
             {/* Regex input */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <label className="text-sm font-medium text-violet-700 dark:text-violet-300">
                   RegEx Pattern
                 </label>
               </div>
               <div className="flex">
-                <span className="bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200 px-3 py-2 rounded-l-md border border-r-0 border-violet-300 dark:border-violet-700 font-mono">
+                <span className="rounded-l-md border border-r-0 border-violet-300 bg-violet-100 px-3 py-2 font-mono text-violet-800 dark:border-violet-700 dark:bg-violet-900 dark:text-violet-200">
                   /
                 </span>
                 <input
@@ -391,9 +391,9 @@ const RegexTester: React.FC = () => {
                   value={pattern}
                   onChange={(e) => setPattern(e.target.value)}
                   placeholder="Enter your regex pattern..."
-                  className="flex-1 p-2 border border-violet-300 dark:border-violet-700 bg-white dark:bg-violet-950 text-violet-900 dark:text-violet-100 focus:outline-none focus:ring-1 focus:ring-violet-500 font-mono text-sm"
+                  className="flex-1 border border-violet-300 bg-white p-2 font-mono text-sm text-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100"
                 />
-                <span className="bg-violet-100 dark:bg-violet-900 text-violet-800 dark:text-violet-200 px-3 py-2 rounded-r-md border border-l-0 border-violet-300 dark:border-violet-700 font-mono flex items-center">
+                <span className="flex items-center rounded-r-md border border-l-0 border-violet-300 bg-violet-100 px-3 py-2 font-mono text-violet-800 dark:border-violet-700 dark:bg-violet-900 dark:text-violet-200">
                   /
                   {flags
                     .filter((flag) => flag.checked)
@@ -405,7 +405,7 @@ const RegexTester: React.FC = () => {
 
             {/* Replacement text */}
             <div>
-              <label className="block text-sm font-medium text-violet-700 dark:text-violet-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-violet-700 dark:text-violet-300">
                 Replacement Text
               </label>
               <input
@@ -413,23 +413,23 @@ const RegexTester: React.FC = () => {
                 value={replacementText}
                 onChange={(e) => setReplacementText(e.target.value)}
                 placeholder="Text to replace matched patterns..."
-                className="w-full p-2 border border-violet-300 dark:border-violet-700 rounded-md bg-white dark:bg-violet-950 text-violet-900 dark:text-violet-100 focus:outline-none focus:ring-1 focus:ring-violet-500 text-sm"
+                className="w-full rounded-md border border-violet-300 bg-white p-2 text-sm text-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100"
               />
-              <p className="text-xs text-violet-500 dark:text-violet-400 mt-1">
+              <p className="mt-1 text-xs text-violet-500 dark:text-violet-400">
                 Use $1, $2, etc. to refer to capturing groups
               </p>
             </div>
 
             {/* Test string */}
             <div>
-              <label className="block text-sm font-medium text-violet-700 dark:text-violet-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-violet-700 dark:text-violet-300">
                 Text to Process
               </label>
               <textarea
                 value={testText}
                 onChange={(e) => setTestText(e.target.value)}
                 placeholder="Enter text to find and replace..."
-                className="w-full min-h-[100px] p-3 border border-violet-300 dark:border-violet-700 rounded-md bg-white dark:bg-violet-950 text-violet-900 dark:text-violet-100 focus:outline-none focus:ring-1 focus:ring-violet-500 text-sm"
+                className="min-h-[100px] w-full rounded-md border border-violet-300 bg-white p-3 text-sm text-violet-900 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-violet-700 dark:bg-violet-950 dark:text-violet-100"
               />
             </div>
 
@@ -437,14 +437,14 @@ const RegexTester: React.FC = () => {
             <Button
               onClick={handleReplace}
               disabled={!pattern || !testText}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+              className="w-full bg-violet-600 text-white hover:bg-violet-700"
             >
               Replace
             </Button>
 
             {/* Error message */}
             {error && (
-              <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-md text-sm text-red-800 dark:text-red-200 flex items-center gap-2">
+              <div className="flex items-center gap-2 rounded-md border border-red-300 bg-red-100 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/30 dark:text-red-200">
                 <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
                 <span>{error}</span>
               </div>
@@ -452,13 +452,13 @@ const RegexTester: React.FC = () => {
 
             {/* Replacement result */}
             {replacePattern && (
-              <div className="border border-violet-300 dark:border-violet-700 rounded-md overflow-hidden">
-                <div className="bg-violet-100 dark:bg-violet-900 px-4 py-2 border-b border-violet-300 dark:border-violet-700">
-                  <span className="font-medium text-sm text-violet-800 dark:text-violet-200">
+              <div className="overflow-hidden rounded-md border border-violet-300 dark:border-violet-700">
+                <div className="border-b border-violet-300 bg-violet-100 px-4 py-2 dark:border-violet-700 dark:bg-violet-900">
+                  <span className="text-sm font-medium text-violet-800 dark:text-violet-200">
                     Result
                   </span>
                 </div>
-                <div className="p-4 bg-white dark:bg-violet-950">
+                <div className="bg-white p-4 dark:bg-violet-950">
                   <pre className="whitespace-pre-wrap font-mono text-sm text-violet-900 dark:text-violet-100">
                     {replacePattern}
                   </pre>
@@ -469,17 +469,17 @@ const RegexTester: React.FC = () => {
         </Tabs>
 
         {/* RegEx cheatsheet */}
-        <div className="mt-8 border-t border-violet-300 dark:border-violet-700 pt-4">
-          <h3 className="font-medium text-violet-800 dark:text-violet-200 mb-3">
+        <div className="mt-8 border-t border-violet-300 pt-4 dark:border-violet-700">
+          <h3 className="mb-3 font-medium text-violet-800 dark:text-violet-200">
             RegEx Cheatsheet
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
             {regexCheatsheet.map((item, index) => (
               <div
                 key={index}
-                className="flex items-start p-1.5 bg-violet-50 dark:bg-violet-900/30 rounded"
+                className="flex items-start rounded bg-violet-50 p-1.5 dark:bg-violet-900/30"
               >
-                <code className="font-mono bg-violet-100 dark:bg-violet-800 text-violet-800 dark:text-violet-200 px-1.5 py-0.5 rounded mr-2">
+                <code className="mr-2 rounded bg-violet-100 px-1.5 py-0.5 font-mono text-violet-800 dark:bg-violet-800 dark:text-violet-200">
                   {item.pattern}
                 </code>
                 <span className="text-violet-700 dark:text-violet-300">{item.description}</span>

@@ -179,17 +179,17 @@ export default function SurveyPage() {
 
   return (
     <div
-      className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'} py-12 px-4 sm:px-6 lg:px-8`}
+      className={`min-h-screen ${theme === 'dark' ? 'bg-slate-900' : 'bg-slate-50'} px-4 py-12 sm:px-6 lg:px-8`}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="mx-auto max-w-3xl">
         <div
-          className={`shadow-lg overflow-hidden rounded-xl ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}
+          className={`overflow-hidden rounded-xl shadow-lg ${theme === 'dark' ? 'bg-slate-800' : 'bg-white'}`}
         >
           <div
-            className={`px-4 py-5 sm:px-6 border-b ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} flex items-center justify-between`}
+            className={`border-b px-4 py-5 sm:px-6 ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} flex items-center justify-between`}
           >
             <div>
-              <div className="flex gap-4 items-center">
+              <div className="flex items-center gap-4">
                 <UserButton />
                 <h1
                   className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}
@@ -206,13 +206,11 @@ export default function SurveyPage() {
               type="button"
               onClick={handleThemeToggle}
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              className={`ml-2 p-2 rounded-full border transition-colors duration-200
-              ${
+              className={`ml-2 rounded-full border p-2 transition-colors duration-200 ${
                 theme === 'dark'
                   ? 'border-slate-600 bg-slate-700 text-yellow-300 hover:bg-slate-600'
                   : 'border-slate-300 bg-slate-100 text-blue-600 hover:bg-slate-200'
-              }
-              focus:outline-none focus:ring-2 focus:ring-blue-500`}
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
             >
               <span className="text-lg" aria-hidden="true">
                 {theme === 'dark' ? '☀️' : '🌙'}
@@ -223,7 +221,7 @@ export default function SurveyPage() {
           <form
             ref={formRef}
             onSubmit={handleSubmit(onSubmit)}
-            className={`px-4 py-5 sm:p-6 space-y-8 ${theme === 'dark' ? 'bg-slate-800' : ''}`}
+            className={`space-y-8 px-4 py-5 sm:p-6 ${theme === 'dark' ? 'bg-slate-800' : ''}`}
           >
             <div className="space-y-6">
               <h2
@@ -232,7 +230,7 @@ export default function SurveyPage() {
                 Organization Information
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <label
                     htmlFor="companyName"
@@ -326,9 +324,9 @@ export default function SurveyPage() {
               </div>
             </div>
 
-            <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="space-y-6 border-t border-gray-200 pt-4 dark:border-gray-700">
               <h2
-                className={`text-xl font-semibold pt-4 ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}
+                className={`pt-4 text-xl font-semibold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}
               >
                 Usage & Discovery
               </h2>
@@ -380,14 +378,14 @@ export default function SurveyPage() {
               </div>
             </div>
 
-            <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white pt-4">
+            <div className="space-y-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+              <h2 className="pt-4 text-xl font-semibold text-gray-900 dark:text-white">
                 Features & Experience
               </h2>
 
               <div>
                 <span
-                  className={`block text-sm font-medium mb-2 ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}
+                  className={`mb-2 block text-sm font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-700'}`}
                 >
                   Which features are you most interested in?*
                 </span>
@@ -475,9 +473,9 @@ export default function SurveyPage() {
               </div>
             </div>
 
-            <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="space-y-6 border-t border-gray-200 pt-4 dark:border-gray-700">
               <h2
-                className={`text-xl font-semibold pt-4 ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}
+                className={`pt-4 text-xl font-semibold ${theme === 'dark' ? 'text-slate-100' : 'text-slate-900'}`}
               >
                 Feedback & Additional Information
               </h2>
@@ -556,7 +554,7 @@ export default function SurveyPage() {
             )}
 
             <div className="pt-5">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-4">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
                 <div className="flex items-center">
                   <input
                     id="dontSubscribe"
@@ -569,7 +567,7 @@ export default function SurveyPage() {
                         setDontSubscribe(false);
                       }
                     }}
-                    className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'bg-slate-700 border-slate-600' : 'bg-white border-slate-300'}`}
+                    className={`h-4 w-4 rounded border-gray-300 focus:ring-blue-500 ${theme === 'dark' ? 'border-slate-600 bg-slate-700' : 'border-slate-300 bg-white'}`}
                   />
                   <label
                     htmlFor="dontSubscribe"
@@ -581,12 +579,11 @@ export default function SurveyPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting || !isDirty || !isValid}
-                  className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed
-                    ${
-                      theme === 'dark'
-                        ? 'text-white bg-blue-600 hover:bg-blue-700 border-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
-                        : 'text-white bg-blue-600 hover:bg-blue-700 border-blue-700 focus:ring-blue-500 focus:ring-offset-slate-50'
-                    }`}
+                  className={`inline-flex justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                    theme === 'dark'
+                      ? 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
+                      : 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-50'
+                  }`}
                 >
                   {isSubmitting ? 'Submitting...' : 'Submit Survey'}
                 </button>
@@ -607,8 +604,7 @@ export default function SurveyPage() {
           <DialogFooter>
             <button
               type="button"
-              className={`inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2
-            ${theme === 'dark' ? 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-900' : 'text-white bg-red-600 hover:bg-red-700 border-red-700 focus:ring-red-500 focus:ring-offset-slate-50'}`}
+              className={`inline-flex justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 ${theme === 'dark' ? 'border-red-700 bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 focus:ring-offset-slate-900' : 'border-red-700 bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 focus:ring-offset-slate-50'}`}
               onClick={() => {
                 setDontSubscribe(true);
                 setShowDontSubscribeDialog(false);
@@ -619,7 +615,7 @@ export default function SurveyPage() {
             <DialogClose asChild>
               <button
                 type="button"
-                className="inline-flex justify-center py-2 px-4 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 bg-gray-200 text-gray-700 hover:bg-gray-300"
+                className="inline-flex justify-center rounded-md border bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
               >
                 Cancel
               </button>

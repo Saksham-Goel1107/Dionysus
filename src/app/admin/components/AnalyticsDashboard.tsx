@@ -94,7 +94,7 @@ export default function AnalyticsDashboard({
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">
@@ -104,12 +104,12 @@ export default function AnalyticsDashboard({
       </div>
 
       {/* Key Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                   <Users size={20} />
                 </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Users</span>
@@ -119,7 +119,7 @@ export default function AnalyticsDashboard({
                 <span className="text-xs text-gray-500 dark:text-gray-400">Pro Users</span>
                 <span className="text-xs font-medium">{userStats.pro}</span>
               </div>
-              <Progress value={proUserPercentage} className="h-1 mt-1" />
+              <Progress value={proUserPercentage} className="mt-1 h-1" />
             </div>
           </CardContent>
         </Card>
@@ -127,8 +127,8 @@ export default function AnalyticsDashboard({
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                   <Folder size={20} />
                 </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Projects</span>
@@ -138,7 +138,7 @@ export default function AnalyticsDashboard({
                 <span className="text-xs text-gray-500 dark:text-gray-400">Active</span>
                 <span className="text-xs font-medium">{projectStats.active}</span>
               </div>
-              <Progress value={activeProjectPercentage} className="h-1 mt-1" />
+              <Progress value={activeProjectPercentage} className="mt-1 h-1" />
             </div>
           </CardContent>
         </Card>
@@ -146,8 +146,8 @@ export default function AnalyticsDashboard({
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-10 w-10 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
                   <MessageSquare size={20} />
                 </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Questions</span>
@@ -157,7 +157,7 @@ export default function AnalyticsDashboard({
                 <span className="text-xs text-gray-500 dark:text-gray-400">Per User</span>
                 <span className="text-xs font-medium">{engagementRate}</span>
               </div>
-              <div className="h-1 mt-1"></div> {/* Placeholder for alignment */}
+              <div className="mt-1 h-1"></div> {/* Placeholder for alignment */}
             </div>
           </CardContent>
         </Card>
@@ -165,8 +165,8 @@ export default function AnalyticsDashboard({
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                <div className="h-10 w-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
                   <Video size={20} />
                 </div>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Meetings</span>
@@ -180,7 +180,7 @@ export default function AnalyticsDashboard({
                 value={
                   meetingStats.total > 0 ? (meetingStats.completed / meetingStats.total) * 100 : 0
                 }
-                className="h-1 mt-1"
+                className="mt-1 h-1"
               />
             </div>
           </CardContent>
@@ -188,7 +188,7 @@ export default function AnalyticsDashboard({
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Daily Question Activity */}
         <Card>
           <CardHeader>
@@ -285,7 +285,7 @@ export default function AnalyticsDashboard({
       </div>
 
       {/* More Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Meeting Status Distribution */}
         <Card>
           <CardHeader>
@@ -293,7 +293,7 @@ export default function AnalyticsDashboard({
             <CardDescription>Distribution of meeting statuses</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-[300px] flex items-center justify-center">
+            <div className="flex h-[300px] items-center justify-center">
               {meetingStats.total > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -369,7 +369,7 @@ export default function AnalyticsDashboard({
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-full text-center text-gray-500">
+                <div className="flex h-full items-center justify-center text-center text-gray-500">
                   No project embedding data available
                 </div>
               )}

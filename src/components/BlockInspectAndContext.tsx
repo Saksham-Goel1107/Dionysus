@@ -39,20 +39,20 @@ const SSBox = () => {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] bg-white dark:bg-gray-900 border border-blue-400 dark:border-blue-600 shadow-xl rounded-2xl px-6 py-5 flex flex-col items-center gap-2 animate-slide-up max-w-xs w-[90vw]">
+    <div className="animate-slide-up fixed bottom-6 right-6 z-[9999] flex w-[90vw] max-w-xs flex-col items-center gap-2 rounded-2xl border border-blue-400 bg-white px-6 py-5 shadow-xl dark:border-blue-600 dark:bg-gray-900">
       <button
         onClick={() => setShow(false)}
-        className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+        className="absolute right-2 top-2 text-gray-500 transition-colors hover:text-gray-800 dark:hover:text-gray-200"
         aria-label="Close"
       >
-        <X className="w-4 h-4" />
+        <X className="h-4 w-4" />
       </button>
-      <span className="text-gray-700 dark:text-gray-200 text-sm text-center">
+      <span className="text-center text-sm text-gray-700 dark:text-gray-200">
         Like this site? Share it with your friends!
       </span>
       <button
         onClick={share}
-        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all"
+        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-700"
       >
         Share
       </button>

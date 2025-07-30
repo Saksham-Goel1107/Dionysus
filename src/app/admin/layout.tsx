@@ -23,7 +23,7 @@ function ThemeToggle({ collapsed }: { collapsed: boolean }) {
 
   return (
     <button
-      className={`w-full flex items-center justify-${collapsed ? 'center' : 'start'} gap-2 px-2 py-2 mb-2 rounded-md transition-colors hover:bg-gray-100 dark:hover:bg-gray-800`}
+      className={`flex w-full items-center justify-${collapsed ? 'center' : 'start'} mb-2 gap-2 rounded-md px-2 py-2 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800`}
       aria-label="Toggle dark/light mode"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
     >
@@ -86,17 +86,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <aside
         className={cn(
-          'md:relative absolute z-10 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 transition-all duration-300 flex flex-col',
-          collapsed ? 'md:w-16 w-13' : 'w-64',
+          'absolute z-10 flex flex-col border-r border-gray-200 bg-white transition-all duration-300 dark:border-gray-800 dark:bg-gray-950 md:relative',
+          collapsed ? 'w-13 md:w-16' : 'w-64',
         )}
       >
-        <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-800">
+        <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-800">
           {!collapsed && (
-            <h1 className="font-bold text-xl text-blue-600 dark:text-blue-400">Admin Panel</h1>
+            <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">Admin Panel</h1>
           )}
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            className="rounded-md p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center gap-3 px-3 py-2 rounded-md transition-colors',
+                      'flex items-center gap-3 rounded-md px-3 py-2 transition-colors',
                       isActive
                         ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800',
@@ -129,13 +129,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+        <div className="border-t border-gray-200 p-4 dark:border-gray-800">
           <ThemeToggle collapsed={collapsed} />
-          <div className="flex items-center gap-3 mt-2">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white">
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white">
               S
             </div>
-            {!collapsed && <span className="font-medium text-sm">Saksham Goel</span>}
+            {!collapsed && <span className="text-sm font-medium">Saksham Goel</span>}
           </div>
         </div>
       </aside>

@@ -162,26 +162,26 @@ export default function MyDataPage() {
   const passwordHint = userInfo ? userInfo.email + userInfo.firstName : '';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 p-4 dark:from-gray-900 dark:to-gray-800">
       <Dialog open={exportConfirmOpen} onOpenChange={setExportConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <div className="text-lg font-semibold mb-2">Confirm Data Export</div>
+            <div className="mb-2 text-lg font-semibold">Confirm Data Export</div>
           </DialogHeader>
           <p className="mb-2 text-sm">
             For your security, please type{' '}
-            <span className="font-mono bg-gray-100 dark:bg-gray-700 px-1">CONFIRM EXPORT</span>{' '}
+            <span className="bg-gray-100 px-1 font-mono dark:bg-gray-700">CONFIRM EXPORT</span>{' '}
             below to proceed. You may also be prompted to re-verify yourself before exporting you
             data.
           </p>
           <input
-            className="border p-2 rounded w-full mb-2"
+            className="mb-2 w-full rounded border p-2"
             value={exportConfirmText}
             onChange={(e) => setExportConfirmText(e.target.value)}
             placeholder="Type CONFIRM EXPORT"
             autoFocus
           />
-          <div className="flex gap-2 justify-end">
+          <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setExportConfirmOpen(false)}>
               Cancel
             </Button>
@@ -201,14 +201,14 @@ export default function MyDataPage() {
           </div>
         </DialogContent>
       </Dialog>
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 w-full max-w-2xl border border-blue-200 dark:border-blue-800 relative">
+      <div className="relative w-full max-w-2xl rounded-2xl border border-blue-200 bg-white p-8 shadow-2xl dark:border-blue-800 dark:bg-gray-900">
         {/* Stepper */}
-        <div className="flex justify-center mb-8">
+        <div className="mb-8 flex justify-center">
           {steps.map((s, i) => (
             <div key={s.label} className="flex items-center">
               <div className={`flex flex-col items-center ${step === i + 1 ? 'scale-110' : ''}`}>
                 <div
-                  className={`rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold ${step >= i + 1 ? 'bg-gradient-to-br from-blue-400 to-purple-500 text-white shadow-lg' : 'bg-gray-200 dark:bg-gray-800 text-gray-400'}`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-full text-2xl font-bold ${step >= i + 1 ? 'bg-gradient-to-br from-blue-400 to-purple-500 text-white shadow-lg' : 'bg-gray-200 text-gray-400 dark:bg-gray-800'}`}
                 >
                   {s.icon}
                 </div>
@@ -220,18 +220,18 @@ export default function MyDataPage() {
               </div>
               {i < steps.length - 1 && (
                 <div
-                  className={`w-8 h-1 mx-2 rounded-full ${step > i + 1 ? 'bg-gradient-to-r from-blue-400 to-purple-500' : 'bg-gray-200 dark:bg-gray-800'}`}
+                  className={`mx-2 h-1 w-8 rounded-full ${step > i + 1 ? 'bg-gradient-to-r from-blue-400 to-purple-500' : 'bg-gray-200 dark:bg-gray-800'}`}
                 ></div>
               )}
             </div>
           ))}
         </div>
         {/* Tips & Tricks */}
-        <div className="mb-8 p-4 rounded-xl bg-gradient-to-br from-green-50 to-blue-100 dark:from-gray-800 dark:to-gray-900 border border-green-200 dark:border-green-700 shadow flex flex-col gap-2">
-          <div className="flex items-center gap-2 text-green-700 dark:text-green-300 font-semibold text-base">
+        <div className="mb-8 flex flex-col gap-2 rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-blue-100 p-4 shadow dark:border-green-700 dark:from-gray-800 dark:to-gray-900">
+          <div className="flex items-center gap-2 text-base font-semibold text-green-700 dark:text-green-300">
             <span>💡</span>Tips & Tricks
           </div>
-          <ul className="list-disc list-inside text-xs text-gray-700 dark:text-gray-300 ml-2">
+          <ul className="ml-2 list-inside list-disc text-xs text-gray-700 dark:text-gray-300">
             <li>
               You can decrypt any previously exported data at any time, even if you exported it on a
               different device.
@@ -246,10 +246,10 @@ export default function MyDataPage() {
         </div>
         {/* Step 1: Password Guide (always accessible) */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <h2 className="mb-2 flex items-center gap-2 text-xl font-bold">
             <span>🔑</span>Password Guide
           </h2>
-          <p className="mb-2 text-gray-700 dark:text-gray-300 text-sm">
+          <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
             To decrypt your exported data, you will need a password. It is a combination of your
             email and first name (case-sensitive, no spaces).
           </p>
@@ -257,25 +257,25 @@ export default function MyDataPage() {
             Fetch My Info
           </Button>
           {userInfo && (
-            <div className="mt-2 text-xs bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-900 p-4 rounded-xl border border-blue-200 dark:border-blue-800 shadow-lg flex flex-col gap-2">
-              <div className="flex gap-2 items-center">
+            <div className="mt-2 flex flex-col gap-2 rounded-xl border border-blue-200 bg-gradient-to-br from-blue-100 to-purple-100 p-4 text-xs shadow-lg dark:border-blue-800 dark:from-gray-800 dark:to-gray-900">
+              <div className="flex items-center gap-2">
                 <span className="font-semibold text-blue-700 dark:text-blue-300">Email:</span>
                 <RevealField value={userInfo.email} label="Show Email" />
               </div>
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <span className="font-semibold text-purple-700 dark:text-purple-300">
                   First Name:
                 </span>
                 <RevealField value={userInfo.firstName} label="Show First Name" />
               </div>
-              <div className="flex gap-2 items-center mt-2">
+              <div className="mt-2 flex items-center gap-2">
                 <span className="font-semibold text-green-700 dark:text-green-300">Password:</span>
-                <span className="font-mono bg-green-50 dark:bg-green-900 px-2 py-1 rounded">
+                <span className="rounded bg-green-50 px-2 py-1 font-mono dark:bg-green-900">
                   email + firstName
                 </span>
                 <span>Like: xyz@example.comNAME</span>
               </div>
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="mt-1 text-xs text-gray-500">
                 Check spelling and capitalization. If your name/email is wrong, you would not be
                 able to decrypt your data.
               </div>
@@ -284,10 +284,10 @@ export default function MyDataPage() {
         </div>
         {/* Step 2: Export Data (always accessible) */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <h2 className="mb-2 flex items-center gap-2 text-xl font-bold">
             <span>⬇️</span>Export Your Data
           </h2>
-          <p className="mb-2 text-gray-700 dark:text-gray-300 text-sm">
+          <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
             Export your data securely. The exported file will be encrypted and password-protected.
           </p>
           <Button onClick={handleExportData} disabled={isExporting} className="w-full max-w-xs">
@@ -296,14 +296,14 @@ export default function MyDataPage() {
         </div>
         {/* Step 3: Decrypt Data (always accessible) */}
         <div className="mb-8">
-          <h2 className="text-xl font-bold mb-2 flex items-center gap-2">
+          <h2 className="mb-2 flex items-center gap-2 text-xl font-bold">
             <span>🔓</span>Decrypt Your Data
           </h2>
-          <p className="mb-2 text-gray-700 dark:text-gray-300 text-sm">
+          <p className="mb-2 text-sm text-gray-700 dark:text-gray-300">
             Upload your exported zip file and enter your password to decrypt your data. You can do
             this at any time, even if you exported your data previously.
           </p>
-          <form className="w-full flex flex-col gap-4" onSubmit={handleDecryptData}>
+          <form className="flex w-full flex-col gap-4" onSubmit={handleDecryptData}>
             <label className="text-xs font-semibold text-blue-700 dark:text-blue-300">
               Exported Zip File
             </label>
@@ -312,22 +312,22 @@ export default function MyDataPage() {
               name="zipFile"
               accept=".zip"
               required
-              className="border p-3 rounded-lg bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-400 transition text-base font-medium"
+              className="rounded-lg border bg-white p-3 text-base font-medium transition focus:ring-2 focus:ring-blue-400 dark:bg-gray-900"
               ref={fileInputRef}
             />
             <label className="text-xs font-semibold text-purple-700 dark:text-purple-300">
               Password
             </label>
-            <div className="flex items-center gap-2 relative">
+            <div className="relative flex items-center gap-2">
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter your password (email+firstName)"
                 required
-                className="border p-3 rounded-lg flex-1 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-purple-400 text-base font-mono tracking-wide transition placeholder:italic placeholder:text-gray-400 dark:placeholder:text-gray-500 shadow-sm"
+                className="flex-1 rounded-lg border bg-white p-3 font-mono text-base tracking-wide shadow-sm transition placeholder:italic placeholder:text-gray-400 focus:ring-2 focus:ring-purple-400 dark:bg-gray-900 dark:placeholder:text-gray-500"
                 autoComplete="off"
               />
-              <label className="text-xs flex items-center gap-1 cursor-pointer select-none">
+              <label className="flex cursor-pointer select-none items-center gap-1 text-xs">
                 <input
                   type="checkbox"
                   checked={showPassword}
@@ -338,40 +338,40 @@ export default function MyDataPage() {
             </div>
             <Button
               type="submit"
-              className="w-full max-w-xs text-lg font-bold py-3 bg-gradient-to-br from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 transition text-white rounded-lg shadow-lg"
+              className="w-full max-w-xs rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 py-3 text-lg font-bold text-white shadow-lg transition hover:from-blue-600 hover:to-purple-700"
               disabled={decrypting}
             >
               {decrypting ? 'Decrypting...' : 'Decrypt'}
             </Button>
             {decryptError && (
-              <div className="text-red-500 text-xs text-center font-semibold mt-1">
+              <div className="mt-1 text-center text-xs font-semibold text-red-500">
                 {decryptError}
               </div>
             )}
           </form>
           {decryptedData && (
-            <div className="mt-8 w-full flex flex-col items-center">
+            <div className="mt-8 flex w-full flex-col items-center">
               {!showDecrypted ? (
-                <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-200 to-purple-200 dark:from-gray-700 dark:to-gray-900 p-8 rounded-2xl border border-blue-300 dark:border-blue-700 shadow-2xl max-w-full">
+                <div className="flex max-w-full flex-col items-center justify-center rounded-2xl border border-blue-300 bg-gradient-to-br from-blue-200 to-purple-200 p-8 shadow-2xl dark:border-blue-700 dark:from-gray-700 dark:to-gray-900">
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-3xl">🎉</span>
                     <span className="text-xl font-bold text-blue-700 dark:text-blue-200">
                       Decryption Successful
                     </span>
-                    <span className="text-base text-gray-700 dark:text-gray-200 text-center">
+                    <span className="text-center text-base text-gray-700 dark:text-gray-200">
                       For your privacy, your data is hidden until you confirm.
                     </span>
                   </div>
                   <Button
                     onClick={() => setShowDecrypted(true)}
-                    className="mt-6 px-8 py-3 text-lg font-bold bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-xl shadow-lg hover:scale-105 transition-transform"
+                    className="mt-6 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 px-8 py-3 text-lg font-bold text-white shadow-lg transition-transform hover:scale-105"
                   >
                     Show My Data
                   </Button>
                 </div>
               ) : (
                 <div
-                  className="relative w-full max-w-full max-h-96 overflow-auto bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 p-8 rounded-2xl border border-blue-300 dark:border-blue-700 shadow-2xl select-none"
+                  className="relative max-h-96 w-full max-w-full select-none overflow-auto rounded-2xl border border-blue-300 bg-gradient-to-br from-blue-50 to-purple-100 p-8 shadow-2xl dark:border-blue-700 dark:from-gray-900 dark:to-gray-800"
                   style={{
                     userSelect: 'none',
                     pointerEvents: 'auto',
@@ -382,12 +382,12 @@ export default function MyDataPage() {
                   tabIndex={-1}
                 >
                   <pre
-                    className="whitespace-pre-wrap break-all font-mono text-blue-900 dark:text-blue-200 text-base leading-relaxed"
+                    className="whitespace-pre-wrap break-all font-mono text-base leading-relaxed text-blue-900 dark:text-blue-200"
                     style={{ margin: 0 }}
                   >
                     {decryptedData}
                   </pre>
-                  <div className="absolute top-0 right-0 px-4 py-1 text-xs text-blue-500 bg-white/80 dark:bg-gray-900/80 rounded-bl shadow">
+                  <div className="absolute right-0 top-0 rounded-bl bg-white/80 px-4 py-1 text-xs text-blue-500 shadow dark:bg-gray-900/80">
                     Scroll to view all
                   </div>
                 </div>
@@ -395,7 +395,7 @@ export default function MyDataPage() {
             </div>
           )}
         </div>
-        <div className="text-xs text-gray-400 text-center mt-8">
+        <div className="mt-8 text-center text-xs text-gray-400">
           Your data is encrypted with a password only you know. For maximum privacy, remember:{' '}
           <b>password = email + firstName</b> (case-sensitive, no spaces).
         </div>
@@ -412,7 +412,7 @@ function RevealField({ value, label }: { value: string; label: string }) {
         type="button"
         size="sm"
         variant="outline"
-        className="px-2 py-1 text-xs border-blue-300 dark:border-blue-700"
+        className="border-blue-300 px-2 py-1 text-xs dark:border-blue-700"
         onClick={() => setShow((v) => !v)}
       >
         {show ? value : label}

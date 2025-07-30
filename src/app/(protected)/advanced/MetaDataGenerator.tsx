@@ -305,24 +305,24 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
     const sanitizedImage = isValidUrl(image) ? DOMPurify.sanitize(image) : '';
 
     return (
-      <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
+      <div className="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <div className="flex flex-col gap-2">
           {sanitizedImage && (
             <Image
               src={sanitizedImage}
               alt="Preview image"
-              className="w-full h-48 object-cover rounded-lg mb-2"
+              className="mb-2 h-48 w-full rounded-lg object-cover"
               onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
             />
           )}
-          <h3 className="font-bold text-blue-600 dark:text-blue-400 line-clamp-1">
+          <h3 className="line-clamp-1 font-bold text-blue-600 dark:text-blue-400">
             {title || 'Your Page Title'}
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+          <p className="line-clamp-2 text-sm text-gray-500 dark:text-gray-400">
             {description ||
               "Your page description will appear here. Make sure it's compelling and informative."}
           </p>
-          <p className="text-xs text-gray-400 truncate">
+          <p className="truncate text-xs text-gray-400">
             {form.getValues('ogUrl') || form.getValues('canonicalUrl') || 'https://yourdomain.com'}
           </p>
         </div>
@@ -332,7 +332,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Globe className="h-5 w-5" /> Meta Data Generator
@@ -343,7 +343,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
+          <TabsList className="mb-4 grid grid-cols-3">
             <TabsTrigger value="form">Meta Data Form</TabsTrigger>
             <TabsTrigger value="preview">Social Preview</TabsTrigger>
             <TabsTrigger value="result">Generated Code</TabsTrigger>
@@ -354,7 +354,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium border-b pb-2">Basic Meta Tags</h3>
+                    <h3 className="border-b pb-2 text-lg font-medium">Basic Meta Tags</h3>
 
                     <FormField
                       control={form.control}
@@ -384,7 +384,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                           <FormControl>
                             <Textarea
                               placeholder="Brief description of your page content"
-                              className="resize-none h-24"
+                              className="h-24 resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -458,7 +458,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium border-b pb-2">
+                    <h3 className="border-b pb-2 text-lg font-medium">
                       <div className="flex items-center gap-2">
                         <Facebook className="h-4 w-4" />
                         Open Graph / Social Media
@@ -491,7 +491,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                           <FormControl>
                             <Textarea
                               placeholder="Description for social media (defaults to main description)"
-                              className="resize-none h-20"
+                              className="h-20 resize-none"
                               {...field}
                             />
                           </FormControl>
@@ -558,7 +558,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium border-b pb-2">
+                    <h3 className="border-b pb-2 text-lg font-medium">
                       <div className="flex items-center gap-2">
                         <Twitter className="h-4 w-4" />
                         Twitter Card
@@ -673,12 +673,12 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-medium border-b pb-2">Advanced Settings</h3>
+                    <h3 className="border-b pb-2 text-lg font-medium">Advanced Settings</h3>
 
                     <div className="space-y-4">
                       <h4 className="font-medium">Robots Settings</h4>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <FormField
                           control={form.control}
                           name="robots.index"
@@ -716,7 +716,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <FormField
                           control={form.control}
                           name="robots.noarchive"
@@ -796,7 +796,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                             </FormControl>
                             <Input
                               type="color"
-                              className="w-12 p-1 ml-2"
+                              className="ml-2 w-12 p-1"
                               value={field.value || '#ffffff'}
                               onChange={(e) => field.onChange(e.target.value)}
                             />
@@ -828,7 +828,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
 
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={clearForm} className="mr-auto">
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="mr-2 h-4 w-4" />
                     Clear Form
                   </Button>
                   <Button type="button" variant="outline" onClick={onClose}>
@@ -843,7 +843,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
           <TabsContent value="preview" className="space-y-4">
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                <h3 className="mb-2 flex items-center gap-2 text-lg font-medium">
                   <Facebook className="h-5 w-5 text-blue-600" />
                   Facebook Preview
                 </h3>
@@ -851,7 +851,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
               </div>
 
               <div>
-                <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                <h3 className="mb-2 flex items-center gap-2 text-lg font-medium">
                   <Twitter className="h-5 w-5 text-sky-500" />
                   Twitter Preview
                 </h3>
@@ -859,7 +859,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
               </div>
 
               <div>
-                <h3 className="text-lg font-medium mb-2 flex items-center gap-2">
+                <h3 className="mb-2 flex items-center gap-2 text-lg font-medium">
                   <Linkedin className="h-5 w-5 text-blue-700" />
                   LinkedIn Preview
                 </h3>
@@ -878,13 +878,13 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                 <Button size="sm" className="absolute right-2 top-2" onClick={copyToClipboard}>
                   Copy
                 </Button>
-                <pre className="bg-slate-100 dark:bg-slate-800 p-4 rounded-lg overflow-x-auto text-sm">
+                <pre className="overflow-x-auto rounded-lg bg-slate-100 p-4 text-sm dark:bg-slate-800">
                   {generatedCode}
                 </pre>
               </div>
 
-              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                <h3 className="text-amber-800 dark:text-amber-300 font-medium flex items-center gap-2 mb-2">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+                <h3 className="mb-2 flex items-center gap-2 font-medium text-amber-800 dark:text-amber-300">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -897,9 +897,9 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
                   </svg>
                   Implementation Guide
                 </h3>
-                <p className="text-amber-700 dark:text-amber-300/80 text-sm">
+                <p className="text-sm text-amber-700 dark:text-amber-300/80">
                   Copy the generated meta tags and paste them into the{' '}
-                  <code className="bg-amber-100 dark:bg-amber-900/50 px-1 rounded">
+                  <code className="rounded bg-amber-100 px-1 dark:bg-amber-900/50">
                     &lt;head&gt;
                   </code>{' '}
                   section of your HTML document. These tags help search engines and social media
@@ -941,12 +941,12 @@ const MetaDataGenerator = () => {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <div className="w-full max-w-2xl mx-auto my-6 p-8 bg-gradient-to-br from-green-50 via-white to-green-100 dark:from-green-900/60 dark:via-green-950/80 dark:to-green-900/60 rounded-2xl border border-green-300 dark:border-green-700 shadow-xl flex flex-col items-center relative overflow-hidden">
-      <div className="absolute -top-10 -right-10 w-40 h-40 bg-green-200 dark:bg-green-800 rounded-full opacity-30 blur-2xl z-0" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-green-100 dark:bg-green-900 rounded-full opacity-20 blur-2xl z-0" />
+    <div className="relative mx-auto my-6 flex w-full max-w-2xl flex-col items-center overflow-hidden rounded-2xl border border-green-300 bg-gradient-to-br from-green-50 via-white to-green-100 p-8 shadow-xl dark:border-green-700 dark:from-green-900/60 dark:via-green-950/80 dark:to-green-900/60">
+      <div className="absolute -right-10 -top-10 z-0 h-40 w-40 rounded-full bg-green-200 opacity-30 blur-2xl dark:bg-green-800" />
+      <div className="absolute -bottom-10 -left-10 z-0 h-32 w-32 rounded-full bg-green-100 opacity-20 blur-2xl dark:bg-green-900" />
 
-      <h2 className="text-2xl font-extrabold mb-3 text-green-800 dark:text-green-100 drop-shadow-lg z-10 tracking-tight">
-        <span className="inline-block align-middle mr-2">
+      <h2 className="z-10 mb-3 text-2xl font-extrabold tracking-tight text-green-800 drop-shadow-lg dark:text-green-100">
+        <span className="mr-2 inline-block align-middle">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="28"
@@ -967,14 +967,14 @@ const MetaDataGenerator = () => {
         Meta Tags Generator
       </h2>
 
-      <p className="mb-6 text-green-700/80 dark:text-green-200/80 text-center max-w-lg z-10 text-sm md:text-base">
+      <p className="z-10 mb-6 max-w-lg text-center text-sm text-green-700/80 dark:text-green-200/80 md:text-base">
         Create perfect SEO meta tags for your website. Optimize for search engines and social media
         with custom titles, descriptions, and images.
       </p>
 
       <Button
         onClick={() => setShowModal(true)}
-        className="px-8 py-3 rounded-xl text-lg font-bold shadow-lg bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 hover:from-green-600 hover:to-emerald-600 transition-all duration-200 border-0 z-10 flex items-center gap-2"
+        className="z-10 flex items-center gap-2 rounded-xl border-0 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 px-8 py-3 text-lg font-bold shadow-lg transition-all duration-200 hover:from-green-600 hover:to-emerald-600"
         style={{ minWidth: 240 }}
       >
         <Share2 className="h-5 w-5" />

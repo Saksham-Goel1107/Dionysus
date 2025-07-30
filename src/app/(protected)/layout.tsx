@@ -36,7 +36,7 @@ const Layout = async ({ children }: Props) => {
           <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4 shadow">
             <SidebarTrigger />
             <CurrentTimeDisplay />
-            <div className="ml-auto flex items-center gap-2 justify-center">
+            <div className="ml-auto flex items-center justify-center gap-2">
               <div className="dark:bg-gray-300">
                 {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
                   <Inbox
@@ -47,7 +47,7 @@ const Layout = async ({ children }: Props) => {
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />
-              <div className="hidden sm:block md:flex gap-2">
+              <div className="hidden gap-2 sm:block md:flex">
                 <Battery />
                 <a
                   href="https://www.buymeacoffee.com/saksham07"

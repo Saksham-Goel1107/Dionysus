@@ -11,11 +11,11 @@ export default function CookiePolicyPage() {
   return (
     <>
       <Navbar />
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold text-center mb-8">Cookie & Privacy Policy</h1>
+      <div className="mx-auto max-w-4xl px-4 py-12">
+        <h1 className="mb-8 text-center text-3xl font-bold">Cookie & Privacy Policy</h1>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4">🍪 Our Cookie Policy</h2>
+          <h2 className="mb-4 text-2xl font-semibold">🍪 Our Cookie Policy</h2>
           <p className="mb-4">
             At Dionysus, we are committed to full transparency about how we use cookies, analytics,
             AI, and third-party integrations. This policy details every aspect of data collection,
@@ -24,12 +24,12 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">1. Essential Cookies & Authentication</h2>
+          <h2 className="mb-3 text-xl font-semibold">1. Essential Cookies & Authentication</h2>
           <p className="mb-4">
             We use essential cookies to securely authenticate users and enable critical features.
             These cookies are required for the platform to function and include:
           </p>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               <strong>Session Cookies:</strong> Maintain your login session and user state.
             </li>
@@ -55,7 +55,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">2. Analytics, Monitoring & Performance</h2>
+          <h2 className="mb-3 text-xl font-semibold">2. Analytics, Monitoring & Performance</h2>
           <p className="mb-4">
             We use analytics and monitoring tools to understand usage patterns, improve reliability,
             and detect issues. Data collected is anonymized and aggregated unless otherwise stated.
@@ -69,7 +69,7 @@ export default function CookiePolicyPage() {
             notified when real time screen viewing or session replay occurs, but by using our
             platform, you provide legal consent for these activities as described.
           </p>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               <strong>Session Replays:</strong> Anonymous recordings of user interactions (e.g.,
               clicks, navigation) for UX improvement. No keystrokes in sensitive fields or personal
@@ -99,14 +99,14 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">3. AI & Language Model Data Handling</h2>
+          <h2 className="mb-3 text-xl font-semibold">3. AI & Language Model Data Handling</h2>
           <p className="mb-4">
             When you interact with AI features (e.g., chatbots, code generation, or language
             analysis), your prompts and the AI responses may be processed by third-party AI
             providers. For production, we use <strong>LangSmith</strong> (LangChain), and{' '}
             <strong>Google Gemini</strong> for language model inference. Data handling includes:
           </p>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               <strong>Prompt Logging:</strong> User prompts and AI responses may be logged for
               debugging, quality assurance, and model improvement. Logs are pseudonymized and never
@@ -136,13 +136,13 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">4. Third-Party Integrations & Data Sharing</h2>
+          <h2 className="mb-3 text-xl font-semibold">4. Third-Party Integrations & Data Sharing</h2>
           <p className="mb-4">
             We integrate with several third-party services to provide authentication, analytics,
             payments, and other features. Data shared with these providers is limited to what is
             necessary for their function:
           </p>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               <strong>Authentication:</strong> Clerk (user ID, email, session info)
             </li>
@@ -170,7 +170,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">5. Data Retention & Security</h2>
+          <h2 className="mb-3 text-xl font-semibold">5. Data Retention & Security</h2>
           <p className="mb-4">
             <strong>Retention:</strong> We retain data only as long as necessary for the purposes
             described above. Session and authentication cookies expire after logout or a set period.
@@ -185,9 +185,9 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">6. User Rights & Choices</h2>
+          <h2 className="mb-3 text-xl font-semibold">6. User Rights & Choices</h2>
           <p className="mb-4">You have the right to:</p>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               Request access to or deletion of your data (contact{' '}
               <Link className="text-blue-500" href={'/support'}>
@@ -202,8 +202,8 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">7. What We Never Do</h2>
-          <ul className="list-disc pl-5 mb-4 space-y-2">
+          <h2 className="mb-3 text-xl font-semibold">7. What We Never Do</h2>
+          <ul className="mb-4 list-disc space-y-2 pl-5">
             <li>
               We <strong>never</strong> use cookies for advertising or marketing purposes
             </li>
@@ -221,7 +221,7 @@ export default function CookiePolicyPage() {
               We <strong>never</strong> use AI logs for profiling or advertising
             </li>
           </ul>
-          <div className="mb-4 text-red-600 dark:text-red-400 text-sm">
+          <div className="mb-4 text-sm text-red-600 dark:text-red-400">
             <strong>Important:</strong> You are solely responsible for any personal or sensitive
             information you share, submit, or leak anywhere on our platform, including in chats, AI
             prompts, or support sessions, whether or not it was requested. If such information is
@@ -233,7 +233,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">8. Updates to This Policy</h2>
+          <h2 className="mb-3 text-xl font-semibold">8. Updates to This Policy</h2>
           <p className="mb-4">
             We may update this Cookie & Privacy Policy at any time, for any reason, and reserve the
             right to do so without prior consent or notice to users. You are responsible for
@@ -245,7 +245,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-xl font-semibold mb-3">9. Contact & Support</h2>
+          <h2 className="mb-3 text-xl font-semibold">9. Contact & Support</h2>
           <p className="mb-4">
             If you have any questions, requests, or concerns about our Cookie & Privacy Policy or
             data practices, please contact us at{' '}
@@ -256,8 +256,8 @@ export default function CookiePolicyPage() {
           </p>
         </section>
 
-        <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-8">
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+        <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Last updated: July 28, 2025
           </p>
         </div>

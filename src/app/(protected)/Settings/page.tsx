@@ -40,13 +40,13 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[70vh] w-full">
+    <div className="flex min-h-[70vh] w-full flex-col md:flex-row">
       <div className="w-full md:w-auto">
         <SettingsSidebar current={current} onSelect={setCurrent} />
       </div>
-      <main className="flex-1 p-4 sm:p-6 md:p-8 w-full">
+      <main className="w-full flex-1 p-4 sm:p-6 md:p-8">
         {!verified ? (
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex h-full flex-col items-center justify-center">
             <div
               className={`mb-4 text-lg font-semibold text-${resolvedTheme === 'dark' ? 'gray-200' : 'gray-700'} text-center`}
             >

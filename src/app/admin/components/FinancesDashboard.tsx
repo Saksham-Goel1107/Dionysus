@@ -113,21 +113,21 @@ export default function FinancesDashboard({
 
   return (
     <div className="p-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Financial Analytics</h1>
           <p className="text-gray-500 dark:text-gray-400">
             Track revenue, credits sold, and transaction history
           </p>
         </div>
-        <Button variant="outline" onClick={exportTransactions} className="flex gap-2 items-center">
+        <Button variant="outline" onClick={exportTransactions} className="flex items-center gap-2">
           <Download size={16} />
           Export Transactions
         </Button>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -135,12 +135,12 @@ export default function FinancesDashboard({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Revenue
                 </p>
-                <h3 className="text-3xl font-bold mt-1">
+                <h3 className="mt-1 text-3xl font-bold">
                   ₹{totalRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Lifetime earnings</p>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Lifetime earnings</p>
               </div>
-              <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
                 <CreditCard size={24} />
               </div>
             </div>
@@ -154,12 +154,12 @@ export default function FinancesDashboard({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Total Credits Sold
                 </p>
-                <h3 className="text-3xl font-bold mt-1">{totalCredits.toLocaleString()}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <h3 className="mt-1 text-3xl font-bold">{totalCredits.toLocaleString()}</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   Across all transactions
                 </p>
               </div>
-              <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                 <Wallet size={24} />
               </div>
             </div>
@@ -173,17 +173,17 @@ export default function FinancesDashboard({
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   Current Month Revenue
                 </p>
-                <h3 className="text-3xl font-bold mt-1">
+                <h3 className="mt-1 text-3xl font-bold">
                   ₹{currentMonthRevenue.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                 </h3>
                 <p
-                  className={`text-sm mt-1 flex items-center gap-1 ${revenueGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
+                  className={`mt-1 flex items-center gap-1 text-sm ${revenueGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}
                 >
                   <span>{revenueGrowth >= 0 ? '↑' : '↓'}</span>
                   {Math.abs(revenueGrowth).toFixed(1)}% from last month
                 </p>
               </div>
-              <div className="h-12 w-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                 <TrendingUp size={24} />
               </div>
             </div>
@@ -242,7 +242,7 @@ export default function FinancesDashboard({
         <CardHeader>
           <CardTitle>Transaction History</CardTitle>
           <CardDescription>Complete record of all credit purchases</CardDescription>
-          <div className="mt-4 relative">
+          <div className="relative mt-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
             <Input
               placeholder="Search by user or email..."
@@ -297,7 +297,7 @@ export default function FinancesDashboard({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-6 text-gray-500">
+                    <TableCell colSpan={5} className="py-6 text-center text-gray-500">
                       No transactions found matching your search criteria
                     </TableCell>
                   </TableRow>

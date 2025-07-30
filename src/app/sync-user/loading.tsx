@@ -22,9 +22,9 @@ const Loading = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center bg-white dark:bg-black text-gray-800 dark:text-gray-100 transition-colors">
-      <Loader2 className="h-10 w-10 animate-spin text-blue-500 dark:text-blue-400 mb-4" />
-      <p className="text-lg font-medium animate-pulse">{messages[messageIndex]}</p>
+    <div className="flex h-screen w-full flex-col items-center justify-center bg-white text-gray-800 transition-colors dark:bg-black dark:text-gray-100">
+      <Loader2 className="mb-4 h-10 w-10 animate-spin text-blue-500 dark:text-blue-400" />
+      <p className="animate-pulse text-lg font-medium">{messages[messageIndex]}</p>
     </div>
   );
 };

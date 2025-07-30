@@ -92,13 +92,13 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3">
-        <div className="grid grid-cols-5 gap-2 mb-3">
+        <div className="mb-3 grid grid-cols-5 gap-2">
           {PRESET_COLORS.map((presetColor) => (
             <button
               key={presetColor}
               className={cn(
-                'h-8 w-8 rounded-full border border-gray-300 flex items-center justify-center',
-                selectedColor === presetColor && 'ring-2 ring-offset-2 ring-black dark:ring-white',
+                'flex h-8 w-8 items-center justify-center rounded-full border border-gray-300',
+                selectedColor === presetColor && 'ring-2 ring-black ring-offset-2 dark:ring-white',
               )}
               style={{ backgroundColor: presetColor }}
               onClick={() => handleColorChange(presetColor)}
@@ -118,8 +118,8 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
             </button>
           ))}
         </div>
-        <div className="flex gap-2 mt-3">
-          <div className="flex-grow flex border rounded-md overflow-hidden">
+        <div className="mt-3 flex gap-2">
+          <div className="flex flex-grow overflow-hidden rounded-md border">
             <input
               ref={inputRef}
               type="text"
@@ -128,10 +128,10 @@ const ColorPicker = ({ color, onChange }: ColorPickerProps) => {
               onClick={handleInputClick}
               onBlur={handleCustomColorSubmit}
               onKeyDown={(e) => e.key === 'Enter' && handleCustomColorSubmit()}
-              className="flex-grow px-3 py-1 text-sm border-none focus:outline-none bg-background"
+              className="flex-grow border-none bg-background px-3 py-1 text-sm focus:outline-none"
               placeholder="#RRGGBB"
             />
-            <div className="w-10 h-full" style={{ backgroundColor: customColor }} />
+            <div className="h-full w-10" style={{ backgroundColor: customColor }} />
           </div>
           <Button size="sm" onClick={handleCustomColorSubmit}>
             Apply

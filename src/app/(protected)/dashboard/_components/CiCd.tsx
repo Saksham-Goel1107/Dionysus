@@ -276,9 +276,9 @@ const CiCd = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-gray-500 dark:text-gray-300 text-lg">Checking your plan...</p>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
       </div>
     );
   }
@@ -306,7 +306,7 @@ const CiCd = () => {
           <Link href="/subscriptions">
             <Button
               size="lg"
-              className="mt-2 bg-yellow-600 text-white hover:bg-yellow-700 w-full max-w-xs"
+              className="mt-2 w-full max-w-xs bg-yellow-600 text-white hover:bg-yellow-700"
             >
               Upgrade Now
             </Button>
@@ -314,19 +314,19 @@ const CiCd = () => {
         </div>
       ) : (
         <div
-          className={`mx-auto max-w-2xl rounded-xl border p-2 xs:p-3 sm:p-6 shadow-xl transition duration-300 ${
+          className={`xs:p-3 mx-auto max-w-2xl rounded-xl border p-2 shadow-xl transition duration-300 sm:p-6 ${
             resolvedTheme === 'dark'
               ? 'border-zinc-700 bg-zinc-900 text-white'
               : 'border-gray-200 bg-white text-gray-800'
           } w-full`}
         >
-          <h2 className="mb-4 flex flex-col sm:flex-row items-center gap-2 text-xl xs:text-2xl sm:text-3xl font-bold">
+          <h2 className="xs:text-2xl mb-4 flex flex-col items-center gap-2 text-xl font-bold sm:flex-row sm:text-3xl">
             <span className="flex items-center gap-2">
               <Wrench className="h-6 w-6 text-blue-500" /> CI/CD Pipeline Generator
             </span>
             <Button
               onClick={handleAiSuggest}
-              className="sm:ml-auto flex items-center gap-1 mt-2 sm:mt-0"
+              className="mt-2 flex items-center gap-1 sm:ml-auto sm:mt-0"
               variant="outline"
               size="sm"
               disabled={aiLoading === true ? true : false}
@@ -337,7 +337,7 @@ const CiCd = () => {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-2 mt-4 block font-semibold text-sm">CI Provider:</label>
+              <label className="mb-2 mt-4 block text-sm font-semibold">CI Provider:</label>
               <select
                 className="w-full rounded border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={provider}
@@ -351,7 +351,7 @@ const CiCd = () => {
               </select>
             </div>
             <div>
-              <label className="mb-2 mt-4 block font-semibold text-sm">OS:</label>
+              <label className="mb-2 mt-4 block text-sm font-semibold">OS:</label>
               <select
                 className="w-full rounded border px-3 py-2 text-sm"
                 value={os}
@@ -365,7 +365,7 @@ const CiCd = () => {
               </select>
             </div>
             <div>
-              <label className="mb-2 mt-4 block font-semibold text-sm">Node Version:</label>
+              <label className="mb-2 mt-4 block text-sm font-semibold">Node Version:</label>
               <select
                 className="w-full rounded border px-3 py-2 text-sm"
                 value={nodeVersion}
@@ -380,14 +380,14 @@ const CiCd = () => {
             </div>
           </div>
 
-          <label className="mb-2 mt-6 block font-semibold text-sm">Steps:</label>
+          <label className="mb-2 mt-6 block text-sm font-semibold">Steps:</label>
           <div className="flex flex-col gap-2">
             {steps.map((step, idx) => (
               <div
                 key={step.value}
-                className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 w-full"
+                className="xs:flex-row xs:items-center flex w-full flex-col items-stretch gap-2"
               >
-                <div className="flex flex-row items-center gap-2 w-full xs:w-auto">
+                <div className="xs:w-auto flex w-full flex-row items-center gap-2">
                   <input
                     type="checkbox"
                     checked={step.checked}
@@ -398,7 +398,7 @@ const CiCd = () => {
                     type="text"
                     value={step.label}
                     onChange={(e) => handleStepLabelChange(idx, e.target.value)}
-                    className="flex-1 min-w-0 rounded border px-2 py-1 text-sm"
+                    className="min-w-0 flex-1 rounded border px-2 py-1 text-sm"
                     placeholder="Step label"
                   />
                 </div>
@@ -406,16 +406,16 @@ const CiCd = () => {
                   type="text"
                   value={step.script}
                   onChange={(e) => handleStepScriptChange(idx, e.target.value)}
-                  className="flex-1 min-w-0 rounded border px-2 py-1 text-sm"
+                  className="min-w-0 flex-1 rounded border px-2 py-1 text-sm"
                   placeholder="Script"
                 />
-                <div className="flex gap-1 justify-end xs:justify-start">
+                <div className="xs:justify-start flex justify-end gap-1">
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => handleMoveStep(idx, -1)}
                     disabled={idx === 0}
-                    className="hidden xs:inline-flex"
+                    className="xs:inline-flex hidden"
                   >
                     <ArrowUp className="h-4 w-4" />
                   </Button>
@@ -424,7 +424,7 @@ const CiCd = () => {
                     variant="ghost"
                     onClick={() => handleMoveStep(idx, 1)}
                     disabled={idx === steps.length - 1}
-                    className="hidden xs:inline-flex"
+                    className="xs:inline-flex hidden"
                   >
                     <ArrowDown className="h-4 w-4" />
                   </Button>
@@ -436,7 +436,7 @@ const CiCd = () => {
             ))}
             <Button
               onClick={handleAddStep}
-              className="mt-2 flex items-center gap-2 w-full xs:w-auto"
+              className="xs:w-auto mt-2 flex w-full items-center gap-2"
               variant="outline"
               size="sm"
             >
@@ -444,7 +444,7 @@ const CiCd = () => {
             </Button>
           </div>
 
-          <label className="mb-2 mt-6 block font-semibold text-sm">
+          <label className="mb-2 mt-6 block text-sm font-semibold">
             Environment Variables <span className="text-xs font-normal">(e.g. FOO=bar)</span>:
           </label>
           <textarea
@@ -457,27 +457,27 @@ const CiCd = () => {
 
           <Button
             onClick={handleGenerate}
-            className="mt-6 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:brightness-110 text-base xs:text-lg"
+            className="xs:text-lg mt-6 w-full bg-gradient-to-r from-blue-500 to-purple-600 text-base text-white hover:brightness-110"
           >
             Generate YAML
           </Button>
 
           {yaml && (
             <div className="mt-6">
-              <label className="mb-2 block font-semibold text-sm">Generated YAML:</label>
-              <pre className="overflow-x-auto whitespace-pre-wrap rounded bg-zinc-100 p-2 xs:p-4 text-xs xs:text-sm dark:bg-zinc-800 max-h-64 sm:max-h-96">
+              <label className="mb-2 block text-sm font-semibold">Generated YAML:</label>
+              <pre className="xs:p-4 xs:text-sm max-h-64 overflow-x-auto whitespace-pre-wrap rounded bg-zinc-100 p-2 text-xs dark:bg-zinc-800 sm:max-h-96">
                 {yaml}
               </pre>
-              <div className="mt-3 flex flex-col xs:flex-row gap-2">
+              <div className="xs:flex-row mt-3 flex flex-col gap-2">
                 <Button
                   onClick={handleCopy}
-                  className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full xs:w-auto"
+                  className="xs:w-auto flex w-full items-center gap-2 bg-green-600 hover:bg-green-700"
                 >
                   <Copy className="h-4 w-4" /> Copy
                 </Button>
                 <Button
                   onClick={handleDownload}
-                  className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 w-full xs:w-auto"
+                  className="xs:w-auto flex w-full items-center gap-2 bg-gray-600 hover:bg-gray-700"
                 >
                   <Download className="h-4 w-4" /> Download
                 </Button>
@@ -486,10 +486,10 @@ const CiCd = () => {
           )}
 
           <div className="mt-8">
-            <h3 className="mb-2 flex items-center gap-2 text-base xs:text-lg font-bold">
+            <h3 className="xs:text-lg mb-2 flex items-center gap-2 text-base font-bold">
               <Info className="h-5 w-5 text-blue-400" /> Tips & Tricks
             </h3>
-            <ul className="ml-4 xs:ml-6 list-disc space-y-1 text-xs xs:text-sm">
+            <ul className="xs:ml-6 xs:text-sm ml-4 list-disc space-y-1 text-xs">
               {TIPS.map((tip, i) => (
                 <li key={i}>{tip}</li>
               ))}

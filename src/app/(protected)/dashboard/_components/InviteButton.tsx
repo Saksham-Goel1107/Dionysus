@@ -176,7 +176,7 @@ const InviteButton = () => {
                 className="flex items-center gap-1"
               >
                 {isRegenerating ? 'Regenerating...' : 'Regenerate Link'}
-                {!isRegenerating && <RefreshCw className="h-4 w-4 ml-1" />}
+                {!isRegenerating && <RefreshCw className="ml-1 h-4 w-4" />}
               </Button>
             </div>
           </div>
