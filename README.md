@@ -67,103 +67,522 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
 ## 📂 Advanced Architecture & Structure
 
 ```
-├── prisma/                        # Database schema & migrations
-│   ├── schema.prisma              # Core database schema definition
-│   └── migrations/                # Versioned database migrations
-├── public/                        # Static assets & optimized resources
-│   ├── licenses/                  # License templates for projects
-│   └── ...                        # Various optimized images & media files
-├── src/
-│   ├── app/                       # Next.js App Router architecture
-│   │   ├── (protected)/           # Auth-protected application routes
-│   │   │   ├── _components/       # Protected route-specific components
-│   │   │   ├── advanced/          # Advanced feature modules
-│   │   │   ├── billing/           # Subscription & payment management
-│   │   │   ├── chat/              # AI chat & code assistance features
-│   │   │   ├── chatting/          # Real-time team chat functionality
-│   │   │   ├── create/            # Project creation workflows
-│   │   │   ├── dashboard/         # Main user dashboard interface
-│   │   │   │   └── _components/   # Dashboard-specific components
-│   │   │   │       └── readme-generator/  # AI readme generation
-│   │   │   ├── join/              # Team invitation & onboarding flows
-│   │   │   ├── meetings/          # Meeting transcription & analysis
-│   │   │   ├── qa/                # Code Q&A & contextual assistance
-│   │   │   └── Settings/          # User & account settings
-│   │   ├── admin/                 # Admin control panel & management
-│   │   │   └── components/        # Admin-specific UI components
-│   │   │       ├── AdminDashboard.tsx       # Admin metrics & KPIs
-│   │   │       ├── UsersManagement.tsx      # Advanced user management
-│   │   │       ├── AnalyticsDashboard.tsx   # Detailed platform analytics
-│   │   │       ├── CouponsManagement.tsx    # Promotion code administration
-│   │   │       └── FinancesDashboard.tsx    # Financial reporting tools
-│   │   ├── api/                   # RESTful API routes & handlers
-│   │   │   └── admin/             # Admin-specific API endpoints
-│   │   ├── components/            # Global application components
-│   │   ├── docs/                  # Documentation & help center
-│   │   ├── privacy/               # Privacy policy & compliance
-│   │   ├── sign-in/               # Authentication entry points
-│   │   ├── sign-up/               # User registration flows
-│   │   ├── sync-user/             # User data synchronization
-│   │   ├── terms/                 # Terms of service
-│   │   ├── types/                 # API & route-specific types
-│   │   └── utils/                 # Utility functions
-│   ├── components/                # Shared cross-application components
-│   │   ├── BlockInspectAndContext.tsx   # Code block analysis component
-│   │   ├── media-room.tsx               # Media sharing interface
-│   │   ├── feedback/                    # User feedback components
-│   │   ├── logo-generator/              # Logo creation tools
-│   │   ├── ui/                          # Shadcn UI component library
-│   │   └── updates/                     # Release notes & updates
-│   ├── gitignore-helper/          # Git configuration tools
-│   │   └── templates.ts           # Gitignore template management
-│   ├── hooks/                     # Custom React hooks collection
-│   │   ├── use-mobile.tsx         # Responsive design hooks
-│   │   ├── use-project-creator.tsx# Project creation logic
-│   │   ├── use-project-team-guard.tsx   # Team permission management
-│   │   ├── use-project.tsx        # Project data management
-│   │   ├── use-refetch.ts         # Data refetching optimization
-│   │   └── use-toast.ts           # Toast notification system
-│   ├── lib/                       # Core business logic libraries
-│   │   ├── assembly.ts            # Assembly AI integration
-│   │   ├── checkAndSyncProStatus.ts    # Subscription status sync
-│   │   ├── cloudinary.ts          # Media storage & CDN
-│   │   ├── creditsAlert.ts        # Credit monitoring system
-│   │   ├── email.ts               # Email notification system
-│   │   ├── gemini.ts              # Google Gemini AI integration
-│   │   ├── github-loader.ts       # GitHub repository ingestion
-│   │   ├── github.ts              # GitHub API integration
-│   │   ├── handleUserCreditsChange.ts   # Credit management system
-│   │   ├── prisma.ts              # Database client configuration
-│   │   ├── rate-limit.ts          # API rate limiting implementation
-│   │   ├── sendInvoice.ts         # Automated invoicing system
-│   │   ├── stripe.ts              # Payment processing integration
-│   │   └── utils.ts               # General utility functions
-│   ├── middleware.ts              # Global request middleware
-│   ├── server/                    # Server-side application logic
-│   │   ├── db.ts                  # Database connection manager
-│   │   ├── keepalive.ts           # Connection maintenance
-│   │   └── api/                   # Server API implementations
-│   ├── styles/                    # Global styling system
-│   │   └── globals.css            # Tailwind & global styles
-│   ├── trpc/                      # tRPC API framework
-│   │   ├── query-client.ts        # API client configuration
-│   │   ├── react.tsx              # React integration hooks
-│   │   └── server.ts              # tRPC server implementation
-│   └── types/                     # Global TypeScript definitions
-├── .husky/                        # Git hooks & CI automation
-├── components.json                # UI component configuration
-├── next.config.js                 # Next.js configuration
-├── postcss.config.js              # CSS processing settings
-├── prettier.config.js             # Code formatting rules
-├── tailwind.config.ts             # Tailwind CSS configuration
-└── tsconfig.json                  # TypeScript compiler settings
+Directory structure:
+└── saksham-goel1107-dionysus/
+    ├── README.md
+    ├── back-of-envelope.md
+    ├── CODE_OF_CONDUCT.md
+    ├── CODEOWNERS
+    ├── commitlint.config.ts
+    ├── components.json
+    ├── CONTRIBUTING.md
+    ├── Dockerfile.postgres
+    ├── generate_diagram.py
+    ├── HUSKY.md
+    ├── LICENSE.md
+    ├── next.config.js
+    ├── package.json
+    ├── postcss.config.js
+    ├── prettier.config.js
+    ├── README-CONTRIBUTORS.md
+    ├── SECURITY.md
+    ├── sentry.edge.config.ts
+    ├── sentry.server.config.ts
+    ├── SUPPORT.md
+    ├── tailwind.config.ts
+    ├── tsconfig.json
+    ├── .dockerignore
+    ├── .editorconfig
+    ├── .env.example.encrypted
+    ├── .eslintignore
+    ├── .eslintrc.cjs
+    ├── .npmrc
+    ├── .prettierignore
+    ├── .prettierrc
+    ├── .travis.yml
+    ├── prisma/
+    │   └── schema.prisma
+    ├── public/
+    │   ├── Flag-India.webp
+    │   ├── gif.worker.js
+    │   ├── google6449ae9f2db98a54.html
+    │   ├── manifest.json
+    │   ├── robots.txt
+    │   ├── site.webmanifest
+    │   └── licenses/
+    │       ├── apache-2.0.txt
+    │       ├── bsd-3-clause.txt
+    │       ├── cc0.txt
+    │       ├── custom.txt
+    │       ├── gpl-3.0.txt
+    │       ├── mit.txt
+    │       ├── proprietary.txt
+    │       ├── strictest.txt
+    │       └── unlicense.txt
+    ├── src/
+    │   ├── env.js
+    │   ├── firebase-init.ts
+    │   ├── instrumentation-client.ts
+    │   ├── instrumentation.ts
+    │   ├── middleware.ts
+    │   ├── app/
+    │   │   ├── ClerkProviderWithTheme.tsx
+    │   │   ├── global-error.tsx
+    │   │   ├── layout.tsx
+    │   │   ├── MultiSession.tsx
+    │   │   ├── not-found.tsx
+    │   │   ├── offline.tsx
+    │   │   ├── page.tsx
+    │   │   ├── Providers.tsx
+    │   │   ├── sitemap.ts
+    │   │   ├── (protected)/
+    │   │   │   ├── layout.tsx
+    │   │   │   ├── ProCrownUserButtonWrapper.tsx
+    │   │   │   ├── _components/
+    │   │   │   │   ├── AppSidebar.tsx
+    │   │   │   │   ├── ClientFeedbackForm.tsx
+    │   │   │   │   ├── CurrentTimeDisplay.tsx
+    │   │   │   │   └── ProCrownUserButton.tsx
+    │   │   │   ├── advanced/
+    │   │   │   │   ├── CodeAnalytics.tsx
+    │   │   │   │   ├── CodeFormatter.tsx
+    │   │   │   │   ├── FileEncryptor.tsx
+    │   │   │   │   ├── GitignoreModal.tsx
+    │   │   │   │   ├── Jwt.tsx
+    │   │   │   │   ├── license.tsx
+    │   │   │   │   ├── markdown-templates.ts
+    │   │   │   │   ├── MarkdownGenModal.tsx
+    │   │   │   │   ├── MediaOptimizer.tsx
+    │   │   │   │   ├── MetaDataGenerator.tsx
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   ├── PlagiarismChecker.tsx
+    │   │   │   │   ├── RegexTester.tsx
+    │   │   │   │   ├── RobotSitemapGenerator.tsx
+    │   │   │   │   ├── stress.tsx
+    │   │   │   │   ├── wiki.tsx
+    │   │   │   │   ├── YamlValidator.tsx
+    │   │   │   │   └── charts/
+    │   │   │   │       ├── BarChart.tsx
+    │   │   │   │       ├── FunctionBarChart.tsx
+    │   │   │   │       ├── PieChart.tsx
+    │   │   │   │       └── QualityBarChart.tsx
+    │   │   │   ├── billing/
+    │   │   │   │   ├── actions.ts
+    │   │   │   │   ├── couponUtils.ts
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   ├── components/
+    │   │   │   │   │   ├── payment-form.css
+    │   │   │   │   │   └── PaymentForm.tsx
+    │   │   │   │   └── success/
+    │   │   │   │       └── page.tsx
+    │   │   │   ├── chat/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── chatting/
+    │   │   │   │   ├── layout.tsx
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   ├── [slug]/
+    │   │   │   │   │   └── page.tsx
+    │   │   │   │   ├── _components/
+    │   │   │   │   │   ├── Chat.tsx
+    │   │   │   │   │   └── CommunitySidebar.tsx
+    │   │   │   │   └── types/
+    │   │   │   │       └── stream-chat.d.ts
+    │   │   │   ├── create/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── dashboard/
+    │   │   │   │   ├── actions.ts
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   └── _components/
+    │   │   │   │       ├── ArchiveButton.tsx
+    │   │   │   │       ├── AskQuestionCard.tsx
+    │   │   │   │       ├── CiCd.tsx
+    │   │   │   │       ├── Code.tsx
+    │   │   │   │       ├── CodeReferences.tsx
+    │   │   │   │       ├── CommitLog.tsx
+    │   │   │   │       ├── CommitTabs.tsx
+    │   │   │   │       ├── ContributionChart.tsx
+    │   │   │   │       ├── GitGraphs.tsx
+    │   │   │   │       ├── InviteButton.tsx
+    │   │   │   │       ├── MeetingCard.tsx
+    │   │   │   │       ├── RepoMetricsCard.tsx
+    │   │   │   │       ├── TeamMembers.tsx
+    │   │   │   │       └── readme-generator/
+    │   │   │   │           ├── readme-preview.css
+    │   │   │   │           ├── ReadmeGeneratorForm.tsx
+    │   │   │   │           └── ReadmeGeneratorFormWrapper.tsx
+    │   │   │   ├── join/
+    │   │   │   │   └── [projectId]/
+    │   │   │   │       ├── page.tsx
+    │   │   │   │       └── [inviteToken]/
+    │   │   │   │           └── page.tsx
+    │   │   │   ├── lock/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── meetings/
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   ├── [meetingId]/
+    │   │   │   │   │   ├── page.tsx
+    │   │   │   │   │   └── _components/
+    │   │   │   │   │       └── IssueList.tsx
+    │   │   │   │   └── _components/
+    │   │   │   │       └── TranscriptViewer.tsx
+    │   │   │   ├── my-data/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── qa/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── Settings/
+    │   │   │   │   ├── actions.ts
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   └── _components/
+    │   │   │   │       ├── AccountSettings.tsx
+    │   │   │   │       ├── BillingSettings.tsx
+    │   │   │   │       ├── IntegrationSettings.tsx
+    │   │   │   │       ├── NotificationSettings.tsx
+    │   │   │   │       ├── ProfileSettings.tsx
+    │   │   │   │       ├── SecuritySettings.tsx
+    │   │   │   │       └── SettingsSidebar.tsx
+    │   │   │   ├── subscriptions/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── supportAuth/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── talking/
+    │   │   │   │   ├── initial.tsx
+    │   │   │   │   └── page.tsx
+    │   │   │   └── unlock/
+    │   │   │       └── page.tsx
+    │   │   ├── about/
+    │   │   │   └── page.tsx
+    │   │   ├── admin/
+    │   │   │   ├── AdminClient.tsx
+    │   │   │   ├── layout.tsx
+    │   │   │   ├── page.tsx
+    │   │   │   ├── analytics/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── components/
+    │   │   │   │   ├── AdminDashboard.tsx
+    │   │   │   │   ├── AnalyticsDashboard.tsx
+    │   │   │   │   ├── CouponsManagement.tsx
+    │   │   │   │   ├── FinancesDashboard.tsx
+    │   │   │   │   ├── SurveyDashboard.tsx
+    │   │   │   │   ├── SurveyHeader.tsx
+    │   │   │   │   └── UsersManagement.tsx
+    │   │   │   ├── coupons/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── finances/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── surveys/
+    │   │   │   │   ├── layout.tsx
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   └── export/
+    │   │   │   │       └── route.ts
+    │   │   │   └── users/
+    │   │   │       └── page.tsx
+    │   │   ├── api/
+    │   │   │   ├── ai-chat/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── code-analytics/
+    │   │   │   │   ├── quality.ts
+    │   │   │   │   ├── route.ts
+    │   │   │   │   └── quality/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── create/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── export-user-data/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── feedback/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── gemini/
+    │   │   │   │   ├── route.ts
+    │   │   │   │   └── chat/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── GitGraph/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── has-password/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── image-genration/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── livekit-token/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── logo-generation/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── maintenance-info/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── meeting-ai/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── meeting-transcript/
+    │   │   │   │   └── [meetingId]/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── newsletter/
+    │   │   │   │   ├── status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── subscribe/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── unsubscribe/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── process-meeting/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── readme-generator/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── recaptcha-verify/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── send-export-warning/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── send-password-change-warning/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── sentry-example-api/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── set-password/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── stress-test/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── stripe/
+    │   │   │   │   ├── check-payment-status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── payment-confirmation/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── payment-intent-webhook/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── webhook/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── survey/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── survey-status/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── sync-pro-status/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── trpc/
+    │   │   │   │   └── [trpc]/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── unlock/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── uptime/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── user/
+    │   │   │   │   └── pro-status/
+    │   │   │   │       └── route.ts
+    │   │   │   └── verify-password/
+    │   │   │       └── route.ts
+    │   │   ├── block/
+    │   │   │   └── page.tsx
+    │   │   ├── components/
+    │   │   │   ├── AiButton.tsx
+    │   │   │   ├── AiChatSidebar.tsx
+    │   │   │   ├── Battery.tsx
+    │   │   │   ├── CookieBanner.tsx
+    │   │   │   ├── features.tsx
+    │   │   │   ├── footer.tsx
+    │   │   │   ├── hero.tsx
+    │   │   │   ├── how-it-works.tsx
+    │   │   │   ├── logo.tsx
+    │   │   │   ├── navbar.tsx
+    │   │   │   ├── RecaptchaGate.tsx
+    │   │   │   ├── starOnGithub.tsx
+    │   │   │   ├── theme-provider.tsx
+    │   │   │   ├── ThemeToggle.tsx
+    │   │   │   └── VoiceButton.tsx
+    │   │   ├── cookie-policy/
+    │   │   │   ├── layout.tsx
+    │   │   │   └── page.tsx
+    │   │   ├── docs/
+    │   │   │   └── page.tsx
+    │   │   ├── onboarding/
+    │   │   │   ├── completeOnboardingAction.ts
+    │   │   │   ├── layout.tsx
+    │   │   │   └── page.tsx
+    │   │   ├── privacy/
+    │   │   │   └── page.tsx
+    │   │   ├── rate-limit/
+    │   │   │   ├── page.tsx
+    │   │   │   └── RateLimitRedirector.tsx
+    │   │   ├── sentry-example-page/
+    │   │   │   └── page.tsx
+    │   │   ├── sign-in/
+    │   │   │   └── [[...sign-in]]/
+    │   │   │       └── page.tsx
+    │   │   ├── sign-up/
+    │   │   │   └── [[...sign-up]]/
+    │   │   │       └── page.tsx
+    │   │   ├── status/
+    │   │   │   ├── page.tsx
+    │   │   │   ├── types.ts
+    │   │   │   └── components/
+    │   │   │       ├── IncidentHistory.tsx
+    │   │   │       ├── MonitorCard.tsx
+    │   │   │       ├── StatusChart.tsx
+    │   │   │       └── StatusHeader.tsx
+    │   │   ├── support/
+    │   │   │   └── page.tsx
+    │   │   ├── survey-check/
+    │   │   │   └── page.tsx
+    │   │   ├── sync-user/
+    │   │   │   ├── loading.tsx
+    │   │   │   └── page.tsx
+    │   │   ├── terms/
+    │   │   │   └── page.tsx
+    │   │   ├── types/
+    │   │   │   ├── global.d.ts
+    │   │   │   └── speech-recognition.d.ts
+    │   │   └── utils/
+    │   │       └── redis.ts
+    │   ├── components/
+    │   │   ├── BlockInspectAndContext.tsx
+    │   │   ├── media-room.tsx
+    │   │   ├── PasswordGate.tsx
+    │   │   ├── PasswordStrengthMeter.tsx
+    │   │   ├── Slide-Button.tsx
+    │   │   ├── useNetworkStatus.ts
+    │   │   ├── feedback/
+    │   │   │   ├── FeedbackForm.tsx
+    │   │   │   └── StarRating.tsx
+    │   │   ├── logo-generator/
+    │   │   │   ├── ColorPicker.tsx
+    │   │   │   ├── index.tsx
+    │   │   │   └── LogoGeneratorModal.tsx
+    │   │   ├── mvpblocks/
+    │   │   │   └── gradient-typewriter.tsx
+    │   │   ├── shsfui/
+    │   │   │   └── button/
+    │   │   │       └── get-started-button.tsx
+    │   │   ├── ui/
+    │   │   │   ├── accordion.tsx
+    │   │   │   ├── alert-dialog.tsx
+    │   │   │   ├── alert.tsx
+    │   │   │   ├── aspect-ratio.tsx
+    │   │   │   ├── avatar.tsx
+    │   │   │   ├── badge.tsx
+    │   │   │   ├── breadcrumb.tsx
+    │   │   │   ├── button.tsx
+    │   │   │   ├── card-with-gradient.tsx
+    │   │   │   ├── card.tsx
+    │   │   │   ├── carousel.tsx
+    │   │   │   ├── chart.tsx
+    │   │   │   ├── checkbox.tsx
+    │   │   │   ├── ClientOnly.tsx
+    │   │   │   ├── collapsible.tsx
+    │   │   │   ├── command.tsx
+    │   │   │   ├── CommitGraph.tsx
+    │   │   │   ├── CommitGraphModal.tsx
+    │   │   │   ├── content-layout.tsx
+    │   │   │   ├── context-menu.tsx
+    │   │   │   ├── CustomContextMenu.tsx
+    │   │   │   ├── dialog.tsx
+    │   │   │   ├── drawer.tsx
+    │   │   │   ├── dropdown-menu.tsx
+    │   │   │   ├── ErrorBoundary.tsx
+    │   │   │   ├── form.tsx
+    │   │   │   ├── hover-card.tsx
+    │   │   │   ├── input-otp.tsx
+    │   │   │   ├── input.tsx
+    │   │   │   ├── label.tsx
+    │   │   │   ├── menubar.tsx
+    │   │   │   ├── navigation-menu.tsx
+    │   │   │   ├── page-header.tsx
+    │   │   │   ├── pagination.tsx
+    │   │   │   ├── popover.tsx
+    │   │   │   ├── progress.tsx
+    │   │   │   ├── radio-group.tsx
+    │   │   │   ├── resizable.tsx
+    │   │   │   ├── scroll-area.tsx
+    │   │   │   ├── ScrollToTopButton.tsx
+    │   │   │   ├── select.tsx
+    │   │   │   ├── separator.tsx
+    │   │   │   ├── sheet.tsx
+    │   │   │   ├── sidebar.tsx
+    │   │   │   ├── skeleton.tsx
+    │   │   │   ├── slider.tsx
+    │   │   │   ├── sonner.tsx
+    │   │   │   ├── switch.tsx
+    │   │   │   ├── table.tsx
+    │   │   │   ├── tabs.tsx
+    │   │   │   ├── textarea.tsx
+    │   │   │   ├── toast.tsx
+    │   │   │   ├── toaster.tsx
+    │   │   │   ├── toggle-group.tsx
+    │   │   │   ├── toggle.tsx
+    │   │   │   ├── tooltip.tsx
+    │   │   │   ├── typewriter.tsx
+    │   │   │   ├── UserAvatarMenu.tsx
+    │   │   │   └── kibo-ui/
+    │   │   │       ├── avatar-stack/
+    │   │   │       │   └── index.tsx
+    │   │   │       └── theme-switcher/
+    │   │   │           └── index.tsx
+    │   │   └── updates/
+    │   │       └── screen.tsx
+    │   ├── gitignore-helper/
+    │   │   └── templates.ts
+    │   ├── hooks/
+    │   │   ├── use-mobile.tsx
+    │   │   ├── use-project-creator.tsx
+    │   │   ├── use-project-team-guard.tsx
+    │   │   ├── use-project.tsx
+    │   │   ├── use-refetch.ts
+    │   │   └── use-toast.ts
+    │   ├── lib/
+    │   │   ├── assembly.ts
+    │   │   ├── checkAndSyncProStatus.ts
+    │   │   ├── cloudinary.ts
+    │   │   ├── creditsAlert.ts
+    │   │   ├── email.ts
+    │   │   ├── gemini.ts
+    │   │   ├── github-loader.ts
+    │   │   ├── github.ts
+    │   │   ├── googleSheets.ts
+    │   │   ├── handleUserCreditsChange.ts
+    │   │   ├── prisma.ts
+    │   │   ├── rate-limit.ts
+    │   │   ├── recaptcha-jwt.ts
+    │   │   ├── recaptcha.ts
+    │   │   ├── sendInvoice.ts
+    │   │   ├── stripe.ts
+    │   │   ├── survey.ts
+    │   │   └── utils.ts
+    │   ├── server/
+    │   │   ├── db.ts
+    │   │   ├── keepalive.ts
+    │   │   └── api/
+    │   │       ├── root.ts
+    │   │       ├── trpc.ts
+    │   │       └── routers/
+    │   │           └── project.ts
+    │   ├── styles/
+    │   │   └── globals.css
+    │   ├── trpc/
+    │   │   ├── query-client.ts
+    │   │   ├── react.tsx
+    │   │   └── server.ts
+    │   └── types/
+    │       ├── FormInput.ts
+    │       ├── Project.ts
+    │       └── typhonjs-escomplex.d.ts
+    ├── .github/
+    │   ├── FUNDING.yml
+    │   ├── ISSUE_TEMPLATE/
+    │   │   ├── bug_report.md
+    │   │   ├── feature_request.md
+    │   │   ├── ISSUE_TEMPLATE.md
+    │   │   └── PULL_REQUEST_TEMPLATE.md
+    │   └── workflows/
+    │       ├── audit.yml
+    │       ├── codacy.yml
+    │       ├── codecov.yml
+    │       ├── codeql.yml
+    │       ├── eslint.yml
+    │       ├── lighthouse.yml
+    │       ├── semantic.yml
+    │       ├── sync-check.yml
+    │       └── test.yml
+    └── .husky/
+        ├── commit-msg
+        ├── pre-commit
+        └── pre-push
+
 ```
 
 ---
 
 ## ✨ Enterprise Feature Set
 
-### �️ Advanced Admin & Security Suite
+### Advanced Admin & Security Suite
 
 - **Comprehensive Admin Dashboard:** Real-time platform analytics, user management, financial reporting, and system monitoring.
 - **Advanced User Management:**
@@ -311,7 +730,7 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
 
 ---
 
-## �️ Platform Showcase
+## Platform Showcase
 
 <p align="center">
   <img src="public/undraw_developer.svg" alt="Dionysus Platform" width="400" />
@@ -407,6 +826,29 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 
 ---
 
+## Interactive Tutorial & Learning Resources
+
+Get started with Dionysus through our comprehensive interactive tutorial that walks you through every feature:
+
+<p align="center">
+  <a href="https://code2tutorial.com/tutorial/7e45f8f8-0f40-48c8-a078-c836316bed71/index.md">
+    <img src="https://img.shields.io/badge/📚%20Interactive%20Tutorial-Start%20Learning-4CAF50?style=for-the-badge&logo=gitbook&logoColor=white" alt="Interactive Tutorial" />
+  </a>
+</p>
+
+**What you'll learn:**
+
+- 🚀 **Complete Setup Guide:** Step-by-step installation and configuration
+- 🔧 **Feature Deep Dives:** Hands-on exploration of AI-powered code analysis
+- 👥 **Team Collaboration:** Best practices for repository management and team workflows
+- 🤖 **AI Integration:** Leveraging Gemini Pro for intelligent code insights
+- 📊 **Analytics & Reporting:** Understanding your development metrics and KPIs
+- 🔐 **Admin Features:** User management, security, and enterprise configurations
+
+This interactive tutorial provides real-world examples, code snippets, and practical exercises to help you master Dionysus quickly and efficiently.
+
+---
+
 ## 📊 Project Visualizations & Eraser Integration
 
 All system, process, and database diagrams are available in Eraser and can be viewed in [Eraser](https://app.eraser.io/workspace/KuPhKKF9Cnq19Jr0BMBd). This enables real-time architecture and process design with your team.
@@ -415,9 +857,30 @@ All system, process, and database diagrams are available in Eraser and can be vi
 
 ---
 
+## Git Repository Visualization
+
+Explore the full structure and relationships of the Dionysus repository with an interactive Git diagram:
+
+<p align="center">
+  <a href="https://gitdiagram.com/Saksham-Goel1107/Dionysus">
+    <img src="https://img.shields.io/badge/🗺️%20View%20Git%20Diagram-Explore%20Repository%20Graph-0078D4?style=for-the-badge&logo=github" alt="Git Diagram" />
+  </a>
+</p>
+
+**What is this?**
+
+The [GitDiagram](https://gitdiagram.com/Saksham-Goel1107/Dionysus) provides a live, visual map of the entire Dionysus codebase. It helps you:
+
+- **Understand repository structure** at a glance
+- **Navigate code relationships** and dependencies visually
+- **Onboard faster** with a bird's-eye view of all folders, files, and their connections
+- **Collaborate and review** with clarity on project architecture
+
+This is especially useful for new contributors, reviewers, and anyone interested in the technical architecture of Dionysus. Click the badge above to explore the interactive diagram!
+
 ## 📄 Licensing
-This project is licensed under the [Dionysus Proprietary License](LICENSE). The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
----
+
+## This project is licensed under the [Dionysus Proprietary License](LICENSE). The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
 
 ## 🔑 Environment Configuration
 
