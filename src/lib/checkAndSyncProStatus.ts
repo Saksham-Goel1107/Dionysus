@@ -1,12 +1,11 @@
 import { db } from '@/server/db';
-import { auth } from '@clerk/nextjs/server';
+import { userHasProPlan } from './check-pro-status';
 
 export async function checkAndSyncProStatus(userId: string) {
   const user = await db.user.findUnique({ where: { id: userId } });
   if (!user) return;
 
-  const { has } = await auth();
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
+  const hasProPlan = await userHasProPlan({ bypassCache: true });
 
   await db.user.update({
     where: { id: userId },

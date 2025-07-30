@@ -1,7 +1,6 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
+import { userHasProPlan } from '@/lib/check-pro-status';
 
-// Helper to extract owner/repo from GitHub URL
 function parseRepoUrl(repoUrl: string) {
   const match = repoUrl.match(/github.com\/(.+?)\/(.+?)(?:\.|\/|$)/);
   if (!match || !match[1] || !match[2]) return null;
@@ -11,8 +10,7 @@ function parseRepoUrl(repoUrl: string) {
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
 export async function GET(req: NextRequest) {
-  const { has } = await auth();
-  const hasProPlan = has({ plan: 'dionysus_advance_pack' });
+  const hasProPlan = await userHasProPlan({ advancedOnly: true });
   if (!hasProPlan) {
     return NextResponse.json({ error: 'Pro plan required' }, { status: 403 });
   }
@@ -26,13 +24,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid GitHub repo URL' }, { status: 400 });
   }
 
-  // Helper for GitHub fetch with auth
   const ghFetch = (url: string) =>
     fetch(url, {
       headers: GITHUB_TOKEN ? { Authorization: `token ${GITHUB_TOKEN}` } : undefined,
     });
 
-  // Get latest commit SHA
   const commitsRes = await ghFetch(
     `https://api.github.com/repos/${repo.owner}/${repo.repo}/commits?per_page=1`,
   );
@@ -46,7 +42,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'No commits found' }, { status: 404 });
   }
 
-  // Get repo tree (list of files)
   const treeRes = await ghFetch(
     `https://api.github.com/repos/${repo.owner}/${repo.repo}/git/trees/${latestCommit}?recursive=1`,
   );
@@ -59,7 +54,6 @@ export async function GET(req: NextRequest) {
     (f: any) => f.type === 'blob' && (f.path.endsWith('.js') || f.path.endsWith('.ts')),
   );
 
-  // Fetch file contents (limit to 10 files for demo)
   const fileContents = await Promise.all(
     files.slice(0, 10).map(async (file: any) => {
       const fileRes = await fetch(
@@ -71,7 +65,6 @@ export async function GET(req: NextRequest) {
     }),
   );
 
-  // Use typhonjs-escomplex for complexity analysis (JS/TS only)
   let escomplex: any;
   // @ts-ignore
   try {
@@ -86,17 +79,12 @@ export async function GET(req: NextRequest) {
   if (!validFiles.length) {
     return NextResponse.json({ error: 'No valid JS/TS files found in repo.' }, { status: 404 });
   }
-  // Enhanced: count exported functions, class methods, and top-level function expressions as functions
   const metrics = validFiles.map((f) => {
     const analysis = escomplex.analyzeModule(f!.content);
-    // Count exported functions (simple regex, not perfect)
     const exportFuncMatches = f!.content.match(/export function [a-zA-Z0-9_]+/g) || [];
-    // Count top-level function expressions (simple regex)
     const funcExprMatches =
       f!.content.match(/const [a-zA-Z0-9_]+ = (async )?\(?[a-zA-Z0-9_, ]*\)? ?=>/g) || [];
-    // Count class methods (simple regex)
     const classMethodMatches = f!.content.match(/\n\s*[a-zA-Z0-9_]+\([^)]*\) ?\{/g) || [];
-    // Combine all detected functions into a single array for frontend
     const allFunctions = [
       ...(analysis.functions || []),
       ...exportFuncMatches.map((m: string) => ({ type: 'exported', signature: m })),
@@ -106,7 +94,7 @@ export async function GET(req: NextRequest) {
     return {
       path: f!.path,
       aggregate: analysis.aggregate,
-      functions: allFunctions, // unified function array
+      functions: allFunctions,
       dependencies: analysis.dependencies,
       totalFunctions: allFunctions.length,
     };

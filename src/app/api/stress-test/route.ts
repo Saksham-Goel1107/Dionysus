@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Result } from 'autocannon';
-import { auth } from '@clerk/nextjs/server';
+import { userHasProPlan } from '@/lib/check-pro-status';
 
 export async function POST(req: NextRequest) {
   try {
-    const { has } = await auth();
-    const hasProPlan = has({ plan: 'dionysus_advance_pack' });
+    const hasProPlan = await userHasProPlan({ advancedOnly: true });
     if (!hasProPlan) {
       return NextResponse.json(
         {

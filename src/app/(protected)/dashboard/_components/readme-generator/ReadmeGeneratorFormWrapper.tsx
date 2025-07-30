@@ -1,8 +1,5 @@
-import { auth } from '@clerk/nextjs/server';
+import { userHasProPlan } from '@/lib/check-pro-status';
 
 export default async function Page() {
-  const { has } = await auth();
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
-
-  return hasProPlan;
+  return await userHasProPlan();
 }

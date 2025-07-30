@@ -2,10 +2,9 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { NextRequest, NextResponse } from 'next/server';
 import { getChat, setChat } from '../../utils/redis';
 import { db } from '@/server/db';
-import { auth } from '@clerk/nextjs/server';
+import { userHasProPlan } from '@/lib/check-pro-status';
 import { LangChainTracer } from 'langchain/callbacks';
 
-// Initialize model only at runtime to avoid build errors
 let model: ChatGoogleGenerativeAI | null = null;
 let tracer: LangChainTracer | null = null;
 
@@ -71,8 +70,7 @@ function formatCurrency(value: number): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { has } = await auth();
-  const hasProPlan = has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
+  const hasProPlan = await userHasProPlan();
   if (!hasProPlan) {
     return NextResponse.json(
       {
@@ -93,14 +91,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Initialize LangSmith tracer if API key is available
     if (langsmithApiKey && !tracer) {
       tracer = new LangChainTracer({
         projectName: 'dionysus-meeting',
       });
     }
 
-    // Initialize the model only when needed
     if (!model) {
       model = new ChatGoogleGenerativeAI({
         apiKey: apiKey,
@@ -127,7 +123,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Meeting ID is required' }, { status: 400 });
     }
 
-    // Fetch meeting details from database
     const meeting = await db.meeting.findUnique({
       where: { id: meetingId },
       include: { issues: true },
@@ -137,7 +132,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
     }
 
-    // Get chat history
     const history = (await getChat(sessionId)) as ChatMessage[]; // Create meeting context from all issues
     const issueValue = 214.29; // Value per issue in dollars
     const totalValue = meeting.issues.length * issueValue;
