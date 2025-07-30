@@ -22,16 +22,38 @@ interface StatusChartProps {
   isLoading?: boolean;
 }
 
-const formatUptime = (ratio: number | null): string => {
-  if (ratio === null) return 'No Data';
-  return (ratio || 0).toFixed(2) + '%';
+const formatUptime = (ratio: any): string => {
+  if (ratio === null || ratio === undefined) return 'No Data';
+
+  let numericRatio: number;
+  try {
+    numericRatio = typeof ratio === 'number' ? ratio : parseFloat(String(ratio));
+
+    if (isNaN(numericRatio) || !isFinite(numericRatio)) {
+      return 'No Data';
+    }
+
+    return Math.round(numericRatio * 100) / 100 + '%';
+  } catch (e) {
+    return 'No Data';
+  }
 };
 
-const formatResponseTime = (time: number): string => {
-  if (typeof time !== 'number' || isNaN(time) || time === null || time === undefined)
+const formatResponseTime = (time: any): string => {
+  if (time === null || time === undefined) return 'No Data';
+
+  try {
+    const numTime = typeof time === 'number' ? time : parseFloat(String(time));
+
+    if (isNaN(numTime) || !isFinite(numTime)) return 'No Data';
+
+    if (numTime < 1000) return `${Math.round(numTime)}ms`;
+
+    const seconds = numTime / 1000;
+    return `${Math.round(seconds * 100) / 100}s`;
+  } catch (e) {
     return 'No Data';
-  if (time < 1000) return `${Math.round(time)}ms`;
-  return `${(time / 1000).toFixed(2)}s`;
+  }
 };
 
 const generateDataPoints = (monitors: Monitor[]) => {
@@ -214,9 +236,13 @@ export default function StatusChart({ monitors, isLoading = false }: StatusChart
     return colors[index % colors.length];
   };
 
-  const hasDowntime = monitors.some(
-    (monitor) => Array.isArray(monitor.logs) && monitor.logs.some((log) => log.type === 1),
-  );
+  const hasDowntime = monitors.some((monitor) => {
+    if (!Array.isArray(monitor.logs)) return false;
+
+    const twentyFourHoursAgo = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
+
+    return monitor.logs.some((log) => log.type === 1 && log.datetime >= twentyFourHoursAgo);
+  });
 
   const calculateOverallUptime = () => {
     if (!monitors || monitors.length === 0) return null;

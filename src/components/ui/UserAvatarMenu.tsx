@@ -46,19 +46,19 @@ const PRODUCT_LINKS = [
   },
   {
     name: 'ReadMeAI',
-    url: 'https://readmeai.app/',
+    url: 'https://readme-ai.streamlit.app',
     description: 'Generate beautiful, AI-powered README files for your projects.',
     icon: '📝',
   },
   {
-    name: 'OpenCommit',
-    url: 'https://opencommit.dev/',
-    description: 'AI commit message generator for better git hygiene.',
+    name: 'Git Kraken',
+    url: 'https://www.gitkraken.com',
+    description: 'Git Kraken is a powerful Git client that streamlines your workflow.',
     icon: '✍️',
   },
   {
     name: 'OctoAI',
-    url: 'https://octoai.com/',
+    url: 'https://www.octiai.com',
     description: 'AI-powered code review and suggestions for GitHub repos.',
     icon: '🐙',
   },
@@ -115,6 +115,7 @@ export default function UserAvatarMenu() {
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const router = useRouter();
 
@@ -162,7 +163,43 @@ export default function UserAvatarMenu() {
     };
   }, [showMenu]);
 
-  // Show menu only on double-click
+  // Handle ESC key and outside clicks for products modal
+  useEffect(() => {
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowProductsModal(false);
+    }
+
+    function handleOutsideClick(e: MouseEvent) {
+      // Check if dialogRef exists and if click is outside the dialog
+      if (dialogRef.current && !dialogRef.current.contains(e.target as Node)) {
+        setShowProductsModal(false);
+      }
+    }
+
+    // Prevent body scrolling when modal is open
+    if (showProductsModal) {
+      // Save current overflow style
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+
+      document.addEventListener('keydown', handleEsc);
+      // We use mousedown here to handle clicks outside modal
+      document.addEventListener('mousedown', handleOutsideClick);
+
+      return () => {
+        // Restore scrolling
+        document.body.style.overflow = originalStyle;
+        document.removeEventListener('keydown', handleEsc);
+        document.removeEventListener('mousedown', handleOutsideClick);
+      };
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, [showProductsModal]); // Show menu only on double-click
   function handleDoubleClick(e: React.MouseEvent) {
     e.preventDefault();
     setShowMenu(true);
@@ -234,12 +271,13 @@ export default function UserAvatarMenu() {
         <UserButton />
       </div>
       {showMenu && (
-        <div className="animate-fade-in absolute right-0 z-50 mt-2 w-56 rounded-lg border bg-white shadow-lg dark:bg-gray-900">
+        <div className="animate-fade-in w-59 absolute right-0 z-50 mt-2 rounded-lg border bg-white py-1 shadow-lg dark:bg-gray-900">
           <Button
             className="w-full justify-start rounded-lg py-3 text-base font-semibold text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900"
             variant="ghost"
             onClick={() => {
               setShowProductsModal(true);
+              setShowMenu(false);
             }}
           >
             <span role="img" aria-label="Products" className="mr-2">
@@ -247,51 +285,7 @@ export default function UserAvatarMenu() {
             </span>
             More Products
           </Button>
-          <Dialog open={showProductsModal} onOpenChange={setShowProductsModal}>
-            <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 text-2xl">
-                  <span role="img" aria-label="Products">
-                    🛍️
-                  </span>{' '}
-                  Explore More Products
-                </DialogTitle>
-                <DialogDescription>
-                  Discover more tools and products by our team and the community:
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid max-h-80 gap-4 overflow-y-auto py-2 pr-2">
-                {PRODUCT_LINKS.map((prod) => (
-                  <a
-                    key={prod.url}
-                    href={prod.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm transition-colors hover:bg-blue-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-blue-950"
-                  >
-                    <span className="text-2xl">{prod.icon}</span>
-                    <div>
-                      <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                        {prod.name}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
-                        {prod.description}
-                      </div>
-                    </div>
-                  </a>
-                ))}
-              </div>
-              <div className="mt-4 px-2 text-center text-xs text-red-500 dark:text-red-300">
-                <b>Note:</b> After leaving this platform, your security is not our responsibility.
-                We cannot ensure any security or privacy for external tools or products.
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Close</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+
           <Button
             className="w-full justify-start rounded-lg py-3 text-base font-semibold"
             variant="ghost"
@@ -300,6 +294,9 @@ export default function UserAvatarMenu() {
               router.push('/my-data');
             }}
           >
+            <span role="img" aria-label="Data" className="mr-2">
+              🗄️
+            </span>
             See your data with us
           </Button>
           <Button
@@ -310,6 +307,9 @@ export default function UserAvatarMenu() {
               router.push('/status');
             }}
           >
+            <span role="img" aria-label="Status" className="mr-2">
+              📊
+            </span>
             Check Dionysus Status
           </Button>
           <Button
@@ -324,7 +324,7 @@ export default function UserAvatarMenu() {
               }
             }}
           >
-            <span role="img" aria-label="Lock">
+            <span role="img" aria-label="Lock" className="mr-2">
               {hasPassword === false ? '🔒' : '🔓'}
             </span>
             {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
@@ -450,6 +450,75 @@ export default function UserAvatarMenu() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Products Modal - Completely independent from menu */}
+      {showProductsModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50"
+          onClick={() => setShowProductsModal(false)}
+        >
+          <div
+            ref={dialogRef}
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-xl dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-2xl font-bold">
+                <span role="img" aria-label="Products">
+                  🛍️
+                </span>{' '}
+                Explore More Products
+              </h2>
+              <button
+                onClick={() => setShowProductsModal(false)}
+                className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <p className="mb-4 text-gray-600 dark:text-gray-300">
+              Discover more tools and products by our team and the community:
+            </p>
+
+            <div className="grid max-h-[50vh] gap-4 overflow-y-auto py-2 pr-2">
+              {PRODUCT_LINKS.map((prod) => (
+                <a
+                  key={prod.url}
+                  href={prod.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className="flex items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4 shadow-sm transition-colors hover:bg-blue-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-blue-950"
+                >
+                  <span className="text-2xl">{prod.icon}</span>
+                  <div>
+                    <div className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                      {prod.name}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                      {prod.description}
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+
+            <div className="mt-4 px-2 text-center text-xs text-red-500 dark:text-red-300">
+              <b>Note:</b> After leaving this platform, your security is not our responsibility. We
+              cannot ensure any security or privacy for external tools or products.
+            </div>
+
+            <div className="mt-4 flex justify-center">
+              <Button variant="outline" onClick={() => setShowProductsModal(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+// import { Pool } from 'pg';
 
 const API_KEY = process.env.UPTIME_ROBOT_API_KEY;
 
@@ -68,13 +68,22 @@ export async function GET(request: Request) {
         logs: 1,
         response_times: 1,
         response_times_limit: 24,
+        all_time_uptime_ratio: 1,
+        custom_uptime_ratios: '1-7-30-365',
+        timezone: 1,
       }),
     });
     let data: any = {};
     try {
       data = await response.json();
+
+      if (!data || typeof data !== 'object' || !Array.isArray(data.monitors)) {
+        console.warn('UptimeRobot API returned invalid data structure:', data);
+        data = { stat: 'fail', error: { message: 'Invalid data received from UptimeRobot' } };
+      }
     } catch (e) {
-      data = {};
+      console.error('Error parsing UptimeRobot API response:', e);
+      data = { stat: 'fail', error: { message: 'Failed to parse UptimeRobot response' } };
     }
 
     if (data.stat === 'ok' && Array.isArray(data.monitors)) {
@@ -91,7 +100,111 @@ export async function GET(request: Request) {
           }
           return { ...monitor, recent_response_time };
         });
-        return jsonResp({ stat: 'ok', monitors: monitorsWithRecent }, 200);
+
+        let overallUptime = 0;
+        let uptimePeriods = {
+          '1day': 0,
+          '7days': 0,
+          '30days': 0,
+          '365days': 0,
+        };
+
+        if (monitorsWithRecent.length > 0) {
+          const totalUptime = monitorsWithRecent.reduce((sum: number, monitor: any) => {
+            const ratio = parseFloat(monitor.all_time_uptime_ratio || '0');
+            return sum + (isNaN(ratio) ? 0 : ratio);
+          }, 0);
+
+          overallUptime = totalUptime / monitorsWithRecent.length;
+
+          monitorsWithRecent.forEach((monitor: any) => {
+            if (monitor.custom_uptime_ratio) {
+              const ratios = monitor.custom_uptime_ratio.split('-');
+              if (ratios.length >= 4) {
+                const day = parseFloat(ratios[0] || '0');
+                const week = parseFloat(ratios[1] || '0');
+                const month = parseFloat(ratios[2] || '0');
+                const year = parseFloat(ratios[3] || '0');
+
+                uptimePeriods['1day'] += isNaN(day) ? 0 : day;
+                uptimePeriods['7days'] += isNaN(week) ? 0 : week;
+                uptimePeriods['30days'] += isNaN(month) ? 0 : month;
+                uptimePeriods['365days'] += isNaN(year) ? 0 : year;
+              }
+            }
+          });
+
+          Object.keys(uptimePeriods).forEach((period) => {
+            uptimePeriods[period as keyof typeof uptimePeriods] /= monitorsWithRecent.length;
+          });
+        }
+
+        const safeFormat = (num: any): number => {
+          let parsed;
+          try {
+            parsed = typeof num === 'number' ? num : parseFloat(String(num || 0));
+          } catch (e) {
+            parsed = 0;
+          }
+
+          if (isNaN(parsed) || !isFinite(parsed)) {
+            return 0;
+          }
+
+          try {
+            return Math.round(parsed * 100) / 100;
+          } catch (e) {
+            return 0;
+          }
+        };
+
+        let vercelStatus = {
+          operational: true,
+          status: 'operational',
+          description: 'All systems operational',
+        };
+
+        try {
+          const vercelRes = await fetch('https://www.vercel-status.com/api/v2/status.json', {
+            headers: { 'Cache-Control': 'no-cache' },
+          });
+
+          if (vercelRes.ok) {
+            const vercelData = await vercelRes.json();
+            vercelStatus = {
+              operational: vercelData?.status?.indicator === 'none',
+              status: vercelData?.status?.indicator || 'unknown',
+              description: vercelData?.status?.description || 'Status unknown',
+            };
+          }
+        } catch (vercelError) {
+          console.error('Error fetching Vercel status for response:', vercelError);
+          vercelStatus = {
+            operational: false,
+            status: 'unknown',
+            description: 'Unable to determine Vercel status',
+          };
+        }
+
+        return jsonResp(
+          {
+            stat: 'ok',
+            monitors: monitorsWithRecent,
+            overall_uptime: safeFormat(overallUptime),
+            uptime_periods: {
+              day: safeFormat(uptimePeriods['1day']),
+              week: safeFormat(uptimePeriods['7days']),
+              month: safeFormat(uptimePeriods['30days']),
+              year: safeFormat(uptimePeriods['365days']),
+            },
+            infrastructure: {
+              vercel: vercelStatus,
+            },
+            monitor_count: monitorsWithRecent.length,
+            last_updated: new Date().toISOString(),
+          },
+          200,
+        );
       }
     }
     if (reqHeaders.has('x-uptimerobot-monitor-id')) {

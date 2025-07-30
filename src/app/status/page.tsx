@@ -57,15 +57,13 @@ export default function StatusPage() {
 
           if (monitorsWithData.length > 0) {
             const average = totalUptime / monitorsWithData.length;
-            console.log(
-              'Total uptime:',
-              totalUptime,
-              'Average:',
-              average,
-              'Monitors with data:',
-              monitorsWithData.length,
-            ); // Debug log
-            setOverallUptime(parseFloat(average.toFixed(2)));
+            try {
+              const safeAverage = typeof average === 'number' ? average : 0;
+              setOverallUptime(Math.round(safeAverage * 100) / 100);
+            } catch (e) {
+              console.error('Error formatting uptime average:', e);
+              setOverallUptime(0);
+            }
           } else {
             setOverallUptime(0);
           }

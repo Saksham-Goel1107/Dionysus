@@ -2,31 +2,25 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Monitor } from '../types';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpRight, Clock, Activity } from 'lucide-react';
+import { Clock, Activity } from 'lucide-react';
 
 interface IncidentHistoryProps {
   monitors: Monitor[];
 }
 
-// Process real monitor logs to create incident history
 const generateIncidents = (monitors: Monitor[]) => {
   const incidents: any[] = [];
 
-  // Process each monitor's logs
   for (const monitor of monitors) {
-    // Skip if no logs
     if (!monitor.logs || monitor.logs.length === 0) continue;
 
     let currentIncident = null;
 
-    // Sort logs by datetime ascending
     const sortedLogs = [...monitor.logs].sort((a, b) => a.datetime - b.datetime);
 
-    // Process logs to create incidents
     sortedLogs.forEach((log, index) => {
-      // Down event (start of incident)
       if (log.type === 1) {
         currentIncident = {
           id: `incident-${monitor.id}-${log.datetime}`,
@@ -36,14 +30,13 @@ const generateIncidents = (monitors: Monitor[]) => {
           endTime: log.duration ? new Date((log.datetime + log.duration) * 1000) : undefined,
           logs: [log],
           status: 'resolved',
-          duration: Math.round(log.duration / 60) || 0, // Convert seconds to minutes
+          duration: Math.round(log.duration / 60) || 0,
         };
         incidents.push(currentIncident);
       }
     });
   }
 
-  // Sort incidents by date, most recent first
   return incidents.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 };
 

@@ -103,7 +103,7 @@ function Providers({ children }: { children: React.ReactNode }) {
     borderRadius: '8px 0 0 8px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
     width: 40,
-    height: 120,
+    height: 125,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
