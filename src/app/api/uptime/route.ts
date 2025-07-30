@@ -46,6 +46,24 @@ export async function GET(request: Request) {
     const clerkRes = await fetch('https://api.clerk.dev/v1/health');
     if (!clerkRes.ok) throw new Error('Clerk Unavailable');
 
+    try {
+      const vercelRes = await fetch('https://www.vercel-status.com/api/v2/status.json', {
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+
+      if (!vercelRes.ok) {
+        throw new Error('Vercel Status API Unavailable');
+      }
+
+      const vercelData = await vercelRes.json();
+
+      if (vercelData?.status?.indicator === 'major' || vercelData?.status?.indicator === 'critical') {
+        throw new Error(`Vercel Service Disruption: ${vercelData?.status?.description || 'Major incident reported'}`);
+      }
+    } catch (vercelError: any) {
+      throw new Error(vercelError.message || 'Vercel Status Check Failed');
+    }
+
     // const pool = new Pool({
     //   connectionString: process.env.DATABASE_URL,
     //   ssl: { rejectUnauthorized: false },
@@ -158,33 +176,11 @@ export async function GET(request: Request) {
           }
         };
 
-        let vercelStatus = {
+        const vercelStatus = {
           operational: true,
           status: 'operational',
-          description: 'All systems operational',
+          description: 'All systems operational'
         };
-
-        try {
-          const vercelRes = await fetch('https://www.vercel-status.com/api/v2/status.json', {
-            headers: { 'Cache-Control': 'no-cache' },
-          });
-
-          if (vercelRes.ok) {
-            const vercelData = await vercelRes.json();
-            vercelStatus = {
-              operational: vercelData?.status?.indicator === 'none',
-              status: vercelData?.status?.indicator || 'unknown',
-              description: vercelData?.status?.description || 'Status unknown',
-            };
-          }
-        } catch (vercelError) {
-          console.error('Error fetching Vercel status for response:', vercelError);
-          vercelStatus = {
-            operational: false,
-            status: 'unknown',
-            description: 'Unable to determine Vercel status',
-          };
-        }
 
         return jsonResp(
           {
