@@ -19,6 +19,93 @@ import {
 import { AvatarStack } from '@/components/ui/kibo-ui/avatar-stack';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+const PRODUCT_LINKS = [
+  {
+    name: 'GitDiagram',
+    url: 'https://gitdiagram.com/',
+    description: 'Visualize your repo structure and codebase instantly.',
+    icon: '🗺️',
+  },
+  {
+    name: 'Code2Tutorial',
+    url: 'https://code2tutorial.com/',
+    description: 'Turn code into interactive tutorials and guides.',
+    icon: '📖',
+  },
+  {
+    name: 'GitForMe',
+    url: 'https://gitforme.com/',
+    description: 'AI-powered git command generator for any workflow.',
+    icon: '🤖',
+  },
+  {
+    name: 'GitIngest',
+    url: 'https://gitingest.com/',
+    description: 'Ingest and analyze git data for insights and metrics.',
+    icon: '📊',
+  },
+  {
+    name: 'ReadMeAI',
+    url: 'https://readmeai.app/',
+    description: 'Generate beautiful, AI-powered README files for your projects.',
+    icon: '📝',
+  },
+  {
+    name: 'OpenCommit',
+    url: 'https://opencommit.dev/',
+    description: 'AI commit message generator for better git hygiene.',
+    icon: '✍️',
+  },
+  {
+    name: 'OctoAI',
+    url: 'https://octoai.com/',
+    description: 'AI-powered code review and suggestions for GitHub repos.',
+    icon: '🐙',
+  },
+  {
+    name: 'StackBlitz',
+    url: 'https://stackblitz.com/',
+    description: 'Instant online IDE for rapid prototyping and sharing.',
+    icon: '⚡',
+  },
+  {
+    name: 'CodeSandbox',
+    url: 'https://codesandbox.io/',
+    description: 'Online code editor and prototyping tool for web apps.',
+    icon: '🏖️',
+  },
+  {
+    name: 'Replit',
+    url: 'https://replit.com/',
+    description: 'Collaborative browser-based IDE for any language.',
+    icon: '🔁',
+  },
+  {
+    name: 'GitHub Copilot',
+    url: 'https://github.com/features/copilot',
+    description: 'Your AI pair programmer for faster coding.',
+    icon: '🤝',
+  },
+  {
+    name: 'DeepSource',
+    url: 'https://deepsource.com/',
+    description: 'Automated code review and static analysis for teams.',
+    icon: '🔬',
+  },
+  {
+    name: 'Sourcegraph',
+    url: 'https://sourcegraph.com/',
+    description: 'Universal code search and intelligence for developers.',
+    icon: '🔎',
+  },
+  {
+    name: 'GitHub Actions',
+    url: 'https://github.com/features/actions',
+    description: 'Automate, customize, and execute your software workflows.',
+    icon: '⚙️',
+  },
+];
+
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
@@ -26,11 +113,11 @@ export default function UserAvatarMenu() {
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
+  const [showProductsModal, setShowProductsModal] = useState(false);
   const buttonRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
   const router = useRouter();
 
-  // Fetch if user has set a password
   useEffect(() => {
     fetch('/api/has-password')
       .then((res) => res.json())
@@ -38,7 +125,6 @@ export default function UserAvatarMenu() {
       .catch(() => setHasPassword(null));
   }, []);
 
-  // Fetch newsletter subscription status
   useEffect(() => {
     if (user?.emailAddresses?.[0]?.emailAddress) {
       fetch('/api/newsletter/status')
@@ -54,7 +140,6 @@ export default function UserAvatarMenu() {
     }
   }, [user]);
 
-  // Hide menu on click outside or escape
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (buttonRef.current && !buttonRef.current.contains(e.target as Node)) {
@@ -150,6 +235,63 @@ export default function UserAvatarMenu() {
       </div>
       {showMenu && (
         <div className="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white dark:bg-gray-900 border z-50 animate-fade-in">
+          <Button
+            className="w-full justify-start rounded-lg text-base font-semibold py-3 text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900"
+            variant="ghost"
+            onClick={() => {
+              setShowProductsModal(true);
+            }}
+          >
+            <span role="img" aria-label="Products" className="mr-2">
+              🛍️
+            </span>
+            More Products
+          </Button>
+          <Dialog open={showProductsModal} onOpenChange={setShowProductsModal}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-2xl">
+                  <span role="img" aria-label="Products">
+                    🛍️
+                  </span>{' '}
+                  Explore More Products
+                </DialogTitle>
+                <DialogDescription>
+                  Discover more tools and products by our team and the community:
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-2 max-h-80 overflow-y-auto pr-2">
+                {PRODUCT_LINKS.map((prod) => (
+                  <a
+                    key={prod.url}
+                    href={prod.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors shadow-sm"
+                  >
+                    <span className="text-2xl">{prod.icon}</span>
+                    <div>
+                      <div className="font-bold text-lg text-gray-900 dark:text-gray-100">
+                        {prod.name}
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300 text-sm">
+                        {prod.description}
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+              <div className="text-xs text-center text-red-500 dark:text-red-300 mt-4 px-2">
+                <b>Note:</b> After leaving this platform, your security is not our responsibility.
+                We cannot ensure any security or privacy for external tools or products.
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Button
             className="w-full justify-start rounded-lg text-base font-semibold py-3"
             variant="ghost"
