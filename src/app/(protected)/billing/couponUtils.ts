@@ -2,7 +2,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { getRedisClient } from '@/lib/rate-limit';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export async function generateCouponCode(discount: number, expiresInMinutes: number = 10) {
   const { userId } = await auth();
@@ -22,15 +22,11 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
 }
 
 export async function validateCouponCode(code: string, userId?: string) {
-  const redis = await getRedisClient();
   const key = `coupon:validate:${userId || 'anon'}`;
   const maxReq = 10;
   const windowSec = 60 * 60; // 1 hour
-  const reqCount = await redis.incr(key);
-  if (reqCount === 1) {
-    await redis.expire(key, windowSec);
-  }
-  if (reqCount > maxReq) {
+  const { limited } = await checkRateLimit(key, maxReq, windowSec);
+  if (limited) {
     return {
       success: false,
       message: 'Rate limit exceeded',
