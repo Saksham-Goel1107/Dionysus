@@ -10,13 +10,22 @@ declare global {
   }
 }
 import { api } from '@/trpc/react';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, Loader2 } from 'lucide-react';
 import React, { useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 
 const UserProfile = dynamic(() => import('@clerk/nextjs').then((mod) => mod.UserProfile), {
   ssr: false,
   loading: () => <p className="p-4 text-center">Loading Profile...</p>,
+});
+
+const PaymentForm = dynamic(() => import('./components/PaymentForm'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-48 items-center justify-center">
+      <Loader2 className="animate-spin" />
+    </div>
+  ),
 });
 import {
   Table,
@@ -26,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import PaymentForm from './components/PaymentForm';
+// import PaymentForm from './components/PaymentForm'; // Removed to prevent SSR issues
 import {
   Dialog,
   DialogContent,
