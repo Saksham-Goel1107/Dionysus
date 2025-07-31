@@ -18,7 +18,18 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
       redisUrl = redisUrl.replace(/%20/g, ' ').trim();
     }
 
-    if (redisUrl.includes('upstash.io')) {
+    let redisHost = '';
+    try {
+      const parsedUrl = new URL(redisUrl);
+      redisHost = parsedUrl.hostname;
+    } catch (e) {
+      // fallback: try to extract host from string if URL parsing fails
+      const match = redisUrl.match(/redis:\/\/(?:.*@)?([^:/?#]+)(?::\d+)?/);
+      if (match && match[1]) {
+        redisHost = match[1];
+      }
+    }
+    if (redisHost.endsWith('upstash.io')) {
       if (redisUrl.includes('--tls') || redisUrl.includes('-u')) {
         const redisUrlMatch = redisUrl.match(/(redis:\/\/.*?@.*?:[0-9]+)/);
         if (redisUrlMatch && redisUrlMatch[1]) {
