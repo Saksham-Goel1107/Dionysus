@@ -36,22 +36,93 @@ type RateLimitOptions = {
   errorMessage?: string;
 };
 
-export async function rateLimit(req: NextRequest, key: string, options: RateLimitOptions) {
-  const { limit, window: windowInSeconds, errorMessage = 'Too many requests' } = options;
-
-  const ip = req.headers.get('x-forwarded-for') || 'unknown';
-  const identifier = `${key}:${ip}`;
+// New function to encapsulate rate limit logic with fallback
+export async function checkRateLimitStatus(
+  identifier: string,
+  limit: number,
+  windowInSeconds: number
+): Promise<{ current: number; limit: number; remaining: number; resetTime: number }> {
+  const now = Date.now();
+  let current: number;
+  let expires: number;
 
   if (redis && redisEnabled) {
     try {
-      return await redisRateLimit(identifier, limit, windowInSeconds, errorMessage);
-    } catch (err: any) {
-      console.warn(`Redis rate limit error, falling back to memory store: ${err.message || err}`);
-      return memoryRateLimit(identifier, limit, windowInSeconds, errorMessage);
+      current = await redis.incr(identifier);
+      if (current === 1) {
+        await redis.expire(identifier, windowInSeconds);
+        expires = now + windowInSeconds * 1000;
+      } else {
+        const ttl = await redis.ttl(identifier);
+        expires = ttl > 0 ? now + ttl * 1000 : now + windowInSeconds * 1000;
+      }
+    } catch (err) {
+      console.warn(`Redis operation failed for identifier ${identifier}, falling back to in-memory: ${err}`);
+      const record = inMemoryStore.get(identifier) || {
+        count: 0,
+        expires: now + windowInSeconds * 1000,
+      };
+      if (now > record.expires) {
+        record.count = 0;
+        record.expires = now + windowInSeconds * 1000;
+      }
+      record.count += 1;
+      inMemoryStore.set(identifier, record);
+      current = record.count;
+      expires = record.expires;
     }
   } else {
-    return memoryRateLimit(identifier, limit, windowInSeconds, errorMessage);
+    const record = inMemoryStore.get(identifier) || {
+      count: 0,
+      expires: now + windowInSeconds * 1000,
+    };
+    if (now > record.expires) {
+      record.count = 0;
+      record.expires = now + windowInSeconds * 1000;
+    }
+    record.count += 1;
+    inMemoryStore.set(identifier, record);
+    current = record.count;
+    expires = record.expires;
   }
+
+  const remaining = Math.max(0, limit - current);
+  return { current, limit, remaining, resetTime: expires };
+}
+
+// Modify existing `rateLimit` to use `checkRateLimitStatus`
+export async function rateLimit(req: NextRequest, key: string, options: RateLimitOptions) {
+  const { limit, window: windowInSeconds, errorMessage = 'Too many requests' } = options;
+  const ip = req.headers.get('x-forwarded-for') || 'unknown';
+  const identifier = `${key}:${ip}`;
+
+  const { current, remaining, resetTime } = await checkRateLimitStatus(identifier, limit, windowInSeconds);
+
+  const response = new NextResponse(
+    JSON.stringify({
+      success: current <= limit,
+      limit,
+      remaining,
+      reset: resetTime,
+      message: current > limit ? errorMessage : undefined,
+    }),
+    {
+      status: current > limit ? 429 : 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-RateLimit-Limit': String(limit),
+        'X-RateLimit-Remaining': String(remaining),
+        'X-RateLimit-Reset': String(resetTime),
+      },
+    },
+  );
+
+  return {
+    success: current <= limit,
+    limit,
+    remaining,
+    response,
+  };
 }
 
 async function redisRateLimit(
