@@ -29,7 +29,12 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
         redisHost = match[1];
       }
     }
-    if (redisHost.endsWith('upstash.io')) {
+    // Only allow exact 'upstash.io' or direct subdomains (e.g., 'foo.upstash.io')
+    const hostParts = redisHost.split('.');
+    const isUpstash =
+      (hostParts.length === 2 && redisHost === 'upstash.io') ||
+      (hostParts.length > 2 && hostParts.slice(-2).join('.') === 'upstash.io');
+    if (isUpstash) {
       if (redisUrl.includes('--tls') || redisUrl.includes('-u')) {
         const redisUrlMatch = redisUrl.match(/(redis:\/\/.*?@.*?:[0-9]+)/);
         if (redisUrlMatch && redisUrlMatch[1]) {
