@@ -36,6 +36,28 @@ type RateLimitOptions = {
   errorMessage?: string;
 };
 
+function getMemoryRateLimitStatus(identifier: string, limit: number, windowInSeconds: number) {
+  const now = Date.now();
+  const record = inMemoryStore.get(identifier) || {
+    count: 0,
+    expires: now + windowInSeconds * 1000,
+  };
+
+  if (now > record.expires) {
+    record.count = 0;
+    record.expires = now + windowInSeconds * 1000;
+  }
+
+  record.count += 1;
+  inMemoryStore.set(identifier, record);
+
+  return {
+    isLimited: record.count > limit,
+    remaining: Math.max(0, limit - record.count),
+    reset: record.expires,
+  };
+}
+
 export async function rateLimit(req: NextRequest, key: string, options: RateLimitOptions) {
   const { limit, window: windowInSeconds, errorMessage = 'Too many requests' } = options;
 
@@ -107,42 +129,34 @@ function memoryRateLimit(
   windowInSeconds: number,
   errorMessage: string,
 ) {
-  const now = Date.now();
-  const record = inMemoryStore.get(identifier) || {
-    count: 0,
-    expires: now + windowInSeconds * 1000,
-  };
+  const { isLimited, remaining, reset } = getMemoryRateLimitStatus(
+    identifier,
+    limit,
+    windowInSeconds,
+  );
+  const success = !isLimited;
 
-  if (now > record.expires) {
-    record.count = 0;
-    record.expires = now + windowInSeconds * 1000;
-  }
-
-  record.count += 1;
-  inMemoryStore.set(identifier, record);
-
-  const remaining = Math.max(0, limit - record.count);
   const response = new NextResponse(
     JSON.stringify({
-      success: record.count <= limit,
+      success,
       limit,
       remaining,
-      reset: record.expires,
-      message: record.count > limit ? errorMessage : undefined,
+      reset,
+      message: isLimited ? errorMessage : undefined,
     }),
     {
-      status: record.count > limit ? 429 : 200,
+      status: isLimited ? 429 : 200,
       headers: {
         'Content-Type': 'application/json',
         'X-RateLimit-Limit': String(limit),
         'X-RateLimit-Remaining': String(remaining),
-        'X-RateLimit-Reset': String(record.expires),
+        'X-RateLimit-Reset': String(reset),
       },
     },
   );
 
   return {
-    success: record.count <= limit,
+    success,
     limit,
     remaining,
     response,
@@ -163,6 +177,29 @@ export async function resetRateLimit(key: string) {
     }
   } else {
     inMemoryStore.delete(key);
+  }
+}
+
+export async function checkRateLimit(
+  key: string,
+  limit: number,
+  windowInSeconds: number,
+): Promise<{ limited: boolean }> {
+  if (redis && redisEnabled) {
+    try {
+      const current = await redis.incr(key);
+      if (current === 1) {
+        await redis.expire(key, windowInSeconds);
+      }
+      return { limited: current > limit };
+    } catch (err: any) {
+      console.warn(`Redis rate limit error, falling back to memory store: ${err.message || err}`);
+      const { isLimited } = getMemoryRateLimitStatus(key, limit, windowInSeconds);
+      return { limited: isLimited };
+    }
+  } else {
+    const { isLimited } = getMemoryRateLimitStatus(key, limit, windowInSeconds);
+    return { limited: isLimited };
   }
 }
 
