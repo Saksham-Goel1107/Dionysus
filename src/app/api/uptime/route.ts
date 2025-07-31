@@ -46,28 +46,28 @@ export async function GET(request: Request) {
     const clerkRes = await fetch('https://api.clerk.dev/v1/health');
     if (!clerkRes.ok) throw new Error('Clerk Unavailable');
 
-    try {
-      const vercelRes = await fetch('https://www.vercel-status.com/api/v2/status.json', {
-        headers: { 'Cache-Control': 'no-cache' },
-      });
+    // try {
+    //   const vercelRes = await fetch('https://www.vercel-status.com/api/v2/status.json', {
+    //     headers: { 'Cache-Control': 'no-cache' },
+    //   });
 
-      if (!vercelRes.ok) {
-        throw new Error('Vercel Status API Unavailable');
-      }
+    //   if (!vercelRes.ok) {
+    //     throw new Error('Vercel Status API Unavailable');
+    //   }
 
-      const vercelData = await vercelRes.json();
+    //   const vercelData = await vercelRes.json();
 
-      if (
-        vercelData?.status?.indicator === 'major' ||
-        vercelData?.status?.indicator === 'critical'
-      ) {
-        throw new Error(
-          `Vercel Service Disruption: ${vercelData?.status?.description || 'Major incident reported'}`,
-        );
-      }
-    } catch (vercelError: any) {
-      throw new Error(vercelError.message || 'Vercel Status Check Failed');
-    }
+    //   if (
+    //     vercelData?.status?.indicator === 'major' ||                                                     // Just to Save the Compute Time Limit Of vercel fluid cpu time. But this is a recommended Check Just Turn This off if you have limited compute limit. Also don't use 5min interval check as it will take 1.2hr approx per month insted use interval of 15 min that will take only 24min per month. *Let 500ms per funtion call. @Saksham-Goel1107
+    //     vercelData?.status?.indicator === 'critical'
+    //   ) {
+    //     throw new Error(
+    //       `Vercel Service Disruption: ${vercelData?.status?.description || 'Major incident reported'}`,
+    //     );
+    //   }
+    // } catch (vercelError: any) {
+    //   throw new Error(vercelError.message || 'Vercel Status Check Failed');
+    // }
 
     // const pool = new Pool({
     //   connectionString: process.env.DATABASE_URL,
@@ -181,11 +181,11 @@ export async function GET(request: Request) {
           }
         };
 
-        const vercelStatus = {
-          operational: true,
-          status: 'operational',
-          description: 'All systems operational',
-        };
+        // const vercelStatus = {
+        //   operational: true,
+        //   status: 'operational',
+        //   description: 'All systems operational',
+        // };
 
         return jsonResp(
           {
@@ -198,9 +198,9 @@ export async function GET(request: Request) {
               month: safeFormat(uptimePeriods['30days']),
               year: safeFormat(uptimePeriods['365days']),
             },
-            infrastructure: {
-              vercel: vercelStatus,
-            },
+            // infrastructure: {
+            //   vercel: vercelStatus,
+            // },
             monitor_count: monitorsWithRecent.length,
             last_updated: new Date().toISOString(),
           },
