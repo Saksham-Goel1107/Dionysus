@@ -18,6 +18,15 @@ const UserProfile = dynamic(() => import('@clerk/nextjs').then((mod) => mod.User
   ssr: false,
   loading: () => <p className="p-4 text-center">Loading Profile...</p>,
 });
+
+const PaymentForm = dynamic(() => import('./components/PaymentForm'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-48 items-center justify-center">
+      <p>Loading Payment Form...</p>
+    </div>
+  ),
+});
 import {
   Table,
   TableBody,
@@ -26,7 +35,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import PaymentForm from './components/PaymentForm';
+// import PaymentForm from './components/PaymentForm'; // Removed to prevent SSR issues
 import {
   Dialog,
   DialogContent,
