@@ -9,7 +9,8 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
   if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
-  if (email !== 'sakshamgoel1107@gmail.com') {
+  if (!email) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (email !== process.env.ADMIN_EMAIL && userId !== process.env.ADMIN_USER_ID) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
   const secret = process.env.COUPON_SECRET!;
@@ -22,20 +23,25 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
 }
 
 export async function validateCouponCode(code: string, userId?: string) {
-  const redis = await getRedisClient();
-  const key = `coupon:validate:${userId || 'anon'}`;
-  const maxReq = 10;
-  const windowSec = 60 * 60; // 1 hour
-  const reqCount = await redis.incr(key);
-  if (reqCount === 1) {
-    await redis.expire(key, windowSec);
-  }
-  if (reqCount > maxReq) {
-    return {
-      success: false,
-      message: 'Rate limit exceeded',
-      status: 429,
-    };
+  try {
+    const redis = await getRedisClient();
+    const key = `coupon:validate:${userId || 'anon'}`;
+    const maxReq = 10;
+    const windowSec = 60 * 60; // 1 hour
+
+    const reqCount = await redis.incr(key);
+    if (reqCount === 1) {
+      await redis.expire(key, windowSec);
+    }
+    if (reqCount > maxReq) {
+      return {
+        success: false,
+        message: 'Rate limit exceeded',
+        status: 429,
+      };
+    }
+  } catch (error) {
+    console.warn('Redis error in coupon validation, continuing without rate limiting:', error);
   }
 
   const secret = process.env.COUPON_SECRET!;

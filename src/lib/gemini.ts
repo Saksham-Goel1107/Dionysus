@@ -8,12 +8,53 @@ let tracer: LangChainTracer | null = null;
 const inMemoryStore: Map<string, { count: number; expires: number }> = new Map();
 let redisEnabled = false;
 
-if (process.env.REDIS_URL_NEW) {
+if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
   try {
-    redis = new Redis(process.env.REDIS_URL_NEW, {
-      maxRetriesPerRequest: 1,
+    let redisUrl = process.env.REDIS_URL || process.env.REDIS_URL_NEW || '';
+
+    try {
+      redisUrl = decodeURIComponent(redisUrl).trim();
+    } catch (e) {
+      redisUrl = redisUrl.replace(/%20/g, ' ').trim();
+    }
+
+    if (redisUrl.includes('upstash.io')) {
+      if (redisUrl.includes('--tls') || redisUrl.includes('-u')) {
+        const redisUrlMatch = redisUrl.match(/(redis:\/\/.*?@.*?:[0-9]+)/);
+        if (redisUrlMatch && redisUrlMatch[1]) {
+          redisUrl = redisUrlMatch[1];
+        }
+      }
+
+      if (!redisUrl.startsWith('redis://') && redisUrl.includes('redis://')) {
+        redisUrl = redisUrl.substring(redisUrl.indexOf('redis://'));
+      }
+    }
+
+    console.log('Attempting to connect to Redis in gemini.ts with URL:', redisUrl.replace(/redis:\/\/.*?@/, 'redis://***:***@')); // Log sanitized URL
+
+    redis = new Redis(redisUrl, {
+      maxRetriesPerRequest: 3,
+      connectTimeout: 10000,
+      enableOfflineQueue: true,
+      enableReadyCheck: true,
+      keepAlive: 10000, 
+      family: 0,        
+      reconnectOnError: (err) => {
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) {
+          return 2;
+        }
+        return 1;
+      },
       retryStrategy: (times) => {
-        return times >= 1 ? null : 200;
+        if (times > 3) {
+          console.warn(`Redis connection failed after ${times} attempts in gemini.ts, falling back to in-memory store`);
+          return null; 
+        }
+        const delay = Math.min(times * 500, 5000);
+        console.log(`Redis reconnecting in gemini.ts in ${delay}ms (attempt ${times})`);
+        return delay;
       },
     });
 
@@ -45,7 +86,6 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   });
 }
 
-// Initialize without the callbacks in the constructor
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 const model = genAI.getGenerativeModel({
   model: 'gemini-2.5-flash',
@@ -110,7 +150,6 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
     throw new Error('Rate limit exceeded for commit summaries. Please try again later.');
   }
 
-  // Define the prompt content
   const prompt = [
     `You are an expert programmer summarizing a git diff for the project "${projectName}".
     Only refer to changes relevant to this project.
@@ -145,7 +184,6 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
     `Please summarise the following diff file: \n\n${diff}`,
   ];
 
-  // Use the tracer with the method call instead of in the model constructor
   const response = await model.generateContent(prompt);
   return response.response.text();
 };
@@ -167,7 +205,6 @@ export const summariseCode = async (doc: Document) => {
             Give a summary no more than 100 words of the code above`,
     ];
 
-    // Use the tracer with the method call instead of in the model constructor
     const response = await model.generateContent(prompt);
     return response.response.text();
   } catch (error) {
@@ -181,12 +218,10 @@ export const generateEmbedding = async (summary: string) => {
     throw new Error('Rate limit exceeded for embeddings generation. Please try again later.');
   }
 
-  // Create embedding model without tracer in constructor
   const embeddingModel = genAI.getGenerativeModel({
     model: 'text-embedding-004',
   });
 
-  // Use the tracer with the method call instead
   const result = await embeddingModel.embedContent(summary);
   const embedding = result.embedding;
   return embedding.values;
@@ -208,7 +243,6 @@ export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: 
     };
   }
   try {
-    // Create a local model instance for this function
     const localGenAI = new GoogleGenerativeAI(apiKey);
     const localModel = localGenAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
