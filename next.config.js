@@ -3,8 +3,8 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 /** @type {import("next").NextConfig} */
 const baseConfig = {
-  eslint: { ignoreDuringBuilds: true },
-  typescript: { ignoreBuildErrors: true },
+  eslint: { ignoreDuringBuilds: false },
+  typescript: { ignoreBuildErrors: false },
   poweredByHeader: false,
   images: {
     remotePatterns: [

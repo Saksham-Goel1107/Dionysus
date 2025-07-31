@@ -25,8 +25,8 @@ const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)', '/sentry-example-page(.*)']);
 
-const ADMIN_EMAIL = 'sakshamgoel1107@gmail.com';
-const ADMIN_USER_ID = 'user_305lI6eNGYdLyLHK6N4HKgQgHNF';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
 
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
@@ -79,7 +79,16 @@ export default clerkMiddleware(async (auth, request) => {
     if (!userEmail && sessionClaims?.email) {
       userEmail = sessionClaims.email;
     }
-    if (userEmail !== ADMIN_EMAIL && userId !== ADMIN_USER_ID) {
+
+    if (!sessionClaims?.metadata?.role) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    if (
+      userEmail !== ADMIN_EMAIL &&
+      userId !== ADMIN_USER_ID &&
+      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+    ) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }

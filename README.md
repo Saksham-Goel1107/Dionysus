@@ -828,11 +828,17 @@ For detailed contribution guidelines, refer to the [CONTRIBUTING.md](CONTRIBUTIN
 
 ## Interactive Tutorial & Learning Resources
 
-Get started with Dionysus through our comprehensive interactive tutorial that walks you through every feature:
+Get started with Dionysus through our comprehensive interactive tutorials that walks you through every feature:
 
 <p align="center">
   <a href="https://code2tutorial.com/tutorial/7e45f8f8-0f40-48c8-a078-c836316bed71/index.md">
-    <img src="https://img.shields.io/badge/📚%20Interactive%20Tutorial-Start%20Learning-4CAF50?style=for-the-badge&logo=gitbook&logoColor=white" alt="Interactive Tutorial" />
+    <img src="https://img.shields.io/badge/📚%20Interactive%20Tutorial-Complete%20Setup%20Guide-4CAF50?style=for-the-badge&logo=gitbook&logoColor=white" alt="Interactive Tutorial 1" />
+  </a>
+  <a href="https://code2tutorial.com/tutorial/12b11fd9-4eea-4309-be70-30fcc8bdc18f/index.md">
+    <img src="https://img.shields.io/badge/📚%20Interactive%20Tutorial-basic%20Understanding-4CAF50?style=for-the-badge&logo=gitbook&logoColor=white" alt="Interactive Tutorial 2" />
+  </a>
+  <a href="https://code2tutorial.com/tutorial/7a01553b-3ab7-44b3-a37e-a07d3b815f08/index.md">
+    <img src="https://img.shields.io/badge/📚%20Interactive%20Tutorial-Indepth%20Understanding-4CAF50?style=for-the-badge&logo=gitbook&logoColor=white" alt="Interactive Tutorial 3" />
   </a>
 </p>
 

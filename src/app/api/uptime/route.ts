@@ -57,8 +57,13 @@ export async function GET(request: Request) {
 
       const vercelData = await vercelRes.json();
 
-      if (vercelData?.status?.indicator === 'major' || vercelData?.status?.indicator === 'critical') {
-        throw new Error(`Vercel Service Disruption: ${vercelData?.status?.description || 'Major incident reported'}`);
+      if (
+        vercelData?.status?.indicator === 'major' ||
+        vercelData?.status?.indicator === 'critical'
+      ) {
+        throw new Error(
+          `Vercel Service Disruption: ${vercelData?.status?.description || 'Major incident reported'}`,
+        );
       }
     } catch (vercelError: any) {
       throw new Error(vercelError.message || 'Vercel Status Check Failed');
@@ -179,7 +184,7 @@ export async function GET(request: Request) {
         const vercelStatus = {
           operational: true,
           status: 'operational',
-          description: 'All systems operational'
+          description: 'All systems operational',
         };
 
         return jsonResp(

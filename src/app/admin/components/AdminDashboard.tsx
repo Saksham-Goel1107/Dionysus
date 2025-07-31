@@ -27,7 +27,6 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import Link from 'next/link';
 
 interface AdminDashboardProps {
   totalUsers: number;
@@ -69,14 +68,6 @@ export default function AdminDashboard({
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <div className="flex items-center gap-4">
-          <Link
-            href="/admin/surveys"
-            className="flex items-center rounded-md bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-800/50"
-          >
-            <BarChart2 size={16} className="mr-2" />
-            Survey Analytics
-            <ChevronRight size={16} className="ml-1" />
-          </Link>
           <div className="text-sm text-gray-500 dark:text-gray-400">
             Last updated: {lastUpdated || 'Loading...'}
           </div>
