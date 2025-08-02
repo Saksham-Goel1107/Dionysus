@@ -24,6 +24,7 @@ import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import ClientOnly from '@/components/ui/ClientOnly';
 import Offline from './offline';
 import Head from 'next/head';
+import IdleTimeout from '@/app/components/IdleTimeout';
 
 export const metadata: Metadata = {
   title: {
@@ -123,6 +124,7 @@ export default async function RootLayout({
         <link rel="manifest" href="/manifest.json" />
       </Head>
       <body>
+        <IdleTimeout />
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ClerkProviderWithTheme>
