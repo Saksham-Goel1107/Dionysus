@@ -94,9 +94,6 @@ const JoinHandler = async (props: Props) => {
       return redirect('/dashboard?info=Already+a+member+of+this+project');
     }
 
-    // Add the user ID and project ID to the error for debugging
-    console.error(`Failed to add user ${userId} to project ${projectId}`);
-
     return redirect('/dashboard?error=Failed+to+join+project');
   }
 };

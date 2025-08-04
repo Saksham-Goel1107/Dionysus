@@ -10,8 +10,13 @@ export async function generateCouponCode(discount: number, expiresInMinutes: num
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
   if (!email) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  if (!sessionClaims?.metadata?.role) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  if (email !== process.env.ADMIN_EMAIL && userId !== process.env.ADMIN_USER_ID && sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`) {
+  if (!sessionClaims?.metadata?.role)
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (
+    email !== process.env.ADMIN_EMAIL &&
+    userId !== process.env.ADMIN_USER_ID &&
+    sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+  ) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
   const secret = process.env.COUPON_SECRET!;

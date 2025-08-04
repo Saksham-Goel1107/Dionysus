@@ -287,7 +287,7 @@ function OnboardingPage() {
   if (!current) return null;
 
   return (
-    <div className=" relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">
+    <div className="relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">
       <button
         aria-label="Toggle theme"
         className="absolute right-4 top-4 z-50 rounded-full border border-gray-300 bg-white p-2 text-gray-800 shadow transition-transform hover:scale-105 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"

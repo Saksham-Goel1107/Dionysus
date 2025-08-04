@@ -653,7 +653,6 @@ const MediaOptimizer: React.FC = () => {
             height: finalHeight,
             workerScript: '/gif.worker.js',
             dither: true, // Enable dithering for better quality
-            debug: false, // Set to true for troubleshooting
           });
 
           // Add frames to GIF

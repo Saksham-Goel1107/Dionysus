@@ -22,25 +22,25 @@ export default function Battery() {
 
   useEffect(() => {
     let battery: BatteryManager | null = null;
-    
+
     const handleLevelChange = () => {
       if (battery) {
         setBatteryLevel(Math.round(battery.level * 100));
       }
     };
-    
+
     const handleChargingChange = () => {
       if (battery) {
         setIsCharging(battery.charging);
       }
     };
-    
+
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((batt: BatteryManager) => {
         battery = batt;
         setBatteryLevel(Math.round(batt.level * 100));
         setIsCharging(batt.charging);
-        
+
         if (typeof batt.addEventListener === 'function') {
           batt.addEventListener('levelchange', handleLevelChange);
           batt.addEventListener('chargingchange', handleChargingChange);

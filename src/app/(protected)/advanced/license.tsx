@@ -120,8 +120,8 @@ const fetchAndFillLicense = async (
     txt = txt.replace(/\{year\}/g, year.toString()).replace(/\{name\}/g, name || '[Your Name]');
     return txt;
   } catch (error) {
-    console.error("Failed to fetch license:", error);
-    return "Failed to load license. Please check your network connection and try again.";
+    console.error('Failed to fetch license:', error);
+    return 'Failed to load license. Please check your network connection and try again.';
   }
 };
 
@@ -138,9 +138,11 @@ const LicenseMakerPage = () => {
   useEffect(() => {
     fetchAndFillLicense(selected, name, year, clauses)
       .then(setLicenseText)
-      .catch(error => {
-        console.error("Failed to set license text:", error);
-        setLicenseText("Failed to load license. Please check your network connection and try again.");
+      .catch((error) => {
+        console.error('Failed to set license text:', error);
+        setLicenseText(
+          'Failed to load license. Please check your network connection and try again.',
+        );
       });
   }, [selected, name, year, clauses]);
 

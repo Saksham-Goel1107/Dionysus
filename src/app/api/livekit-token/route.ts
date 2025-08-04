@@ -48,7 +48,6 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error: 'Failed to generate valid JWT token',
-          debug: { token: tokenStr, typeofToken: typeof token },
         },
         { status: 500 },
       );
