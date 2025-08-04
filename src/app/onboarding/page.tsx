@@ -206,7 +206,7 @@ function OnboardingPage() {
         >
           {theme === 'light' ? '🌙' : '☀️'}
         </button>
-        <div className="animate-slide-up scrollbar-hide my-8 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="animate-slide-up my-8 max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <h1 className="mb-4 text-3xl font-bold text-blue-700 dark:text-blue-300">
             You&apos;re all set!
           </h1>
@@ -287,7 +287,7 @@ function OnboardingPage() {
   if (!current) return null;
 
   return (
-    <div className="scrollbar-hide relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">
+    <div className=" relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">
       <button
         aria-label="Toggle theme"
         className="absolute right-4 top-4 z-50 rounded-full border border-gray-300 bg-white p-2 text-gray-800 shadow transition-transform hover:scale-105 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
@@ -297,7 +297,7 @@ function OnboardingPage() {
       </button>
       {/* Animated spotlight for the current feature */}
       <div className="animate-fade-in fixed inset-0 z-10 bg-black/70 backdrop-blur-sm" />
-      <div className="animate-slide-up scrollbar-hide relative z-20 mx-auto flex max-h-[90vh] w-full max-w-lg flex-col items-center overflow-y-auto rounded-xl border border-gray-200 bg-white p-0 shadow-2xl dark:border-gray-700 dark:bg-gray-800 sm:p-8">
+      <div className="animate-slide-up relative z-20 mx-auto flex max-h-[90vh] w-full max-w-lg flex-col items-center overflow-y-auto rounded-xl border border-gray-200 bg-white p-0 shadow-2xl dark:border-gray-700 dark:bg-gray-800 sm:p-8">
         <div className="animate-fade-in flex w-full flex-col items-center p-6 sm:p-0">
           <span className="mb-2 animate-bounce text-6xl drop-shadow-lg">
             {FEATURE_ICONS[current.key]}
@@ -436,16 +436,6 @@ function OnboardingPage() {
         }
         .animate-bounce {
           animation: bounce 1.2s infinite;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none !important;
-          scrollbar-width: none !important;
-          overflow: overlay !important;
-        }
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none !important;
-          background: inherit;
-          background-clip: padding-box;
         }
       `}</style>
     </div>

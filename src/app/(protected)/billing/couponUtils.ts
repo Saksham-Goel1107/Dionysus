@@ -5,12 +5,13 @@ import crypto from 'crypto';
 import { getRedisClient } from '@/lib/rate-limit';
 
 export async function generateCouponCode(discount: number, expiresInMinutes: number = 10) {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   if (!userId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
   if (!email) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  if (email !== process.env.ADMIN_EMAIL && userId !== process.env.ADMIN_USER_ID) {
+  if (!sessionClaims?.metadata?.role) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  if (email !== process.env.ADMIN_EMAIL && userId !== process.env.ADMIN_USER_ID && sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
   const secret = process.env.COUPON_SECRET!;

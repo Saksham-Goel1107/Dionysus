@@ -292,7 +292,7 @@ const BillingPage = () => {
                   >
                     ×
                   </button>
-                  <div className="scrollbar-hide min-h-0 flex-1 overflow-auto p-2 sm:p-4">
+                  <div className="min-h-0 flex-1 overflow-auto p-2 sm:p-4">
                     <UserProfile />
                   </div>
                 </div>
