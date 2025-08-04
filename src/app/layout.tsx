@@ -142,14 +142,16 @@ export default async function RootLayout({
                   <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
                   <TRPCReactProvider>
                     <Offline>
-                      <FpjsProvider
-                        loadOptions={{
-                          apiKey: 'GH6UItsS3RqgOtocURBN',
-                          region: 'ap',
-                        }}
-                      >
-                        <Providers>{children}</Providers>
-                      </FpjsProvider>
+                      <ClientOnly>
+                        <FpjsProvider
+                          loadOptions={{
+                            apiKey: 'GH6UItsS3RqgOtocURBN',
+                            region: 'ap',
+                          }}
+                        >
+                          <Providers>{children}</Providers>
+                        </FpjsProvider>
+                      </ClientOnly>
                     </Offline>
                   </TRPCReactProvider>
                   <Toaster richColors />
