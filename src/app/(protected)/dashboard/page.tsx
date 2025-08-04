@@ -101,7 +101,7 @@ const Page = ({}: Props) => {
       )}
 
       {/* Repo Metrics Card - now between header and dashboard */}
-      <RepoMetricsCard githubUrl={project.githubUrl ?? ''} />
+      {project.githubUrl && <RepoMetricsCard githubUrl={project.githubUrl} />}
 
       <div className="relative">
         <div className="flex flex-wrap items-center justify-between gap-y-4">

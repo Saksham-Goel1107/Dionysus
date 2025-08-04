@@ -7,7 +7,9 @@ import AiChatSidebar from './components/AiChatSidebar';
 import AiToolkitButton from './components/AiButton';
 import RecaptchaGate from './components/RecaptchaGate';
 import { useUser } from '@clerk/nextjs';
-import { app, analytics, perf } from '@/firebase-init';
+import { app } from '@/firebase-init';
+import { getAnalytics, logEvent } from 'firebase/analytics';
+import { getPerformance } from 'firebase/performance';
 import CookieBanner from './components/CookieBanner';
 
 declare global {
@@ -21,6 +23,17 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userId = user?.user?.id;
   const userData = user?.user;
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const analytics = getAnalytics(app);
+        logEvent(analytics, 'page_view');
+        getPerformance(app);
+      } catch (e) {
+        console.error('Error in firebase working', e);
+      }
+    }
+  }, []);
   useEffect(() => {
     if (!userId) return;
     const sync = async () => {

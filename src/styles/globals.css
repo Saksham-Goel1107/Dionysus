@@ -178,3 +178,12 @@ button.file-name.bg-primary {
   background-color: hsl(var(--primary)) !important;
   font-weight: bold !important;
 }
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;                  
+}

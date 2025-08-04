@@ -13,7 +13,7 @@ export function useNetworkStatus() {
 
       try {
         const start = performance.now();
-        const res = await fetch('/favicon.ico?_t=' + Date.now(), {
+        const res = await fetch('/robots.txt?_t=' + Date.now(), {
           cache: 'no-store',
           signal: controller.signal,
         });

@@ -5,10 +5,10 @@ export function Logo() {
     <div className="relative h-10 w-10 cursor-default">
       <Image
         src="/logo.png"
+        width={40}
+        height={40}
         alt="Dionysus Logo"
-        fill
         className="rounded-lg object-contain"
-        priority
       />
     </div>
   );

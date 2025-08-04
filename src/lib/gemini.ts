@@ -47,15 +47,18 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
       }
     }
 
-    console.log('Attempting to connect to Redis in gemini.ts with URL:', redisUrl.replace(/redis:\/\/.*?@/, 'redis://***:***@')); // Log sanitized URL
+    console.log(
+      'Attempting to connect to Redis in gemini.ts with URL:',
+      redisUrl.replace(/redis:\/\/.*?@/, 'redis://***:***@'),
+    ); // Log sanitized URL
 
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
       connectTimeout: 10000,
       enableOfflineQueue: true,
       enableReadyCheck: true,
-      keepAlive: 10000, 
-      family: 0,        
+      keepAlive: 10000,
+      family: 0,
       reconnectOnError: (err) => {
         const targetError = 'READONLY';
         if (err.message.includes(targetError)) {
@@ -65,8 +68,10 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
       },
       retryStrategy: (times) => {
         if (times > 3) {
-          console.warn(`Redis connection failed after ${times} attempts in gemini.ts, falling back to in-memory store`);
-          return null; 
+          console.warn(
+            `Redis connection failed after ${times} attempts in gemini.ts, falling back to in-memory store`,
+          );
+          return null;
         }
         const delay = Math.min(times * 500, 5000);
         console.log(`Redis reconnecting in gemini.ts in ${delay}ms (attempt ${times})`);

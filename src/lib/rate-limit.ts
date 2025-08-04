@@ -38,7 +38,10 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
         redisUrl = redisUrl.substring(redisUrl.indexOf('redis://'));
       }
     }
-    console.log('Attempting to connect to Redis with URL:', redisUrl.replace(/redis:\/\/.*?@/, 'redis://***:***@')); // Log sanitized URL
+    console.log(
+      'Attempting to connect to Redis with URL:',
+      redisUrl.replace(/redis:\/\/.*?@/, 'redis://***:***@'),
+    ); // Log sanitized URL
 
     redis = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
@@ -56,7 +59,9 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
       },
       retryStrategy: (times) => {
         if (times > 3) {
-          console.warn(`Redis connection failed after ${times} attempts, falling back to in-memory store`);
+          console.warn(
+            `Redis connection failed after ${times} attempts, falling back to in-memory store`,
+          );
           return null;
         }
         const delay = Math.min(times * 500, 5000);
@@ -290,10 +295,10 @@ function createMockRedisClient(): Redis {
 
     async ttl(key: string) {
       const record = inMemoryStore.get(key);
-      if (!record) return -2; 
+      if (!record) return -2;
       const ttl = Math.floor((record.expires - Date.now()) / 1000);
-      return ttl > 0 ? ttl : -1; 
-    }
+      return ttl > 0 ? ttl : -1;
+    },
   };
 
   return mockClient as unknown as Redis;

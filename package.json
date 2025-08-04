@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "build": "next build",
+    "local:build": "cross-env NODE_OPTIONS=' --max-old-space-size=4096' doppler run -- next build",
     "test": "echo \"No tests specified\" && exit 0",
     "check": "next lint && tsc --noEmit",
     "db:generate": "prisma migrate dev",
