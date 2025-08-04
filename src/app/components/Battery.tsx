@@ -22,19 +22,35 @@ export default function Battery() {
 
   useEffect(() => {
     let battery: BatteryManager | null = null;
+    
+    const handleLevelChange = () => {
+      if (battery) {
+        setBatteryLevel(Math.round(battery.level * 100));
+      }
+    };
+    
+    const handleChargingChange = () => {
+      if (battery) {
+        setIsCharging(battery.charging);
+      }
+    };
+    
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((batt: BatteryManager) => {
         battery = batt;
         setBatteryLevel(Math.round(batt.level * 100));
         setIsCharging(batt.charging);
-        batt.addEventListener('levelchange', () => setBatteryLevel(Math.round(batt.level * 100)));
-        batt.addEventListener('chargingchange', () => setIsCharging(batt.charging));
+        
+        if (typeof batt.addEventListener === 'function') {
+          batt.addEventListener('levelchange', handleLevelChange);
+          batt.addEventListener('chargingchange', handleChargingChange);
+        }
       });
     }
     return () => {
-      if (battery) {
-        battery.removeEventListener('levelchange', () => {});
-        battery.removeEventListener('chargingchange', () => {});
+      if (battery && typeof battery.removeEventListener === 'function') {
+        battery.removeEventListener('levelchange', handleLevelChange);
+        battery.removeEventListener('chargingchange', handleChargingChange);
       }
     };
   }, []);
