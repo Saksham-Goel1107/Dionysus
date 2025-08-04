@@ -90,14 +90,8 @@ export default function StatusPage() {
       fetchMonitors();
     }, 60000);
 
-    const initialRetry = setTimeout(() => {
-      console.log('Performing initial retry fetch');
-      fetchMonitors();
-    }, 2000);
-
     return () => {
       clearInterval(interval);
-      clearTimeout(initialRetry);
     };
   }, []);
 

@@ -11,7 +11,6 @@ const isPublicRoute = createRouteMatcher([
   '/docs(.*)',
   '/privacy(.*)',
   '/terms(.*)',
-  '/api/create(.*)', // for the stream chat initialization
   '/support',
   '/api/recaptcha-verify(.*)',
   '/about(.*)',

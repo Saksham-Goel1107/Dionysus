@@ -1,6 +1,4 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
-import { getAnalytics, Analytics } from 'firebase/analytics';
-import { getPerformance } from 'firebase/performance';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,7 +11,5 @@ const firebaseConfig = {
 };
 
 const app: FirebaseApp = initializeApp(firebaseConfig);
-const analytics: Analytics = getAnalytics(app);
-const perf = getPerformance(app);
 
-export { app, analytics, perf };
+export { app };

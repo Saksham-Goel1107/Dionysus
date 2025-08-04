@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
   const maintenanceEnd = new Date('2025-07-14T18:00:00Z').getTime();
+  if (process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'false') {
+    return NextResponse.json({
+      message: 'Site is not under maintenance mode and is perfectly working',
+    });
+  }
   return NextResponse.json({
     maintenanceEnd,
     features: [

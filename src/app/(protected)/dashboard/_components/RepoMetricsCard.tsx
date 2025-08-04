@@ -21,22 +21,32 @@ function getRepoInfoFromUrl(url: string) {
 const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
   const [metrics, setMetrics] = useState<RepoMetrics | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const repo = getRepoInfoFromUrl(githubUrl);
     if (!repo) return;
     setLoading(true);
-    setError(null);
+
+    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `token ${token}`;
+    }
+
     Promise.all([
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`).then((r) =>
-        r.ok ? r.json() : Promise.reject(),
+      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`, { headers }).then((r) =>
+        r.ok ? r.json() : null,
       ),
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`).then((r) =>
-        r.ok ? r.json() : Promise.reject(),
-      ),
+      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`, {
+        headers,
+      }).then((r) => (r.ok ? r.json() : null)),
     ])
       .then(([repoData, prs]) => {
+        if (!repoData || !prs) {
+          setMetrics(null);
+          setLoading(false);
+          return;
+        }
         setMetrics({
           size: repoData.size ?? 0, // in KB
           openIssues: (repoData.open_issues_count ?? 0) - (Array.isArray(prs) ? prs.length : 0),
@@ -46,11 +56,13 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
           watchers: repoData.watchers_count ?? 0,
         });
       })
-      .catch(() => setError('Failed to fetch repo metrics.'))
+      .catch(() => {
+        setMetrics(null);
+      })
       .finally(() => setLoading(false));
   }, [githubUrl]);
 
-  if (!githubUrl || error || loading || !metrics) return null;
+  if (!githubUrl || loading || !metrics) return null;
 
   return (
     <div className="mx-auto mb-2 mt-2 flex w-full max-w-2xl justify-center">

@@ -122,7 +122,7 @@ export default async function RootLayout({
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <link rel="manifest" href="/manifest.json" />
       </Head>
-      <body>
+      <body suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ClerkProviderWithTheme>
@@ -181,11 +181,12 @@ export default async function RootLayout({
                       `,
                     }}
                   />
-                  <Script
-                    id="hotjar"
-                    strategy="afterInteractive"
-                    dangerouslySetInnerHTML={{
-                      __html: `
+                  {process.env.NODE_ENV === 'production' && (
+                    <Script
+                      id="hotjar"
+                      strategy="afterInteractive"
+                      dangerouslySetInnerHTML={{
+                        __html: `
       (function(h,o,t,j,a,r){
           h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
           h._hjSettings={hjid:6468665,hjsv:6};
@@ -195,6 +196,24 @@ export default async function RootLayout({
           a.appendChild(r);
       })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     `,
+                      }}
+                    />
+                  )}
+                  <Script
+                    async
+                    src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
+                  ></Script>
+                  <Script
+                    id="gtag"
+                    strategy="afterInteractive"
+                    dangerouslySetInnerHTML={{
+                      __html: `
+                        window.dataLayer = window.dataLayer || [];
+                        function gtag(){dataLayer.push(arguments);}
+                        gtag('js', new Date());
+
+                        gtag('config', 'G-W02TQN9H65');
+                      `,
                     }}
                   />
                 </>
