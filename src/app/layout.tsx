@@ -134,8 +134,10 @@ export default async function RootLayout({
                   <ClientOnly>
                     <CustomContextMenu />
                   </ClientOnly>
-                  <Analytics />
-                  <SpeedInsights />
+                  <ClientOnly>
+                    <Analytics />
+                    <SpeedInsights />
+                  </ClientOnly>
                 </>
               ) : (
                 <>
@@ -151,8 +153,10 @@ export default async function RootLayout({
                     <CustomContextMenu />
                   </ClientOnly>
                   <BlockInspectAndContext />
-                  <Analytics />
-                  <SpeedInsights />
+                  <ClientOnly>
+                    <Analytics />
+                    <SpeedInsights />
+                  </ClientOnly>
                   <Script
                     src="https://s.pageclip.co/v1/pageclip.js"
                     charSet="utf-8"
