@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import readmeGeneratorWrapper from '@/app/(protected)/dashboard/_components/readme-generator/ReadmeGeneratorFormWrapper';
+import { userHasProPlan } from '@/lib/check-pro-status';
+import { cookies } from 'next/headers';
 
 export async function GET() {
-  try {
-    const result = await readmeGeneratorWrapper();
-    return NextResponse.json({ pro: result });
-  } catch (error) {
-    return NextResponse.json({ pro: false }, { status: 500 });
-  }
+  const cookieStore = await cookies();
+  const bypassCache =
+    cookieStore.get('force-refresh')?.value === 'true' ||
+    cookieStore.get('bypass-pro-cache')?.value === 'true';
+
+  const isPro = await userHasProPlan({ bypassCache });
+
+  return NextResponse.json({ isPro });
 }
