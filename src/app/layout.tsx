@@ -10,7 +10,6 @@ import { GoogleOneTap } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';
-import CookieBanner from './components/CookieBanner';
 import MaintenanceScreen from '../components/updates/screen';
 import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import CustomContextMenu from '@/components/ui/CustomContextMenu';
@@ -133,9 +132,9 @@ export default async function RootLayout({
                   <BlockInspectAndContext />
                   <ClientOnly>
                     <CustomContextMenu />
+                    <Analytics />
+                    <SpeedInsights />
                   </ClientOnly>
-                  <Analytics />
-                  <SpeedInsights />
                 </>
               ) : (
                 <>
@@ -149,10 +148,10 @@ export default async function RootLayout({
                   <ScrollToTopButton />
                   <ClientOnly>
                     <CustomContextMenu />
+                    <BlockInspectAndContext />
+                    <Analytics />
+                    <SpeedInsights />
                   </ClientOnly>
-                  <BlockInspectAndContext />
-                  <Analytics />
-                  <SpeedInsights />
                   <Script
                     src="https://s.pageclip.co/v1/pageclip.js"
                     charSet="utf-8"

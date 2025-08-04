@@ -1,5 +1,6 @@
-
 # Pull Request
+
+> **Important:** All pull request titles and branch names must be in lowercase only (no uppercase allowed). All commits must follow the [Conventional Commits](https://www.conventionalcommits.org/) semantic lint rules.
 
 ## Description
 <!--
@@ -13,7 +14,7 @@ Fixes #(issue)
 
 ## Branch & Commit Message Checklist
 
-- [ ] My branch name follows the convention: `feature/`, `fix/`, `chore/`, or `docs/` (e.g., `feature/add-login`, `fix/navbar-bug`)
+- [ ] My branch name follows the convention: `feature/`, `fix/`, `chore/`, or `docs/` (e.g., `feature/add-login`, `fix/navbar-bug`) and is all lowercase
 - [ ] All commit messages are clear, descriptive, and follow the [Conventional Commits](https://www.conventionalcommits.org/) style (e.g., `fix: correct navbar alignment on mobile`)
 - [ ] No WIP (work-in-progress) commits are present in the final PR
 
