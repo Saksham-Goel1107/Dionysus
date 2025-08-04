@@ -111,10 +111,18 @@ const fetchAndFillLicense = async (
   }
   const path = LICENSE_PATHS[type];
   if (!path) return '';
-  const res = await fetch(path);
-  let txt = await res.text();
-  txt = txt.replace(/\{year\}/g, year.toString()).replace(/\{name\}/g, name || '[Your Name]');
-  return txt;
+  try {
+    const res = await fetch(path);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch license: ${res.status} ${res.statusText}`);
+    }
+    let txt = await res.text();
+    txt = txt.replace(/\{year\}/g, year.toString()).replace(/\{name\}/g, name || '[Your Name]');
+    return txt;
+  } catch (error) {
+    console.error("Failed to fetch license:", error);
+    return "Failed to load license. Please check your network connection and try again.";
+  }
 };
 
 const LicenseMakerPage = () => {
@@ -128,7 +136,12 @@ const LicenseMakerPage = () => {
   const year = new Date().getFullYear();
 
   useEffect(() => {
-    fetchAndFillLicense(selected, name, year, clauses).then(setLicenseText);
+    fetchAndFillLicense(selected, name, year, clauses)
+      .then(setLicenseText)
+      .catch(error => {
+        console.error("Failed to set license text:", error);
+        setLicenseText("Failed to load license. Please check your network connection and try again.");
+      });
   }, [selected, name, year, clauses]);
 
   return (
