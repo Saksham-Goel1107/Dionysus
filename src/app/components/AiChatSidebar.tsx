@@ -358,7 +358,7 @@ export default function AiChatSidebar({
                   }
                   placeholder="Ask me anything..."
                   rows={1}
-                  className={`w-full resize-none overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-2 pr-10 text-white [-ms-overflow-style:none] [scrollbar-width:none] focus:outline-none focus:ring-2 focus:ring-blue-500 [&::-webkit-scrollbar]:hidden`}
+                  className={`w-full resize-none overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-2 pr-10 text-white no-scrollbar focus:outline-none focus:ring-2 focus:ring-blue-500`}
                   suppressHydrationWarning
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 transform">
