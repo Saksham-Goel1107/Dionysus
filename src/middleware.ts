@@ -47,12 +47,43 @@ const aj = arcjet({
 
 const notAllowedCountries = ['PK'];
 
+const automationUserAgents = [
+  /python/i,
+  /httpx/i,
+  /urllib/i,
+  /requests/i,
+  /wget/i,
+  /curl/i,
+  /java/i,
+  /go-http-client/i,
+];
+
+function isAutomatedUserAgent(userAgent: string): boolean {
+  return automationUserAgents.some((regex) => regex.test(userAgent));
+}
+
 export default clerkMiddleware(async (auth, request) => {
   const { country } = geolocation(request);
   const pathname = request.nextUrl.pathname;
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '8.8.8.8';
+  const userAgent = request.headers.get('user-agent') || '';
+
+  if (isAutomatedUserAgent(userAgent)) {
+    return new NextResponse(
+      JSON.stringify({
+        error: 'Automated tools like Python scripts are not allowed.',
+        reason: 'Suspicious User-Agent: ' + userAgent,
+      }),
+      {
+        status: 403,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 
   if (process.env.NODE_ENV === 'production') {
     try {
@@ -88,6 +119,7 @@ export default clerkMiddleware(async (auth, request) => {
               'Avoid using Tor or anonymous browsers',
               'Ensure your browser is not flagged as an automation tool',
               'Try using a standard, residential network',
+              'If you belive this is a mistake, please Email us: sakshamgoel1107@gmail.com.',
             ],
           }),
           {
