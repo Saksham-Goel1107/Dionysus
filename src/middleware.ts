@@ -22,11 +22,7 @@ const isPublicRoute = createRouteMatcher([
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
-const isAdminRoute = createRouteMatcher([
-  '/admin(.*)',
-  '/sentry-example-page(.*)',
-  '/useVisitorData(.*)',
-]);
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
@@ -56,7 +52,56 @@ export default clerkMiddleware(async (auth, request) => {
   const pathname = request.nextUrl.pathname;
   const isBlockPage = pathname.startsWith('/block');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '8.8.8.8';
 
+  if (process.env.NODE_ENV === 'production') {
+    try {
+      const res = await fetch(
+        `https://api.ipregistry.co/${ip}?key=${process.env.IPREGISTRY_API_KEY}`,
+      );
+      const data = await res.json();
+
+      const reasons: string[] = [];
+
+      if (data.security?.is_proxy) reasons.push('Proxy detected');
+      if (data.security?.is_tor) reasons.push('Tor network detected');
+      if (data.security?.is_vpn) reasons.push('VPN detected');
+      if (data.security?.is_crawler) reasons.push('Bot or crawler detected');
+      if (data.security?.is_threat) reasons.push('Known threat actor IP');
+      if (data.security?.is_relay) reasons.push('Relay/Anonymizer network detected');
+      if (data.security?.is_bogon) reasons.push('Bogon IP (non-routable)');
+      if (data.security?.is_datacenter) reasons.push('Cloud provider or VM environment');
+      if (data.security?.threat_types?.includes('automation'))
+        reasons.push('Automation tools detected');
+      if (data.company?.type === 'hosting') reasons.push('Hosting provider IP');
+      if (data.company?.name?.toLowerCase().includes('aws')) reasons.push('AWS server');
+      if (data.company?.domain?.includes('digitalocean')) reasons.push('DigitalOcean server');
+
+      if (reasons.length > 0) {
+        return new NextResponse(
+          JSON.stringify({
+            error: 'Your request has been blocked due to security policy violations.',
+            ip,
+            reasons,
+            suggestions: [
+              'Disable VPN or proxy if active',
+              'Avoid using Tor or anonymous browsers',
+              'Ensure your browser is not flagged as an automation tool',
+              'Try using a standard, residential network',
+            ],
+          }),
+          {
+            status: 403,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+      }
+    } catch (error) {
+      console.error('IPRegistry error:', error);
+    }
+  }
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
 
   if (isAdminRoute(request)) {
@@ -206,7 +251,7 @@ export default clerkMiddleware(async (auth, request) => {
       "img-src 'self' https: data: blob: https://huggingface.co https://cdn-lfs.huggingface.co https://github.com https://avatars.githubusercontent.com https://nyc.cloud.appwrite.io https://cdn.userway.org https://client.crisp.chat https://crisp.chat;",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://s.pageclip.co https://*.clerk.dev https://*.clerk.accounts.dev https://cdn.jsdelivr.net https://js.doppler.com https://va.vercel-scripts.com https://js.stripe.com https://*.stripe.com https://huggingface.co https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://www.recaptcha.net https://translate.google.com https://translate.googleapis.com https://translate-pa.googleapis.com https://vitals.vercel-insights.com https://speed-insights.vercel.app https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com https://cdn.userway.org https://cdn.userway.com https://userway.org https://embed.tawk.to https://static.userback.io https://app.userback.io https://client.crisp.chat https://crisp.chat https://static.hotjar.com https://script.hotjar.com https://us-assets.i.posthog.com https://fpnpmcdn.net;",
       "style-src 'self' 'unsafe-inline' https: https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat;",
-      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://sentry.io https://api.userback.io https://cdn.userway.org https://cdn.userway.com wss://client.relay.crisp.chat https://ws.hotjar.com https://client.crisp.chat https://crisp.chat;",
+      "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://sentry.io https://api.userback.io https://cdn.userway.org https://cdn.userway.com wss://client.relay.crisp.chat https://ws.hotjar.com https://client.crisp.chat https://crisp.chat https://api.ipregistry.co;",
       "font-src 'self' https: data: https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat;",
       "frame-src 'self' https://js.stripe.com https://*.stripe.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com https://app.userback.io https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat https://dionysus.crisp.help;",
       "object-src 'none';",

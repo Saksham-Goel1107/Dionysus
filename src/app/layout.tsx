@@ -23,7 +23,6 @@ import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import ClientOnly from '@/components/ui/ClientOnly';
 import Offline from './offline';
 import Head from 'next/head';
-import { FpjsProvider } from '@fingerprintjs/fingerprintjs-pro-react';
 
 export const metadata: Metadata = {
   title: {
@@ -142,14 +141,7 @@ export default async function RootLayout({
                   <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
                   <TRPCReactProvider>
                     <Offline>
-                      <FpjsProvider
-                        loadOptions={{
-                          apiKey: 'GH6UItsS3RqgOtocURBN',
-                          region: 'ap',
-                        }}
-                      >
-                        <Providers>{children}</Providers>
-                      </FpjsProvider>
+                      <Providers>{children}</Providers>
                     </Offline>
                   </TRPCReactProvider>
                   <Toaster richColors />

@@ -30,7 +30,6 @@
     "@clerk/themes": "^2.4.3",
     "@emoji-mart/data": "^1.2.1",
     "@emoji-mart/react": "^1.1.1",
-    "@fingerprintjs/fingerprintjs-pro-react": "^2.7.0",
     "@google/generative-ai": "^0.21.0",
     "@headlessui/react": "^2.2.6",
     "@hookform/resolvers": "^3.10.0",
@@ -155,6 +154,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
+    "@commitlint/types": "^19.8.1",
     "@mermaid-js/mermaid-cli": "^11.6.0",
     "@prisma/client": "^6.11.0",
     "@types/crypto-js": "^4.2.2",
