@@ -2,6 +2,7 @@ import { db } from '@/server/db';
 import { Octokit } from 'octokit';
 import axios from 'axios';
 import { aiSummariseCommit } from './gemini';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 export const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -134,7 +135,7 @@ export const pullCommits = async (projectId: string) => {
 };
 
 async function fetchProjectGithubUrl(projectId: string) {
-  const project = await db.project.findUnique({
+  const project = await readReplicaDb.project.findUnique({
     where: { id: projectId },
     select: {
       githubUrl: true,
@@ -150,7 +151,7 @@ async function fetchProjectGithubUrl(projectId: string) {
 }
 
 async function filterUnprocessedCommits(projectId: string, commitHashes: Response[]) {
-  const processedCommits = await db.commit.findMany({
+  const processedCommits = await readReplicaDb.commit.findMany({
     where: { projectId },
   });
 

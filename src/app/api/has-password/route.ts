@@ -1,5 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma';
+import { readReplicaDb } from '@/server/read-replica-db';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
@@ -7,7 +7,7 @@ export async function GET() {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ hasPassword: false });
     // @ts-ignore
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     // @ts-ignore
     return NextResponse.json({ hasPassword: !!user?.passwordHash });
   } catch {

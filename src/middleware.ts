@@ -22,7 +22,11 @@ const isPublicRoute = createRouteMatcher([
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)', '/sentry-example-page(.*)','/useVisitorData(.*)']);
+const isAdminRoute = createRouteMatcher([
+  '/admin(.*)',
+  '/sentry-example-page(.*)',
+  '/useVisitorData(.*)',
+]);
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
 const ADMIN_USER_ID = process.env.ADMIN_USER_ID;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { hash } from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid password' }, { status: 400 });
     }
     const hashed = await hash(password, 12);
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json(
         { success: false, error: `User not found in database for id: ${userId}` },

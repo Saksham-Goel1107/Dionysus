@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { generateImage } from '../image-genration/route';
 import { rateLimit } from '@/lib/rate-limit';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     const prisma = (global as any).prisma || (await import('@/lib/prisma')).default;
-    const user = await prisma.user.findUnique({
+    const user = await readReplicaDb.user.findUnique({
       where: { id: userId },
       select: { emailAddress: true, firstName: true, credits: true },
     });
@@ -66,8 +67,8 @@ export async function POST(req: NextRequest) {
 
     await handleUserCreditsChange({
       userId,
-      userEmail: user?.emailAddress,
-      userName: user?.firstName,
+      userEmail: user?.emailAddress ?? '',
+      userName: user?.firstName ?? '',
       credits: (user?.credits ?? 0) - 5,
       prisma,
     });

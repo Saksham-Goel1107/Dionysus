@@ -5,6 +5,7 @@ import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 import crypto from 'crypto';
 import type { Project } from '@/types/Project';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 interface ProjectWithCreatorId {
   id: string;
@@ -17,7 +18,7 @@ export const projectRouter = createTRPCRouter({
   isProjectCreator: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+      const projects = await readReplicaDb.$queryRaw<Array<{ id: string; creatorId: string }>>`
         SELECT id, "creatorId" FROM "Project" WHERE id = ${input.projectId}
       `;
 
@@ -35,7 +36,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Check if the current user is the creator of the project
-      const project = await ctx.db.project.findUnique({
+      const project = await readReplicaDb.project.findUnique({
         where: { id: input.projectId },
       });
 
@@ -73,14 +74,14 @@ export const projectRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Backend project limit validation
-      const user = await ctx.db.user.findUnique({
+      const user = await readReplicaDb.user.findUnique({
         where: { id: ctx.user.userId! },
         select: { credits: true, emailAddress: true, firstName: true, isPro: true },
       });
       if (!user) {
         throw new Error('User not found');
       }
-      const userProjectsCount = await ctx.db.userToProject.count({
+      const userProjectsCount = await readReplicaDb.userToProject.count({
         where: { userId: ctx.user.userId! },
       });
       if (!user.isPro && userProjectsCount >= 5) {
@@ -158,7 +159,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       // Check if the user has access to this project
-      const userToProject = await ctx.db.userToProject.findFirst({
+      const userToProject = await readReplicaDb.userToProject.findFirst({
         where: {
           projectId: input.projectId,
           userId: ctx.user.userId!,
@@ -169,7 +170,7 @@ export const projectRouter = createTRPCRouter({
     }),
   getProjects: protectedProcedure.query(async ({ ctx }) => {
     // Use raw SQL query to avoid schema validation issues with missing columns
-    const projects = await ctx.db.$queryRaw<Project[]>`
+    const projects = await readReplicaDb.$queryRaw<Project[]>`
       SELECT p.id, p."createdAt", p."updatedAt", p.name, p."githubUrl", p."creatorId", p."deletedAt"
       FROM "Project" p
       JOIN "UserToProject" up ON p.id = up."projectId"
@@ -187,7 +188,7 @@ export const projectRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       pullCommits(input.projectId).then().catch(console.error);
-      return await ctx.db.commit.findMany({
+      return await readReplicaDb.commit.findMany({
         where: { projectId: input.projectId },
       });
     }),
@@ -199,7 +200,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const commits = await ctx.db.commit.findMany({
+      const commits = await readReplicaDb.commit.findMany({
         where: { projectId: input.projectId },
         select: {
           commitAuthorName: true,
@@ -264,7 +265,7 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.db.question.findMany({
+      return await readReplicaDb.question.findMany({
         where: {
           projectId: input.projectId,
         },
@@ -288,7 +289,7 @@ export const projectRouter = createTRPCRouter({
       if (!question) {
         throw new Error('Question not found');
       } // Check if the current user is the project creator using raw query
-      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+      const projects = await readReplicaDb.$queryRaw<Array<{ id: string; creatorId: string }>>`
         SELECT id, "creatorId" FROM "Project" WHERE id = ${question.projectId}
       `;
 
@@ -347,7 +348,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ meetingId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // First, get the meeting to find its projectId
-      const meeting = await ctx.db.meeting.findUnique({
+      const meeting = await readReplicaDb.meeting.findUnique({
         where: { id: input.meetingId },
         select: { projectId: true },
       });
@@ -357,7 +358,7 @@ export const projectRouter = createTRPCRouter({
       }
 
       // Check if the current user is the project creator
-      const project = await ctx.db.project.findUnique({
+      const project = await readReplicaDb.project.findUnique({
         where: { id: meeting.projectId },
       });
 
@@ -378,7 +379,7 @@ export const projectRouter = createTRPCRouter({
   getMeetingTranscript: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const meeting = await ctx.db.meeting.findUnique({
+      const meeting = await readReplicaDb.meeting.findUnique({
         where: { id: input.meetingId },
         select: {
           transcript: true,
@@ -398,7 +399,7 @@ export const projectRouter = createTRPCRouter({
   getMeetingById: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.meeting.findUnique({
+      return await readReplicaDb.meeting.findUnique({
         where: { id: input.meetingId },
         select: {
           id: true,
@@ -416,7 +417,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Check if the current user is the creator of the project
-      const project = await ctx.db.project.findUnique({
+      const project = await readReplicaDb.project.findUnique({
         where: { id: input.projectId },
       });
 
@@ -439,7 +440,7 @@ export const projectRouter = createTRPCRouter({
   getTeamMembers: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const members = await ctx.db.userToProject.findMany({
+      const members = await readReplicaDb.userToProject.findMany({
         where: { projectId: input.projectId },
         include: {
           user: {
@@ -461,13 +462,13 @@ export const projectRouter = createTRPCRouter({
       return members.map((m) => m.user);
     }),
   getMyCredits: protectedProcedure.query(async ({ ctx }) => {
-    const user = await ctx.db.user.findUnique({
+    const user = await readReplicaDb.user.findUnique({
       where: { id: ctx.user.userId! },
     });
     return user;
   }),
   getMyTransactions: protectedProcedure.query(async ({ ctx }) => {
-    const transactions = await ctx.db.stripeTransaction.findMany({
+    const transactions = await readReplicaDb.stripeTransaction.findMany({
       where: { userId: ctx.user.userId! },
       orderBy: { createdAt: 'desc' },
     });
@@ -478,7 +479,7 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       try {
         const fileCount = await checkCredits(input.githubUrl, input.githubToken);
-        const userCredits = await ctx.db.user.findUnique({
+        const userCredits = await readReplicaDb.user.findUnique({
           where: { id: ctx.user.userId! },
           select: { credits: true },
         });
@@ -502,7 +503,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Check if the current user is the project creator using raw query
-      const projects = await ctx.db.$queryRaw<Array<{ id: string; creatorId: string }>>`
+      const projects = await readReplicaDb.$queryRaw<Array<{ id: string; creatorId: string }>>`
         SELECT id, "creatorId" FROM "Project" WHERE id = ${input.projectId}
       `;
 
@@ -527,7 +528,7 @@ export const projectRouter = createTRPCRouter({
 
       // Update the project with the new token using raw SQL to avoid schema validation issues
       await ctx.db.$executeRaw`
-        UPDATE "Project" 
+        UPDATE "Project"
         SET "inviteToken" = ${newToken}
         WHERE id = ${input.projectId}
       `;
@@ -551,7 +552,7 @@ export const projectRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string(), token: z.string() }))
     .query(async ({ ctx, input }) => {
       // Check if the provided token matches the project's invite token
-      const result = await ctx.db.$queryRaw<Array<{ inviteToken: string }>>`
+      const result = await readReplicaDb.$queryRaw<Array<{ inviteToken: string }>>`
         SELECT "inviteToken" FROM "Project" WHERE id = ${input.projectId}
       `;
 
@@ -578,7 +579,7 @@ export const projectRouter = createTRPCRouter({
       }
 
       // Get project with inviteToken using raw query
-      const projects = await ctx.db.$queryRaw<Project[]>`
+      const projects = await readReplicaDb.$queryRaw<Project[]>`
         SELECT id, name, "githubUrl", "creatorId", "deletedAt", "createdAt", "updatedAt", "inviteToken" FROM "Project" WHERE id = ${input.projectId}
       `;
 

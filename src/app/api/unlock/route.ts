@@ -4,6 +4,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { rateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { verifyRecaptchaV2 } from '@/lib/recaptcha';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 export async function POST(req: NextRequest) {
   try {
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       );
     }
     // @ts-ignore
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     // @ts-ignore
     if (!user || !user.passwordHash) {
       return NextResponse.json(

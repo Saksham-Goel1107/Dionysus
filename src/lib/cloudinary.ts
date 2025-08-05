@@ -1,11 +1,21 @@
 export async function uploadFile(file: File, setProgress?: (progress: number) => void) {
   return new Promise((resolve, reject) => {
     try {
+      const preset = process.env.NEXT_PUBLIC_UNSIGNED_PRESET_NAME;
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      if (!preset || !cloudName) {
+        reject(
+          new Error(
+            'Cloudinary config missing: Check NEXT_PUBLIC_UNSIGNED_PRESET_NAME and NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME env variables.',
+          ),
+        );
+        return;
+      }
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('upload_preset', `${process.env.NEXT_PUBLIC_UNSIGNED_PRESET_NAME}`);
+      formData.append('upload_preset', preset);
       const xhr = new XMLHttpRequest();
-      const cloudinaryURL = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME!}/auto/upload`;
+      const cloudinaryURL = `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`;
 
       xhr.open('POST', cloudinaryURL, true);
 
@@ -21,7 +31,14 @@ export async function uploadFile(file: File, setProgress?: (progress: number) =>
           const response = JSON.parse(xhr.responseText);
           resolve(response.secure_url as string);
         } else {
-          reject(new Error(`Upload failed: ${xhr.statusText}`));
+          let errorMsg = `Upload failed: ${xhr.statusText} (status ${xhr.status})`;
+          try {
+            const errorResponse = JSON.parse(xhr.responseText);
+            if (errorResponse && errorResponse.error && errorResponse.error.message) {
+              errorMsg += ` - ${errorResponse.error.message}`;
+            }
+          } catch {}
+          reject(new Error(errorMsg));
         }
       };
 

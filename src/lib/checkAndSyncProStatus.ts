@@ -1,8 +1,9 @@
 import { db } from '@/server/db';
 import { userHasProPlan } from './check-pro-status';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 export async function checkAndSyncProStatus(userId: string) {
-  const user = await db.user.findUnique({ where: { id: userId } });
+  const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
   if (!user) return;
 
   const hasProPlan = await userHasProPlan({ bypassCache: true });

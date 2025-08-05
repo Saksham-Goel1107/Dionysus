@@ -37,12 +37,20 @@ export default function LockPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const performAction = useReverification(myAction);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [isPageLoading, setIsPageLoading] = useState<boolean>(true);
 
   useEffect(() => {
     fetch('/api/has-password')
       .then((res) => res.json())
-      .then((data) => setHasPassword(!!data.hasPassword))
-      .catch(() => setHasPassword(null));
+      .then((data) => {
+        setHasPassword(!!data.hasPassword);
+        setIsPageLoading(false);
+      })
+      .catch((error) => {
+        setHasPassword(null);
+        setIsPageLoading(false);
+        console.log('Error fetching password:', error);
+      });
   }, []);
 
   const handleClick = async (e: React.FormEvent) => {
@@ -142,6 +150,14 @@ export default function LockPage() {
       '';
   } catch (error) {
     console.error('Error::getClerkEmail:', error);
+  }
+
+  if (isPageLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (

@@ -1,5 +1,6 @@
 import { db } from '@/server/db';
 import { auth, clerkClient } from '@clerk/nextjs/server';
+import { readReplicaDb } from '@/server/read-replica-db';
 import { redirect } from 'next/navigation';
 
 type Props = {
@@ -21,7 +22,7 @@ const JoinHandler = async (props: Props) => {
   const client = await clerkClient();
   const user = await client.users.getUser(userId);
 
-  const existingUserByEmail = await db.user.findUnique({
+  const existingUserByEmail = await readReplicaDb.user.findUnique({
     where: { emailAddress: user.emailAddresses[0]!.emailAddress },
   });
 
@@ -37,7 +38,7 @@ const JoinHandler = async (props: Props) => {
     });
   }
 
-  const project = await db.project.findUnique({
+  const project = await readReplicaDb.project.findUnique({
     where: {
       id: projectId,
     },

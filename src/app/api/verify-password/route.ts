@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRecaptchaJWT, signRecaptchaJWT } from '@/lib/recaptcha-jwt';
 import { compare } from 'bcryptjs';
-import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { rateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { verifyRecaptchaV2 } from '@/lib/recaptcha';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 function checkForSuspiciousPatterns(req: NextRequest): boolean {
   try {
@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
       );
     }
     // @ts-ignore
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     // @ts-ignore
     if (!user || !user.passwordHash) {
       return NextResponse.json(

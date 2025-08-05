@@ -1,9 +1,9 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { NextRequest, NextResponse } from 'next/server';
 import { getChat, setChat } from '../../utils/redis';
-import { db } from '@/server/db';
 import { userHasProPlan } from '@/lib/check-pro-status';
 import { LangChainTracer } from 'langchain/callbacks';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 let model: ChatGoogleGenerativeAI | null = null;
 let tracer: LangChainTracer | null = null;
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Meeting ID is required' }, { status: 400 });
     }
 
-    const meeting = await db.meeting.findUnique({
+    const meeting = await readReplicaDb.meeting.findUnique({
       where: { id: meetingId },
       include: { issues: true },
     });

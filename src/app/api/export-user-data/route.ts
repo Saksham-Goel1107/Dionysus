@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
 import db from '@/lib/prisma';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 // Export only non-sensitive user data, grouped for clarity
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   // User profile info (safe fields only)
-  const user = await db.user.findUnique({
+  const user = await readReplicaDb.user.findUnique({
     where: { id: userId },
     select: {
       id: true,
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Projects the user is a member of, with commits
-  const userProjects = await db.userToProject.findMany({
+  const userProjects = await readReplicaDb.userToProject.findMany({
     where: { userId },
     select: {
       project: {
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest) {
   });
 
   // User's questions
-  const questions = await db.question.findMany({
+  const questions = await readReplicaDb.question.findMany({
     where: { userId },
     select: {
       id: true,
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
   });
 
   // User's Stripe transactions
-  const stripeTransactions = await db.stripeTransaction.findMany({
+  const stripeTransactions = await readReplicaDb.stripeTransaction.findMany({
     where: { userId },
     select: {
       id: true,

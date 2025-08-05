@@ -2,7 +2,7 @@
 
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { generateEmbedding } from '@/lib/gemini';
-import { db } from '@/server/db';
+import { readReplicaDb } from '@/server/read-replica-db';
 import { LangChainTracer } from 'langchain/callbacks';
 
 let tracer: LangChainTracer | null = null;
@@ -20,7 +20,7 @@ export async function askQuestion(question: string, projectId: string) {
     console.error('GEMINI_API_KEY is missing. Gemini model will not work.');
   }
 
-  const project = await db.project.findUnique({
+  const project = await readReplicaDb.project.findUnique({
     where: { id: projectId },
     select: { name: true, githubUrl: true },
   });
@@ -31,7 +31,7 @@ export async function askQuestion(question: string, projectId: string) {
   const queryVector = await generateEmbedding(question);
   const vectorQuery = `[${queryVector.join(',')}]`;
 
-  const result = (await db.$queryRaw`
+  const result = (await readReplicaDb.$queryRaw`
     SELECT "fileName","sourceCode","summary",
     1 - ("summaryEmbedding" <=> ${vectorQuery}::vector) AS similarity
     FROM "SourceCodeEmbedding"

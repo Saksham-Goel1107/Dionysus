@@ -1,5 +1,6 @@
 import { sendLowCreditsEmail } from './email';
 import { db } from '../server/db';
+import { readReplicaDb } from '@/server/read-replica-db';
 
 /**
  * Checks if the user's credits are below 30 and sends a low credits email if not already sent.
@@ -24,7 +25,7 @@ export async function checkAndSendLowCreditsAlert({
 }) {
   if (credits >= 30) return;
   // Check if already sent
-  const user = await db.user.findUnique({ where: { id: userId } });
+  const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
   if (!user || user.lowCreditsEmailSent) return;
 
   await sendLowCreditsEmail({
