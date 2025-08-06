@@ -1,6 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getAuth } from '@clerk/nextjs/server';
-import db from '@/lib/prisma';
 import { readReplicaDb } from '@/server/read-replica-db';
 
 // Export only non-sensitive user data, grouped for clarity

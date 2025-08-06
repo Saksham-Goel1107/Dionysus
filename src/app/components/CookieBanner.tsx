@@ -69,8 +69,10 @@ export default function CookieBanner() {
           {ip && (
             <Dialog open={ipDialogOpen} onOpenChange={setIpDialogOpen}>
               <DialogTrigger asChild>
-                <p className="mb-2 text-xs text-red-500 dark:text-red-400 cursor-pointer">
-                  Your IP address <span className="font-mono underline">{ip}</span> is being monitored for security purposes. <span className="text-blue-500 underline">(details)</span>
+                <p className="mb-2 cursor-pointer text-xs text-red-500 dark:text-red-400">
+                  Your IP address <span className="font-mono underline">{ip}</span> is being
+                  monitored for security purposes.{' '}
+                  <span className="text-blue-500 underline">(details)</span>
                 </p>
               </DialogTrigger>
               <DialogContent>
@@ -81,11 +83,14 @@ export default function CookieBanner() {
                   </DialogDescription>
                 </DialogHeader>
                 {ipDetails ? (
-                  <div className="text-xs text-left max-h-64 overflow-auto">
-                    <div className="mb-2 p-2 rounded bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                      <strong>Note:</strong> For your privacy, all sensitive information is secured by us and is <span className="font-semibold">not displayed to you directly</span>. Only basic non-sensitive, public IP info is shown below.
+                  <div className="max-h-64 overflow-auto text-left text-xs">
+                    <div className="mb-2 rounded bg-yellow-100 p-2 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+                      <strong>Note:</strong> For your privacy, all sensitive information is secured
+                      by us and is{' '}
+                      <span className="font-semibold">not displayed to you directly</span>. Only
+                      basic non-sensitive, public IP info is shown below.
                     </div>
-                    <pre className="whitespace-pre-wrap break-all bg-gray-100 dark:bg-zinc-800 p-2 rounded">
+                    <pre className="whitespace-pre-wrap break-all rounded bg-gray-100 p-2 dark:bg-zinc-800">
                       {JSON.stringify(ipDetails, null, 2)}
                     </pre>
                   </div>
@@ -93,7 +98,9 @@ export default function CookieBanner() {
                   <div className="text-xs text-gray-500">Loading details...</div>
                 )}
                 <DialogClose asChild>
-                  <button className="mt-4 rounded bg-blue-600 px-4 py-2 text-white text-xs hover:bg-blue-700">Close</button>
+                  <button className="mt-4 rounded bg-blue-600 px-4 py-2 text-xs text-white hover:bg-blue-700">
+                    Close
+                  </button>
                 </DialogClose>
               </DialogContent>
             </Dialog>
@@ -113,8 +120,8 @@ export default function CookieBanner() {
             </button>
           </div>
           <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
-            By clicking &quot;Accept & Continue&quot;, you consent to our cookie usage as detailed in
-            our policy.
+            By clicking &quot;Accept & Continue&quot;, you consent to our cookie usage as detailed
+            in our policy.
           </p>
         </div>
       </div>

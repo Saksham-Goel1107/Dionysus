@@ -81,11 +81,11 @@ export default clerkMiddleware(async (auth, request) => {
         headers: {
           'Content-Type': 'application/json',
         },
-      }
+      },
     );
   }
 
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && process.env.IPREGISTRY_ENABLED === 'true') {
     try {
       const res = await fetch(
         `https://api.ipregistry.co/${ip}?key=${process.env.IPREGISTRY_API_KEY}`,

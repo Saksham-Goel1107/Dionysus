@@ -91,6 +91,7 @@ Directory structure:
     ├── SUPPORT.md
     ├── tailwind.config.ts
     ├── tsconfig.json
+    ├── vercel.json
     ├── .dockerignore
     ├── .editorconfig
     ├── .env.example.encrypted
@@ -259,6 +260,7 @@ Directory structure:
     │   │   │   │   └── page.tsx
     │   │   │   ├── components/
     │   │   │   │   ├── AdminDashboard.tsx
+    │   │   │   │   ├── AdminSidebar.tsx
     │   │   │   │   ├── AnalyticsDashboard.tsx
     │   │   │   │   ├── CouponsManagement.tsx
     │   │   │   │   ├── FinancesDashboard.tsx
@@ -393,8 +395,6 @@ Directory structure:
     │   │   ├── rate-limit/
     │   │   │   ├── page.tsx
     │   │   │   └── RateLimitRedirector.tsx
-    │   │   ├── sentry-example-page/
-    │   │   │   └── page.tsx
     │   │   ├── sign-in/
     │   │   │   └── [[...sign-in]]/
     │   │   │       └── page.tsx
@@ -519,6 +519,7 @@ Directory structure:
     │   │   └── use-toast.ts
     │   ├── lib/
     │   │   ├── assembly.ts
+    │   │   ├── check-pro-status.ts
     │   │   ├── checkAndSyncProStatus.ts
     │   │   ├── cloudinary.ts
     │   │   ├── creditsAlert.ts
@@ -529,16 +530,20 @@ Directory structure:
     │   │   ├── googleSheets.ts
     │   │   ├── handleUserCreditsChange.ts
     │   │   ├── prisma.ts
+    │   │   ├── pro-status-checker.ts
+    │   │   ├── pro-status-helpers.ts
     │   │   ├── rate-limit.ts
     │   │   ├── recaptcha-jwt.ts
     │   │   ├── recaptcha.ts
     │   │   ├── sendInvoice.ts
     │   │   ├── stripe.ts
     │   │   ├── survey.ts
+    │   │   ├── user-cache.ts
     │   │   └── utils.ts
     │   ├── server/
     │   │   ├── db.ts
     │   │   ├── keepalive.ts
+    │   │   ├── read-replica-db.ts
     │   │   └── api/
     │   │       ├── root.ts
     │   │       ├── trpc.ts
@@ -747,6 +752,11 @@ Directory structure:
   <img src="Demo/image8.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image11.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image12.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image13.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image14.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image15.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image16.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image17.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 
