@@ -161,35 +161,36 @@ export default async function RootLayout({
                     charSet="utf-8"
                     strategy="afterInteractive"
                   ></Script>
-                  <Script
-                    src="https://cdn.userway.org/widget.js"
-                    data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
-                  ></Script>
-                  <Script
-                    id="crisp-chat"
-                    type="text/javascript"
-                    strategy="afterInteractive"
-                    data-magic-browse="true"
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                        window.$crisp = [];
-                        window.CRISP_WEBSITE_ID = \`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
-                        window.$crisp.push(["safe", true]);
-                        (function(){
-                          var d = document, s = d.createElement("script");
-                          s.src = "https://client.crisp.chat/l.js";
-                          s.async = 1;
-                          d.getElementsByTagName("head")[0].appendChild(s);
-                        })();
-                      `,
-                    }}
-                  />
                   {process.env.NODE_ENV === 'production' && (
-                    <Script
-                      id="hotjar"
-                      strategy="afterInteractive"
-                      dangerouslySetInnerHTML={{
-                        __html: `
+                    <>
+                      <Script
+                        src="https://cdn.userway.org/widget.js"
+                        data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
+                      ></Script>
+                      <Script
+                        id="crisp-chat"
+                        type="text/javascript"
+                        strategy="afterInteractive"
+                        data-magic-browse="true"
+                        dangerouslySetInnerHTML={{
+                          __html: `
+                            window.$crisp = [];
+                            window.CRISP_WEBSITE_ID = \`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
+                            window.$crisp.push(["safe", true]);
+                            (function(){
+                              var d = document, s = d.createElement("script");
+                              s.src = "https://client.crisp.chat/l.js";
+                              s.async = 1;
+                              d.getElementsByTagName("head")[0].appendChild(s);
+                            })();
+                          `,
+                        }}
+                      />
+                      <Script
+                        id="hotjar"
+                        strategy="afterInteractive"
+                        dangerouslySetInnerHTML={{
+                          __html: `
       (function(h,o,t,j,a,r){
           h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
           h._hjSettings={hjid:6468665,hjsv:6};
@@ -199,26 +200,27 @@ export default async function RootLayout({
           a.appendChild(r);
       })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     `,
-                      }}
-                    />
-                  )}
-                  <Script
-                    async
-                    src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
-                  ></Script>
-                  <Script
-                    id="gtag"
-                    strategy="afterInteractive"
-                    dangerouslySetInnerHTML={{
-                      __html: `
-                        window.dataLayer = window.dataLayer || [];
-                        function gtag(){dataLayer.push(arguments);}
-                        gtag('js', new Date());
+                        }}
+                      />
+                      <Script
+                        async
+                        src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
+                      ></Script>
+                      <Script
+                        id="gtag"
+                        strategy="afterInteractive"
+                        dangerouslySetInnerHTML={{
+                          __html: `
+                            window.dataLayer = window.dataLayer || [];
+                            function gtag(){dataLayer.push(arguments);}
+                            gtag('js', new Date());
 
-                        gtag('config', 'G-W02TQN9H65');
-                      `,
-                    }}
-                  />
+                            gtag('config', 'G-W02TQN9H65');
+                          `,
+                        }}
+                      />
+                    </>
+                  )}
                 </>
               )}
               {/* </MultisessionAppSupport> */}

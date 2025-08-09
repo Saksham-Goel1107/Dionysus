@@ -148,86 +148,89 @@ function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div style={translateTabStyle} onClick={() => setShowTranslate((v) => !v)}>
-        Language
-        <span style={{ fontSize: 18, marginTop: 8 }}>🌐</span>
-      </div>
+      {process.env.NODE_ENV === 'production' && (
+        <>
+          <div style={translateTabStyle} onClick={() => setShowTranslate((v) => !v)}>
+            Language
+            <span style={{ fontSize: 18, marginTop: 8 }}>🌐</span>
+          </div>
 
-      <style>{`
-        #google_translate_element,
-        #google_translate_element *,
-        .goog-te-menu-value,
-        .goog-te-gadget,
-        .goog-te-combo,
-        .goog-te-menu-frame,
-        .goog-te-menu2,
-        .goog-te-menu2-item,
-        .goog-te-menu2-item div {
-          color: #222 !important;
-          background: #fff !important;
-          border-color: #ccc !important;
-        }
-
-        /* Fix size and appearance */
-        .goog-te-gadget {
-          font-size: 0.9rem !important;
-          margin: 0 !important;
-        }
-
-        .goog-te-gadget-simple {
-          padding: 4px 8px !important;
-          border-radius: 4px !important;
-          border: 1px solid #ccc !important;
-        }
-
-        /* Only show when ready */
-        #google_translate_element:empty {
-          display: none !important;
-        }
-      `}</style>
-
-      <div id="google_translate_element" style={translateWidgetStyle}></div>
-
-      <Script
-        id="google-translate-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            function googleTranslateElementInit() {
-              new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                includedLanguages: 'en,fr,es,de,it,ru,zh-CN,ja,ko,ar,pt,hi,tr,pl,nl,sv,el,he,th,vi,uk,fa,ro,cs,hu,da,fi,sk,bg,hr,lt,lv,et,sl,ms,id,tl,ca,sr',
-                layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
-              }, 'google_translate_element');
-              window.__translateReady = true;
+          <style>{`
+            #google_translate_element,
+            #google_translate_element *,
+            .goog-te-menu-value,
+            .goog-te-gadget,
+            .goog-te-combo,
+            .goog-te-menu-frame,
+            .goog-te-menu2,
+            .goog-te-menu2-item,
+            .goog-te-menu2-item div {
+              color: #222 !important;
+              background: #fff !important;
+              border-color: #ccc !important;
             }
-            if (typeof google !== 'undefined' && google.translate) {
-              googleTranslateElementInit();
+
+            /* Fix size and appearance */
+            .goog-te-gadget {
+              font-size: 0.9rem !important;
+              margin: 0 !important;
             }
-          `,
-        }}
-      />
-      <Script
-        src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
-        strategy="afterInteractive"
-        onLoad={() => {
-          const checkReady = () => {
-            if (window.__translateReady) {
-              setIsTranslateReady(true);
-            } else {
-              setTimeout(checkReady, 50);
+
+            .goog-te-gadget-simple {
+              padding: 4px 8px !important;
+              border-radius: 4px !important;
+              border: 1px solid #ccc !important;
             }
-          };
-          checkReady();
-        }}
-      />
+
+            /* Only show when ready */
+            #google_translate_element:empty {
+              display: none !important;
+            }
+          `}</style>
+
+          <div id="google_translate_element" style={translateWidgetStyle}></div>
+
+          <Script
+            id="google-translate-init"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{
+              __html: `
+                function googleTranslateElementInit() {
+                  new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,fr,es,de,it,ru,zh-CN,ja,ko,ar,pt,hi,tr,pl,nl,sv,el,he,th,vi,uk,fa,ro,cs,hu,da,fi,sk,bg,hr,lt,lv,et,sl,ms,id,tl,ca,sr',
+                    layout: google.translate.TranslateElement.InlineLayout.HORIZONTAL
+                  }, 'google_translate_element');
+                  window.__translateReady = true;
+                }
+                if (typeof google !== 'undefined' && google.translate) {
+                  googleTranslateElementInit();
+                }
+              `,
+            }}
+          />
+          <Script
+            src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+            strategy="afterInteractive"
+            onLoad={() => {
+              const checkReady = () => {
+                if (window.__translateReady) {
+                  setIsTranslateReady(true);
+                } else {
+                  setTimeout(checkReady, 50);
+                }
+              };
+              checkReady();
+            }}
+          />
+        </>
+      )}
       {!hideCookieBanner && <CookieBanner />}
       <div>
         {userId ? (
           <RecaptchaGate>
             {children}
-
-            {isClient && userData && (
+            {process.env.NODE_ENV === 'production' && isClient && userData && (
               <Script
                 id="userback"
                 strategy="afterInteractive"

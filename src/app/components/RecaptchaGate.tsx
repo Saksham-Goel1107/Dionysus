@@ -16,7 +16,7 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/support',
   '/status',
   '/api/recaptcha-verify(.*)',
-  '/lock',
+  '/rate-limit',
   '/block',
 ];
 
@@ -68,7 +68,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       setError('reCAPTCHA site key not set');
       return;
     }
-    if (isPublicRoute(pathname)) {
+    if (isPublicRoute(pathname) || process.env.NODE_ENV !== 'production') {
       setError('');
       return;
     }
@@ -102,7 +102,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
   return (
     <>
       {children}
-      {error && !isPublicRoute(pathname) && (
+      {error && (process.env.NODE_ENV !== 'production' || !isPublicRoute(pathname)) && (
         <div
           style={{
             position: 'fixed',

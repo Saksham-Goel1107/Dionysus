@@ -5,7 +5,8 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ hasPassword: false });
+    if (!userId || process.env.NODE_ENV !== 'production')
+      return NextResponse.json({ hasPassword: false });
     // @ts-ignore
     const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     // @ts-ignore

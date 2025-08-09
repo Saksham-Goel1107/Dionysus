@@ -13,6 +13,7 @@ import Image from 'next/image';
 import useProject from '@/hooks/use-project';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
+import DOMPurify from 'dompurify';
 
 type Props = {};
 
@@ -74,12 +75,24 @@ const Page = ({}: Props) => {
       toast.error('You have reached the free project limit. Upgrade to create more projects.');
       return;
     }
+    if (!data.repoUrl || !data.projectName) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (data.projectName.length > 15) {
+      toast.error('Project name must be 15 characters or less');
+      return;
+    }
+
     if (!!checkCredits.data) {
       if (checkCredits.data.isValid) {
+        const sanitizedProjectName = DOMPurify.sanitize(data.projectName);
+
         createProject.mutate(
           {
             githubUrl: data.repoUrl,
-            name: data.projectName,
+            name: sanitizedProjectName,
             githubToken: data.githubToken,
           },
           {
@@ -221,6 +234,7 @@ const Page = ({}: Props) => {
                 required
                 disabled={urlLocked}
                 className={urlLocked ? 'bg-muted pr-10' : ''}
+                maxLength={15}
               />
               {urlLocked && <LockIndicator />}
             </div>

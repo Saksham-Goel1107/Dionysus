@@ -34,7 +34,8 @@ async function fetchCommits(githubUrl: string): Promise<CommitNode[]> {
     const owner = match[1];
     const repo = match[2]?.replace(/\.git$/, '');
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=30`;
-    const res = await fetch(apiUrl);
+    const proxyUrl = `/api/github-commits?url=${encodeURIComponent(apiUrl)}`;
+    const res = await fetch(proxyUrl);
     if (!res.ok) return [];
     const data = await res.json();
     return data.map((c: any) => ({
