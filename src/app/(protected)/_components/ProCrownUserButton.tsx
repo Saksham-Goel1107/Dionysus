@@ -4,7 +4,7 @@ import UserAvatarMenu from '@/components/ui/UserAvatarMenu';
 
 export default function ProCrownUserButton({ isPro }: { isPro: boolean }) {
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block" data-user-button>
       <UserAvatarMenu />
       {isPro && (
         <span className="absolute -right-2 -top-2 z-10">

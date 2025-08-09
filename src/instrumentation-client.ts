@@ -5,28 +5,19 @@
 import * as Sentry from '@sentry/nextjs';
 import posthog from 'posthog-js';
 
-Sentry.init({
-  dsn: 'https://106d6fed8eb9d133b6a2749ae7674ab9@o4509645375733760.ingest.de.sentry.io/4509645377175632',
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: 'https://106d6fed8eb9d133b6a2749ae7674ab9@o4509645375733760.ingest.de.sentry.io/4509645377175632',
+    integrations: [Sentry.replayIntegration()],
+    tracesSampleRate: 1,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+    debug: false,
+  });
+}
 
-  // Add optional integrations for additional features
-  integrations: [Sentry.replayIntegration()],
-
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
-
-  // Define how likely Replay events are sampled.
-  // This sets the sample rate to be 10%. You may want this to be 100% while
-  // in development and sample at a lower rate in production
-  replaysSessionSampleRate: 0.1,
-
-  // Define how likely Replay events are sampled when an error occurs.
-  replaysOnErrorSampleRate: 1.0,
-
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-});
-
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+export const onRouterTransitionStart =
+  process.env.NODE_ENV === 'production' ? Sentry.captureRouterTransitionStart : () => {};
 
 posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY ?? '', {
   api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? '',

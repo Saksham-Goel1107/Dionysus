@@ -4,14 +4,16 @@ import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import * as Sentry from '@sentry/browser';
 
-Sentry.init({
-  dsn: 'https://106d6fed8eb9d133b6a2749ae7674ab9@o4509645375733760.ingest.de.sentry.io/4509645377175632',
-  integrations: [
-    Sentry.feedbackIntegration({
-      autoInject: false,
-    }),
-  ],
-});
+if (process.env.NODE_ENV === 'production') {
+  Sentry.init({
+    dsn: 'https://106d6fed8eb9d133b6a2749ae7674ab9@o4509645375733760.ingest.de.sentry.io/4509645377175632',
+    integrations: [
+      Sentry.feedbackIntegration({
+        autoInject: false,
+      }),
+    ],
+  });
+}
 
 function AttachToFeedbackButton() {
   const [feedback, setFeedback] = useState<ReturnType<typeof Sentry.getFeedback> | undefined>(

@@ -13,6 +13,7 @@ import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
 import { OrganizationSwitcher } from '@clerk/nextjs';
+import UserButtonTutorial from './_components/UserButtonTutorial';
 
 type Props = {
   children: React.ReactNode;
@@ -86,6 +87,7 @@ const Layout = async ({ children }: Props) => {
           </div>
         </main>
         <ClientFeedbackForm />
+        <UserButtonTutorial />
       </SidebarProvider>
     </PasswordGate>
   );
