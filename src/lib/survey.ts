@@ -1,5 +1,5 @@
 import { currentUser } from '@clerk/nextjs/server';
-import { readReplicaDb } from '@/server/read-replica-db';
+import { readReplicaDb2 } from '@/server/read-replica-2-db';
 
 /**
  * Check if the current user has completed the survey
@@ -13,7 +13,7 @@ export async function hasCompletedSurvey(): Promise<boolean> {
       return false;
     }
 
-    const dbUser = await readReplicaDb.user.findUnique({
+    const dbUser = await readReplicaDb2.user.findUnique({
       where: { id: user.id },
       select: { SurveyDone: true },
     });
@@ -38,7 +38,7 @@ export async function shouldRedirectToSurvey(): Promise<boolean> {
     }
 
     // Check survey status from DB
-    const dbUser = await readReplicaDb.user.findUnique({
+    const dbUser = await readReplicaDb2.user.findUnique({
       where: { id: user.id },
       select: { SurveyDone: true },
     });
