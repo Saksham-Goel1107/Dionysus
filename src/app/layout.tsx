@@ -23,6 +23,7 @@ import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import ClientOnly from '@/components/ui/ClientOnly';
 import Offline from './offline';
 import Head from 'next/head';
+import MobileInfoPrompt from './components/MobileInfoPrompt';
 
 export const metadata: Metadata = {
   title: {
@@ -124,6 +125,9 @@ export default async function RootLayout({
       <body suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ClientOnly>
+              <MobileInfoPrompt />
+            </ClientOnly>
             <ClerkProviderWithTheme>
               {/* <MultisessionAppSupport> */}
               {isMaintenance ? (

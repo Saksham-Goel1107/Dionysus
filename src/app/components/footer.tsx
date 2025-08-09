@@ -49,13 +49,6 @@ export function Footer() {
           >
             Status <UptimeStatus />
           </Link>
-          <Link
-            href="#features"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            Features
-          </Link>
-
           <Link href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
             Docs
           </Link>

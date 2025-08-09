@@ -12,6 +12,7 @@ import { shouldRedirectToSurvey } from '@/lib/survey';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { Heart } from 'lucide-react';
+import { OrganizationSwitcher } from '@clerk/nextjs';
 
 type Props = {
   children: React.ReactNode;
@@ -38,6 +39,9 @@ const Layout = async ({ children }: Props) => {
             <SidebarTrigger />
             <CurrentTimeDisplay />
             <div className="ml-auto flex items-center justify-center gap-2">
+              <div className="hidden items-center gap-2 sm:block md:flex">
+                <OrganizationSwitcher />
+              </div>
               <div className="dark:bg-gray-300">
                 {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
                   <Inbox
@@ -48,7 +52,7 @@ const Layout = async ({ children }: Props) => {
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />
-              <div className="hidden gap-2 sm:block md:flex">
+              <div className="hidden items-center gap-2 sm:block md:flex">
                 <Battery />
 
                 <a
@@ -68,11 +72,9 @@ const Layout = async ({ children }: Props) => {
                   href="https://github.com/sponsors/Saksham-Goel1107"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="group"
                 >
-                  <Heart
-                    className="h-6 w-6 transition-all duration-200 group-hover:h-8 group-hover:w-8 group-hover:text-red-500"
-                    color="currentColor"
-                  />
+                  <Heart className="h-6 w-6 transition-all duration-200 group-hover:scale-125 group-hover:text-red-500" />
                 </a>
               </div>
             </div>

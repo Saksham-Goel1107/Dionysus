@@ -10,6 +10,8 @@ import type {
   SpeechRecognitionAlternative,
 } from '../types/speech-recognition';
 import { useRouter } from 'next/navigation';
+import { Logo } from './logo';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -272,7 +274,8 @@ export default function AiChatSidebar({
         <div className="flex h-full flex-col">
           <div className={`flex items-center justify-between border-b border-gray-700 p-4`}>
             <div className="flex items-center space-x-2">
-              <h2 className={`font-semibold text-white`}>Dionysus Assistant</h2>
+              <Logo />
+              <GradientTypewriter words="Dionysus Ai" />
             </div>{' '}
             <div className="flex items-center space-x-2">
               <button
