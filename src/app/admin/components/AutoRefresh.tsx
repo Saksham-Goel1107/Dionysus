@@ -10,13 +10,13 @@ interface AutoRefreshProps {
 export default function AutoRefresh({ interval = 15, enabled = true }: AutoRefreshProps) {
   useEffect(() => {
     if (!enabled) return;
-    
+
     const timer = setInterval(() => {
       window.location.reload();
     }, interval * 1000);
-    
+
     return () => clearInterval(timer);
   }, [interval, enabled]);
-  
+
   return null; // This component doesn't render anything
 }
