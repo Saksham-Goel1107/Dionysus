@@ -185,5 +185,8 @@ button.file-name.bg-primary {
 }
 
 *::-webkit-scrollbar {
-  display: none;                  
+  display: none;
 }
+
+.nav-link { @apply text-sm font-medium transition-colors hover:text-primary; }
+.mobile-link { @apply text-base font-medium transition-colors hover:text-primary; }

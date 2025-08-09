@@ -8,6 +8,7 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
 import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 import Image from 'next/image';
+import { UptimeStatus } from './UptimeStatus';
 
 export function Footer() {
   const { user, isLoaded } = useUser();
@@ -19,9 +20,9 @@ export function Footer() {
   }, [user, isLoaded]);
   const { setTheme } = useTheme();
   return (
-    <footer className="w-full border-t bg-background px-20">
-      <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
-        <div className="flex min-w-[120px] flex-col items-center gap-1 md:items-start">
+    <footer className="w-full border-t bg-background px-4 sm:px-8 md:px-20">
+      <div className="container flex flex-col gap-6 py-8 md:flex-row md:items-center md:justify-between md:py-6">
+        <div className="flex min-w-[120px] flex-col items-center gap-2 md:items-start">
           <Link href="/">
             <div className="flex items-center gap-2">
               <Logo />
@@ -38,12 +39,15 @@ export function Footer() {
             }}
           />
         </div>
-        <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-6">
+        <div className="flex w-full flex-wrap items-center justify-center gap-3 sm:gap-4 md:w-auto md:gap-6">
           <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
             About
           </Link>
-          <Link href="/status" className="text-sm font-medium transition-colors hover:text-primary">
-            Status
+          <Link
+            href="/status"
+            className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary"
+          >
+            Status <UptimeStatus />
           </Link>
           <Link
             href="#features"
@@ -51,12 +55,7 @@ export function Footer() {
           >
             Features
           </Link>
-          <Link
-            href="#how-it-works"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
-            How It Works
-          </Link>
+
           <Link href="/docs" className="text-sm font-medium transition-colors hover:text-primary">
             Docs
           </Link>
@@ -86,7 +85,7 @@ export function Footer() {
             </Link>
           )}
         </div>
-        <div className="flex w-full flex-wrap items-center justify-center gap-4 md:w-auto md:justify-end">
+        <div className="flex w-full flex-wrap items-center justify-center gap-3 sm:gap-4 md:w-auto md:justify-end md:gap-6">
           <a
             rel="noopener noreferrer"
             href="https://github.com/Saksham-Goel1107/Dionysus"
@@ -129,7 +128,7 @@ export function Footer() {
           </a>
         </div>
       </div>
-      <div className="container py-4 text-center text-sm text-muted-foreground md:py-2">
+      <div className="container py-4 text-center text-xs text-muted-foreground sm:text-sm md:py-2">
         &copy; {new Date().getFullYear()} Dionysus. All rights reserved.
       </div>
     </footer>

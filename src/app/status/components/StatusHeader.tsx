@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface StatusHeaderProps {
   status: string;
@@ -23,12 +24,25 @@ export default function StatusHeader({
 }: StatusHeaderProps) {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-center md:flex-row md:justify-between">
+      <div className="flex flex-col items-center gap-2 md:flex-row md:justify-between">
         <h1 className="text-3xl font-bold tracking-tight">System Status</h1>
-        <Button variant="outline" size="sm" onClick={onRefresh} className="mt-2 md:mt-0">
-          <RefreshCcw className="mr-2 h-4 w-4" />
-          Refresh Status
-        </Button>
+        <div className="mt-2 flex gap-2 md:mt-0">
+          <Button variant="outline" size="sm" onClick={onRefresh}>
+            <RefreshCcw className="mr-2 h-4 w-4" />
+            Refresh Status
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <a
+              href="mailto:sakshamgoel1107@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center"
+            >
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Report an Issue or Downtime
+            </a>
+          </Button>
+        </div>
       </div>
 
       <Card

@@ -11,6 +11,7 @@ import Battery from '@/app/components/Battery';
 import { shouldRedirectToSurvey } from '@/lib/survey';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
+import { Heart } from 'lucide-react';
 
 type Props = {
   children: React.ReactNode;
@@ -49,6 +50,7 @@ const Layout = async ({ children }: Props) => {
               <ProCrownUserButtonWrapper />
               <div className="hidden gap-2 sm:block md:flex">
                 <Battery />
+
                 <a
                   href="https://www.buymeacoffee.com/saksham07"
                   target="_blank"
@@ -60,6 +62,16 @@ const Layout = async ({ children }: Props) => {
                     alt="Buy me a coffee"
                     width={40}
                     height={40}
+                  />
+                </a>
+                <a
+                  href="https://github.com/sponsors/Saksham-Goel1107"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Heart
+                    className="h-6 w-6 transition-all duration-200 group-hover:h-8 group-hover:w-8 group-hover:text-red-500"
+                    color="currentColor"
                   />
                 </a>
               </div>

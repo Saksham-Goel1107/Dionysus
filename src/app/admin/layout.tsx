@@ -2,6 +2,7 @@ import React from 'react';
 import { redirect } from 'next/navigation';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import AdminSidebar from './components/AdminSidebar';
+import AutoRefresh from './components/AutoRefresh';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { userId, sessionClaims } = await auth();
@@ -31,7 +32,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <AdminSidebar />
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 overflow-y-auto">
+        <AutoRefresh interval={15} enabled={true} />
+        {children}
+      </main>
     </div>
   );
 }
