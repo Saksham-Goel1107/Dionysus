@@ -1,25 +1,11 @@
 'use server';
 
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import Groq from 'groq-sdk';
+import { createStreamableValue } from 'ai/rsc';
 import { generateEmbedding } from '@/lib/gemini';
 import { readReplicaDb2 } from '@/server/read-replica-2-db';
-import { LangChainTracer } from 'langchain/callbacks';
-
-let tracer: LangChainTracer | null = null;
-if (!tracer && process.env.LANGCHAIN_API_KEY) {
-  tracer = new LangChainTracer({
-    projectName: 'dionysus-dashboard-ask-question',
-  });
-}
 
 export async function askQuestion(question: string, projectId: string) {
-  if (!process.env.LANGCHAIN_API_KEY) {
-    console.error('LANGCHAIN_API_KEY is missing. LangSmith tracing will not work.');
-  }
-  if (!process.env.GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is missing. Gemini model will not work.');
-  }
-
   const project = await readReplicaDb2.project.findUnique({
     where: { id: projectId },
     select: { name: true, githubUrl: true },
@@ -47,17 +33,9 @@ export async function askQuestion(question: string, projectId: string) {
     context += `FILE: ${doc.fileName}\n---------------------\nCODE:\n${doc.sourceCode}\n\nSUMMARY:\n${doc.summary}\n\n===================================\n\n`;
   }
 
-  const model = new ChatGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY!,
-    model: 'gemini-2.5-flash',
-    temperature: 0.7,
-    topP: 0.8,
-    topK: 40,
-    maxOutputTokens: 1000,
-  });
+  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-  // Use array of messages for proper LangChain tracing
-  const messages = [
+  const messages: any[] = [
     {
       role: 'system',
       content: `You are an AI code assistant who answers questions about the codebase. Your target audience is a technical intern with a basic understanding of programming and software development.
@@ -84,19 +62,28 @@ export async function askQuestion(question: string, projectId: string) {
     },
   ];
 
-  let response;
-  try {
-    response = await model.invoke(messages, { callbacks: tracer ? [tracer] : undefined });
-  } catch (err) {
-    console.error('LangChain invoke error:', err);
-    throw err;
-  }
-
-  const { createStreamableValue } = await import('ai/rsc');
   const stream = createStreamableValue();
-  stream.update(response.text || response.content || '');
-  stream.done();
-
+  (async () => {
+    try {
+      const chatCompletion = await groq.chat.completions.create({
+        messages,
+        model: 'openai/gpt-oss-120b',
+        temperature: 1,
+        max_completion_tokens: 8192,
+        top_p: 1,
+        stream: true,
+        reasoning_effort: 'high',
+        tools: [{ type: 'browser_search' }, { type: 'code_interpreter' }],
+      });
+      for await (const chunk of chatCompletion) {
+        stream.update(chunk.choices[0]?.delta?.content || '');
+      }
+      stream.done();
+    } catch (err) {
+      stream.error(err);
+      console.error('Groq invoke error:', err);
+    }
+  })();
   return {
     output: stream.value,
     filesReferences: result,

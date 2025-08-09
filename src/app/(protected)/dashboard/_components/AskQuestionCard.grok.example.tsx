@@ -46,9 +46,13 @@ const AskQuestionCrad = () => {
     const { output, filesReferences } = await askQuestion(question, project.id);
     setFilesReferences(filesReferences);
 
-    for await (const delta of readStreamableValue(output)) {
-      if (delta) {
-        setAnswer((ans) => ans + delta);
+    if (typeof output === 'string') {
+      setAnswer(output);
+    } else {
+      for await (const delta of readStreamableValue(output)) {
+        if (delta) {
+          setAnswer((ans) => ans + delta);
+        }
       }
     }
 

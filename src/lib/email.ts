@@ -197,8 +197,37 @@ export async function sendPasswordDeleteWarningEmail({ to, name }: { to: string;
   });
 }
 
+import { generateCouponCode } from '@/app/(protected)/billing/couponUtils';
+
 export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; name?: string }) {
   const subject = '🎉 Welcome to Dionysus!';
+  let coupon = '';
+  try {
+    const couponResult = await generateCouponCode(25, 10080, process.env.BYPASS_COUPON_SECRET);
+    if (typeof couponResult === 'string') {
+      coupon = couponResult;
+    } else {
+      coupon = '';
+    }
+  } catch (e) {
+    coupon = '';
+  }
+  const couponSection = coupon
+    ? `<div style=\"background: #fef9c3; padding: 22px 22px 18px 22px; border-radius: 12px; color: #92400e; margin: 32px 0 22px 0; border: 1.5px dashed #fde68a; text-align: center; box-shadow: 0 2px 8px #fde68a33;\">
+        <div style=\"font-size: 1.15em; font-weight: 600; margin-bottom: 8px;\">🎁 <span style=\"color:#b45309;\">Welcome Gift: <span style=\"color:#ca8a04;\">25% OFF</span></span></div>
+        <div style=\"margin-bottom: 10px; font-size: 15px;\">Use this one-time coupon code within 7 days:</div>
+        <div style=\"display:inline-block; margin: 12px 0 18px 0; font-size: 1.3em; font-weight: bold; letter-spacing: 1.5px; background: #fef08a; color: #b45309; padding: 10px 22px; border-radius: 8px; border: 1.5px solid #fde68a;\">${coupon}</div>
+        <ol style=\"text-align:left; max-width: 400px; margin: 18px auto 0 auto; padding-left: 18px; color: #a16207; font-size: 15px; line-height: 1.7;\">
+          <li>Click the <b>Claim Coupon</b> button below to go to your billing page.</li>
+          <li>Paste the coupon code above in the <b>Coupon</b> field.</li>
+          <li>Click <b>Apply</b> to get 25% off your next purchase. (One-time use, valid for 7 days)</li>
+        </ol>
+        <a href=\"https://dionysus-gray.vercel.app/billing\" style=\"display:inline-block; margin: 22px auto 0 auto; padding: 13px 32px; background: linear-gradient(90deg,#2563eb 0%,#6366f1 100%); color: #fff; border-radius: 7px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 1px 4px #6366f133;\">Claim Coupon</a>
+        <div style=\"margin-top: 18px; color: #b91c1c; font-size: 13.5px; font-weight: 500;\">
+          ⚠️ <b>Do not share this code</b>. This is a one-time coupon and <u>anyone</u> can claim it with the code.
+        </div>
+      </div>`
+    : '';
   const html = `
   <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 32px 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #f3f4f6; color: #1f2937; box-shadow: 0 2px 8px rgba(31,41,55,0.04);">
     <div style="text-align: center; margin-bottom: 24px;">
@@ -211,6 +240,7 @@ export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; nam
     <p style="font-size: 16px; margin-bottom: 18px; text-align: center;">
       Your account has been created successfully. You now have access to all the features Dionysus offers.
     </p>
+    ${couponSection}
     <a href="https://dionysus-gray.vercel.app/dashboard" style="display: block; width: fit-content; margin: 0 auto 24px auto; padding: 14px 32px; background: linear-gradient(90deg,#2563eb 0%,#6366f1 100%); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 17px; box-shadow: 0 1px 4px rgba(37,99,235,0.08);">Go to Dashboard</a>
     <p style="font-size: 15px; color: #6b7280; margin-bottom: 24px; text-align: center;">
       If you <strong>did not</strong> create this account, please <a href="https://dionysus-gray.vercel.app/support" style="color: #dc2626; text-decoration: underline;">contact support immediately</a>.

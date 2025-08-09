@@ -3,20 +3,18 @@
 import { useEffect } from 'react';
 
 interface AutoRefreshProps {
-  interval?: number; // in seconds
-  enabled?: boolean;
+  interval?: number;
 }
 
-export default function AutoRefresh({ interval = 15, enabled = true }: AutoRefreshProps) {
+export default function AutoRefresh({ interval = 15 }: AutoRefreshProps) {
   useEffect(() => {
-    if (!enabled) return;
-
+    if (process.env.NODE_ENV !== 'production') return;
     const timer = setInterval(() => {
       window.location.reload();
     }, interval * 1000);
 
     return () => clearInterval(timer);
-  }, [interval, enabled]);
+  }, [interval]);
 
-  return null; // This component doesn't render anything
+  return null;
 }

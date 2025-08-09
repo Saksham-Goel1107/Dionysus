@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Clock, PieChart, FileText } from 'lucide-react';
 import CommitLog from './CommitLog';
@@ -99,9 +99,32 @@ const CommitTabs = ({}: Props) => {
   const [activeTab, setActiveTab] = useState('commits');
   const { resolvedTheme } = useTheme();
 
+  // On mount, set tab from URL if present
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get('tab');
+    if (urlTab && tabOptions.some((t) => t.value === urlTab)) {
+      setActiveTab(urlTab);
+    }
+  }, []);
+
+  // When tab changes, update URL
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (activeTab === 'commits') {
+      params.delete('tab');
+    } else {
+      params.set('tab', activeTab);
+    }
+    const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}${window.location.hash}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [activeTab]);
+
   return (
     <div className="w-full">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value)} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <h2
             className={cn(

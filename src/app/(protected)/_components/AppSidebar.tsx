@@ -32,6 +32,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 import { Logo } from '@/app/components/logo';
+import DOMPurify from 'dompurify';
 
 type Props = {};
 
@@ -223,12 +224,34 @@ const AppSidebar = ({}: Props) => {
                     type="text"
                     placeholder="Search projects..."
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(DOMPurify.sanitize(e.target.value))}
+                    maxLength={10}
                     className="w-full rounded-md border border-gray-300 bg-white px-3 py-1 pr-20 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
                   />
-                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center">
+                  <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                    {search && (
+                      <button
+                        aria-label="Clear search"
+                        className="mr-1 rounded-full bg-red-500 p-1 text-white hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-400"
+                        style={{ fontSize: 14, lineHeight: 1 }}
+                        onClick={() => setSearch('')}
+                        tabIndex={0}
+                        type="button"
+                      >
+                        &#10005;
+                      </button>
+                    )}
                     <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground">
-                      ⌘ <span className="ml-0.5">K</span>
+                      {typeof window !== 'undefined' &&
+                      navigator.platform.toLowerCase().includes('mac') ? (
+                        <>
+                          ⌘ <span className="ml-0.5">K</span>
+                        </>
+                      ) : (
+                        <>
+                          Ctrl <span className="ml-0.5">K</span>
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -236,30 +259,41 @@ const AppSidebar = ({}: Props) => {
             )}
 
             <SidebarMenu>
-              {projects
-                ?.filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
-                .map((project) => {
+              {(() => {
+                const filtered =
+                  projects?.filter((project) =>
+                    project.name.toLowerCase().includes(search.toLowerCase()),
+                  ) || [];
+                if (filtered.length === 0) {
                   return (
-                    <SidebarMenuItem key={project.name}>
-                      <SidebarMenuButton asChild>
-                        <div onClick={() => setProjectId(project.id)}>
-                          <div
-                            className={cn(
-                              'flex size-6 cursor-pointer items-center justify-center rounded-sm border bg-white text-sm text-primary',
-                              {
-                                'cursor-pointer bg-primary text-white': project.id === projectId,
-                                'px-2': !open,
-                              },
-                            )}
-                          >
-                            {project.name[0]}
-                          </div>
-                          <span className="cursor-pointer">{project.name}</span>
-                        </div>
-                      </SidebarMenuButton>
+                    <SidebarMenuItem>
+                      <div className="w-full select-none px-3 py-2 text-center text-sm text-gray-400 dark:text-gray-500">
+                        Nothing available
+                      </div>
                     </SidebarMenuItem>
                   );
-                })}
+                }
+                return filtered.map((project) => (
+                  <SidebarMenuItem key={project.name}>
+                    <SidebarMenuButton asChild>
+                      <div onClick={() => setProjectId(project.id)}>
+                        <div
+                          className={cn(
+                            'flex size-6 cursor-pointer items-center justify-center rounded-sm border bg-white text-sm text-primary',
+                            {
+                              'cursor-pointer bg-primary text-white': project.id === projectId,
+                              'px-2': !open,
+                            },
+                          )}
+                        >
+                          {project.name[0]}
+                        </div>
+                        <span className="cursor-pointer">{project.name}</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ));
+              })()}
 
               <div className="h-2"></div>
 
