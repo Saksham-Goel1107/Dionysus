@@ -198,6 +198,7 @@ export async function sendPasswordDeleteWarningEmail({ to, name }: { to: string;
 }
 
 import { generateCouponCode } from '@/app/(protected)/billing/couponUtils';
+import { encode as htmlEncode } from 'he';
 
 export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; name?: string }) {
   const subject = '🎉 Welcome to Dionysus!';
@@ -216,7 +217,7 @@ export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; nam
     ? `<div style=\"background: #fef9c3; padding: 22px 22px 18px 22px; border-radius: 12px; color: #92400e; margin: 32px 0 22px 0; border: 1.5px dashed #fde68a; text-align: center; box-shadow: 0 2px 8px #fde68a33;\">
         <div style=\"font-size: 1.15em; font-weight: 600; margin-bottom: 8px;\">🎁 <span style=\"color:#b45309;\">Welcome Gift: <span style=\"color:#ca8a04;\">25% OFF</span></span></div>
         <div style=\"margin-bottom: 10px; font-size: 15px;\">Use this one-time coupon code within 7 days:</div>
-        <div style=\"display:inline-block; margin: 12px 0 18px 0; font-size: 1.3em; font-weight: bold; letter-spacing: 1.5px; background: #fef08a; color: #b45309; padding: 10px 22px; border-radius: 8px; border: 1.5px solid #fde68a;\">${coupon}</div>
+        <div style=\"display:inline-block; margin: 12px 0 18px 0; font-size: 1.3em; font-weight: bold; letter-spacing: 1.5px; background: #fef08a; color: #b45309; padding: 10px 22px; border-radius: 8px; border: 1.5px solid #fde68a;\">${htmlEncode(coupon)}</div>
         <ol style=\"text-align:left; max-width: 400px; margin: 18px auto 0 auto; padding-left: 18px; color: #a16207; font-size: 15px; line-height: 1.7;\">
           <li>Click the <b>Claim Coupon</b> button below to go to your billing page.</li>
           <li>Paste the coupon code above in the <b>Coupon</b> field.</li>
