@@ -108,7 +108,14 @@ export async function POST(req: NextRequest) {
     }
     const sanitizedPassword =
       typeof password === 'string'
-        ? password.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        ? (() => {
+            let prev, curr = password;
+            do {
+              prev = curr;
+              curr = curr.replace(/<script.*?>.*?<\/script>/gi, '');
+            } while (curr !== prev);
+            return curr.trim();
+          })()
         : password;
     if (
       !sanitizedPassword ||
