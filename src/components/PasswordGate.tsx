@@ -334,6 +334,7 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
               name="currentPassword"
               autoComplete="current-password"
               placeholder="Password"
+              maxLength={30}
               style={{
                 width: '100%',
                 padding: '0.75rem',

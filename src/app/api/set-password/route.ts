@@ -11,10 +11,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
     const { password } = await req.json();
-    if (!password || typeof password !== 'string' || password.length < 8) {
+    if (typeof password !== 'string' || password.length > 30) {
+      return NextResponse.json({ success: false, error: 'Password too long' }, { status: 400 });
+    }
+    const sanitizedPassword =
+      typeof password === 'string'
+        ? password.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        : password;
+    if (
+      !sanitizedPassword ||
+      typeof sanitizedPassword !== 'string' ||
+      sanitizedPassword.length < 8
+    ) {
       return NextResponse.json({ success: false, error: 'Invalid password' }, { status: 400 });
     }
-    const hashed = await hash(password, 12);
+    const hashed = await hash(sanitizedPassword, 12);
     const user = await readReplicaDb.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json(

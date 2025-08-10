@@ -22,6 +22,34 @@ export async function POST(req: NextRequest) {
       );
     }
     const { currentPassword, newPassword, disable, recaptchaToken } = await req.json();
+    if (typeof currentPassword !== 'string' && currentPassword.length > 30) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid current password' },
+        { status: 400 },
+      );
+    }
+    if (newPassword && newPassword.length > 30) {
+      return NextResponse.json({ success: false, error: 'New password too long' }, { status: 400 });
+    }
+    const sanitizedNewPassword =
+      typeof newPassword === 'string'
+        ? newPassword.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        : newPassword;
+
+    const sanitizedPassword =
+      typeof currentPassword === 'string'
+        ? currentPassword.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        : currentPassword;
+    if (
+      !sanitizedPassword ||
+      typeof sanitizedPassword !== 'string' ||
+      sanitizedPassword.length < 8
+    ) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid current password' },
+        { status: 400 },
+      );
+    }
 
     // Check for recaptcha token
     if (!recaptchaToken) {
@@ -88,7 +116,7 @@ export async function POST(req: NextRequest) {
       );
     }
     // @ts-ignore
-    const valid = await compare(currentPassword, user.passwordHash);
+    const valid = await compare(sanitizedPassword, user.passwordHash);
     if (!valid) {
       return NextResponse.json(
         {
@@ -111,7 +139,7 @@ export async function POST(req: NextRequest) {
         reset: Date.now() + 60 * 60 * 1000,
       });
     }
-    if (!newPassword && !disable) {
+    if (!sanitizedNewPassword && !disable) {
       return NextResponse.json({
         success: true,
         limit: 5,
@@ -119,7 +147,10 @@ export async function POST(req: NextRequest) {
         reset: Date.now() + 60 * 60 * 1000,
       });
     }
-    if (newPassword && (typeof newPassword !== 'string' || newPassword.length < 8)) {
+    if (
+      sanitizedNewPassword &&
+      (typeof sanitizedNewPassword !== 'string' || sanitizedNewPassword.length < 8)
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -132,9 +163,9 @@ export async function POST(req: NextRequest) {
       );
     }
     // HaveIBeenPwned password check
-    if (newPassword) {
+    if (sanitizedNewPassword) {
       const sha1 = await import('crypto').then((c) =>
-        c.createHash('sha1').update(newPassword).digest('hex').toUpperCase(),
+        c.createHash('sha1').update(sanitizedNewPassword).digest('hex').toUpperCase(),
       );
       const prefix = sha1.slice(0, 5);
       const suffix = sha1.slice(5);
@@ -166,7 +197,7 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
-      const hashed = await hash(newPassword, 12);
+      const hashed = await hash(sanitizedNewPassword, 12);
       await prisma.user.update({ where: { id: userId }, data: { passwordHash: hashed } });
       return NextResponse.json({
         success: true,

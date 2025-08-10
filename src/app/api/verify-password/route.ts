@@ -100,7 +100,24 @@ export async function POST(req: NextRequest) {
       );
     }
     let { password, unlockToken, rememberMinutes, recaptchaToken } = body || {};
-    if (typeof password === 'string') password = password.trim();
+    if (typeof password !== 'string' || password.length > 30) {
+      return NextResponse.json(
+        { success: false, error: 'Password too long or invalid' },
+        { status: 400 },
+      );
+    }
+    const sanitizedPassword =
+      typeof password === 'string'
+        ? password.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        : password;
+    if (
+      !sanitizedPassword ||
+      typeof sanitizedPassword !== 'string' ||
+      sanitizedPassword.length < 8
+    ) {
+      return NextResponse.json({ success: false, error: 'Invalid password' }, { status: 400 });
+    }
+    if (typeof sanitizedPassword === 'string') password = sanitizedPassword.trim();
     if (typeof unlockToken === 'string') unlockToken = unlockToken.trim();
     if (typeof recaptchaToken === 'string') recaptchaToken = recaptchaToken.trim();
     if (typeof rememberMinutes !== 'number') rememberMinutes = 60;

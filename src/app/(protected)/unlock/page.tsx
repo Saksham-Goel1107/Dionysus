@@ -165,8 +165,13 @@ export default function UnlockPage() {
         setConfirmAction(null);
         return false;
       }
-      if (newPassword.length < 8) {
+      if (newPassword.trim().length < 8) {
         setError('Password must be at least 8 characters.');
+        setConfirmAction(null);
+        return false;
+      }
+      if (newPassword.length > 30) {
+        setError('Password must be atmost 30 characters.');
         setConfirmAction(null);
         return false;
       }
