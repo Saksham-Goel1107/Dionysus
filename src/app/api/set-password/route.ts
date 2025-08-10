@@ -3,7 +3,7 @@ import { hash } from 'bcryptjs';
 import prisma from '@/lib/prisma';
 import { auth } from '@clerk/nextjs/server';
 import { readReplicaDb } from '@/server/read-replica-db';
-
+import sanitizeHtml from 'sanitize-html';
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth();
@@ -16,14 +16,7 @@ export async function POST(req: NextRequest) {
     }
     const sanitizedPassword =
       typeof password === 'string'
-        ? (() => {
-            let prev, curr = password;
-            do {
-              prev = curr;
-              curr = curr.replace(/<script.*?>.*?<\/script>/gi, '');
-            } while (curr !== prev);
-            return curr.trim();
-          })()
+        ? sanitizeHtml(password, { allowedTags: [], allowedAttributes: {} }).trim()
         : password;
     if (
       !sanitizedPassword ||
