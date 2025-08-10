@@ -413,6 +413,32 @@ export default function TermsPage() {
                   <li>Are not liable for any damages related to third-party services</li>
                 </ul>
               </div>
+              <div className="prose dark:prose-invert max-w-none">
+                <h2>Account Suspension, Data, and Legal Compliance</h2>
+                <ul>
+                  <li>
+                    We reserve the right to block, suspend, or terminate your access to our services
+                    at any time if we detect misuse or any activity that violates our policies. We
+                    may or may not provide prior warning.
+                  </li>
+                  <li>
+                    We are not liable for any refunds or compensation, including for active
+                    subscriptions, in the event of such action.
+                  </li>
+                  <li>
+                    You may not request deletion of your data if your account is suspended or
+                    terminated for policy violations.
+                  </li>
+                  <li>
+                    We reserve the right to initiate legal proceedings and may use your data as
+                    evidence.
+                  </li>
+                  <li>
+                    Your data may be shared with authorities if required by legal notice or law
+                    enforcement.
+                  </li>
+                </ul>
+              </div>
             </TabsContent>
           </Tabs>
         </ContentContainer>
