@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { auth, currentUser } from '@clerk/nextjs/server';
 
 export async function GET(req: NextRequest) {
@@ -33,18 +32,24 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const user = await db.user.findUnique({
-      where: { id: targetUserId },
-      select: { id: true, isBlocked: true },
-    });
+    const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+    if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
 
-    if (!user) {
+    const res = await fetch(`https://api.clerk.com/v1/users/${targetUserId}`, {
+      headers: {
+        Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!res.ok) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
+    const userData = await res.json();
+    const isBlocked = userData.public_metadata?.isBlocked === true;
 
     return NextResponse.json({
       success: true,
-      isBlocked: user.isBlocked ?? false,
+      isBlocked,
     });
   } catch (error) {
     console.error('Error fetching user status:', error);

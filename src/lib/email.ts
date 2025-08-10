@@ -205,55 +205,152 @@ export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; nam
   let coupon = '';
   try {
     const couponResult = await generateCouponCode(25, 10080, process.env.BYPASS_COUPON_SECRET);
-    if (typeof couponResult === 'string') {
-      coupon = couponResult;
-    } else {
-      coupon = '';
-    }
-  } catch (e) {
+    coupon = typeof couponResult === 'string' ? couponResult : '';
+  } catch {
     coupon = '';
   }
+
   const couponSection = coupon
-    ? `<div style=\"background: #fef9c3; padding: 22px 22px 18px 22px; border-radius: 12px; color: #92400e; margin: 32px 0 22px 0; border: 1.5px dashed #fde68a; text-align: center; box-shadow: 0 2px 8px #fde68a33;\">
-        <div style=\"font-size: 1.15em; font-weight: 600; margin-bottom: 8px;\">🎁 <span style=\"color:#b45309;\">Welcome Gift: <span style=\"color:#ca8a04;\">25% OFF</span></span></div>
-        <div style=\"margin-bottom: 10px; font-size: 15px;\">Use this one-time coupon code within 7 days:</div>
-        <div style=\"display:inline-block; margin: 12px 0 18px 0; font-size: 1.3em; font-weight: bold; letter-spacing: 1.5px; background: #fef08a; color: #b45309; padding: 10px 22px; border-radius: 8px; border: 1.5px solid #fde68a;\">${htmlEncode(coupon)}</div>
-        <ol style=\"text-align:left; max-width: 400px; margin: 18px auto 0 auto; padding-left: 18px; color: #a16207; font-size: 15px; line-height: 1.7;\">
-          <li>Click the <b>Claim Coupon</b> button below to go to your billing page.</li>
-          <li>Paste the coupon code above in the <b>Coupon</b> field.</li>
-          <li>Click <b>Apply</b> to get 25% off your next purchase. (One-time use, valid for 7 days)</li>
-        </ol>
-        <a href=\"https://dionysus-gray.vercel.app/billing\" style=\"display:inline-block; margin: 22px auto 0 auto; padding: 13px 32px; background: linear-gradient(90deg,#2563eb 0%,#6366f1 100%); color: #fff; border-radius: 7px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 1px 4px #6366f133;\">Claim Coupon</a>
-        <div style=\"margin-top: 18px; color: #b91c1c; font-size: 13.5px; font-weight: 500;\">
-          ⚠️ <b>Do not share this code</b>. This is a one-time coupon and <u>anyone</u> can claim it with the code.
-        </div>
-      </div>`
-    : '';
-  const html = `
-  <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 32px 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #f3f4f6; color: #1f2937; box-shadow: 0 2px 8px rgba(31,41,55,0.04);">
-    <div style="text-align: center; margin-bottom: 24px;">
-      <h1 style="font-size: 2rem; color: #2563eb; margin: 0;">Welcome to Dionysus!</h1>
+    ? `
+    <div style="
+      background-color: #fff7e6;
+      border: 1.5px dashed #f5c518;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 32px 0;
+      box-shadow: 0 3px 10px rgba(245, 197, 24, 0.25);
+      color: #b47e00;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    ">
+      <h2 style="margin: 0 0 10px 0; font-weight: 700; font-size: 1.3rem; color: #a67c00;">
+        🎁 Welcome Gift: <span style="color: #d28e00;">25% OFF</span>
+      </h2>
+      <p style="margin: 0 0 12px 0; font-size: 1rem;">
+        Use this one-time coupon code within 7 days:
+      </p>
+      <div style="
+        font-weight: 700;
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+        background-color: #fff3b0;
+        color: #a67c00;
+        padding: 12px 24px;
+        border-radius: 8px;
+        border: 1.5px solid #f5c518;
+        display: inline-block;
+        user-select: all;
+        margin-bottom: 16px;
+      ">
+        ${htmlEncode(coupon)}
+      </div>
+      <ol style="
+        text-align: left;
+        padding-left: 20px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #8c6d00;
+        max-width: 420px;
+        margin-left: auto;
+        margin-right: auto;
+      ">
+        <li>Click the <strong>Claim Coupon</strong> button below to open your billing page.</li>
+        <li>Paste the coupon code above into the <strong>Coupon</strong> field.</li>
+        <li>Click <strong>Apply</strong> to receive 25% off your next purchase. (One-time use, valid for 7 days)</li>
+      </ol>
+      <a href="https://dionysus-gray.vercel.app/billing" style="
+        display: inline-block;
+        margin-top: 20px;
+        padding: 14px 38px;
+        background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+        color: white !important;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        text-decoration: none;
+        box-shadow: 0 3px 8px rgba(99, 102, 241, 0.6);
+        transition: background 0.3s ease;
+      " onmouseover="this.style.background='linear-gradient(90deg, #1d4ed8 0%, #4338ca 100%)'" onmouseout="this.style.background='linear-gradient(90deg, #2563eb 0%, #6366f1 100%)'">
+        Claim Coupon
+      </a>
+      <p style="margin-top: 14px; font-size: 0.85rem; color: #b91c1c; font-weight: 600;">
+        ⚠️ <strong>Do not share this code.</strong> This coupon is one-time use and <u>anyone</u> with the code can claim it.
+      </p>
     </div>
-    <p style="font-size: 18px; text-align: center; margin-bottom: 24px;">
+  `
+    : '';
+
+  const html = `
+  <div style="
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 32px;
+    background-color: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(31, 41, 55, 0.12);
+    color: #1f2937;
+  ">
+    <div style="text-align: center; margin-bottom: 28px;">
+      <h1 style="font-size: 2.2rem; font-weight: 700; margin: 0; color: #2563eb;">Welcome to Dionysus!</h1>
+    </div>
+
+    <p style="font-size: 1.15rem; margin-bottom: 28px; text-align: center; color: #374151;">
       Hi${name ? ' ' + name : ''}, we're thrilled to have you join our community.
     </p>
-    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-    <p style="font-size: 16px; margin-bottom: 18px; text-align: center;">
+
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 28px 0;" />
+
+    <p style="font-size: 1rem; margin-bottom: 28px; text-align: center; color: #4b5563;">
       Your account has been created successfully. You now have access to all the features Dionysus offers.
     </p>
+
     ${couponSection}
-    <a href="https://dionysus-gray.vercel.app/dashboard" style="display: block; width: fit-content; margin: 0 auto 24px auto; padding: 14px 32px; background: linear-gradient(90deg,#2563eb 0%,#6366f1 100%); color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 17px; box-shadow: 0 1px 4px rgba(37,99,235,0.08);">Go to Dashboard</a>
-    <p style="font-size: 15px; color: #6b7280; margin-bottom: 24px; text-align: center;">
+
+    <a href="https://dionysus-gray.vercel.app/dashboard" style="
+      display: block;
+      width: fit-content;
+      margin: 0 auto 36px auto;
+      padding: 16px 36px;
+      background: linear-gradient(90deg, #2563eb 0%, #6366f1 100%);
+      color: white !important;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-decoration: none;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+      transition: background 0.3s ease;
+    " onmouseover="this.style.background='linear-gradient(90deg, #1d4ed8 0%, #4338ca 100%)'" onmouseout="this.style.background='linear-gradient(90deg, #2563eb 0%, #6366f1 100%)'">
+      Go to Dashboard
+    </a>
+
+    <p style="font-size: 0.9rem; color: #6b7280; margin-bottom: 32px; text-align: center;">
       If you <strong>did not</strong> create this account, please <a href="https://dionysus-gray.vercel.app/support" style="color: #dc2626; text-decoration: underline;">contact support immediately</a>.
     </p>
-    <div style="background: #e0f2fe; padding: 16px 20px; border-radius: 8px; color: #0369a1; margin-bottom: 24px; text-align: center;">
-      <b>Need help?</b> Visit our <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: underline;">Support Center</a> or reply to this email.
+
+    <div style="
+      background-color: #e0f2fe;
+      padding: 18px 24px;
+      border-radius: 12px;
+      color: #0369a1;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 32px;
+      user-select: none;
+    ">
+      Need help? Visit our <a href="https://dionysus-gray.vercel.app/support" style="color: #2563eb; text-decoration: underline;">Support Center</a> or reply to this email.
     </div>
-    <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+
+    <p style="font-size: 0.75rem; color: #9ca3af; text-align: center; margin-top: 40px; user-select: none;">
       &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
     </p>
   </div>
   `;
+
   return transporter.sendMail({
     from: process.env.SMTP_FROM || 'no-reply@example.com',
     to,
