@@ -62,7 +62,7 @@ function isAutomatedUserAgent(userAgent: string): boolean {
 export default clerkMiddleware(async (auth, request) => {
   const { country } = geolocation(request);
   const pathname = request.nextUrl.pathname;
-  const isBlockPage = pathname.startsWith('/block');
+  const isBlockPage = pathname.startsWith('/block') || pathname.startsWith('/blocked');
   const isRateLimitPage = pathname.startsWith('/rate-limit');
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '8.8.8.8';
   const userAgent = request.headers.get('user-agent') || '';
@@ -154,7 +154,33 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
-  if ((isBlockPage || isRateLimitPage) && !request.cookies.has('middleware_redirect')) {
+  if (isBlockPage && !request.cookies.has('middleware_redirect')) {
+    if (pathname.startsWith('/blocked')) {
+      try {
+        const { userId } = await auth();
+        if (userId) {
+          const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+          if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
+          const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          });
+          if (res.ok) {
+            const userData = await res.json();
+            const isBlocked = userData.public_metadata?.isBlocked === true;
+            if (!isBlocked) {
+              return NextResponse.redirect(new URL('/', request.url));
+            }
+          }
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }
+  if (isRateLimitPage && !request.cookies.has('middleware_redirect')) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -244,16 +270,8 @@ export default clerkMiddleware(async (auth, request) => {
       const userData = await res.json();
       const isBlocked = userData.public_metadata?.isBlocked === true;
 
-      const isBlockPage = new URL(request.url).pathname === '/blocked';
       if (isBlocked && !isBlockPage) {
-        const response = NextResponse.redirect(new URL('/blocked', request.url));
-        response.cookies.set('middleware_redirect', 'true', {
-          maxAge: 60,
-          httpOnly: true,
-          path: '/blocked',
-          sameSite: 'strict',
-        });
-        return response;
+        return NextResponse.redirect(new URL('/blocked', request.url));
       }
     }
   } catch (err) {
@@ -302,7 +320,7 @@ export default clerkMiddleware(async (auth, request) => {
       "style-src 'self' 'unsafe-inline' https: https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat;",
       "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://sentry.io https://api.userback.io https://cdn.userway.org https://cdn.userway.com wss://client.relay.crisp.chat https://ws.hotjar.com https://client.crisp.chat https://crisp.chat https://api.ipregistry.co;",
       "font-src 'self' https: data: https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat;",
-      "frame-src 'self' https://js.stripe.com https://*.stripe.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com https://app.userback.io https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat https://dionysus.crisp.help;",
+      "frame-src 'self' https://js.stripe.com https://vercel.live https://*.stripe.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com https://app.userback.io https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat https://dionysus.crisp.help;",
       "object-src 'none';",
       "frame-ancestors 'self' https://*.crisp.chat;",
       "base-uri 'self';",
@@ -316,7 +334,6 @@ export default clerkMiddleware(async (auth, request) => {
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   return response;
 });

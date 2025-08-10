@@ -275,7 +275,7 @@ export default function AiChatSidebar({
           <div className={`flex items-center justify-between border-b border-gray-700 p-4`}>
             <div className="flex items-center space-x-2">
               <Logo />
-              <GradientTypewriter words="Dionysus Ai" />
+              <GradientTypewriter words="Dionysus AI" />
             </div>{' '}
             <div className="flex items-center space-x-2">
               <button
