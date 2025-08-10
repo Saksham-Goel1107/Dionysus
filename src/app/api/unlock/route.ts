@@ -5,6 +5,7 @@ import { auth } from '@clerk/nextjs/server';
 import { rateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { verifyRecaptchaV2 } from '@/lib/recaptcha';
 import { readReplicaDb } from '@/server/read-replica-db';
+import sanitizeHtml from 'sanitize-html';
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,23 +32,16 @@ export async function POST(req: NextRequest) {
     if (newPassword && newPassword.length > 30) {
       return NextResponse.json({ success: false, error: 'New password too long' }, { status: 400 });
     }
-    function removeAllScriptTags(input: string): string {
-      let previous: string;
-      do {
-        previous = input;
-        input = input.replace(/<script.*?>.*?<\/script>/gi, '');
-      } while (input !== previous);
-      return input.trim();
-    }
+    // Use sanitize-html to remove all HTML tags, including script tags
 
     const sanitizedNewPassword =
       typeof newPassword === 'string'
-        ? removeAllScriptTags(newPassword)
+        ? sanitizeHtml(newPassword, { allowedTags: [], allowedAttributes: {} }).trim()
         : newPassword;
 
     const sanitizedPassword =
       typeof currentPassword === 'string'
-        ? removeAllScriptTags(currentPassword)
+        ? sanitizeHtml(currentPassword, { allowedTags: [], allowedAttributes: {} }).trim()
         : currentPassword;
     if (
       !sanitizedPassword ||
