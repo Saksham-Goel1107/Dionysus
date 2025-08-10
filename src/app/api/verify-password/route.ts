@@ -5,7 +5,7 @@ import { auth } from '@clerk/nextjs/server';
 import { rateLimit, resetRateLimit } from '@/lib/rate-limit';
 import { verifyRecaptchaV2 } from '@/lib/recaptcha';
 import { readReplicaDb } from '@/server/read-replica-db';
-
+import sanitizeHtml from 'sanitize-html';
 function checkForSuspiciousPatterns(req: NextRequest): boolean {
   try {
     const userAgent = req.headers.get('user-agent') || '';
@@ -108,14 +108,7 @@ export async function POST(req: NextRequest) {
     }
     const sanitizedPassword =
       typeof password === 'string'
-        ? (() => {
-            let prev, curr = password;
-            do {
-              prev = curr;
-              curr = curr.replace(/<script.*?>.*?<\/script>/gi, '');
-            } while (curr !== prev);
-            return curr.trim();
-          })()
+        ? sanitizeHtml(password, { allowedTags: [], allowedAttributes: {} }).trim()
         : password;
     if (
       !sanitizedPassword ||
