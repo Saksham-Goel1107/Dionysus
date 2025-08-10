@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 import { auth, currentUser as getCurrentUser } from '@clerk/nextjs/server';
-import { invalidateUserProStatusCache } from '@/lib/pro-status-helpers';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!adminId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
-    if (!adminId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
     const currentClerkUser = await getCurrentUser();
     const email = currentClerkUser?.emailAddresses?.[0]?.emailAddress;
     if (!email) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -31,31 +29,67 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid request' }, { status: 400 });
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, isBlocked: true },
-    });
+    const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+    if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
 
-    if (currentUser && currentUser.isBlocked === isBlocked) {
+    const getRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!getRes.ok) throw new Error(`Failed to fetch Clerk user: ${await getRes.text()}`);
+
+    const userData = await getRes.json();
+    const currentMetadata = userData.public_metadata || {};
+
+    let newMetadata = { ...currentMetadata };
+    if (isBlocked) {
+      newMetadata.isBlocked = true;
+    } else {
+      newMetadata.isBlocked = false;
+    }
+
+    const alreadyBlocked = !!currentMetadata.isBlocked;
+    if (isBlocked && alreadyBlocked) {
       return NextResponse.json({
         success: true,
-        user: { id: currentUser.id, isBlocked: currentUser.isBlocked },
-        message: `User is already ${isBlocked ? 'blocked' : 'unblocked'}`,
+        user: { id: userId, isBlocked: true },
+        message: 'User is already blocked',
+      });
+    }
+    if (!isBlocked && !alreadyBlocked) {
+      return NextResponse.json({
+        success: true,
+        user: { id: userId, isBlocked: false },
+        message: 'User is already unblocked',
       });
     }
 
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: { isBlocked },
+    const updateRes = await fetch(`https://api.clerk.com/v1/users/${userId}/metadata`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ public_metadata: newMetadata }),
     });
+    if (!updateRes.ok)
+      throw new Error(`Failed to update Clerk metadata: ${await updateRes.text()}`);
 
-    await invalidateUserProStatusCache(userId);
+    const updatedUser = await updateRes.json();
+
+    const updatedBlockStatus = updatedUser.public_metadata?.isBlocked === true;
 
     return NextResponse.json({
       success: true,
-      user: { id: updated.id, isBlocked: updated.isBlocked },
+      user: {
+        id: updatedUser.id,
+        isBlocked: updatedBlockStatus,
+      },
+      action: isBlocked ? 'blocked' : 'unblocked',
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error('block-user error:', error);
     return NextResponse.json({ success: false, error: 'Server error' }, { status: 500 });
   }

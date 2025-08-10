@@ -3,23 +3,6 @@ import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
 import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
 import { env } from '@/env';
-import { Pool } from '@neondatabase/serverless';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-async function isUserBlocked(userId: string): Promise<boolean> {
-  try {
-    const result = await pool.query('SELECT "isBlocked" FROM "User" WHERE id = $1 LIMIT 1', [
-      userId,
-    ]);
-    return result.rows[0]?.isBlocked === true;
-  } catch (err) {
-    console.error('DB check error:', err);
-    return false;
-  }
-}
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -240,9 +223,29 @@ export default clerkMiddleware(async (auth, request) => {
 
   try {
     const { userId } = await auth();
+
     if (userId) {
-      const blocked = await isUserBlocked(userId);
-      if (blocked && !isBlockPage) {
+      const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+      if (!CLERK_SECRET_KEY) {
+        throw new Error('Missing Clerk secret key');
+      }
+
+      const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch Clerk user: ${await res.text()}`);
+      }
+
+      const userData = await res.json();
+      const isBlocked = userData.public_metadata?.isBlocked === true;
+
+      const isBlockPage = new URL(request.url).pathname === '/blocked';
+      if (isBlocked && !isBlockPage) {
         const response = NextResponse.redirect(new URL('/blocked', request.url));
         response.cookies.set('middleware_redirect', 'true', {
           maxAge: 60,
@@ -254,9 +257,8 @@ export default clerkMiddleware(async (auth, request) => {
       }
     }
   } catch (err) {
-    console.error(err);
+    console.error('Middleware error:', err);
   }
-
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();

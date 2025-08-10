@@ -22,7 +22,6 @@ model User {
   lowCreditsEmailSent Boolean?            @default(false)
   passwordHash        String?             @db.VarChar(256)
   SurveyDone          Boolean?            @default(false)
-  isBlocked           Boolean?            @default(false)
   questionsAsked      Question[]
   stripeTransactions  StripeTransaction[]
   survey              Survey?

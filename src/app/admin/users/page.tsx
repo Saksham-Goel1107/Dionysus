@@ -9,6 +9,7 @@ export const revalidate = 0;
 export default async function UsersPage() {
   const { userId, sessionClaims } = await auth();
   if (!userId) redirect('/');
+
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
   if (
@@ -19,10 +20,27 @@ export default async function UsersPage() {
     redirect('/');
   }
 
-  // Fetch all users with pagination (server-side)
-  const users = await db.user.findMany({
+  const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+  if (!CLERK_SECRET_KEY) {
+    throw new Error('Missing Clerk secret key');
+  }
+
+  const clerkUsersRes = await fetch(`https://api.clerk.com/v1/users?limit=200`, {
+    headers: {
+      Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!clerkUsersRes.ok) {
+    throw new Error(`Failed to fetch Clerk users: ${await clerkUsersRes.text()}`);
+  }
+
+  const clerkUsers = await clerkUsersRes.json();
+
+  const dbUsers = await db.user.findMany({
     orderBy: { createdAt: 'desc' },
-    take: 50, // Limit for initial load
+    take: 50,
     select: {
       id: true,
       createdAt: true,
@@ -33,37 +51,34 @@ export default async function UsersPage() {
       credits: true,
       isPro: true,
       userToProjects: {
-        select: {
-          projectId: true,
-        },
+        select: { projectId: true },
       },
       stripeTransactions: {
-        select: {
-          credits: true,
-          isCompleted: true,
-        },
-        where: {
-          isCompleted: true,
-        },
+        select: { credits: true, isCompleted: true },
+        where: { isCompleted: true },
       },
     },
   });
 
-  // Process and enhance user data
-  const enhancedUsers = users.map((user) => {
-    const totalProjects = user.userToProjects.length;
-    const totalPurchasedCredits = user.stripeTransactions.reduce(
+  const enhancedUsers = dbUsers.map((dbUser) => {
+    const clerkUser = clerkUsers.find((cu: any) => cu.id === dbUser.id);
+    const publicMetadata = clerkUser?.public_metadata || {};
+
+    const totalProjects = dbUser.userToProjects.length;
+    const totalPurchasedCredits = dbUser.stripeTransactions.reduce(
       (total, tx) => total + tx.credits,
       0,
     );
 
     return {
-      ...user,
-      createdAt: user.createdAt.toISOString(), // Convert Date to string
+      ...dbUser,
+      createdAt: dbUser.createdAt.toISOString(),
       totalProjects,
       totalPurchasedCredits,
-      userToProjects: undefined, // Remove nested data
-      stripeTransactions: undefined, // Remove nested data
+      isBlocked: publicMetadata.isBlocked || false,
+      onboardingComplete: publicMetadata.onboardingComplete || false,
+      userToProjects: undefined,
+      stripeTransactions: undefined,
     };
   });
 

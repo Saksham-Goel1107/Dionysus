@@ -62,8 +62,7 @@ interface User {
   isPro: boolean;
   totalProjects: number;
   totalPurchasedCredits: number;
-  // new field expected from DB
-  isBlocked?: boolean;
+  publicMetadata?: Record<string, any>;
 }
 
 interface ClerkUserDetails {
@@ -103,17 +102,30 @@ export default function UsersManagement({ users }: UsersManagementProps) {
   const [loadingAction, setLoadingAction] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // For user details modal
   const [userDetailsOpen, setUserDetailsOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<ClerkUserDetails | null>(null);
   const [loadingUserDetails, setLoadingUserDetails] = useState(false);
 
   useEffect(() => {
-    setLocalUsers(users);
+    async function fetchClerkMetadata() {
+      const updatedUsers = await Promise.all(
+        users.map(async (user) => {
+          try {
+            const res = await fetch(`/api/admin/user-details?userId=${user.id}`);
+            if (!res.ok) throw new Error('Failed to fetch Clerk user');
+            const data = await res.json();
+            return { ...user, publicMetadata: data.user?.publicMetadata || {} };
+          } catch {
+            return { ...user, publicMetadata: {} };
+          }
+        }),
+      );
+      setLocalUsers(updatedUsers);
+    }
+    fetchClerkMetadata();
   }, [users]);
 
-  // Fetch Clerk user details
   const fetchUserDetails = async (userId: string) => {
     if (!userId) return;
 
@@ -133,14 +145,12 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     }
   };
 
-  // When user ID changes, fetch details
   useEffect(() => {
     if (selectedUserId && userDetailsOpen) {
       fetchUserDetails(selectedUserId);
     }
   }, [selectedUserId, userDetailsOpen]);
 
-  // Filter users based on search and filters
   const filteredUsers = localUsers.filter((user) => {
     const matchesSearch =
       searchTerm === '' ||
@@ -176,7 +186,6 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     return 0;
   });
 
-  // Handle sort
   const handleSort = (key: keyof User) => {
     setSortConfig({
       key,
@@ -184,7 +193,6 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     });
   };
 
-  // Export users data to CSV
   const exportToCSV = () => {
     const headers = [
       'ID',
@@ -209,7 +217,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
           user.totalProjects,
           format(new Date(user.createdAt), 'yyyy-MM-dd'),
           user.totalPurchasedCredits,
-          user.isBlocked ? 'Blocked' : 'Active',
+          user.publicMetadata?.isBlocked ? 'Blocked' : 'Active',
         ].join(','),
       ),
     ].join('\n');
@@ -224,7 +232,6 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     document.body.removeChild(link);
   };
 
-  // API call to block/unblock
   const apiToggleBlock = async (userId: string, isBlocked: boolean) => {
     const res = await fetch('/api/admin/block-user', {
       method: 'POST',
@@ -238,45 +245,21 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     return res.json();
   };
 
-  // Verify current block status before action
-  const verifyAndGetUserStatus = async (userId: string): Promise<boolean> => {
-    try {
-      const res = await fetch(`/api/admin/user-status?userId=${userId}`);
-      if (!res.ok) throw new Error('Failed to get user status');
-      const data = await res.json();
-      return !!data.isBlocked;
-    } catch (error) {
-      console.error('Error verifying user status:', error);
-      throw new Error('Failed to verify current user status');
-    }
-  };
-
-  // Optimistic update / handle action
   const handleUserAction = async (type: 'ban' | 'unban' | 'delete', user: User) => {
     setActionError(null);
     setLoadingAction(true);
 
     try {
       if (type === 'ban' || type === 'unban') {
-        // Verify current status before making changes
-        const isCurrentlyBlocked = await verifyAndGetUserStatus(user.id);
-
-        // Only proceed if the action makes sense (don't ban already banned users)
-        if ((type === 'ban' && isCurrentlyBlocked) || (type === 'unban' && !isCurrentlyBlocked)) {
-          setActionError(type === 'ban' ? 'User is already blocked' : 'User is already unblocked');
-          setLoadingAction(false);
-          return;
-        }
-
-        // Now apply the optimistic update
-        setLocalUsers((prev) =>
-          prev.map((u) => (u.id === user.id ? { ...u, isBlocked: type === 'ban' } : u)),
-        );
-
-        // API call with the appropriate action
         await apiToggleBlock(user.id, type === 'ban');
+        const res = await fetch(`/api/admin/user-details?userId=${user.id}`);
+        const data = await res.json();
+        setLocalUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id ? { ...u, publicMetadata: data.user?.publicMetadata || {} } : u,
+          ),
+        );
       } else if (type === 'delete') {
-        // delete path if desired (server must support it)
         await fetch(`/api/admin/delete-user`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -287,10 +270,6 @@ export default function UsersManagement({ users }: UsersManagementProps) {
         setLocalUsers((prev) => prev.filter((u) => u.id !== user.id));
       }
     } catch (e: any) {
-      // rollback optimistic update on error
-      setLocalUsers((prev) =>
-        prev.map((u) => (u.id === user.id ? { ...u, isBlocked: !(type === 'ban') } : u)),
-      );
       setActionError(e?.message || 'Action failed');
       console.error(e);
     } finally {
@@ -436,7 +415,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                       </TableCell>
 
                       <TableCell className="text-center">
-                        {user.isBlocked ? (
+                        {user.publicMetadata?.isBlocked ? (
                           <Badge className="border-red-200 bg-red-100 text-red-800 dark:border-red-800 dark:bg-red-900 dark:text-red-300">
                             Blocked
                           </Badge>
@@ -473,7 +452,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                               View Details
                             </DropdownMenuItem>
 
-                            {!user.isBlocked ? (
+                            {!user.publicMetadata?.isBlocked ? (
                               <DropdownMenuItem
                                 className="flex cursor-pointer items-center gap-2 text-yellow-600"
                                 onClick={() => setDialog({ type: 'ban', user })}
