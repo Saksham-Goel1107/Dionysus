@@ -39,6 +39,7 @@
     "@langchain/google-genai": "^0.2.16",
     "@livekit/components-react": "^2.9.14",
     "@livekit/components-styles": "^1.1.6",
+    "@neondatabase/serverless": "^1.0.1",
     "@novu/nextjs": "^3.7.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

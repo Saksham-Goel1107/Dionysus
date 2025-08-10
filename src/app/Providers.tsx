@@ -55,7 +55,9 @@ function Providers({ children }: { children: React.ReactNode }) {
   const hideAiChat =
     pathname?.startsWith('/sign-in') ||
     pathname?.startsWith('/sign-up') ||
-    pathname?.startsWith('/onboarding');
+    pathname?.startsWith('/onboarding') ||
+    pathname?.startsWith('/rate-limit') ||
+    pathname?.startsWith('/block');
 
   const hideCookieBanner =
     pathname === '/rate-limit' ||

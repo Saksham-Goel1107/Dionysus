@@ -2,15 +2,12 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-// Using an async function for Server Components to properly access cookies
 export default async function BlockPage() {
   const cookiesList = await cookies();
   const redirectCookie = cookiesList.get('middleware_redirect');
 
-  // If not accessed through middleware redirect, send user to homepage
   if (!redirectCookie) {
     redirect('/');
-    return null;
   }
 
   return (

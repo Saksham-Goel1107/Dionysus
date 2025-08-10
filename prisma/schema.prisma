@@ -21,11 +21,12 @@ model User {
   isPro               Boolean             @default(false)
   lowCreditsEmailSent Boolean?            @default(false)
   passwordHash        String?             @db.VarChar(256)
+  SurveyDone          Boolean?            @default(false)
+  isBlocked           Boolean?            @default(false)
   questionsAsked      Question[]
   stripeTransactions  StripeTransaction[]
-  userToProjects      UserToProject[]
-  SurveyDone          Boolean?            @default(false)
   survey              Survey?
+  userToProjects      UserToProject[]
 }
 
 model Project {
@@ -131,17 +132,11 @@ model StripeTransaction {
   user        User     @relation(fields: [userId], references: [id])
 }
 
-enum MeetingStatus {
-  PROCESSING
-  COMPLETED
-}
-
 model Survey {
   id                    String   @id @default(cuid())
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
   userId                String   @unique
-  user                  User     @relation(fields: [userId], references: [id])
   companyName           String?
   companySize           String?
   industry              String?
@@ -149,10 +144,16 @@ model Survey {
   usagePurpose          String?
   hearAboutUs           String?
   expectedFeatures      String[]
-  developmentExperience Int?      // 1-5 scale
-  githubExperience      Int?      // 1-5 scale
+  developmentExperience Int?
+  githubExperience      Int?
   feedbackFrequency     String?
   additionalFeedback    String?
+  user                  User     @relation(fields: [userId], references: [id])
+}
+
+enum MeetingStatus {
+  PROCESSING
+  COMPLETED
 }
 
 enum PlanType {

@@ -3,6 +3,23 @@ import { NextResponse } from 'next/server';
 import { geolocation } from '@vercel/functions';
 import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
 import { env } from '@/env';
+import { Pool } from '@neondatabase/serverless';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+async function isUserBlocked(userId: string): Promise<boolean> {
+  try {
+    const result = await pool.query('SELECT "isBlocked" FROM "User" WHERE id = $1 LIMIT 1', [
+      userId,
+    ]);
+    return result.rows[0]?.isBlocked === true;
+  } catch (err) {
+    console.error('DB check error:', err);
+    return false;
+  }
+}
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -21,7 +38,6 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
-
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
@@ -30,9 +46,7 @@ const ADMIN_USER_ID = process.env.ADMIN_USER_ID;
 const aj = arcjet({
   key: process.env.ARCJET_KEY!,
   rules: [
-    shield({
-      mode: 'LIVE',
-    }),
+    shield({ mode: 'LIVE' }),
     detectBot({
       mode: 'LIVE',
       allow: ['CATEGORY:SEARCH_ENGINE', 'CATEGORY:PREVIEW'],
@@ -76,12 +90,7 @@ export default clerkMiddleware(async (auth, request) => {
         error: 'Automated tools like Python scripts are not allowed.',
         reason: 'Suspicious User-Agent: ' + userAgent,
       }),
-      {
-        status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      },
+      { status: 403, headers: { 'Content-Type': 'application/json' } },
     );
   }
 
@@ -119,46 +128,35 @@ export default clerkMiddleware(async (auth, request) => {
               'Avoid using Tor or anonymous browsers',
               'Ensure your browser is not flagged as an automation tool',
               'Try using a standard, residential network',
-              'If you belive this is a mistake, please Email us: sakshamgoel1107@gmail.com.',
+              'If you believe this is a mistake, please Email us: sakshamgoel1107@gmail.com.',
             ],
           }),
-          {
-            status: 403,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          },
+          { status: 403, headers: { 'Content-Type': 'application/json' } },
         );
       }
     } catch (error) {
       console.error('IPRegistry error:', error);
     }
   }
+
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
 
   if (isAdminRoute(request)) {
     const { userId, sessionClaims } = await auth();
-    if (!userId) {
-      return NextResponse.redirect(new URL('/sign-in', request.url));
-    }
-    let userEmail = undefined;
+    if (!userId) return NextResponse.redirect(new URL('/sign-in', request.url));
+
+    let userEmail;
     const emailAddresses = Array.isArray(sessionClaims?.email_addresses)
       ? sessionClaims.email_addresses
       : [];
     const primaryEmailAddressId = sessionClaims?.primary_email_address_id || '';
     if (emailAddresses.length > 0 && primaryEmailAddressId) {
-      userEmail = emailAddresses.find(
-        (email: { id: string; emailAddress: string }) => email.id === primaryEmailAddressId,
-      )?.emailAddress;
+      userEmail = emailAddresses.find((email) => email.id === primaryEmailAddressId)?.emailAddress;
     }
     if (!userEmail && emailAddresses.length > 0) {
-      userEmail = emailAddresses.find(
-        (email: { emailAddress: string }) => email.emailAddress === ADMIN_EMAIL,
-      )?.emailAddress;
+      userEmail = emailAddresses.find((email) => email.emailAddress === ADMIN_EMAIL)?.emailAddress;
     }
-    if (!userEmail && sessionClaims?.email) {
-      userEmail = sessionClaims.email;
-    }
+    if (!userEmail && sessionClaims?.email) userEmail = sessionClaims.email;
 
     if (!sessionClaims?.metadata?.role) {
       return NextResponse.redirect(new URL('/', request.url));
@@ -189,7 +187,7 @@ export default clerkMiddleware(async (auth, request) => {
     try {
       const { userId } = await auth();
       isAuthenticated = !!userId;
-    } catch (e) {
+    } catch {
       isAuthenticated = false;
     }
 
@@ -240,9 +238,29 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  try {
+    const { userId } = await auth();
+    if (userId) {
+      const blocked = await isUserBlocked(userId);
+      if (blocked && !isBlockPage) {
+        const response = NextResponse.redirect(new URL('/blocked', request.url));
+        response.cookies.set('middleware_redirect', 'true', {
+          maxAge: 60,
+          httpOnly: true,
+          path: '/blocked',
+          sameSite: 'strict',
+        });
+        return response;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect();
     const { userId, sessionClaims } = await auth();
+
     if (userId && !sessionClaims?.metadata?.onboardingComplete && !isOnboardingRoute(request)) {
       if (pathname !== '/sync-user') {
         return NextResponse.redirect(new URL('/sync-user', request.url));
@@ -266,10 +284,7 @@ export default clerkMiddleware(async (auth, request) => {
       }),
       {
         status: 403,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-        },
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
       },
     );
   }

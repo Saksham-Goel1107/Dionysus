@@ -4,7 +4,7 @@ import { checkAndSyncProStatus } from '@/lib/checkAndSyncProStatus';
 export async function POST(req: NextRequest) {
   try {
     const { userId } = await req.json();
-    if (!process.env.NODE_ENV || process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production') {
       return NextResponse.json({ success: true });
     }
     if (!userId) {
