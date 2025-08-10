@@ -31,14 +31,23 @@ export async function POST(req: NextRequest) {
     if (newPassword && newPassword.length > 30) {
       return NextResponse.json({ success: false, error: 'New password too long' }, { status: 400 });
     }
+    function removeAllScriptTags(input: string): string {
+      let previous: string;
+      do {
+        previous = input;
+        input = input.replace(/<script.*?>.*?<\/script>/gi, '');
+      } while (input !== previous);
+      return input.trim();
+    }
+
     const sanitizedNewPassword =
       typeof newPassword === 'string'
-        ? newPassword.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        ? removeAllScriptTags(newPassword)
         : newPassword;
 
     const sanitizedPassword =
       typeof currentPassword === 'string'
-        ? currentPassword.replace(/<script.*?>.*?<\/script>/gi, '').trim()
+        ? removeAllScriptTags(currentPassword)
         : currentPassword;
     if (
       !sanitizedPassword ||
