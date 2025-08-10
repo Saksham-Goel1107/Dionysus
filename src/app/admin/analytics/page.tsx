@@ -7,11 +7,15 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AnalyticsPage() {
-  const { userId } = await auth();
+  const { userId, sessionClaims } = await auth();
   if (!userId) redirect('/');
   const user = await currentUser();
   const email = user?.emailAddresses?.[0]?.emailAddress;
-  if (email !== 'sakshamgoel1107@gmail.com') {
+  if (
+    email !== process.env.ADMIN_EMAIL ||
+    userId !== process.env.ADMIN_USER_ID ||
+    sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
+  ) {
     redirect('/');
   }
 
@@ -44,8 +48,8 @@ export default async function AnalyticsPage() {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const dailyQuestionActivity = await db.$queryRaw<{ day: Date; count: number }[]>`
-    SELECT 
-      DATE_TRUNC('day', "createdAt") as day, 
+    SELECT
+      DATE_TRUNC('day', "createdAt") as day,
       COUNT(*) as count
     FROM "Question"
     WHERE "createdAt" >= ${thirtyDaysAgo}
@@ -55,8 +59,8 @@ export default async function AnalyticsPage() {
 
   // Get project creation over time
   const projectGrowth = await db.$queryRaw<{ month: Date; count: number }[]>`
-    SELECT 
-      DATE_TRUNC('month', "createdAt") as month, 
+    SELECT
+      DATE_TRUNC('month', "createdAt") as month,
       COUNT(*) as count
     FROM "Project"
     GROUP BY DATE_TRUNC('month', "createdAt")

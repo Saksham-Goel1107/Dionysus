@@ -4,11 +4,11 @@ import { db } from '@/server/db';
 import { z } from 'zod';
 
 const surveySchema = z.object({
-  companyName: z.string().trim().min(1, 'Company name is required'),
+  companyName: z.string().trim().min(5, 'Company name must be at least 5 characters long'),
   companySize: z.enum(['1-10', '11-50', '51-200', '201-1000', '1000+']),
   industry: z.string().trim().min(1, 'Industry is required'),
   role: z.string().trim().min(1, 'Your role is required'),
-  usagePurpose: z.string().trim().min(1, 'Please describe your purpose'),
+  usagePurpose: z.string().trim().min(10, 'Please describe your purpose in at least 10 characters'),
   hearAboutUs: z.string().trim().min(1, 'This field is required'),
   expectedFeatures: z.array(z.string().trim()).nonempty('Select at least one feature'),
   developmentExperience: z.number().min(1).max(5),

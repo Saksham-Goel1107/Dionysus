@@ -1,11 +1,24 @@
 import { db } from '@/server/db';
 import AdminDashboard from './components/AdminDashboard';
+import { redirect } from 'next/navigation';
+import { auth, currentUser } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function AdminPage() {
-  // Fetch key metrics for the dashboard
+  const { userId, sessionClaims } = await auth();
+  if (!userId) redirect('/');
+  const user = await currentUser();
+  const email = user?.emailAddresses?.[0]?.emailAddress;
+  if (
+    email !== process.env.ADMIN_EMAIL ||
+    userId !== process.env.ADMIN_USER_ID ||
+    sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
+  ) {
+    redirect('/');
+  }
+
   const totalUsers = await db.user.count();
   const proUsers = await db.user.count({ where: { isPro: true } });
   const totalProjects = await db.project.count();
