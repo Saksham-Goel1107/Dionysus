@@ -540,13 +540,7 @@ export default function PrivacyPage() {
               <p>To exercise any of these rights, please contact us at:</p>
               <p>
                 <strong>Email:</strong>{' '}
-                <a href="mailto:privacy@dionysusai.com">privacy@dionysusai.com</a>
-                <br />
-                <strong>Web Form:</strong>{' '}
-                <a href="https://dionysusai.com/privacy-request">Privacy Request Form</a>
-                <br />
-                <strong>Mail:</strong> Dionysus Privacy Team, 123 AI Street, San Francisco, CA
-                94105, USA
+                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
               </p>
               <p>
                 We will respond to your request within 30 days. We may need to verify your identity
@@ -582,18 +576,13 @@ export default function PrivacyPage() {
               <p>If you have any questions about this Privacy Policy, please contact us:</p>
               <p>
                 <strong>Email:</strong>{' '}
-                <a href="mailto:privacy@dionysusai.com">privacy@dionysusai.com</a>
+                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
                 <br />
-                <strong>Phone:</strong> +1 (800) 123-4567
-                <br />
-                <strong>Mail:</strong> Dionysus Privacy Team, 123 AI Street, San Francisco, CA
-                94105, USA
+                <strong>Phone:</strong> +91 8882534712
               </p>
               <p>
                 For data subjects in the EU, our EU representative can be contacted at:
-                <a href="mailto:eu-representative@dionysusai.com">
-                  eu-representative@dionysusai.com
-                </a>
+                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
               </p>
             </div>
           </TabsContent>
