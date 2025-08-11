@@ -107,12 +107,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode; params: { slug: string[] } }>) {
-  const headersList = await headers();
-  const pathname = headersList.get('x-next-pathname') || '';
-
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
 
   return (
@@ -121,6 +116,48 @@ export default async function RootLayout({
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="canonical" href="https://dionysus-gray.vercel.app" />
+        <title>Dionysus – Your AI Github Assistant</title>
+        <meta name="title" content="Dionysus – Your AI Github Assistant" />
+        <meta
+          name="description"
+          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers."
+        />
+        <meta
+          name="keywords"
+          content="AI, GitHub, assistant, developer tools, productivity, coding, typescript, react, nextjs, trpc, open source, prisma, stripe, saas, automation, chatbot, livekit, cloudinary, tailwindcss, zod, clerk, vercel, stream, web development, frontend, backend, fullstack"
+        />
+        <meta name="author" content="Saksham Goel" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://dionysus-gray.vercel.app" />
+        <meta property="og:title" content="Dionysus – Your AI Github Assistant" />
+        <meta
+          property="og:description"
+          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
+        />
+        <meta property="og:image" content="https://dionysus-gray.vercel.app/logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Dionysus – Your AI Github Assistant" />
+        <meta property="og:site_name" content="Dionysus" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:see_also" content="https://github.com/Saksham-Goel1107/Dionysus" />
+        <meta property="og:updated_time" content="2025-08-11T00:00:00.000Z" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:site" content="@Saksham1199805" />
+        <meta name="twitter:creator" content="@Saksham1199805" />
+        <meta name="twitter:url" content="https://dionysus-gray.vercel.app" />
+        <meta name="twitter:title" content="Dionysus – Your AI Github Assistant" />
+        <meta
+          name="twitter:description"
+          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
+        />
+        <meta name="twitter:image" content="https://dionysus-gray.vercel.app/logo.png" />
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="slack-app-id" content="" />
+        <meta name="linkedin:owner" content="https://www.linkedin.com/in/saksham-goel-88b74b33a" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </Head>
       <body suppressHydrationWarning>
         <ErrorBoundary>
