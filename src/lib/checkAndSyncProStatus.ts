@@ -61,6 +61,27 @@ export async function checkAndSyncProStatus(userId: string) {
   });
 
   if (shouldBlock) {
-    await updateClerkPublicMetadata(userId, { isBlocked: shouldBlock });
+    const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+    if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
+    const currentRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!currentRes.ok) {
+      throw new Error(`Failed to fetch Clerk user: ${await currentRes.text()}`);
+    }
+    const currentUser = await currentRes.json();
+    const publicMetadata = currentUser.public_metadata || {};
+    if (!publicMetadata.isBlocked) {
+      await updateClerkPublicMetadata(userId, { isBlocked: true });
+      const email = currentUser.email_addresses?.[0]?.email_address;
+      const name = currentUser.first_name || '';
+      if (email) {
+        const { sendUserBlockedEmail } = await import('./email');
+        await sendUserBlockedEmail({ to: email, name });
+      }
+    }
   }
 }

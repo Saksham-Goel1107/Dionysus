@@ -1,3 +1,7 @@
+function isRedisReady() {
+  return redis && redisEnabled && redis.status === 'ready';
+}
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { LangChainTracer } from 'langchain/callbacks';
 import { Document } from '@langchain/core/documents';
@@ -53,11 +57,11 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
     ); // Log sanitized URL
 
     redis = new Redis(redisUrl, {
-      maxRetriesPerRequest: 3,
-      connectTimeout: 10000,
+      maxRetriesPerRequest: 10,
+      connectTimeout: 15000,
       enableOfflineQueue: true,
       enableReadyCheck: true,
-      keepAlive: 10000,
+      keepAlive: 15000,
       family: 0,
       reconnectOnError: (err) => {
         const targetError = 'READONLY';
@@ -67,13 +71,16 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
         return 1;
       },
       retryStrategy: (times) => {
-        if (times > 3) {
+        if (times > 10) {
           console.warn(
             `Redis connection failed after ${times} attempts in gemini.ts, falling back to in-memory store`,
           );
+          redisEnabled = false;
           return null;
         }
-        const delay = Math.min(times * 500, 5000);
+        const baseDelay = Math.min(times * 1000, 15000);
+        const jitter = Math.floor(Math.random() * 500);
+        const delay = baseDelay + jitter;
         console.log(`Redis reconnecting in gemini.ts in ${delay}ms (attempt ${times})`);
         return delay;
       },
@@ -85,6 +92,20 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
         err.message,
       );
       redisEnabled = false;
+    });
+
+    redis.on('end', () => {
+      console.warn('Redis connection ended in gemini.ts, falling back to in-memory store.');
+      redisEnabled = false;
+    });
+
+    redis.on('close', () => {
+      console.warn('Redis connection closed in gemini.ts, falling back to in-memory store.');
+      redisEnabled = false;
+    });
+
+    redis.on('reconnecting', (time: number) => {
+      console.log(`Redis reconnecting in gemini.ts, next attempt in ${time}ms`);
     });
 
     redis.on('connect', () => {
@@ -121,25 +142,23 @@ async function checkRateLimit(
   let isAllowed = true;
 
   try {
-    if (redis && redisEnabled) {
+    if (isRedisReady()) {
       try {
-        const current = await redis.incr(identifier);
-
+        const current = await redis!.incr(identifier);
         if (current === 1) {
-          await redis.expire(identifier, windowInSeconds);
+          await redis!.expire(identifier, windowInSeconds);
         }
-
         isAllowed = current <= limit;
       } catch (redisError: any) {
         console.warn(
           `Redis rate limit operation failed in gemini.ts: ${redisError.message || redisError}`,
         );
+        redisEnabled = false;
         return memoryRateLimit();
       }
     } else {
       return memoryRateLimit();
     }
-
     return isAllowed;
   } catch (error: any) {
     console.error('Rate limit check error:', error?.message || error);

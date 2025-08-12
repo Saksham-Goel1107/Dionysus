@@ -154,30 +154,28 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
-  if (isBlockPage && !request.cookies.has('middleware_redirect')) {
-    if (pathname.startsWith('/blocked')) {
-      try {
-        const { userId } = await auth();
-        if (userId) {
-          const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
-          if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
-          const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-            headers: {
-              Authorization: `Bearer ${CLERK_SECRET_KEY}`,
-              'Content-Type': 'application/json',
-            },
-          });
-          if (res.ok) {
-            const userData = await res.json();
-            const isBlocked = userData.public_metadata?.isBlocked === true;
-            if (!isBlocked) {
-              return NextResponse.redirect(new URL('/', request.url));
-            }
+  if (isBlockPage && pathname.startsWith('/blocked')) {
+    try {
+      const { userId } = await auth();
+      if (userId) {
+        const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+        if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
+        const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        if (res.ok) {
+          const userData = await res.json();
+          const isBlocked = userData.public_metadata?.isBlocked === true;
+          if (!isBlocked) {
+            return NextResponse.redirect(new URL('/', request.url));
           }
         }
-      } catch (err) {
-        console.log(err);
       }
+    } catch (err) {
+      console.log(err);
     }
   }
   if (isRateLimitPage && !request.cookies.has('middleware_redirect')) {
@@ -270,7 +268,7 @@ export default clerkMiddleware(async (auth, request) => {
       const userData = await res.json();
       const isBlocked = userData.public_metadata?.isBlocked === true;
 
-      if (isBlocked && !isBlockPage) {
+      if (isBlocked && !pathname.startsWith('/blocked')) {
         return NextResponse.redirect(new URL('/blocked', request.url));
       }
     }

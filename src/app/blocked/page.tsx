@@ -1,8 +1,6 @@
 import { Metadata } from 'next';
 import { Ban } from 'lucide-react';
 import { ContentContainer } from '@/components/ui/content-layout';
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
   title: 'Access Blocked | Dionysus',
@@ -10,64 +8,37 @@ export const metadata: Metadata = {
 };
 
 export default async function BlockPage() {
-  const { userId } = await auth();
+  return (
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-900 text-white">
+      <ContentContainer>
+        <div className="flex justify-center py-16">
+          <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-800/80 p-8 text-center shadow-2xl backdrop-blur-sm">
+            <Ban className="mx-auto mb-4 h-10 w-10 text-red-500" />
+            <h2 className="mb-4 text-3xl font-extrabold text-red-500">Access Restricted</h2>
 
-  if (userId) {
-    const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
-    if (!CLERK_SECRET_KEY) {
-      throw new Error('Missing Clerk secret key');
-    }
+            <p className="mb-6 text-lg text-gray-200">
+              Your account has been blocked due to system-reported anomalies, suspected fraudulent
+              activity, or a manual action by our administrators.
+            </p>
 
-    const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${CLERK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
+            <p className="mb-8 text-sm text-gray-400">
+              To continue, please contact our support team or wait while the restriction is
+              reviewed. This may be temporary or permanent depending on the findings.
+            </p>
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch Clerk user: ${await res.text()}`);
-    }
+            <a
+              href="mailto:sakshamgoel1107@gmail.com"
+              className="inline-block rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
+            >
+              Contact Support
+            </a>
 
-    const userData = await res.json();
-    const isBlocked = userData.public_metadata?.isBlocked === true;
-
-    if (!isBlocked) {
-      throw redirect('/');
-    }
-
-    return (
-      <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-900 text-white">
-        <ContentContainer>
-          <div className="flex justify-center py-16">
-            <div className="w-full max-w-lg rounded-2xl border border-gray-700 bg-gray-800/80 p-8 text-center shadow-2xl backdrop-blur-sm">
-              <Ban className="mx-auto mb-4 h-10 w-10 text-red-500" />
-              <h2 className="mb-4 text-3xl font-extrabold text-red-500">Access Restricted</h2>
-
-              <p className="mb-6 text-lg text-gray-200">
-                Your account has been blocked due to system-reported anomalies, suspected fraudulent
-                activity, or a manual action by our administrators.
-              </p>
-
-              <p className="mb-8 text-sm text-gray-400">
-                To continue, please contact our support team or wait while the restriction is
-                reviewed. This may be temporary or permanent depending on the findings.
-              </p>
-
-              <a
-                href="mailto:sakshamgoel1107@gmail.com"
-                className="inline-block rounded-lg bg-red-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
-              >
-                Contact Support
-              </a>
-
-              <p className="mt-6 text-xs text-gray-500">
-                We take the safety, fairness, and integrity of our platform seriously.
-              </p>
-            </div>
+            <p className="mt-6 text-xs text-gray-500">
+              We take the safety, fairness, and integrity of our platform seriously.
+            </p>
           </div>
-        </ContentContainer>
-      </div>
-    );
-  }
+        </div>
+      </ContentContainer>
+    </div>
+  );
 }

@@ -358,3 +358,34 @@ export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; nam
     html,
   });
 }
+
+export async function sendUserBlockedEmail({ to, name }: { to: string; name?: string }) {
+  const subject = '🚫 Your Dionysus Account Has Been Blocked';
+  const html = `
+    <div style="font-family: 'Segoe UI', sans-serif; max-width: 600px; margin: auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #f9fafb; color: #1f2937;">
+      <h2 style="color: #dc2626; text-align: center; margin-top: 0; margin-bottom: 8px;">🚫 Account Blocked</h2>
+      <p style="text-align: center; font-size: 16px; margin-top: 0; margin-bottom: 24px;">
+        Hi${name ? ' ' + name : ''}, your Dionysus account has been <b>blocked</b> due to unusual activity or a violation of our terms of service.
+      </p>
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
+      <p style="font-size: 16px; margin-bottom: 16px;">
+        If you believe this is a mistake or need more information, please <a href="mailto:sakshamgoel1107@gmail.com" style="color: #2563eb; text-decoration: none;">contact our support team</a>.
+      </p>
+      <p style="font-size: 16px; margin-bottom: 24px;">
+        While your account is blocked, you will not be able to access Dionysus services.
+      </p>
+      <p style="font-size: 15px; color: #6b7280; margin-bottom: 32px;">
+        This action was taken to protect your account and our platform.
+      </p>
+      <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 40px;">
+        &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+      </p>
+    </div>
+  `;
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}
