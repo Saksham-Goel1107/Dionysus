@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { Ban } from 'lucide-react';
 import { ContentContainer } from '@/components/ui/content-layout';
+import { SignOutButton } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
   title: 'Access Blocked | Dionysus',
@@ -32,6 +33,16 @@ export default async function BlockPage() {
             >
               Contact Support
             </a>
+            <div className="mt-4 flex justify-center">
+              <SignOutButton>
+              <button
+                type="button"
+                className="w-full rounded-lg bg-gray-700 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-600"
+              >
+                Sign Out
+              </button>
+              </SignOutButton>
+            </div>
 
             <p className="mt-6 text-xs text-gray-500">
               We take the safety, fairness, and integrity of our platform seriously.

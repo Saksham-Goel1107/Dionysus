@@ -170,12 +170,16 @@ export default clerkMiddleware(async (auth, request) => {
           const userData = await res.json();
           const isBlocked = userData.public_metadata?.isBlocked === true;
           if (!isBlocked) {
-            return NextResponse.redirect(new URL('/', request.url));
+            const response = NextResponse.redirect(new URL('/', request.url));
+            response.cookies.delete('blocked_redirect');
+            return response;
           }
+        } else {
+          console.error('Failed to fetch user data from Clerk API:', res.status, res.statusText);
         }
       }
     } catch (err) {
-      console.log(err);
+      console.error('Error checking blocked status on blocked page:', err);
     }
   }
   if (isRateLimitPage && !request.cookies.has('middleware_redirect')) {
@@ -269,7 +273,17 @@ export default clerkMiddleware(async (auth, request) => {
       const isBlocked = userData.public_metadata?.isBlocked === true;
 
       if (isBlocked && !pathname.startsWith('/blocked')) {
-        return NextResponse.redirect(new URL('/blocked', request.url));
+        const hasRedirectCookie = request.cookies.has('blocked_redirect');
+        if (!hasRedirectCookie) {
+          const response = NextResponse.redirect(new URL('/blocked', request.url));
+          response.cookies.set('blocked_redirect', 'true', {
+            maxAge: 10,
+            httpOnly: true,
+            path: '/blocked',
+            sameSite: 'strict',
+          });
+          return response;
+        }
       }
     }
   } catch (err) {

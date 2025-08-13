@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser as getCurrentUser } from '@clerk/nextjs/server';
+import { sendUserBlockedEmail, sendUserUnblockedEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest) {
     const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
     if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
 
+
     const getRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${CLERK_SECRET_KEY}`,
@@ -42,6 +44,8 @@ export async function POST(req: NextRequest) {
 
     const userData = await getRes.json();
     const currentMetadata = userData.public_metadata || {};
+    const userEmail = userData.email_addresses?.[0]?.email_address;
+    const userName = userData.first_name || '';
 
     let newMetadata = { ...currentMetadata };
     if (isBlocked) {
@@ -52,6 +56,7 @@ export async function POST(req: NextRequest) {
 
     const alreadyBlocked = !!currentMetadata.isBlocked;
     if (isBlocked && alreadyBlocked) {
+      if (userEmail) await sendUserBlockedEmail({ to: userEmail, name: userName });
       return NextResponse.json({
         success: true,
         user: { id: userId, isBlocked: true },
@@ -59,6 +64,7 @@ export async function POST(req: NextRequest) {
       });
     }
     if (!isBlocked && !alreadyBlocked) {
+      if (userEmail) await sendUserUnblockedEmail({ to: userEmail, name: userName });
       return NextResponse.json({
         success: true,
         user: { id: userId, isBlocked: false },
@@ -78,8 +84,15 @@ export async function POST(req: NextRequest) {
       throw new Error(`Failed to update Clerk metadata: ${await updateRes.text()}`);
 
     const updatedUser = await updateRes.json();
-
     const updatedBlockStatus = updatedUser.public_metadata?.isBlocked === true;
+
+    if (userEmail) {
+      if (isBlocked) {
+        await sendUserBlockedEmail({ to: userEmail, name: userName });
+      } else {
+        await sendUserUnblockedEmail({ to: userEmail, name: userName });
+      }
+    }
 
     return NextResponse.json({
       success: true,

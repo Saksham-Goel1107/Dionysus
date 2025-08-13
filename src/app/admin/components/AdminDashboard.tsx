@@ -7,11 +7,8 @@ import {
   Users,
   CreditCard,
   Folder,
-  TrendingUp,
   BadgeCheck,
   Activity,
-  BarChart2,
-  ChevronRight,
 } from 'lucide-react';
 import {
   LineChart,
@@ -43,7 +40,6 @@ export default function AdminDashboard({
   totalUsers,
   proUsers,
   totalProjects,
-  totalCredits,
   estimatedRevenue,
   recentTransactions,
   userGrowthData,
