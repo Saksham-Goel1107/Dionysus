@@ -154,6 +154,9 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
+  // Check if user should remain on /blocked page
+  // If user is no longer blocked, redirect to home and clear redirect cookie
+  // If API fails, stay on blocked page to prevent infinite redirects
   if (isBlockPage && pathname.startsWith('/blocked')) {
     try {
       const { userId } = await auth();
@@ -170,12 +173,19 @@ export default clerkMiddleware(async (auth, request) => {
           const userData = await res.json();
           const isBlocked = userData.public_metadata?.isBlocked === true;
           if (!isBlocked) {
-            return NextResponse.redirect(new URL('/', request.url));
+            // User is no longer blocked, clear the redirect cookie and redirect to home
+            const response = NextResponse.redirect(new URL('/', request.url));
+            response.cookies.delete('blocked_redirect');
+            return response;
           }
+        } else {
+          // If API call fails, don't redirect to prevent infinite loops
+          console.error('Failed to fetch user data from Clerk API:', res.status, res.statusText);
         }
       }
     } catch (err) {
-      console.log(err);
+      // If there's an error checking blocked status, stay on blocked page to prevent infinite redirects
+      console.error('Error checking blocked status on blocked page:', err);
     }
   }
   if (isRateLimitPage && !request.cookies.has('middleware_redirect')) {
@@ -245,6 +255,8 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
+  // Check if user is blocked and redirect to /blocked page
+  // This section includes infinite redirect prevention via cookie mechanism
   try {
     const { userId } = await auth();
 
@@ -269,7 +281,19 @@ export default clerkMiddleware(async (auth, request) => {
       const isBlocked = userData.public_metadata?.isBlocked === true;
 
       if (isBlocked && !pathname.startsWith('/blocked')) {
-        return NextResponse.redirect(new URL('/blocked', request.url));
+        // Check if we recently redirected to prevent infinite loops
+        // This cookie expires in 10 seconds to allow for legitimate retries
+        const hasRedirectCookie = request.cookies.has('blocked_redirect');
+        if (!hasRedirectCookie) {
+          const response = NextResponse.redirect(new URL('/blocked', request.url));
+          response.cookies.set('blocked_redirect', 'true', {
+            maxAge: 10, // 10 seconds to prevent rapid redirects
+            httpOnly: true,
+            path: '/',
+            sameSite: 'strict',
+          });
+          return response;
+        }
       }
     }
   } catch (err) {
