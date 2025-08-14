@@ -11,18 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sparkles,
-  Download,
-  ClipboardCopy,
-  Eye,
-  EyeOff,
-  Check,
-  Share2,
-  QrCode,
-  Copy,
-  X,
-} from 'lucide-react';
+import { Sparkles, Download, ClipboardCopy, Eye, EyeOff, Check } from 'lucide-react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import * as acorn from 'acorn';

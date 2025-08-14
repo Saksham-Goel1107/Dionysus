@@ -19,7 +19,7 @@ import useRefetch from '@/hooks/use-refetch';
 import { useQueryClient } from '@tanstack/react-query';
 
 const InviteButton = () => {
-  const { projectId, project } = useProject();
+  const { projectId } = useProject();
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);

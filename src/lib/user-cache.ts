@@ -1,4 +1,4 @@
-import { Redis, Cluster } from 'ioredis';
+import { Redis } from 'ioredis';
 
 let redisFactory: (() => Promise<Redis>) | null = null;
 const inMemoryStore: Map<string, { value: any; expires: number }> = new Map();

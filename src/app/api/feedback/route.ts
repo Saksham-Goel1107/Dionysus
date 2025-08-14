@@ -34,11 +34,6 @@ export async function POST(req: NextRequest) {
       }
       throw validationError; // Re-throw if not a Zod error
     }
-    const pageclipData = {
-      rating: validatedData.rating,
-      feedback: validatedData.feedback || '',
-      email: validatedData.email || '',
-    };
 
     const formData = new URLSearchParams();
     formData.append('rating', validatedData.rating);
@@ -63,7 +58,7 @@ export async function POST(req: NextRequest) {
       responseText = await response.json().catch(async () => {
         return await response.text().catch(() => 'No response text');
       });
-    } catch (e) {
+    } catch {
       responseText = 'Could not parse response';
     }
 

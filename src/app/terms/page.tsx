@@ -2,7 +2,6 @@ import { Metadata } from 'next';
 import { Scale } from 'lucide-react';
 
 import { PageHeader } from '@/components/ui/page-header';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GradientHeader, ContentContainer, StickyTabsHeader } from '@/components/ui/content-layout';
 import { CardWithGradient } from '@/components/ui/card-with-gradient';

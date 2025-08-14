@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     let autocannon: typeof import('autocannon');
     try {
       autocannon = (await import('autocannon')).default;
-    } catch (e) {
+    } catch {
       return NextResponse.json(
         { error: 'autocannon not installed or not supported in this environment.' },
         { status: 500 },

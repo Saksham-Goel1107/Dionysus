@@ -197,14 +197,6 @@ export default clerkMiddleware(async (auth, request) => {
   const decision = await aj.protect(request);
 
   if (isApiRoute && !isRateLimitPage) {
-    let isAuthenticated = false;
-    try {
-      const { userId } = await auth();
-      isAuthenticated = !!userId;
-    } catch {
-      isAuthenticated = false;
-    }
-
     if (isHighLoadApiRoute) {
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {

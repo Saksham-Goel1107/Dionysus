@@ -24,13 +24,11 @@ export default function MyDataPage() {
   const [exportConfirmText, setExportConfirmText] = useState('');
   const [showDecrypted, setShowDecrypted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [verified, setVerified] = useState(false);
   const performAction = useReverification(myAction);
 
   const handleClick = async () => {
     const myData = await performAction();
     if (!myData) return;
-    setVerified(true);
     doExport();
   };
 
@@ -133,7 +131,7 @@ export default function MyDataPage() {
       try {
         const bytes = CryptoJS.AES.decrypt(encryptedContent, password);
         decrypted = bytes.toString(CryptoJS.enc.Utf8);
-      } catch (err) {
+      } catch {
         setDecryptError('Failed to decrypt. Check your password.');
         setDecrypting(false);
         return;
@@ -145,7 +143,7 @@ export default function MyDataPage() {
       }
       setDecryptedData(decrypted);
       setShowDecrypted(false);
-    } catch (err) {
+    } catch {
       setDecryptError('An error occurred during decryption.');
     }
     setDecrypting(false);
@@ -157,9 +155,6 @@ export default function MyDataPage() {
     { label: 'Export Data', icon: '⬇️' },
     { label: 'Decrypt Data', icon: '🔓' },
   ];
-
-  // Password hint for copy
-  const passwordHint = userInfo ? userInfo.email + userInfo.firstName : '';
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 p-4 dark:from-gray-900 dark:to-gray-800">

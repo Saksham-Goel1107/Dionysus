@@ -3,7 +3,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Users, Folder, MessageSquare, Video, Brain, CheckCircle, Clock } from 'lucide-react';
+import { Users, Folder, MessageSquare, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import {
   AreaChart,

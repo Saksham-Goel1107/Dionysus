@@ -72,7 +72,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
           console.log(`Added user ${user.id} to existing channel ${slug}`);
         }
       }
-    } catch (error) {
+    } catch {
       channel.data = {
         name: slug,
         created_by_id: user.id,

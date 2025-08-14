@@ -54,10 +54,7 @@ const QaPage = () => {
     { projectId },
     { enabled: !!projectId },
   );
-  const { data: hasAccess } = api.project.checkProjectAccess.useQuery(
-    { projectId },
-    { enabled: !!projectId },
-  );
+
   const deleteQuestion = api.project.deleteQuestion.useMutation();
   const refetch = useRefetch();
 

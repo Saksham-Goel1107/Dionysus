@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const { meetingUrl, projectId, meetingId } = bodyParser.parse(body);
+    const { meetingUrl, meetingId } = bodyParser.parse(body);
 
     const { summaries, transcript } = await processMeeting(meetingUrl);
 
@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -95,7 +95,6 @@ const BillingPage = () => {
   if (mfaEnabled) totalDiscount += 10;
   if (appliedCoupon) totalDiscount += appliedCoupon.discount;
   const discountedPrice = (basePrice * (1 - totalDiscount / 100)).toFixed(2);
-  const price = basePrice.toFixed(2);
 
   // Calculate discount breakdown
   const discountParts: string[] = useMemo(() => {
@@ -139,7 +138,7 @@ const BillingPage = () => {
             window.toast.success(body);
           }
         }
-      } catch (err) {
+      } catch {
         if (window?.toast) {
           window.toast.success(body);
         }
@@ -165,35 +164,29 @@ const BillingPage = () => {
         setCheckingDiscount(false);
         return;
       }
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
-          );
-          const data = await res.json();
-          const country = data.address?.country?.toLowerCase() || '';
-          setDiscountCountry(country.charAt(0).toUpperCase() + country.slice(1));
-          let appliedDiscount = null;
-          if (country === 'india' && india_discount) {
-            appliedDiscount = india_discount_value;
-          } else if (country === 'united states' && us_discount) {
-            appliedDiscount = us_discount_value;
-          }
-          // Add more countries as needed
-          if (appliedDiscount && appliedDiscount > 0) {
-            setDiscount(appliedDiscount);
-          } else {
-            setDiscount(null);
-          }
-          setCheckingDiscount(false);
-        },
-        (error) => {
-          setDiscountError('Location permission denied or unavailable.');
-          setCheckingDiscount(false);
-        },
-      );
-    } catch (err) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+        );
+        const data = await res.json();
+        const country = data.address?.country?.toLowerCase() || '';
+        setDiscountCountry(country.charAt(0).toUpperCase() + country.slice(1));
+        let appliedDiscount = null;
+        if (country === 'india' && india_discount) {
+          appliedDiscount = india_discount_value;
+        } else if (country === 'united states' && us_discount) {
+          appliedDiscount = us_discount_value;
+        }
+        // Add more countries as needed
+        if (appliedDiscount && appliedDiscount > 0) {
+          setDiscount(appliedDiscount);
+        } else {
+          setDiscount(null);
+        }
+        setCheckingDiscount(false);
+      });
+    } catch {
       setDiscountError('Could not check discount. Please try again.');
       setCheckingDiscount(false);
     }
@@ -205,7 +198,7 @@ const BillingPage = () => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       }
     })();

@@ -4,14 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/trpc/react';
 import { createPaymentIntent } from '../actions';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CreditCard, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
@@ -121,7 +114,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
         if (error.payment_intent && error.payment_intent.status === 'succeeded') {
           const successfulIntent = error.payment_intent;
 
-          await processSuccessfulPayment(successfulIntent, true);
+          await processSuccessfulPayment(successfulIntent);
           return;
         }
         try {
@@ -135,7 +128,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
           if (checkResult.ok) {
             const statusData = await checkResult.json();
             if (statusData.success || statusData.processed) {
-              await processSuccessfulPayment({ id: clientSecret.split('_secret_')[0] }, true);
+              await processSuccessfulPayment({ id: clientSecret.split('_secret_')[0] });
               return;
             }
           }
@@ -172,10 +165,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
     }
   };
   // Helper function to process a successful payment
-  const processSuccessfulPayment = async (
-    paymentIntent: any,
-    fromErrorHandler: boolean = false,
-  ) => {
+  const processSuccessfulPayment = async (paymentIntent: any) => {
     let alreadyProcessed = false;
     try {
       const response = await fetch('/api/stripe/payment-confirmation', {

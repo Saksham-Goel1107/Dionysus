@@ -11,11 +11,9 @@ const CodeAnalytics = () => {
   const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastCommit, setLastCommit] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'charts' | 'summary' | 'ai'>('charts');
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
   const [quality, setQuality] = useState<any[]>([]);
   const [qualityLoading, setQualityLoading] = useState(false);
   const [qualityError, setQualityError] = useState<string | null>(null);
@@ -37,7 +35,6 @@ const CodeAnalytics = () => {
         );
         const data = await res.json();
         setAnalytics(data.analytics);
-        setLastCommit(data.commit);
         setRepoInfo(data.repo); // <-- store repo info
         // Fetch quality analysis
         setQualityLoading(true);
@@ -54,7 +51,7 @@ const CodeAnalytics = () => {
           setQualityError('Failed to fetch quality analysis.');
         }
         setQualityLoading(false);
-      } catch (e) {
+      } catch {
         setError('Failed to fetch analytics.');
       }
       setLoading(false);
@@ -70,7 +67,6 @@ const CodeAnalytics = () => {
   const handleShowAI = async () => {
     setActiveTab('ai');
     if (!aiExplanation && analytics && repoInfo) {
-      setAiLoading(true);
       try {
         const res = await fetch('/api/gemini/explain', {
           method: 'POST',
@@ -82,7 +78,6 @@ const CodeAnalytics = () => {
       } catch {
         setAiExplanation('Failed to get AI explanation.');
       }
-      setAiLoading(false);
     }
   };
 
@@ -224,7 +219,7 @@ const CodeAnalytics = () => {
                 <div className="col-span-1 mt-4 sm:mt-6 md:col-span-2">
                   <h4 className="mb-2 font-semibold">Top Complex Files</h4>
                   <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {topComplexFiles.map((f, i) => (
+                    {topComplexFiles.map((f) => (
                       <li key={f.path} className="flex items-center justify-between py-2">
                         <span className="break-all font-mono text-sm">{f.path}</span>
                         <span className="rounded bg-red-100 px-2 py-1 text-xs font-bold text-red-700 dark:bg-red-900 dark:text-red-200">
@@ -267,7 +262,7 @@ const CodeAnalytics = () => {
                 )}
                 {quality.length > 0 && (
                   <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {quality.map((q, i) => (
+                    {quality.map((q) => (
                       <li
                         key={q.path}
                         className="flex flex-col py-2 md:flex-row md:items-center md:justify-between"

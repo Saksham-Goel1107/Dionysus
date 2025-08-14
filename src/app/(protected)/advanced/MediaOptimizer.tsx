@@ -1192,19 +1192,6 @@ const MediaOptimizer: React.FC = () => {
 
         // Validate file type based on actual content
         const actualType = blob.type;
-        const expectedImageTypes = [
-          'image/jpeg',
-          'image/png',
-          'image/gif',
-          'image/webp',
-          'image/svg+xml',
-        ];
-        const expectedVideoTypes = [
-          'video/mp4',
-          'video/webm',
-          'video/quicktime',
-          'video/x-msvideo',
-        ];
 
         // Determine proper MIME type
         let mimeType;
@@ -1795,7 +1782,7 @@ const MediaOptimizer: React.FC = () => {
                       )}
                     </span>
 
-                    {breadcrumbs.slice(1).map((crumb, i) => (
+                    {breadcrumbs.slice(1).map((crumb) => (
                       <span key={crumb.path} className="flex items-center">
                         <span className="mx-1 text-gray-400">/</span>
                         <button

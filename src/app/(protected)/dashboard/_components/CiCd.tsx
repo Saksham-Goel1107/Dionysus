@@ -208,7 +208,7 @@ const CiCd = () => {
         setAiTip(result.tip || '');
         if (result.yaml) setYaml(result.yaml);
       }
-    } catch (err) {
+    } catch {
       setAiTip('AI request failed. Please check your connection or try again.');
     } finally {
       setAiLoading(false);
@@ -266,7 +266,7 @@ const CiCd = () => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       } finally {
         setLoading(false);

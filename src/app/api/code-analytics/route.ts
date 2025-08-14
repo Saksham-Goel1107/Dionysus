@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   // @ts-ignore
   try {
     escomplex = (await import('typhonjs-escomplex')).default;
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: 'typhonjs-escomplex not installed or failed to import' },
       { status: 500 },

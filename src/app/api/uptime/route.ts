@@ -166,7 +166,7 @@ export async function GET(request: Request) {
           let parsed;
           try {
             parsed = typeof num === 'number' ? num : parseFloat(String(num || 0));
-          } catch (e) {
+          } catch {
             parsed = 0;
           }
 
@@ -176,7 +176,7 @@ export async function GET(request: Request) {
 
           try {
             return Math.round(parsed * 100) / 100;
-          } catch (e) {
+          } catch {
             return 0;
           }
         };

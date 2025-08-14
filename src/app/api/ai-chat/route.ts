@@ -142,11 +142,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
     const history = (await getChat(sessionId)) as ChatMessage[];
-    const conversationContext: string =
-      history.length > 0
-        ? history.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n\n')
-        : '';
-
     let responseText = '';
     try {
       const result = await model.invoke([

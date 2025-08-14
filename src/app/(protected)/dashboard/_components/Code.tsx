@@ -21,7 +21,9 @@ const Code = () => {
         owner = pathSegments[0] ?? '';
         repo = pathSegments[1] ?? '';
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   }
   useEffect(() => {
     (async () => {
@@ -30,7 +32,7 @@ const Code = () => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       } finally {
         setLoading(false);

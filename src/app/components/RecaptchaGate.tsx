@@ -52,7 +52,7 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
       } else {
         setError('');
       }
-    } catch (err) {
+    } catch {
       return;
     }
   }, []);

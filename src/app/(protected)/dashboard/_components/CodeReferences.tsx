@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import oneLight from 'react-syntax-highlighter/dist/esm/styles/prism/one-light';
 import lucario from 'react-syntax-highlighter/dist/esm/styles/prism/lucario';

@@ -87,10 +87,6 @@ const licenses = [
   { value: 'NONE', label: 'No License' },
 ];
 
-interface ReadmeGeneratorFormProps {
-  hasProPlan: boolean;
-}
-
 export default function ReadmeGeneratorForm() {
   const { project } = useProject();
   const [formData, setFormData] = useState<ReadmeFormData>(initialFormData);
@@ -98,7 +94,6 @@ export default function ReadmeGeneratorForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('form');
   const [generationMethod, setGenerationMethod] = useState<'manual' | 'ai'>('manual');
-  const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [isCurrentProject, setIsCurrentProject] = useState(false);
   const [isFormEmpty, setIsFormEmpty] = useState(true); // Track form emptiness
   const [showProPrompt, setShowProPrompt] = useState(false);
@@ -111,7 +106,7 @@ export default function ReadmeGeneratorForm() {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       }
     })();
@@ -157,13 +152,11 @@ export default function ReadmeGeneratorForm() {
     }
 
     let repoName = '';
-    let repoOwner = '';
     try {
       const url = new URL(project.githubUrl);
       const pathSegments = url.pathname.split('/').filter(Boolean);
 
       if (pathSegments.length >= 2) {
-        repoOwner = pathSegments[0] || '';
         repoName = pathSegments[1] || '';
       }
     } catch (error) {
@@ -251,8 +244,6 @@ export default function ReadmeGeneratorForm() {
 
   // Generate README using AI
   const generateAiReadme = async () => {
-    setIsAiGenerating(true);
-
     try {
       const response = await fetch('/api/readme-generator', {
         method: 'POST',
@@ -272,8 +263,6 @@ export default function ReadmeGeneratorForm() {
     } catch (error) {
       console.error('AI README generation error:', error);
       throw error;
-    } finally {
-      setIsAiGenerating(false);
     }
   };
 

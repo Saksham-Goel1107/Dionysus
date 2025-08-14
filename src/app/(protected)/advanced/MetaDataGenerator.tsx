@@ -25,7 +25,7 @@ import { useForm } from 'react-hook-form';
 import DOMPurify from 'dompurify';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { Globe, Share2, Twitter, Facebook, Linkedin, Instagram, Trash2 } from 'lucide-react';
+import { Globe, Share2, Twitter, Facebook, Linkedin, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -34,7 +34,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import Image from 'next/image';
 
 // Form schema definition
@@ -180,7 +179,7 @@ const MetaDataGeneratorModal = ({ open, onClose }: { open: boolean; onClose: () 
     try {
       await navigator.clipboard.writeText(generatedCode);
       toast.success('Meta tags copied to clipboard!');
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };

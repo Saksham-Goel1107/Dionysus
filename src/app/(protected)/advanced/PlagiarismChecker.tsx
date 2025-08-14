@@ -186,7 +186,6 @@ const PlagiarismChecker: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [scannedCount, setScannedCount] = useState(0); // for pagination
   const [cachedUrl, setCachedUrl] = useState('');
   const [cachedResults, setCachedResults] = useState<any[] | null>(null);
   const [scanning, setScanning] = useState(false); // background scan state
@@ -203,7 +202,6 @@ const PlagiarismChecker: React.FC = () => {
       const allResults = prevResults.concat(newResults);
       setResults(allResults);
       setCachedResults(allResults);
-      setScannedCount(allResults.length);
     } catch (err: any) {
       setError(err.message || 'Unknown error');
     } finally {
@@ -230,7 +228,6 @@ const PlagiarismChecker: React.FC = () => {
       let results: any[] = [];
       let startIdx = 0;
       if (!next) {
-        setScannedCount(0);
         setCachedResults(null);
         setCachedUrl(repoUrl);
       }
@@ -249,7 +246,6 @@ const PlagiarismChecker: React.FC = () => {
       const allResults = results.concat(newResults);
       setResults(allResults);
       setCachedResults(allResults);
-      setScannedCount(allResults.length);
       setModalOpen(true);
     } catch (err: any) {
       setError(err.message || 'Unknown error');

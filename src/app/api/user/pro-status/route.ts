@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const result = await readmeGeneratorWrapper();
     return NextResponse.json({ pro: result });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ pro: false }, { status: 500 });
   }
 }

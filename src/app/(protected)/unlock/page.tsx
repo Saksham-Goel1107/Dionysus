@@ -20,7 +20,6 @@ const PasswordStrengthMeter = dynamic(() => import('@/components/PasswordStrengt
   ssr: false,
 });
 import { passwordCriteriaMet } from '@/components/PasswordStrengthMeter';
-import { Loader2 } from 'lucide-react';
 
 declare global {
   interface Window {

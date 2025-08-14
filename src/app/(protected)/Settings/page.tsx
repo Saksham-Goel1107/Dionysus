@@ -34,7 +34,7 @@ export default function SettingsPage() {
       if (myData?.success) {
         setVerified(true);
       }
-    } catch (error) {
+    } catch {
       console.log('User cancelled verification.');
     }
   };

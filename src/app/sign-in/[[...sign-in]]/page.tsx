@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ModeToggle } from '@/app/components/ThemeToggle';
 
-export default async function Page({ searchParams }: { searchParams: { [key: string]: string } }) {
+// export default async function Page({ searchParams }: { searchParams: { [key: string]: string } }) {
+export default async function Page() {
   const { userId } = await auth();
   // const sparams = await searchParams;
   // const isAddingAccount = Boolean(sparams?.__clerk_add_account);

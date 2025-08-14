@@ -200,9 +200,6 @@ const FileEncryptor: React.FC = () => {
         encryptedData,
       );
 
-      // Create a Blob from the decrypted data
-      const decryptedBlob = new Blob([decryptedData]);
-
       // Try to determine the file type
       const filetype = await determineFileType(decryptedData);
 
@@ -279,7 +276,7 @@ const FileEncryptor: React.FC = () => {
         return 'text/plain';
       }
     } catch (e) {
-      // Not a text file
+      console.error('Error detecting file type:', e);
     }
 
     // Default unknown type

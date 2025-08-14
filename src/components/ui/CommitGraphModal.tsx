@@ -1,6 +1,6 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import useProject from '@/hooks/use-project';
 import React, { useEffect, useState, useRef } from 'react';
 import CommitGraph from '@/components/ui/CommitGraph';
@@ -23,7 +23,6 @@ const CommitGraphModal: React.FC = () => {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState<string>('');
   const [answerLoading, setAnswerLoading] = useState(false);
-  const [answerError, setAnswerError] = useState('');
 
   const graphRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +40,7 @@ const CommitGraphModal: React.FC = () => {
           }
           setSummary(result);
           setLastProjectId(project.id);
-        } catch (e) {
+        } catch {
           setSummaryError('Failed to load summary.');
         } finally {
           setSummaryLoading(false);
@@ -53,7 +52,6 @@ const CommitGraphModal: React.FC = () => {
   const handleAskMore = async () => {
     if (!question.trim() || !project?.id) return;
     setAnswerLoading(true);
-    setAnswerError('');
     setAnswer('');
     try {
       const { output } = await askQuestion(question, project.id);
@@ -63,7 +61,7 @@ const CommitGraphModal: React.FC = () => {
       }
       setAnswer(result);
     } catch (e) {
-      setAnswerError('Failed to get answer.');
+      console.error(e);
     } finally {
       setAnswerLoading(false);
     }
@@ -73,7 +71,6 @@ const CommitGraphModal: React.FC = () => {
     if (!open) {
       setQuestion('');
       setAnswer('');
-      setAnswerError('');
       setAnswerLoading(false);
     }
   }, [open]);
@@ -116,15 +113,11 @@ const CommitGraphModal: React.FC = () => {
     : 'bg-gradient-to-br from-indigo-50 via-white to-indigo-100';
   const cardBorder = isDark ? 'border-indigo-900' : 'border-indigo-200';
   const textMain = isDark ? 'text-indigo-100' : 'text-indigo-900';
-  const textSubtle = isDark ? 'text-indigo-300' : 'text-indigo-600';
   const inputBg = isDark ? 'bg-[#23272f] text-white' : 'bg-indigo-50 text-indigo-900';
   const inputBorder = isDark ? 'border-indigo-800' : 'border-indigo-300';
   const buttonMain = isDark
     ? 'bg-gradient-to-r from-indigo-700 via-indigo-800 to-indigo-900 text-white'
     : 'bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-600 text-white';
-  const buttonOutline = isDark
-    ? 'border-indigo-700 text-indigo-200'
-    : 'border-indigo-400 text-indigo-700';
 
   return (
     <>

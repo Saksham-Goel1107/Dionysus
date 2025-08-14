@@ -8,7 +8,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     token = body?.token;
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Invalid or missing JSON body' },
       { status: 400 },

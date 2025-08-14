@@ -89,7 +89,7 @@ const StressTester = () => {
       });
       const data = await res.json();
       setResult(data);
-    } catch (err) {
+    } catch {
       setResult({ error: 'Failed to run stress test.' });
     } finally {
       setLoading(false);

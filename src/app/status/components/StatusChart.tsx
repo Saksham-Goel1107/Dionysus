@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Monitor } from '../types';
-import { format, subHours, formatDistance } from 'date-fns';
+import { format, subHours } from 'date-fns';
 import { Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -34,7 +34,7 @@ const formatUptime = (ratio: any): string => {
     }
 
     return Math.round(numericRatio * 100) / 100 + '%';
-  } catch (e) {
+  } catch {
     return 'No Data';
   }
 };
@@ -51,7 +51,7 @@ const formatResponseTime = (time: any): string => {
 
     const seconds = numTime / 1000;
     return `${Math.round(seconds * 100) / 100}s`;
-  } catch (e) {
+  } catch {
     return 'No Data';
   }
 };
@@ -115,7 +115,7 @@ const generateDataPoints = (monitors: Monitor[]) => {
                 if (timeMatch && timeMatch[1]) {
                   lastResponseTime = parseInt(timeMatch[1]);
                 }
-              } catch (e) {
+              } catch {
                 lastResponseTime = monitor.average_response_time || null;
               }
             }
@@ -174,7 +174,7 @@ const generateDataPoints = (monitors: Monitor[]) => {
 
   return hourlyData;
 };
-const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
+const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
       <div className="rounded border bg-background p-3 shadow-lg">

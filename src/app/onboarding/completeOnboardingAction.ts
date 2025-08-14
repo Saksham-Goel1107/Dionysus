@@ -11,7 +11,7 @@ export const markOnboardingComplete = async () => {
       publicMetadata: { onboardingComplete: true },
     });
     return { message: 'ok' };
-  } catch (err) {
+  } catch {
     return { error: 'Failed to update onboarding status' };
   }
 };

@@ -57,7 +57,7 @@ const QRCodeGenerator: React.FC = () => {
     try {
       const url = avatars.getQR(input.trim(), 400, 2, false).toString();
       setQrUrl(url);
-    } catch (err) {
+    } catch {
       setError('Failed to generate QR code.');
     } finally {
       setLoading(false);
@@ -224,7 +224,7 @@ const Advanced = () => {
         }
       >
         <div className="flex flex-col gap-6">
-          {featureIndex.map((f, idx) => {
+          {featureIndex.map((f) => {
             let content = null;
             switch (f.id) {
               case 'stress-tester':

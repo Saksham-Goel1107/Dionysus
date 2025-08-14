@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     if (!to) return NextResponse.json({ error: 'Missing email' }, { status: 400 });
     await sendDataExportWarningEmail({ to, name });
     return NextResponse.json({ success: true });
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
   }
 }

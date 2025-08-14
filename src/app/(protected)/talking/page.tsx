@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// Extend Window interface for SpeechRecognition types
 declare global {
   interface Window {
     SpeechRecognition: any;
@@ -18,13 +17,9 @@ export default function Home() {
       'You are a helpful AI voice assistant for the Github-Saas project. Answer questions about this project and general topics. If asked about this project, answer as an expert. You are a voice agent: do not use code blocks, markdown, ###, or comments. Only say things that can be spoken and easily understood.',
   };
   const [listening, setListening] = useState(false);
-  const [speakingNow, setSpeakingNow] = useState('');
   const [assistantSpeaking, setAssistantSpeaking] = useState(false);
   const [voicePitch, setVoicePitch] = useState(1);
-  const [messages, setMessages] = useState<Message[]>([SYSTEM_PROMPT as Message]);
   const speechRef = useRef<any>(null);
-  const recognitionRef = useRef<any>(null);
-  const [active, setActive] = useState(false);
   const lastUserCommand = useRef('');
   const stoppedByUser = useRef(false);
   const speakingActive = useRef(false);
@@ -121,12 +116,6 @@ export default function Home() {
     content: string;
   }
 
-  interface LLMResponseChunk {
-    message?: {
-      content?: string;
-    };
-  }
-
   const doFetch = async (contextMessages: Message[]): Promise<void> => {
     try {
       // Prepare payload for Gemini 2.0 Flash endpoint
@@ -158,7 +147,7 @@ export default function Home() {
         speakingActive.current = true;
       }
       setMessages((prev) => [...prev, { role: 'assistant', content: geminiResponse } as Message]);
-    } catch (e) {
+    } catch {
       const errorMsg =
         'Sorry, the Gemini AI service is currently unavailable. Please try again later.';
       setSpeakingNow(errorMsg);

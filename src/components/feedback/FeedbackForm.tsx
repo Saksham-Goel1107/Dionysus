@@ -216,9 +216,3 @@ export default function FeedbackForm() {
     </Dialog>
   );
 }
-function useToast(message: string, options: { description: string }) {
-  toast(message, {
-    description: options.description,
-    position: 'top-center',
-  });
-}

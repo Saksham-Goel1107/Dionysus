@@ -18,13 +18,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { toast } from 'sonner';
-import { FileCode, Share2, Code, Globe, ServerIcon } from 'lucide-react';
+import { FileCode, Code, ServerIcon } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -33,7 +32,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 
 // Form schema definition
 const sitemapRobotFormSchema = z.object({
@@ -224,7 +222,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
     try {
       await navigator.clipboard.writeText(code);
       toast.success('Copied to clipboard!');
-    } catch (err) {
+    } catch {
       toast.error('Failed to copy to clipboard');
     }
   };
@@ -268,8 +266,6 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
   };
 
   const generateSitemapXml = (data: SitemapRobotFormValues): string => {
-    let now = new Date().toISOString();
-
     let sitemapXml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     sitemapXml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
@@ -325,7 +321,7 @@ const RobotSitemapGeneratorModal = ({ open, onClose }: { open: boolean; onClose:
       } else {
         return `${url.toString().replace(/\/+$/, '')}/page-${page}`;
       }
-    } catch (e) {
+    } catch {
       return baseUrl;
     }
   };

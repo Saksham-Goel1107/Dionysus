@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import { UserButton } from '@clerk/nextjs';
 import { ModeToggle } from '@/app/components/ThemeToggle';
@@ -26,7 +26,6 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
   const [rememberMinutes, setRememberMinutes] = useState(15);
-  const [unlockToken, setUnlockToken] = useState<string | null>(null);
   const [attemptsLeft, setAttemptsLeft] = useState<number | null>(null);
   const [resetTime, setResetTime] = useState<number | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -60,18 +59,15 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           if (data.success) {
             setUnlocked(true);
             setShowPrompt(false);
-            setUnlockToken(token);
           } else {
             localStorage.removeItem('unlockToken');
             setUnlocked(false);
             setShowPrompt(true);
-            setUnlockToken(null);
           }
         });
     } else {
       setUnlocked(false);
       setShowPrompt(true);
-      setUnlockToken(null);
     }
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
@@ -87,18 +83,15 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
               if (data.success) {
                 setUnlocked(true);
                 setShowPrompt(false);
-                setUnlockToken(token);
               } else {
                 localStorage.removeItem('unlockToken');
                 setUnlocked(false);
                 setShowPrompt(true);
-                setUnlockToken(null);
               }
             });
         } else {
           setUnlocked(false);
           setShowPrompt(true);
-          setUnlockToken(null);
         }
       }
     };
@@ -193,7 +186,6 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
         localStorage.setItem('unlockToken', data.unlockToken);
         setUnlocked(true);
         setShowPrompt(false);
-        setUnlockToken(data.unlockToken);
         setAttemptsLeft(null);
         setResetTime(null);
       } else {

@@ -760,9 +760,16 @@ Directory structure:
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 
-  <p align="center" style="font-size: 0.95em; color: #888;">
+  <p style="font-size: 0.95em; color: #888;">
     <em>
       The images above demonstrates Dionysus's seamless integration with <strong>n8n</strong>, a powerful workflow automation tool. By leveraging n8n, Dionysus enables engineering teams to automate complex newsletter and important information delivery pipelines, streamline user onboarding communications, and orchestrate a wide range of workflow automations without manual intervention. This integration empowers organizations to set up automated triggers for sending newsletters and critical updates information based on user activity, segment audiences dynamically, and synchronize communications across multiple channels. As a result, teams benefit from increased productivity, reduced operational overhead, and more consistent, timely engagement with users and stakeholders. The n8n integration is fully configurable, allowing for custom workflows tailored to the unique needs of each enterprise, and is designed to scale with your organization's growth.
+    </em>
+  </p>
+  <img src="Demo/n8n-auto-github-issue-commentor.png" alt="n8n Newsletter Integration Demo" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+    This image showcases the automation of commenting on all new GitHub issues using n8n.
+    The image illustrates the workflow setup in n8n, which automatically posts a comment whenever a new issue is created in the repository.
     </em>
   </p>
 

@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { useTheme } from 'next-themes';
 import { toast } from 'sonner';
 import * as Sentry from '@sentry/browser';
@@ -13,24 +13,6 @@ if (process.env.NODE_ENV === 'production') {
       }),
     ],
   });
-}
-
-function AttachToFeedbackButton() {
-  const [feedback, setFeedback] = useState<ReturnType<typeof Sentry.getFeedback> | undefined>(
-    undefined,
-  );
-  useEffect(() => {
-    setFeedback(Sentry.getFeedback());
-  }, []);
-
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (feedback && buttonRef.current) {
-      const unsubscribe = feedback.attachTo(buttonRef.current);
-      return unsubscribe;
-    }
-    return () => {};
-  }, [feedback]);
 }
 
 const CustomContextMenu = () => {

@@ -15,14 +15,6 @@ export function CardWithGradient({ children, className, gradient }: CardWithGrad
     rose: 'from-rose-500/10',
   };
 
-  const iconColorMap = {
-    violet: 'text-violet-500',
-    blue: 'text-blue-500',
-    emerald: 'text-emerald-500',
-    amber: 'text-amber-500',
-    rose: 'text-rose-500',
-  };
-
   return (
     <div
       className={cn(

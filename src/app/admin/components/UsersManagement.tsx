@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,16 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
-import {
-  Search,
-  Filter,
-  MoreHorizontal,
-  Download,
-  UserCheck,
-  Shield,
-  Loader2,
-  X,
-} from 'lucide-react';
+import { Search, Filter, MoreHorizontal, Download, UserCheck, Shield, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -48,7 +39,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogClose,
 } from '@/components/ui/dialog';
 
 interface User {

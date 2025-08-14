@@ -18,11 +18,6 @@ interface ChatMessage {
   timestamp?: number;
 }
 
-interface Command {
-  command: string;
-  description: string;
-}
-
 const formatMessageContent = (content: string) => {
   content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
@@ -78,8 +73,6 @@ export default function AiChatSidebar({
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setMessage(newValue);
-
-    const lastAtIndex = newValue.lastIndexOf('@');
   };
 
   useEffect(() => {

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const maintenanceEnd = new Date('2025-07-14T18:00:00Z').getTime();
   if (process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'false') {
     return NextResponse.json({

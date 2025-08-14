@@ -138,7 +138,7 @@ export default function SurveyPage() {
             }),
           });
         } catch (err) {
-          // Silently fail, don't block survey
+          console.error(err);
         }
       }
       router.push('/dashboard');

@@ -18,8 +18,6 @@ import { Calendar, CreditCard, Download, Search, TrendingUp, Wallet } from 'luci
 import {
   AreaChart,
   Area,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,

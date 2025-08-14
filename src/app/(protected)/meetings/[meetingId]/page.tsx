@@ -28,7 +28,7 @@ const MeetingDetailsPage = ({ params }: Props) => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       } finally {
         setLoading(false);

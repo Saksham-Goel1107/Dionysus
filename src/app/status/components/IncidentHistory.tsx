@@ -20,7 +20,7 @@ const generateIncidents = (monitors: Monitor[]) => {
 
     const sortedLogs = [...monitor.logs].sort((a, b) => a.datetime - b.datetime);
 
-    sortedLogs.forEach((log, index) => {
+    sortedLogs.forEach((log) => {
       if (log.type === 1) {
         currentIncident = {
           id: `incident-${monitor.id}-${log.datetime}`,

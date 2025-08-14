@@ -11,7 +11,7 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
 
     try {
       redisUrl = decodeURIComponent(redisUrl).trim();
-    } catch (e) {
+    } catch {
       redisUrl = redisUrl.replace(/%20/g, ' ').trim();
     }
 
@@ -20,7 +20,7 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
       const parsedUrl = new URL(redisUrl);
       redisHost = parsedUrl.hostname;
     } catch (e) {
-      // fallback: try to extract host with regex if URL parsing fails
+      console.error('Failed to parse Redis URL:', e);
       const hostMatch = redisUrl.match(/\/\/([^@\/:]+@)?([^:\/?#]+)/);
       if (hostMatch && hostMatch[2]) {
         redisHost = hostMatch[2];
@@ -273,7 +273,7 @@ function createMockRedisClient(): Redis {
       if (typeof value === 'string') {
         try {
           countValue = parseInt(value, 10);
-        } catch (e) {
+        } catch {
           countValue = 1;
         }
       } else if (typeof value === 'number') {

@@ -4,7 +4,7 @@ export async function POST(req: NextRequest) {
   let body: any;
   try {
     body = await req.json();
-  } catch (e) {
+  } catch {
     return NextResponse.json({ issues: [], error: 'Invalid or empty JSON body.' }, { status: 400 });
   }
   const analytics = body?.analytics;

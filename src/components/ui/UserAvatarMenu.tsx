@@ -8,7 +8,6 @@ import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogFooter,
@@ -228,7 +227,7 @@ export default function UserAvatarMenu() {
       } else {
         toast.error(data.message || 'Failed to subscribe');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -257,7 +256,7 @@ export default function UserAvatarMenu() {
       } else {
         toast.error(data.message || 'Failed to unsubscribe');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);

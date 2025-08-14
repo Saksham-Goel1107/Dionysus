@@ -14,10 +14,6 @@ interface FileAnalytics {
   content?: string;
 }
 
-interface AnalyticsRequestBody {
-  analytics: FileAnalytics[];
-}
-
 interface FileIssue {
   path: string;
   issues: string[];

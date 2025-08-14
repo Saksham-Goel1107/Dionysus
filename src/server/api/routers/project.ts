@@ -186,7 +186,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       pullCommits(input.projectId).then().catch(console.error);
       return await readReplicaDb2.commit.findMany({
         where: { projectId: input.projectId },
@@ -199,7 +199,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const commits = await readReplicaDb2.commit.findMany({
         where: { projectId: input.projectId },
         select: {
@@ -264,7 +264,7 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return await readReplicaDb2.question.findMany({
         where: {
           projectId: input.projectId,
@@ -378,7 +378,7 @@ export const projectRouter = createTRPCRouter({
 
   getMeetingTranscript: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const meeting = await readReplicaDb2.meeting.findUnique({
         where: { id: input.meetingId },
         select: {
@@ -398,7 +398,7 @@ export const projectRouter = createTRPCRouter({
     }),
   getMeetingById: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       return await readReplicaDb2.meeting.findUnique({
         where: { id: input.meetingId },
         select: {
@@ -439,7 +439,7 @@ export const projectRouter = createTRPCRouter({
     }),
   getTeamMembers: protectedProcedure
     .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       const members = await readReplicaDb2.userToProject.findMany({
         where: { projectId: input.projectId },
         include: {
@@ -550,7 +550,7 @@ export const projectRouter = createTRPCRouter({
     }),
   verifyInviteToken: protectedProcedure
     .input(z.object({ projectId: z.string(), token: z.string() }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ input }) => {
       // Check if the provided token matches the project's invite token
       const result = await readReplicaDb2.$queryRaw<Array<{ inviteToken: string }>>`
         SELECT "inviteToken" FROM "Project" WHERE id = ${input.projectId}

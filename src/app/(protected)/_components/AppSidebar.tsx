@@ -83,7 +83,7 @@ const items: SidebarItem[] = [
 
 const AppSidebar = ({}: Props) => {
   const pathname = usePathname();
-  const { projects, projectId, setProjectId, project } = useProject();
+  const { projects, projectId, setProjectId } = useProject();
   const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
   const { open, setOpen } = useSidebar();
   useEffect(() => {
@@ -115,7 +115,7 @@ const AppSidebar = ({}: Props) => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         sethasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         sethasProPlan(false);
       }
     })();

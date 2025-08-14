@@ -17,7 +17,7 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { generateCouponCode } from '@/app/(protected)/billing/couponUtils';
 import { format } from 'date-fns';
-import { Tag, Copy, Check, Search, ListFilter, Download, AlertCircle } from 'lucide-react';
+import { Copy, Check, Search, Download, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -111,7 +111,7 @@ export default function CouponsManagement() {
           variant: 'destructive',
         });
       }
-    } catch (err) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to generate coupon code.',

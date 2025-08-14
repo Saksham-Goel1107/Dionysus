@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
     }
     const answer = await callGemini({ question, analytics, history });
     return NextResponse.json({ answer });
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: 'Failed to process request.' }, { status: 500 });
   }
 }

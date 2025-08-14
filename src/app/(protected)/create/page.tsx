@@ -39,21 +39,13 @@ const Page = ({}: Props) => {
   const { projects } = useProject();
   const [hasProPlan, setHasProPlan] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
-  const { register, handleSubmit, reset, watch } = useForm<FormInput>();
+  const { register, handleSubmit, reset } = useForm<FormInput>();
   const createProject = api.project.createProject.useMutation();
   const checkCredits = api.project.checkCredits.useMutation();
   const [urlLocked, setUrlLocked] = React.useState(false);
   const { resolvedTheme } = useTheme();
 
   const refetch = useRefetch();
-
-  const repoUrl = watch('repoUrl');
-  const githubToken = watch('githubToken');
-
-  const hasEnoughCredits =
-    !!checkCredits?.data && !!checkCredits?.data?.userCredits
-      ? checkCredits.data.fileCount <= checkCredits.data.userCredits
-      : true;
 
   React.useEffect(() => {
     (async () => {
@@ -62,7 +54,7 @@ const Page = ({}: Props) => {
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
         setHasProPlan(data.pro);
-      } catch (error) {
+      } catch {
         setHasProPlan(false);
       } finally {
         setLoading(false);

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@clerk/nextjs';
 import { Github, Headphones, Code, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export function Hero() {
@@ -17,8 +16,6 @@ export function Hero() {
     setIsOnboarding(user?.publicMetadata?.isOnboarding !== false);
   }, [user, isLoaded]);
   const userId = user?.id;
-  const pathname = usePathname();
-  const isHome = pathname === '/';
 
   const [surveyDone, setSurveyDone] = useState<boolean | null>(null);
   useEffect(() => {

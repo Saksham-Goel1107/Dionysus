@@ -18,7 +18,7 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
 
     try {
       redisUrl = decodeURIComponent(redisUrl).trim();
-    } catch (e) {
+    } catch {
       redisUrl = redisUrl.replace(/%20/g, ' ').trim();
     }
 
@@ -26,8 +26,7 @@ if (process.env.REDIS_URL || process.env.REDIS_URL_NEW) {
     try {
       const parsedUrl = new URL(redisUrl);
       redisHost = parsedUrl.hostname;
-    } catch (e) {
-      // fallback: try to extract host from string if URL parsing fails
+    } catch {
       const match = redisUrl.match(/redis:\/\/(?:.*@)?([^:/?#]+)(?::\d+)?/);
       if (match && match[1]) {
         redisHost = match[1];
@@ -248,6 +247,7 @@ export const summariseCode = async (doc: Document) => {
     const response = await model.generateContent(prompt);
     return response.response.text();
   } catch (error) {
+    console.error(error);
     return '';
   }
 };
