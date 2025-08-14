@@ -1,19 +1,20 @@
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import Battery from '@/app/components/Battery';
 import { ModeToggle } from '@/app/components/ThemeToggle';
+import OnboardingChecklist from '@/components/OnboardingChecklist';
+import PasswordGate from '@/components/PasswordGate';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { shouldRedirectToSurvey } from '@/lib/survey';
+import { OrganizationSwitcher } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
+import { Inbox } from '@novu/nextjs';
+import { Heart } from 'lucide-react';
+import Image from 'next/image';
+import { redirect } from 'next/navigation';
 import AppSidebar from './_components/AppSidebar';
 import ClientFeedbackForm from './_components/ClientFeedbackForm';
-import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
-import PasswordGate from '@/components/PasswordGate';
-import { Inbox } from '@novu/nextjs';
-import { auth } from '@clerk/nextjs/server';
-import Battery from '@/app/components/Battery';
-import { shouldRedirectToSurvey } from '@/lib/survey';
-import { redirect } from 'next/navigation';
-import Image from 'next/image';
-import { Heart } from 'lucide-react';
-import { OrganizationSwitcher } from '@clerk/nextjs';
 import UserButtonTutorial from './_components/UserButtonTutorial';
+import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 
 type Props = {
   children: React.ReactNode;
@@ -88,6 +89,7 @@ const Layout = async ({ children }: Props) => {
         </main>
         <ClientFeedbackForm />
         <UserButtonTutorial />
+        <OnboardingChecklist />
       </SidebarProvider>
     </PasswordGate>
   );
