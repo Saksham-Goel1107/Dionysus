@@ -14,7 +14,7 @@ Always reference these instructions first and fallback to search or bash command
 - **Prisma client**: May need manual generation with dummy DATABASE_URL if network access to Prisma binaries is restricted
 
 ### Build and Development Commands
-- **Development server**: 
+- **Development server**:
   ```bash
   SKIP_ENV_VALIDATION=true NODE_OPTIONS='--max-old-space-size=4096' npx next dev --turbo
   ```
@@ -23,7 +23,7 @@ Always reference these instructions first and fallback to search or bash command
   - Works without full environment setup
   - Uses Turbopack for fast development
 
-- **Production build**: 
+- **Production build**:
   ```bash
   SKIP_ENV_VALIDATION=true npm run build
   ```
@@ -41,7 +41,7 @@ Always reference these instructions first and fallback to search or bash command
   - Does not require environment variables
 
 ### Linting and Formatting
-- **ESLint check**: 
+- **ESLint check**:
   ```bash
   SKIP_ENV_VALIDATION=true npx next lint
   ```
@@ -106,7 +106,7 @@ dionysus/
 ```
 
 ### Key Technologies
-- **Frontend**: Next.js 14, React 19, TypeScript, TailwindCSS, shadcn/ui
+- **Frontend**: Next.js 15, React 19, TypeScript, TailwindCSS, shadcn/ui
 - **Backend**: tRPC, Prisma ORM, PostgreSQL with vector extensions
 - **Authentication**: Clerk with JWT and OAuth
 - **AI Integration**: Google Gemini Pro, Assembly AI for transcription

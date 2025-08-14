@@ -24,6 +24,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   const user = useUser();
   const userId = user?.user?.id;
   const userData = user?.user;
+  const [isAbTester, setIsAbTester] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -50,6 +51,14 @@ function Providers({ children }: { children: React.ReactNode }) {
       }
     };
     sync();
+
+    fetch('/api/ab-testing/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.abTestingOptIn) setIsAbTester(true);
+        else setIsAbTester(false);
+      })
+      .catch(() => setIsAbTester(false));
   }, [userId]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
@@ -152,6 +161,27 @@ function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {isAbTester && (
+        <div
+          style={{
+            position: 'fixed',
+            top: -6,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 99999,
+            pointerEvents: 'none',
+            width: 'auto',
+            paddingTop: 2,
+          }}
+        >
+          <span
+            className="rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[10px] font-semibold text-white shadow"
+            style={{ letterSpacing: '0.08em', opacity: 0.8, lineHeight: 1 }}
+          >
+            A/B tester
+          </span>
+        </div>
+      )}
       {process.env.NODE_ENV === 'production' && (
         <>
           <div style={translateTabStyle} onClick={() => setShowTranslate((v) => !v)}>
@@ -249,7 +279,8 @@ function Providers({ children }: { children: React.ReactNode }) {
             info: {
               name: "${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}",
               email: "${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}"
-            }
+            },
+            abTester: ${isAbTester ? 'true' : 'false'}
           };
         } catch (e) {
           Userback.user_data = {
@@ -257,7 +288,8 @@ function Providers({ children }: { children: React.ReactNode }) {
             info: {
               name: 'User',
               email: 'user@example.com'
-            }
+            },
+            abTester: ${isAbTester ? 'true' : 'false'}
           };
         }
       })();

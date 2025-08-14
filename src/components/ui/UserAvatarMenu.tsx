@@ -1,22 +1,22 @@
 'use client';
-import { useRouter } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { UserButton, useUser } from '@clerk/nextjs';
 import StarOnGithub from '@/app/components/starOnGithub';
-import { X } from 'lucide-react';
-import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
   DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { AvatarStack } from '@/components/ui/kibo-ui/avatar-stack';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserButton, useUser } from '@clerk/nextjs';
+import { X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 const PRODUCT_LINKS = [
   {
@@ -113,6 +113,15 @@ export default function UserAvatarMenu() {
   const [isLoading, setIsLoading] = useState(false);
   const [showUnsubscribeDialog, setShowUnsubscribeDialog] = useState(false);
   const [showProductsModal, setShowProductsModal] = useState(false);
+  const [showAbTestingPopup, setShowAbTestingPopup] = useState(false);
+  const [isAbTestingOptedIn, setIsAbTestingOptedIn] = useState<boolean | null>(null);
+  const [isAbTestingLoading, setIsAbTestingLoading] = useState(false);
+  const [showAbOptOutConfirm, setShowAbOptOutConfirm] = useState(false);
+  const [abTestingInfo, setAbTestingInfo] = useState<{
+    currentCount: number;
+    limit: number;
+    spotsRemaining: number;
+  } | null>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const { user } = useUser();
@@ -137,6 +146,27 @@ export default function UserAvatarMenu() {
           }
         })
         .catch(() => setIsSubscribed(null));
+
+      // Load A/B testing status
+      fetch('/api/ab-testing/status')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            setIsAbTestingOptedIn(data.abTestingOptIn);
+            setAbTestingInfo({
+              currentCount: data.currentCount,
+              limit: data.limit,
+              spotsRemaining: data.spotsRemaining,
+            });
+          } else {
+            setIsAbTestingOptedIn(null);
+            setAbTestingInfo(null);
+          }
+        })
+        .catch(() => {
+          setIsAbTestingOptedIn(null);
+          setAbTestingInfo(null);
+        });
     }
   }, [user]);
 
@@ -264,6 +294,64 @@ export default function UserAvatarMenu() {
     }
   }
 
+  // Handle A/B testing opt in/out
+  async function handleAbTestingToggle(optIn: boolean) {
+    setIsAbTestingLoading(true);
+    try {
+      const res = await fetch('/api/ab-testing/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          abTestingOptIn: optIn,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsAbTestingOptedIn(optIn);
+        toast.success(
+          optIn
+            ? 'Successfully opted in to A/B testing!'
+            : 'Successfully opted out of A/B testing.',
+        );
+        setShowAbTestingPopup(false);
+
+        // Refresh the A/B testing info
+        if (optIn) {
+          setAbTestingInfo((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentCount: prev.currentCount + 1,
+                  spotsRemaining: prev.spotsRemaining - 1,
+                }
+              : null,
+          );
+        } else {
+          setAbTestingInfo((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentCount: prev.currentCount - 1,
+                  spotsRemaining: prev.spotsRemaining + 1,
+                }
+              : null,
+          );
+        }
+      } else {
+        if (res.status === 409) {
+          toast.error(data.message || 'A/B testing program is currently full.');
+        } else {
+          toast.error(data.message || 'Failed to update A/B testing preference');
+        }
+      }
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsAbTestingLoading(false);
+    }
+  }
+
   return (
     <div className="relative inline-block" ref={buttonRef}>
       <div onDoubleClick={handleDoubleClick}>
@@ -340,6 +428,19 @@ export default function UserAvatarMenu() {
               📧
             </span>
             Our Newsletter
+          </Button>
+          <Button
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-purple-700 hover:bg-purple-100 dark:text-purple-400 dark:hover:bg-purple-900"
+            variant="ghost"
+            onClick={() => {
+              setShowMenu(false);
+              setShowAbTestingPopup(true);
+            }}
+          >
+            <span role="img" aria-label="A/B Testing" className="mr-2">
+              🧪
+            </span>
+            A/B Testing Program
           </Button>
           <div className="mt-2 flex w-full justify-center">
             <StarOnGithub />
@@ -449,6 +550,137 @@ export default function UserAvatarMenu() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* A/B Testing Modal */}
+      {showAbTestingPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-gray-900">
+            <div className="relative p-6">
+              <button
+                onClick={() => setShowAbTestingPopup(false)}
+                className="absolute right-4 top-4 rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <X className="h-5 w-5" />
+              </button>
+
+              <h2 className="mb-6 text-center text-2xl font-bold">A/B Testing Program</h2>
+
+              <div className="mb-8 space-y-6">
+                <div className="rounded-lg bg-purple-50 p-5 dark:bg-purple-900/30">
+                  <h3 className="mb-3 text-lg font-semibold">🧪 Why Join A/B Testing?</h3>
+                  <ul className="list-disc space-y-2 pl-5">
+                    <li>Get early access to experimental features before public release</li>
+                    <li>Help shape the future of Dionysus with your feedback</li>
+                    <li>Experience cutting-edge improvements and optimizations</li>
+                    <li>Contribute to making the platform better for everyone</li>
+                    <li>Access to exclusive beta testing channels and discussions</li>
+                  </ul>
+                </div>
+
+                {/* Availability Info */}
+                {abTestingInfo && (
+                  <div
+                    className={`rounded-lg p-5 ${abTestingInfo.spotsRemaining > 0 ? 'bg-green-50 dark:bg-green-900/30' : 'bg-red-50 dark:bg-red-900/30'}`}
+                  >
+                    <h3 className="mb-3 text-lg font-semibold">
+                      {abTestingInfo.spotsRemaining > 0
+                        ? '✅ Program Availability'
+                        : '❌ Program Full'}
+                    </h3>
+                    <p className="mb-2">
+                      <strong>{abTestingInfo.currentCount}</strong> of{' '}
+                      <strong>{abTestingInfo.limit}</strong> spots taken
+                    </p>
+                    {abTestingInfo.spotsRemaining > 0 ? (
+                      <p className="text-green-700 dark:text-green-300">
+                        <strong>{abTestingInfo.spotsRemaining}</strong> spots remaining
+                      </p>
+                    ) : (
+                      <p className="text-red-700 dark:text-red-300">
+                        The A/B testing program is currently full. Please check back later.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {isAbTestingOptedIn && (
+                  <div className="rounded-lg bg-orange-50 p-5 dark:bg-orange-900/30">
+                    <h3 className="mb-3 text-lg font-semibold">⚠️ What You&apos;ll Miss</h3>
+                    <ul className="list-disc space-y-2 pl-5">
+                      <li>Early access to experimental features and improvements</li>
+                      <li>Opportunity to influence product development decisions</li>
+                      <li>Exclusive beta testing experiences and previews</li>
+                      <li>Direct feedback channels with our development team</li>
+                      <li>Being part of the innovation process</li>
+                    </ul>
+                  </div>
+                )}
+
+                <div className="rounded-lg bg-gray-100 p-5 dark:bg-gray-800">
+                  <h3 className="mb-2 text-lg font-semibold">🔒 Privacy & Safety</h3>
+                  <p>
+                    A/B testing may include experimental features that are still in development.
+                    Your preferences are stored securely in your account metadata and you can opt
+                    out at any time.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-center space-x-4">
+                <Button
+                  variant={isAbTestingOptedIn ? 'destructive' : 'default'}
+                  size="lg"
+                  disabled={
+                    isAbTestingLoading ||
+                    (!isAbTestingOptedIn && abTestingInfo?.spotsRemaining === 0)
+                  }
+                  onClick={() => {
+                    if (isAbTestingOptedIn) {
+                      setShowAbOptOutConfirm(true);
+                    } else {
+                      handleAbTestingToggle(true);
+                    }
+                  }}
+                  className={`px-8 transition-all duration-150 ${!isAbTestingOptedIn ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600' : ''}`}
+                >
+                  {isAbTestingLoading
+                    ? 'Processing...'
+                    : isAbTestingOptedIn
+                      ? 'Opt Out'
+                      : abTestingInfo?.spotsRemaining === 0
+                        ? 'Program Full'
+                        : 'Join A/B Testing'}
+                </Button>
+                <Dialog open={showAbOptOutConfirm} onOpenChange={setShowAbOptOutConfirm}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm Opt-Out</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to opt out of the A/B testing program? You can re-join
+                        later if spots are available.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          setShowAbOptOutConfirm(false);
+                          handleAbTestingToggle(false);
+                        }}
+                      >
+                        Yes, Opt Out
+                      </Button>
+                      <DialogClose asChild>
+                        <Button variant="outline">Cancel</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Products Modal - Completely independent from menu */}
       {showProductsModal && (

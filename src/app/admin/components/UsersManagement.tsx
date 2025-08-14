@@ -1,27 +1,5 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { format } from 'date-fns';
-import { Search, Filter, MoreHorizontal, Download, UserCheck, Shield, Loader2 } from 'lucide-react';
-import Image from 'next/image';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,14 +10,36 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { format } from 'date-fns';
+import { Download, Filter, Loader2, MoreHorizontal, Search, Shield, UserCheck } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 interface User {
   id: string;
@@ -416,6 +416,15 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                         ) : (
                           <Badge variant="outline">Regular</Badge>
                         )}
+                        {/* A/B Tester badge */}
+                        {user.publicMetadata?.abTestingOptIn ? (
+                          <Badge
+                            className="ml-1 border-purple-200 bg-purple-100 text-purple-800 dark:border-purple-800 dark:bg-purple-900 dark:text-purple-300"
+                            title="A/B Tester"
+                          >
+                            A/B
+                          </Badge>
+                        ) : null}
                       </TableCell>
 
                       <TableCell className="text-center font-medium">{user.credits}</TableCell>
