@@ -1,17 +1,17 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 import DOMPurify from 'dompurify';
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
 import VoiceButton from '../components/VoiceButton';
 import type {
   SpeechRecognition,
+  SpeechRecognitionAlternative,
   SpeechRecognitionEvent,
   SpeechRecognitionResult,
   SpeechRecognitionResultList,
-  SpeechRecognitionAlternative,
 } from '../types/speech-recognition';
-import { useRouter } from 'next/navigation';
 import { Logo } from './logo';
-import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -74,39 +74,12 @@ export default function AiChatSidebar({
   const [sessionId, setSessionId] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
-  const [showCommandSuggestions, setShowCommandSuggestions] = useState(false);
-  const [matchedCommand, setMatchedCommand] = useState<string>('');
-
-  const commands: Command[] = [];
-
-  const handleCommandSelection = (command: string) => {
-    setMessage(command + ' ');
-    setShowCommandSuggestions(false);
-    setMatchedCommand('');
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setMessage(newValue);
 
     const lastAtIndex = newValue.lastIndexOf('@');
-    if (lastAtIndex !== -1) {
-      const currentCommand = newValue.slice(lastAtIndex).toLowerCase();
-      const matchingCommand = commands.find((cmd) =>
-        cmd.command.toLowerCase().startsWith(currentCommand),
-      );
-
-      if (matchingCommand) {
-        setShowCommandSuggestions(true);
-        setMatchedCommand(currentCommand.slice(1));
-      } else {
-        setShowCommandSuggestions(false);
-        setMatchedCommand('');
-      }
-    } else {
-      setShowCommandSuggestions(false);
-      setMatchedCommand('');
-    }
   };
 
   useEffect(() => {
@@ -261,29 +234,29 @@ export default function AiChatSidebar({
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-opacity-50 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity dark:bg-black/50"
           onClick={onClose}
         />
       )}
 
       <div
-        className={`fixed inset-y-0 right-0 z-50 w-80 transform bg-gray-900 shadow-lg transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 w-full max-w-full transform transition-transform duration-300 ease-in-out md:w-[420px] md:max-w-[95vw] ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex h-full flex-col">
-          <div className={`flex items-center justify-between border-b border-gray-700 p-4`}>
+        <div className="flex h-full flex-col border-l border-gray-200 bg-white/80 shadow-2xl backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/80 md:rounded-l-3xl">
+          <div className="flex items-center justify-between border-b border-gray-200 bg-white/60 p-6 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/60 md:rounded-tl-3xl">
             <div className="flex items-center space-x-2">
               <Logo />
               <GradientTypewriter words="Dionysus AI" />
-            </div>{' '}
+            </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={clearHistory}
-                className={`rounded-full p-2 hover:bg-gray-800`}
+                className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
                 title="Clear chat history"
               >
-                <svg className="h-5 w-5" fill="none" stroke="white" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -292,8 +265,11 @@ export default function AiChatSidebar({
                   />
                 </svg>
               </button>
-              <button onClick={onClose} className={`rounded-full p-2 hover:bg-gray-800`}>
-                <svg className="h-5 w-5" fill="none" stroke="white" viewBox="0 0 24 24">
+              <button
+                onClick={onClose}
+                className="rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -303,14 +279,14 @@ export default function AiChatSidebar({
                 </svg>
               </button>
             </div>
-          </div>{' '}
-          <div className={`flex-1 overflow-y-auto p-4 text-gray-100`}>
+          </div>
+          <div className="flex-1 overflow-y-auto p-6 text-gray-900 dark:text-gray-100">
             {chatHistory.length === 0 && (
-              <div className={`mt-2 text-center text-gray-400`}>
+              <div className="mt-2 text-center text-gray-400 dark:text-gray-500">
                 <p>👋 Hi! I&apos;m your Dionysus assistant.</p>
                 <p className="mt-2">Ask me anything about the platform!</p>
               </div>
-            )}{' '}
+            )}
             {chatHistory.map((msg, idx) => (
               <div
                 key={idx}
@@ -319,9 +295,11 @@ export default function AiChatSidebar({
                 } w-full`}
               >
                 <div
-                  className={`rounded-lg p-3 ${
-                    msg.role === 'user' ? `bg-blue-500 text-white` : 'bg-gray-800'
-                  } relative max-w-[95%] whitespace-pre-wrap break-words`}
+                  className={`rounded-2xl px-5 py-3 shadow-md md:p-5 ${
+                    msg.role === 'user'
+                      ? 'border border-blue-300/30 bg-gradient-to-br from-blue-500/90 to-blue-400/80 text-white'
+                      : 'border border-gray-300/40 bg-gradient-to-br from-gray-200/80 to-gray-100/80 text-gray-900 dark:border-gray-700/40 dark:from-gray-800/90 dark:to-gray-700/80 dark:text-gray-100'
+                  } relative max-w-[95%] whitespace-pre-wrap break-words md:max-w-[80%]`}
                 >
                   <div
                     className="message-content text-sm leading-relaxed"
@@ -329,7 +307,6 @@ export default function AiChatSidebar({
                       __html: DOMPurify.sanitize(formatMessageContent(msg.content)),
                     }}
                   />
-
                   <div className="mt-1 flex select-none items-center gap-1 text-[10px] opacity-70">
                     {msg.role === 'assistant' && (
                       <span className="h-2 w-2 rounded-full bg-green-400" />
@@ -343,14 +320,14 @@ export default function AiChatSidebar({
               </div>
             ))}
             {isLoading && (
-              <div className="flex items-center space-x-2 text-gray-500">
+              <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
                 <div className="animate-bounce">●</div>
                 <div className="animate-bounce delay-100">●</div>
                 <div className="animate-bounce delay-200">●</div>
               </div>
             )}
-          </div>{' '}
-          <div className={`border-t border-gray-700 p-4`}>
+          </div>
+          <div className="border-t border-gray-200 bg-white/60 p-6 backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/60">
             <div className="flex space-x-2">
               <div className="relative flex-1">
                 <textarea
@@ -361,7 +338,7 @@ export default function AiChatSidebar({
                   }
                   placeholder="Ask me anything..."
                   rows={1}
-                  className={`w-full resize-none overflow-y-auto rounded-lg border border-gray-700 bg-gray-800 p-2 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                  className="w-full resize-none overflow-y-auto rounded-xl border border-gray-300 bg-white/80 p-3 pr-12 text-gray-900 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-700 dark:bg-gray-800/80 dark:text-white dark:focus:ring-blue-500 md:text-base"
                   suppressHydrationWarning
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 transform">
@@ -378,7 +355,7 @@ export default function AiChatSidebar({
                   }
                 }}
                 disabled={isLoading}
-                className={`rounded-lg bg-blue-500 p-2 text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:opacity-50`}
+                className="rounded-xl bg-gradient-to-br from-blue-500 to-blue-400 p-3 text-white shadow-lg hover:from-blue-600 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
               >
                 {!message.trim() ? (
                   <svg

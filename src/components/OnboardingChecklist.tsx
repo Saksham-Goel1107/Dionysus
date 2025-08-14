@@ -27,10 +27,11 @@ const DEFAULT_STEPS = [
   'Invite a Team Member',
   'Try the AI Code Analyser Assistant',
   'Save your questions and answers',
-  'Explore Diffreent Tabs in dashboard',
+  'Explore Different Tabs in dashboard',
   'Checkout Billing & pricing',
   'Checkout Subscriptions',
-  'Have a query Connect to support',
+  'Have a query? Connect to support',
+  'Add Dionysus shortcut to your screen',
 ];
 
 const STEP_LINKS: (string | null)[] = [
@@ -42,6 +43,7 @@ const STEP_LINKS: (string | null)[] = [
   '/billing',
   '/subscriptions',
   '/supportAuth',
+  null, // shortcut step handled with modal
 ];
 
 function getChecklistFromCookie() {
@@ -68,6 +70,7 @@ export default function OnboardingChecklist() {
   const [checked, setChecked] = useState<boolean[]>(Array(DEFAULT_STEPS.length).fill(false));
   const [open, setOpen] = useState(true);
   const [showSkipModal, setShowSkipModal] = useState(false);
+  const [showShortcutModal, setShowShortcutModal] = useState(false);
   const [skipped, setSkipped] = useState(false);
   const [fullyDone, setFullyDone] = useState(false);
 
@@ -102,20 +105,22 @@ export default function OnboardingChecklist() {
   return (
     <>
       <div
-        className="fixed bottom-4 right-4 z-50 w-72 max-w-[90vw] rounded-xl border border-gray-300 bg-white/90 p-3 shadow-lg dark:border-gray-700 dark:bg-gray-900/90"
-        style={{ fontSize: 13 }}
+        className="fixed bottom-2 left-1/2 z-[100] w-[95vw] max-w-xs -translate-x-1/2 rounded-2xl border border-gray-200 bg-white/95 p-3 shadow-2xl backdrop-blur-md dark:border-gray-700 dark:bg-gray-900/95 sm:bottom-4 sm:left-auto sm:right-4 sm:w-80 sm:translate-x-0 md:max-w-sm"
+        style={{ fontSize: 15 }}
       >
-        <div className="mb-2 flex items-center justify-between">
-          <span className="font-semibold text-blue-700 dark:text-blue-300">Getting Started</span>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <span className="text-base font-semibold text-blue-700 dark:text-blue-300">
+            Getting Started
+          </span>
           <button
-            className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            className="rounded-full p-1 text-lg text-gray-400 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-200"
             onClick={() => setOpen(false)}
             aria-label="Hide checklist"
           >
             ✕
           </button>
         </div>
-        <ul className="mb-2">
+        <ul className="mb-3 space-y-2">
           {steps.map((step, i) => {
             const link = STEP_LINKS[i];
             const label = (
@@ -131,8 +136,33 @@ export default function OnboardingChecklist() {
                 {step}
               </label>
             );
+            // Last step: shortcut modal
+            if (i === steps.length - 1) {
+              return (
+                <li key={i} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={checked[i]}
+                    onChange={() => {
+                      const next = [...checked];
+                      next[i] = !next[i];
+                      setChecked(next);
+                    }}
+                    className="h-4 w-4 accent-blue-600"
+                    id={`onboarding-step-${i}`}
+                  />
+                  <button
+                    type="button"
+                    className="rounded bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 shadow-sm ring-1 ring-inset ring-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-700"
+                    onClick={() => setShowShortcutModal(true)}
+                  >
+                    How to add shortcut
+                  </button>
+                </li>
+              );
+            }
             return (
-              <li key={i} className="mb-1 flex items-center gap-2">
+              <li key={i} className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={checked[i]}
@@ -155,10 +185,10 @@ export default function OnboardingChecklist() {
             );
           })}
         </ul>
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           {checked.every(Boolean) ? (
             <button
-              className="text-xs text-green-600 underline hover:text-green-800"
+              className="rounded bg-green-50 px-3 py-1 text-xs font-semibold text-green-700 shadow-sm ring-1 ring-inset ring-green-200 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-200 dark:ring-green-700"
               onClick={() => setFullyDone(true)}
             >
               Done Checklist
@@ -166,13 +196,13 @@ export default function OnboardingChecklist() {
           ) : (
             <>
               <button
-                className="text-xs text-gray-500 underline hover:text-blue-600"
+                className="rounded bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm ring-1 ring-inset ring-blue-200 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-200 dark:ring-blue-700"
                 onClick={() => setChecked(Array(steps.length).fill(true))}
               >
                 Mark all as done
               </button>
               <button
-                className="text-xs text-gray-500 underline hover:text-red-600"
+                className="rounded bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 shadow-sm ring-1 ring-inset ring-red-200 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-200 dark:ring-red-700"
                 onClick={() => setShowSkipModal(true)}
               >
                 Skip
@@ -181,6 +211,58 @@ export default function OnboardingChecklist() {
           )}
         </div>
       </div>
+      {/* Shortcut instructions modal */}
+      <AlertDialog open={showShortcutModal} onOpenChange={setShowShortcutModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-bold text-blue-700 dark:text-blue-200">
+              Add Dionysus shortcut to your screen
+            </AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogDescription className="mb-3 text-sm text-gray-700 dark:text-gray-300">
+            <b>Desktop (Chrome/Edge):</b>
+            <ol className="mb-2 mt-1 list-decimal pl-5">
+              <li>Click the browser menu (⋮ or ...)</li>
+              <li>
+                Choose <b>More tools</b> &rarr; <b>Create shortcut...</b>
+              </li>
+              <li>Check &quot;Open as window&quot; for best experience</li>
+              <li>
+                Click <b>Create</b>
+              </li>
+            </ol>
+            <b>Mobile (Safari/Chrome):</b>
+            <ol className="mb-2 mt-1 list-decimal pl-5">
+              <li>
+                Tap the <b>Share</b> icon (Safari) or menu (⋮ in Chrome)
+              </li>
+              <li>
+                Select <b>Add to Home Screen</b>
+              </li>
+              <li>Follow the prompts</li>
+            </ol>
+            <span className="mt-2 block text-xs text-gray-500">
+              This works on all major browsers and devices. No PWA install required.
+            </span>
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogAction asChild>
+              <button
+                onClick={() => {
+                  // Mark as done
+                  const next = [...checked];
+                  next[steps.length - 1] = true;
+                  setChecked(next);
+                  setShowShortcutModal(false);
+                }}
+                className="w-full rounded bg-blue-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-blue-700"
+              >
+                I added the shortcut
+              </button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <AlertDialog open={showSkipModal} onOpenChange={setShowSkipModal}>
         <AlertDialogContent>
           <AlertDialogHeader>

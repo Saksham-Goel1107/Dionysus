@@ -38,9 +38,26 @@ export default function Page() {
       </div>
 
       {/* Pricing Table */}
-      <div className="mb-16">
+      <div className="mb-10">
         <PricingTable />
       </div>
+
+      {/* Organization Plan */}
+      <section className="mb-16 flex flex-col items-center justify-center rounded-xl border border-blue-200 bg-blue-50 p-8 text-center dark:border-blue-900 dark:bg-blue-950/60">
+        <h2 className="mb-2 text-2xl font-bold text-blue-800 dark:text-blue-200">
+          Organization Plan
+        </h2>
+        <p className="mb-6 max-w-xl text-base text-blue-900 dark:text-blue-100">
+          Need a custom solution for your company, enterprise, or large team? <br />
+          Contact us for tailored features, volume pricing, and dedicated support.
+        </p>
+        <Button asChild size="lg" className="gap-2 bg-blue-700 text-white hover:bg-blue-800">
+          <Link href="mailto:sakshamgoel1107@gmail.com?subject=Organization%20Plan%20Inquiry">
+            <Mail className="h-5 w-5" />
+            Contact Us
+          </Link>
+        </Button>
+      </section>
 
       {/* Features Section */}
       <section className="mb-16">
