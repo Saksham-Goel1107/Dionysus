@@ -1,8 +1,8 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { NextResponse } from 'next/server';
-import { geolocation } from '@vercel/functions';
-import arcjet, { shield, detectBot, fixedWindow } from '@arcjet/next';
 import { env } from '@/env';
+import arcjet, { detectBot, fixedWindow, shield } from '@arcjet/next';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { geolocation } from '@vercel/functions';
+import { NextResponse } from 'next/server';
 
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/uptime',
   '/api/maintenance-info',
   '/cookie-policy(.*)',
+  '/client-version.json',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);
@@ -66,6 +67,7 @@ export default clerkMiddleware(async (auth, request) => {
   const isRateLimitPage = pathname.startsWith('/rate-limit');
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || '8.8.8.8';
   const userAgent = request.headers.get('user-agent') || '';
+  console.log('User IP:', ip);
 
   if (isAutomatedUserAgent(userAgent)) {
     return new NextResponse(

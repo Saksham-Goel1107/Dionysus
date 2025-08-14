@@ -33,7 +33,6 @@ export async function POST(req: NextRequest) {
     const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
     if (!CLERK_SECRET_KEY) throw new Error('Missing Clerk secret key');
 
-
     const getRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${CLERK_SECRET_KEY}`,

@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import Script from 'next/script';
-import { usePathname } from 'next/navigation';
-import AiChatSidebar from './components/AiChatSidebar';
-import AiToolkitButton from './components/AiButton';
-import RecaptchaGate from './components/RecaptchaGate';
-import { useUser } from '@clerk/nextjs';
 import { app } from '@/firebase-init';
+import { useClientVersionCheck } from '@/lib/clientVersionCheck';
+import { useUser } from '@clerk/nextjs';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
+import { usePathname } from 'next/navigation';
+import Script from 'next/script';
+import { useEffect, useRef, useState } from 'react';
+import AiToolkitButton from './components/AiButton';
+import AiChatSidebar from './components/AiChatSidebar';
 import CookieBanner from './components/CookieBanner';
+import RecaptchaGate from './components/RecaptchaGate';
 
 declare global {
   interface Window {
@@ -19,6 +20,7 @@ declare global {
 }
 
 function Providers({ children }: { children: React.ReactNode }) {
+  useClientVersionCheck();
   const user = useUser();
   const userId = user?.user?.id;
   const userData = user?.user;
