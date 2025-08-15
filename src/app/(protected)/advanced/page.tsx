@@ -1,30 +1,32 @@
 'use client';
-import { Protect } from '@clerk/nextjs';
-import { Lock } from 'lucide-react';
-import React from 'react';
-import { useTheme } from 'next-themes';
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import StressTester from './stress';
-import CodeAnalytics from './CodeAnalytics';
-import JWTSecretGenerator from './Jwt';
-import Wiki from './wiki';
-import LicenseMakerPage from './license';
-import GitignoreModal from './GitignoreModal';
-import MarkdownGenModal from './MarkdownGenModal';
-import PlagiarismChecker from './PlagiarismChecker';
-import CommitGraphModal from '@/components/ui/CommitGraphModal';
 import LogoGenerator from '@/components/logo-generator';
-import MetaDataGenerator from './MetaDataGenerator';
-import RobotSitemapGenerator from './RobotSitemapGenerator';
-import MediaOptimizer from './MediaOptimizer';
-import RegexTester from './RegexTester';
-import YamlValidator from './YamlValidator';
-import FileEncryptor from './FileEncryptor';
-import CodeFormatter from './CodeFormatter';
-import { Client, Avatars } from 'appwrite';
+import { Button } from '@/components/ui/button';
+import CommitGraphModal from '@/components/ui/CommitGraphModal';
+import { Protect } from '@clerk/nextjs';
+import { Avatars, Client } from 'appwrite';
+import { motion } from 'framer-motion';
+import { Lock } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import Link from 'next/link';
+import React from 'react';
+import AudioToText from './AudioToText';
+import CodeAnalytics from './CodeAnalytics';
+import CodeFormatter from './CodeFormatter';
+import FileEncryptor from './FileEncryptor';
+import GitignoreModal from './GitignoreModal';
+import ImageToText from './ImageToText';
+import JWTSecretGenerator from './Jwt';
+import LicenseMakerPage from './license';
+import MarkdownGenModal from './MarkdownGenModal';
+import MediaOptimizer from './MediaOptimizer';
+import MetaDataGenerator from './MetaDataGenerator';
+import PlagiarismChecker from './PlagiarismChecker';
+import RegexTester from './RegexTester';
+import RobotSitemapGenerator from './RobotSitemapGenerator';
+import StressTester from './stress';
+import Wiki from './wiki';
+import YamlValidator from './YamlValidator';
 
 const appwriteUrl = process.env.NEXT_PUBLIC_APPWRITE_URL;
 const appwriteId = process.env.NEXT_PUBLIC_APPWRITE_ID;
@@ -146,6 +148,8 @@ const featureIndex = [
   { id: 'regex-tester', label: 'Regex Tester', icon: '🔍' },
   { id: 'yaml-validator', label: 'YAML Validator', icon: '🧩' },
   { id: 'file-encryptor', label: 'File Encryptor', icon: '🔒' },
+  { id: 'audio-to-text', label: 'Audio to Text', icon: '🎵' },
+  { id: 'image-to-text', label: 'Image to Text', icon: '🖼️' },
   { id: 'plagiarism-checker', label: 'Plagiarism Checker', icon: '🕵️' },
   { id: 'commit-graph', label: 'Commit Graph Modal', icon: '🌳' },
 ];
@@ -343,6 +347,12 @@ const Advanced = () => {
               case 'file-encryptor':
                 content = <FileEncryptor />;
                 break;
+              case 'audio-to-text':
+                content = <AudioToText />;
+                break;
+              case 'image-to-text':
+                content = <ImageToText />;
+                break;
               case 'plagiarism-checker':
                 content = <PlagiarismChecker />;
                 break;
@@ -384,6 +394,10 @@ const Advanced = () => {
                 'from-lime-50 via-white to-lime-100 dark:from-lime-900/60 dark:via-lime-950/80 dark:to-lime-900/60 border-lime-300 dark:border-lime-700',
               'file-encryptor':
                 'from-gray-50 via-white to-gray-100 dark:from-gray-900/60 dark:via-gray-950/80 dark:to-gray-900/60 border-gray-300 dark:border-gray-700',
+              'audio-to-text':
+                'from-emerald-50 via-white to-emerald-100 dark:from-emerald-900/60 dark:via-emerald-950/80 dark:to-emerald-900/60 border-emerald-300 dark:border-emerald-700',
+              'image-to-text':
+                'from-teal-50 via-white to-teal-100 dark:from-teal-900/60 dark:via-teal-950/80 dark:to-teal-900/60 border-teal-300 dark:border-teal-700',
               'plagiarism-checker':
                 'from-orange-50 via-white to-orange-100 dark:from-orange-900/60 dark:via-orange-950/80 dark:to-orange-900/60 border-orange-300 dark:border-orange-700',
               'commit-graph':

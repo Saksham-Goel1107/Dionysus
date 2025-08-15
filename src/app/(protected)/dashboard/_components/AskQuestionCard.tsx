@@ -1,21 +1,21 @@
 'use client';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import useProject from '@/hooks/use-project';
-import React from 'react';
-import { readStreamableValue } from 'ai/rsc';
-import MDEditor from '@uiw/react-md-editor';
-import { useTheme } from 'next-themes';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { api } from '@/trpc/react';
-import { toast } from 'sonner';
 import useRefetch from '@/hooks/use-refetch';
+import { api } from '@/trpc/react';
+import MDEditor from '@uiw/react-md-editor';
+import { readStreamableValue } from 'ai/rsc';
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
+import React from 'react';
+import { toast } from 'sonner';
 import { askQuestion } from '../actions';
 import CodeReferences from './CodeReferences';
-import Image from 'next/image';
-import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
@@ -101,7 +101,21 @@ const AskQuestionCrad = () => {
           <div data-color-mode={theme} className="markdown-editor-container">
             <ScrollArea className="m-auto !h-full max-h-[40vh] max-w-[70vw] overflow-auto">
               <div className="w-full min-w-0 max-w-full overflow-x-auto rounded-md bg-card p-4 text-card-foreground">
-                <MDEditor.Markdown source={answer} className="md-preview-content" />
+                {loading && !answer ? (
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="mb-2 h-4 w-1/2 animate-pulse rounded bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800" />
+                    <div className="mb-2 h-4 w-2/3 animate-pulse rounded bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800" />
+                    <div className="mb-2 h-4 w-1/3 animate-pulse rounded bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800" />
+                    <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>Waiting for AI response</span>
+                      <span className="inline-block animate-bounce">.</span>
+                      <span className="inline-block animate-bounce [animation-delay:0.2s]">.</span>
+                      <span className="inline-block animate-bounce [animation-delay:0.4s]">.</span>
+                    </div>
+                  </div>
+                ) : (
+                  <MDEditor.Markdown source={answer} className="md-preview-content" />
+                )}
               </div>
             </ScrollArea>
           </div>

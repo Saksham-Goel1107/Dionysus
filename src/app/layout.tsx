@@ -23,6 +23,7 @@ import ClientOnly from '@/components/ui/ClientOnly';
 import Offline from './offline';
 import Head from 'next/head';
 import MobileInfoPrompt from './components/MobileInfoPrompt';
+import FullscreenPrompt from '@/components/FullscreenPrompt';
 
 export const metadata: Metadata = {
   title: {
@@ -191,6 +192,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     <BlockInspectAndContext />
                     <Analytics />
                     <SpeedInsights />
+                    <FullscreenPrompt />
                   </ClientOnly>
                   <Script
                     src="https://s.pageclip.co/v1/pageclip.js"
