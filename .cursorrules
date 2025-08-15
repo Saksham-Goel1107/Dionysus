@@ -1,0 +1,9 @@
+Use the Project Rules in `.cursor/rules/*.mdc`.
+
+- Next.js App Router with React Server Components by default
+- TypeScript strict; avoid `any` and prefer `zod`-validated types
+- Prisma + PostgreSQL; use explicit selects; validate inputs at boundaries
+- tRPC for API; cohesive routers; SuperJSON for complex types
+- Tailwind + shadcn/ui + Radix; accessible and responsive UI
+
+For onboarding, see `.cursor/context/overview.md`.

@@ -1,0 +1,32 @@
+# Ignore large or generated files from AI context
+node_modules/
+.next/
+.vercel/
+.prisma/
+coverage/
+dist/
+build/
+
+# VCS and lockfiles
+.git/
+.gitmodules
+*.lock
+
+# Environment and secrets
+.env*
+.envrc
+
+# Misc
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.webp
+**/*.mp4
+**/*.mov
+**/*.pdf
+**/*.zip
+**/*.tar.gz
+**/*.min.*
+**/*.map

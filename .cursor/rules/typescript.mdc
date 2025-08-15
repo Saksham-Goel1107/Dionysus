@@ -1,0 +1,11 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+- `tsconfig.json` is strict; avoid `any` and prefer precise types
+- Prefer `interface` for object shapes that will be extended; use `type` for unions and mapped types
+- Derive types from data/validators (e.g., `z.infer<typeof schema>`) to ensure parity
+- Use descriptive names (e.g., `isLoading`, `hasError`); avoid abbreviations
+- Keep functions small with early returns and clear error handling
+- Respect `@/*` alias for imports; avoid deep relative import chains

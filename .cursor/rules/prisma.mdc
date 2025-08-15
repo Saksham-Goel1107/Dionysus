@@ -1,0 +1,11 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+- Keep schema changes minimal and additive; avoid destructive changes without migrations
+- Prefer explicit selects; avoid `include` of large relations unnecessarily
+- Use transactions for multi-step writes; ensure idempotency for webhooks
+- Use the vector extension where relevant; store embeddings as `Unsupported("vector")` per schema
+- Validate inputs with `zod`; never trust client payloads
+- Consider read replicas (`src/lib/read-replica*.ts`) for heavy read paths

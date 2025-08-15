@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+- Use `zod` schemas for input/output; infer types via `z.infer`
+- Keep routers cohesive by domain; avoid God routers
+- Use React Query hooks for client usage; ensure caching keys are stable
+- Serialize with SuperJSON for dates and complex types
+- Keep procedures small; compose middlewares for auth/ratelimiting

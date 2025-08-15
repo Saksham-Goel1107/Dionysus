@@ -1,0 +1,10 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+- Use Clerk for auth; rely on middleware guards for protected areas
+- Do not leak user/session info to the client; serialize minimal data
+- Respect `X-Frame-Options: DENY` and CSP defined in `next.config.js`
+- Sanitize any user-provided HTML/Markdown; use `sanitize-html` or `dompurify` on the server when possible
+- Prefer server-side checks over client-side gating
