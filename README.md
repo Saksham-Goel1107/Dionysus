@@ -46,18 +46,37 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
 
 ---
 
-## 🚀 Enterprise Overview
+## 🚀 Enterprise Overview & Latest Features
 
 **Dionysus** is a comprehensive, enterprise-grade GitHub analytics and collaboration platform built for modern development teams. Leveraging state-of-the-art AI technologies, Dionysus transforms how teams interact with their repositories by providing:
 
-- **Deep Repository Insights**: Advanced code analysis, comprehensive visualization of commit histories, and predictive development metrics
-- **AI-Powered Development Assistance**: Contextual code understanding, automated documentation generation, and intelligent code reviews
-- **Team Collaboration Hub**: Centralized meeting transcription, project management, and asynchronous knowledge sharing
-- **Enterprise Security**: Role-based access control, comprehensive audit logs, and secure metadata management
+- **Deep Repository Insights**: Advanced code analysis, commit visualization, and predictive development metrics
+- **AI-Powered Development Assistance**: Contextual code understanding, automated documentation, and intelligent code reviews
+- **Team Collaboration Hub**: Meeting transcription, project management, async knowledge sharing, and A/B testing opt-in
+- **Enterprise Security**: Role-based access control, audit logs, secure metadata management
+- **A/B Testing System**: Built-in opt-in/out for feature testing, with user limits and badge display
+- **User Feedback Integration**: Userback integration with A/B tester status for targeted feedback
+- **Pro/Tester Badges**: Visual badges for Pro and A/B tester users in admin and user UIs
+- **Newsletter & Announcements**: Opt-in system for updates, with backend enforcement and Clerk metadata
+- **Admin Suite**: Advanced user management, audit logging, compliance tools, and analytics dashboards
+- **DevTools Detection**: Security and anti-abuse features for browser devtools
+- **Live AI Chat Sidebar**: Gemini-powered chat for code and repo Q&A, always accessible
+- **Customizable & Extensible**: Modular, API-first, supports custom integrations
 
 **Key Differentiators:**
 
 - **AI-Driven Everything:** From code search to documentation, Dionysus leverages Gemini Pro and Assembly AI for deep, contextual understanding.
+
+## 🛠️ Project Workspace & AI/Dev Tooling
+
+This repository intentionally includes several directories and files to support modern AI-assisted and collaborative development workflows:
+
+- **.vscode/**: Contains VS Code workspace settings for consistent formatting, linting, and editor behavior across all contributors. Ensures Prettier, ESLint, and code actions on save are always enabled.
+- **.cursor/**: Project rules and context for AI tools (like Cursor). Includes concise docs and rules to help AI agents and developers understand project conventions, architecture, and editing guidelines. See `.cursor/README.md` for details.
+- **.github/copilot-instructions.md**: Special instructions for GitHub Copilot and other AI agents. This file documents project-specific setup, validation, and workflow rules to ensure AI-generated code and suggestions are always correct and context-aware. **Do not remove!**
+
+These files and folders are required for best-in-class AI, Copilot, and team developer experience. They are not accidental or legacy artifacts.
+
 - **Admin & Compliance:** Advanced admin suite with user management, audit logging, and compliance tools.
 - **DevOps-Ready:** Built-in CI/CD, rate limiting, and monitoring for production-grade reliability.
 - **Customizable & Extensible:** Modular architecture, API-first design, and support for custom integrations.
@@ -66,7 +85,22 @@ Dionysus is designed for modern, fast-moving engineering teams who need:
 
 ## 📂 Advanced Architecture & Structure
 
+---
+
+## 🆕 Recent & Notable Features
+
+- **A/B Testing Opt-In System**: Users can opt-in/out of A/B tests, with backend-enforced limits and Clerk metadata. Admins see tester badges in user management.
+- **Userback Feedback Integration**: Userback widget now receives A/B tester status for targeted feedback collection.
+- **Pro & Tester Badges**: Visual badges for Pro and A/B tester users in both user and admin UIs.
+- **Newsletter Opt-In**: Users can subscribe to updates/newsletter, with backend validation and Clerk metadata.
+- **Confirmation Dialogs**: UI confirmation before opting out of A/B tests or newsletter.
+- **DevTools Detection**: Security feature to detect and respond to browser devtools usage.
+- **Live AI Chat Sidebar**: Persistent Gemini-powered chat for code/repo Q&A.
+- **Admin Analytics & User Management**: Enhanced dashboards, user search, and compliance tools.
+- **Performance & Security**: Improved Sentry/Arcjet integration, rate limiting, and error tracking.
+
 ```
+
 Directory structure:
 └── saksham-goel1107-dionysus/
     ├── README.md
@@ -84,6 +118,7 @@ Directory structure:
     ├── package.json
     ├── postcss.config.js
     ├── prettier.config.js
+    ├── PROJECT_CONTEXT_FOR_AI.md
     ├── README-CONTRIBUTORS.md
     ├── SECURITY.md
     ├── sentry.edge.config.ts
@@ -92,6 +127,7 @@ Directory structure:
     ├── tailwind.config.ts
     ├── tsconfig.json
     ├── vercel.json
+    ├── .cursorrules
     ├── .dockerignore
     ├── .editorconfig
     ├── .env.example.encrypted
@@ -104,6 +140,7 @@ Directory structure:
     ├── prisma/
     │   └── schema.prisma
     ├── public/
+    │   ├── client-version.json
     │   ├── Flag-India.webp
     │   ├── gif.worker.js
     │   ├── google6449ae9f2db98a54.html
@@ -143,7 +180,8 @@ Directory structure:
     │   │   │   │   ├── AppSidebar.tsx
     │   │   │   │   ├── ClientFeedbackForm.tsx
     │   │   │   │   ├── CurrentTimeDisplay.tsx
-    │   │   │   │   └── ProCrownUserButton.tsx
+    │   │   │   │   ├── ProCrownUserButton.tsx
+    │   │   │   │   └── UserButtonTutorial.tsx
     │   │   │   ├── advanced/
     │   │   │   │   ├── CodeAnalytics.tsx
     │   │   │   │   ├── CodeFormatter.tsx
@@ -191,10 +229,12 @@ Directory structure:
     │   │   │   ├── create/
     │   │   │   │   └── page.tsx
     │   │   │   ├── dashboard/
+    │   │   │   │   ├── actions.grok.example.ts
     │   │   │   │   ├── actions.ts
     │   │   │   │   ├── page.tsx
     │   │   │   │   └── _components/
     │   │   │   │       ├── ArchiveButton.tsx
+    │   │   │   │       ├── AskQuestionCard.grok.example.tsx
     │   │   │   │       ├── AskQuestionCard.tsx
     │   │   │   │       ├── CiCd.tsx
     │   │   │   │       ├── Code.tsx
@@ -262,6 +302,7 @@ Directory structure:
     │   │   │   │   ├── AdminDashboard.tsx
     │   │   │   │   ├── AdminSidebar.tsx
     │   │   │   │   ├── AnalyticsDashboard.tsx
+    │   │   │   │   ├── AutoRefresh.tsx
     │   │   │   │   ├── CouponsManagement.tsx
     │   │   │   │   ├── FinancesDashboard.tsx
     │   │   │   │   ├── SurveyDashboard.tsx
@@ -279,6 +320,18 @@ Directory structure:
     │   │   │   └── users/
     │   │   │       └── page.tsx
     │   │   ├── api/
+    │   │   │   ├── ab-testing/
+    │   │   │   │   ├── status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── subscribe/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── admin/
+    │   │   │   │   ├── block-user/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── user-details/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── user-status/
+    │   │   │   │       └── route.ts
     │   │   │   ├── ai-chat/
     │   │   │   │   └── route.ts
     │   │   │   ├── code-analytics/
@@ -297,6 +350,8 @@ Directory structure:
     │   │   │   │   └── chat/
     │   │   │   │       └── route.ts
     │   │   │   ├── GitGraph/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── github-commits/
     │   │   │   │   └── route.ts
     │   │   │   ├── has-password/
     │   │   │   │   └── route.ts
@@ -329,8 +384,6 @@ Directory structure:
     │   │   │   ├── send-export-warning/
     │   │   │   │   └── route.ts
     │   │   │   ├── send-password-change-warning/
-    │   │   │   │   └── route.ts
-    │   │   │   ├── sentry-example-api/
     │   │   │   │   └── route.ts
     │   │   │   ├── set-password/
     │   │   │   │   └── route.ts
@@ -365,6 +418,8 @@ Directory structure:
     │   │   │       └── route.ts
     │   │   ├── block/
     │   │   │   └── page.tsx
+    │   │   ├── blocked/
+    │   │   │   └── page.tsx
     │   │   ├── components/
     │   │   │   ├── AiButton.tsx
     │   │   │   ├── AiChatSidebar.tsx
@@ -375,11 +430,13 @@ Directory structure:
     │   │   │   ├── hero.tsx
     │   │   │   ├── how-it-works.tsx
     │   │   │   ├── logo.tsx
+    │   │   │   ├── MobileInfoPrompt.tsx
     │   │   │   ├── navbar.tsx
     │   │   │   ├── RecaptchaGate.tsx
     │   │   │   ├── starOnGithub.tsx
     │   │   │   ├── theme-provider.tsx
     │   │   │   ├── ThemeToggle.tsx
+    │   │   │   ├── UptimeStatus.tsx
     │   │   │   └── VoiceButton.tsx
     │   │   ├── cookie-policy/
     │   │   │   ├── layout.tsx
@@ -426,6 +483,7 @@ Directory structure:
     │   ├── components/
     │   │   ├── BlockInspectAndContext.tsx
     │   │   ├── media-room.tsx
+    │   │   ├── OnboardingChecklist.tsx
     │   │   ├── PasswordGate.tsx
     │   │   ├── PasswordStrengthMeter.tsx
     │   │   ├── Slide-Button.tsx
@@ -518,9 +576,11 @@ Directory structure:
     │   │   ├── use-refetch.ts
     │   │   └── use-toast.ts
     │   ├── lib/
+    │   │   ├── abTesting.ts
     │   │   ├── assembly.ts
     │   │   ├── check-pro-status.ts
     │   │   ├── checkAndSyncProStatus.ts
+    │   │   ├── clientVersionCheck.ts
     │   │   ├── cloudinary.ts
     │   │   ├── creditsAlert.ts
     │   │   ├── email.ts
@@ -543,6 +603,7 @@ Directory structure:
     │   ├── server/
     │   │   ├── db.ts
     │   │   ├── keepalive.ts
+    │   │   ├── read-replica-2-db.ts
     │   │   ├── read-replica-db.ts
     │   │   └── api/
     │   │       ├── root.ts
@@ -559,7 +620,25 @@ Directory structure:
     │       ├── FormInput.ts
     │       ├── Project.ts
     │       └── typhonjs-escomplex.d.ts
+    ├── .cursor/
+    │   ├── README.md
+    │   ├── .cursorignore
+    │   ├── context/
+    │   │   ├── dirs.md
+    │   │   ├── overview.md
+    │   │   ├── stack.md
+    │   │   └── workflows.md
+    │   └── rules/
+    │       ├── README.md
+    │       ├── auth-security.mdc
+    │       ├── global.mdc
+    │       ├── nextjs.mdc
+    │       ├── prisma.mdc
+    │       ├── tailwind-shadcn.mdc
+    │       ├── trpc.mdc
+    │       └── typescript.mdc
     ├── .github/
+    │   ├── copilot-instructions.md
     │   ├── FUNDING.yml
     │   ├── ISSUE_TEMPLATE/
     │   │   ├── bug_report.md
@@ -897,9 +976,11 @@ The [GitDiagram](https://gitdiagram.com/Saksham-Goel1107/Dionysus) provides a li
 
 This is especially useful for new contributors, reviewers, and anyone interested in the technical architecture of Dionysus. Click the badge above to explore the interactive diagram!
 
+---
+
 ## 📄 Licensing
 
-## This project is licensed under the [Dionysus Proprietary License](LICENSE). The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
+This project is licensed under the [Dionysus Proprietary License](LICENSE). The source code is made available for review but all rights are reserved. Unauthorized reproduction, modification, or distribution is strictly prohibited. For licensing inquiries, please contact the repository owner.
 
 ## 🔑 Environment Configuration
 
