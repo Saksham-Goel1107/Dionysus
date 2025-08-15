@@ -442,6 +442,31 @@ export default function UserAvatarMenu() {
             </span>
             A/B Testing Program
           </Button>
+          <div className="mt-3 flex w-full items-center justify-between gap-2 px-2">
+            <Button
+              variant="outline"
+              className="flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 py-3 text-base font-semibold shadow-sm transition-colors hover:bg-green-50 dark:border-gray-800 dark:bg-gray-900 dark:hover:bg-green-950"
+              asChild
+            >
+              <a
+                href="https://todo-dionysus-gray.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                tabIndex={0}
+                className="flex w-full items-center gap-3"
+              >
+                <span className="text-xl" role="img" aria-label="Todo App">
+                  ✅
+                </span>
+                <span className="flex flex-col items-start">
+                  <span>Todo App</span>
+                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                    Simple &amp; fast productivity tool
+                  </span>
+                </span>
+              </a>
+            </Button>
+          </div>
           <div className="mt-2 flex w-full justify-center">
             <StarOnGithub />
           </div>

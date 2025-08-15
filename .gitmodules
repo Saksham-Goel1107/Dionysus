@@ -4,3 +4,6 @@
 [submodule "Photo-Editor"]
 	path = Photo-Editor
 	url = https://github.com/Saksham-Goel1107/Photo-Editor.git
+[submodule "todoapp"]
+	path = todoapp
+	url = https://github.com/Saksham-Goel1107/todoapp

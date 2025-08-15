@@ -1,6 +1,9 @@
 'use client';
 
+import { Logo } from '@/app/components/logo';
+import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
 import { Button } from '@/components/ui/button';
+import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import {
   Sidebar,
   SidebarContent,
@@ -14,10 +17,9 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import useProject from '@/hooks/use-project';
-import { api } from '@/trpc/react';
-import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import { cn } from '@/lib/utils';
-import { useTheme } from 'next-themes';
+import { api } from '@/trpc/react';
+import DOMPurify from 'dompurify';
 import {
   Bot,
   CircleDollarSign,
@@ -27,12 +29,11 @@ import {
   Plus,
   Presentation,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
-import { Logo } from '@/app/components/logo';
-import DOMPurify from 'dompurify';
+import LastUpdated from './LastUpdated';
 
 type Props = {};
 
@@ -327,6 +328,9 @@ const AppSidebar = ({}: Props) => {
                         }
                       }}
                     />
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <LastUpdated />
                   </SidebarMenuItem>
                 </>
               )}
