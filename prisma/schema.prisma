@@ -18,6 +18,7 @@ model User {
   lastName            String?
   emailAddress        String              @unique
   credits             Int                 @default(150)
+  isN8nDone           Boolean             @default(false)
   isPro               Boolean             @default(false)
   lowCreditsEmailSent Boolean?            @default(false)
   passwordHash        String?             @db.VarChar(256)

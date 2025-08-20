@@ -125,7 +125,6 @@ const FEATURE_ICONS = {
   help: '🆘',
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare global {
   interface Window {
     Clerk?: any;

@@ -60,7 +60,6 @@ export default function MaintenanceScreen() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {

@@ -2,6 +2,7 @@
 
 import { Logo } from '@/app/components/logo';
 import GradientTypewriter from '@/components/mvpblocks/gradient-typewriter';
+import { N8nRegistrationModal } from '@/components/n8n-registration/N8nRegistrationModal';
 import { Button } from '@/components/ui/button';
 import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
 import {
@@ -28,10 +29,11 @@ import {
   LayoutDashboard,
   Plus,
   Presentation,
+  Workflow,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import LastUpdated from './LastUpdated';
 
@@ -42,6 +44,7 @@ type SidebarItem = {
   url: string;
   icon: React.ElementType;
   isChat?: boolean;
+  isN8n?: boolean;
 };
 
 const items: SidebarItem[] = [
@@ -66,6 +69,12 @@ const items: SidebarItem[] = [
     icon: Plus,
   },
   {
+    title: 'n8n Instance',
+    url: '#',
+    icon: Workflow,
+    isN8n: true,
+  },
+  {
     title: 'Billing',
     url: '/billing',
     icon: CreditCard,
@@ -85,6 +94,15 @@ const items: SidebarItem[] = [
 const AppSidebar = ({}: Props) => {
   const pathname = usePathname();
   const { projects, projectId, setProjectId } = useProject();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!projectId) return;
+    if (projects && !projects.some((p) => p.id === projectId)) {
+      setProjectId('');
+      router.replace('/dashboard');
+    }
+  }, [projectId, projects, setProjectId, router]);
   const { data: members } = api.project.getTeamMembers.useQuery({ projectId });
   const { open, setOpen } = useSidebar();
   useEffect(() => {
@@ -102,6 +120,27 @@ const AppSidebar = ({}: Props) => {
   const [search, setSearch] = useState('');
   const [hasProPlan, sethasProPlan] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+  const [showN8nModal, setShowN8nModal] = useState(false);
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams?.get('n8n_modal') === 'open') {
+      setShowN8nModal(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!router) return;
+    const url = new URL(window.location.href);
+    if (showN8nModal) {
+      url.searchParams.set('n8n_modal', 'open');
+      router.replace(url.pathname + url.search, { scroll: false });
+    } else {
+      if (url.searchParams.has('n8n_modal')) {
+        url.searchParams.delete('n8n_modal');
+        router.replace(url.pathname + url.search, { scroll: false });
+      }
+    }
+  }, [showN8nModal, router]);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const { setTheme } = useTheme();
@@ -189,6 +228,22 @@ const AppSidebar = ({}: Props) => {
                             <Bot />
                             <span>Video Call + Chat</span>
                           </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  }
+                  if (item.isN8n) {
+                    return (
+                      <SidebarMenuItem key="n8n">
+                        <SidebarMenuButton asChild>
+                          <button
+                            onClick={() => setShowN8nModal(true)}
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                            aria-label="Open n8n registration modal"
+                          >
+                            <item.icon />
+                            <span>{item.title}</span>
+                          </button>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     );
@@ -359,6 +414,8 @@ const AppSidebar = ({}: Props) => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <N8nRegistrationModal isOpen={showN8nModal} onClose={() => setShowN8nModal(false)} />
     </Sidebar>
   );
 };

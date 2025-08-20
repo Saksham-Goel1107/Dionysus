@@ -171,33 +171,6 @@ const Advanced = () => {
   }, []);
   return (
     <>
-      <div className="sticky top-2 z-40 mx-auto mb-4 w-full max-w-2xl">
-        <div className="flex flex-col items-center rounded-2xl border border-blue-300 bg-gradient-to-r from-blue-50 via-white to-blue-100 p-2 shadow-xl backdrop-blur-md dark:border-blue-700 dark:from-blue-900/60 dark:via-blue-950/80 dark:to-blue-900/60 sm:p-3">
-          <button
-            className="mb-2 text-base font-semibold text-blue-700 hover:underline focus:outline-none dark:text-blue-200"
-            onClick={() => setShowIndex((v) => !v)}
-            aria-label="Toggle feature index"
-          >
-            {showIndex ? 'Hide' : 'Show'} Feature Index
-          </button>
-          {showIndex && (
-            <div className="grid w-full grid-cols-2 gap-2 px-1 sm:grid-cols-3 md:grid-cols-4">
-              {featureIndex.map((f) => (
-                <a
-                  href={`#${f.id}`}
-                  key={f.id}
-                  onClick={() => setShowIndex(false)}
-                  className="flex cursor-pointer items-center gap-2 rounded-xl border border-blue-200 bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-900 shadow-sm transition-all duration-150 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-700/60 dark:text-blue-100 dark:hover:bg-blue-600"
-                  style={{ minWidth: 0 }}
-                >
-                  <span className="text-lg">{f.icon}</span>
-                  <span className="truncate">{f.label}</span>
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
       <Protect
         plan="dionysus_advance_pack"
         fallback={
@@ -227,6 +200,33 @@ const Advanced = () => {
           </div>
         }
       >
+        <div className="sticky top-2 z-40 mx-auto mb-4 w-full max-w-2xl">
+          <div className="flex flex-col items-center rounded-2xl border border-blue-300 bg-gradient-to-r from-blue-50 via-white to-blue-100 p-2 shadow-xl backdrop-blur-md dark:border-blue-700 dark:from-blue-900/60 dark:via-blue-950/80 dark:to-blue-900/60 sm:p-3">
+            <button
+              className="mb-2 text-base font-semibold text-blue-700 hover:underline focus:outline-none dark:text-blue-200"
+              onClick={() => setShowIndex((v) => !v)}
+              aria-label="Toggle feature index"
+            >
+              {showIndex ? 'Hide' : 'Show'} Feature Index
+            </button>
+            {showIndex && (
+              <div className="grid w-full grid-cols-2 gap-2 px-1 sm:grid-cols-3 md:grid-cols-4">
+                {featureIndex.map((f) => (
+                  <a
+                    href={`#${f.id}`}
+                    key={f.id}
+                    onClick={() => setShowIndex(false)}
+                    className="flex cursor-pointer items-center gap-2 rounded-xl border border-blue-200 bg-blue-100 px-3 py-2 text-xs font-semibold text-blue-900 shadow-sm transition-all duration-150 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-700/60 dark:text-blue-100 dark:hover:bg-blue-600"
+                    style={{ minWidth: 0 }}
+                  >
+                    <span className="text-lg">{f.icon}</span>
+                    <span className="truncate">{f.label}</span>
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         <div className="flex flex-col gap-6">
           {featureIndex.map((f) => {
             let content = null;

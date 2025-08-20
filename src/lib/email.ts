@@ -417,3 +417,46 @@ export async function sendUserUnblockedEmail({ to, name }: { to: string; name?: 
     html,
   });
 }
+
+export async function sendN8nRegistrationEmail({ to, name }: { to: string; name?: string }) {
+  const subject = 'Your n8n Instance — Access & Setup Details';
+
+  const html = `
+  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width:680px;margin:0 auto;background:#ffffff;border-radius:10px;padding:28px;border:1px solid #eef2ff;color:#0f172a;">
+    <h1 style="color:#2563eb;margin:0 0 8px 0;">n8n Access Details</h1>
+    <p style="color:#374151;margin:0 0 16px 0;">Hi${name ? ' ' + name : ''}, your account was registered with our self-hosted n8n instance. Below are the details and a short guide to get started.</p>
+
+    <div style="background:#f8fafc;padding:16px;border-radius:8px;margin-bottom:16px;border:1px solid #e6eef8;">
+      <p style="margin:0 0 8px 0;font-size:16px;"><strong>Access n8n:</strong> <a href="https://n8n-ceaw.onrender.com" style="color:#2563eb;text-decoration:underline;">https://n8n-ceaw.onrender.com</a></p>
+      <p style="margin:4px 0 0 0;font-size:14px;color:#6b7280;">We recommend copying the password and storing it in a password manager.</p>
+    </div>
+
+    <h3 style="margin-top:8px;color:#111;font-size:1rem;">Quick Start Guide</h3>
+    <ol style="color:#374151;margin:8px 0 16px 20px;">
+      <li>Open the n8n URL and sign in with the credentials above.</li>
+      <li>Create a new workflow: <em>Workflows → New → Choose Trigger</em>.</li>
+      <li>Add a node and connect it to test runs. See the <a href="https://docs.n8n.io/" style="color:#2563eb;">n8n docs</a> for examples.</li>
+    </ol>
+
+    <div style="background:#fffbeb;border:1px dashed #f59e0b;padding:12px;border-radius:8px;margin-bottom:16px;color:#92400e;">
+      <strong>Security recommendations:</strong>
+      <ul style="margin:8px 0 0 18px;color:#92400e;">
+        <li>Enable two-factor authentication (2FA) for your Dionysus account if available.</li>
+        <li>Do not reuse passwords across services — use a password manager.</li>
+        <li>If you suspect any compromise, rotate the n8n password immediately.</li>
+      </ul>
+    </div>
+
+    <p style="color:#374151;font-size:14px;margin-bottom:10px;">We also checked the password against public breach databases at the time of registration; however, it's a good idea to run your own checks at <a href="https://haveibeenpwned.com/" style="color:#2563eb;">Have I Been Pwned</a> and avoid passwords that appear there.</p>
+
+    <p style="font-size:12px;color:#94a3b8;margin-top:22px;text-align:center;">&copy; ${new Date().getFullYear()} Dionysus</p>
+  </div>
+  `;
+
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'no-reply@example.com',
+    to,
+    subject,
+    html,
+  });
+}
