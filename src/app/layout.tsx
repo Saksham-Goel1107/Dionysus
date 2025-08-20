@@ -5,25 +5,26 @@ import { type Metadata } from 'next';
 
 import { TRPCReactProvider } from '@/trpc/react';
 
+import BlockInspectAndContext from '@/components/BlockInspectAndContext';
+import CustomContextMenu from '@/components/ui/CustomContextMenu';
+import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
 import { GoogleOneTap } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
+import MaintenanceScreen from '../components/updates/screen';
 import Providers from './Providers';
 import { ThemeProvider } from './components/theme-provider';
-import MaintenanceScreen from '../components/updates/screen';
-import ScrollToTopButton from '@/components/ui/ScrollToTopButton';
-import CustomContextMenu from '@/components/ui/CustomContextMenu';
-import BlockInspectAndContext from '@/components/BlockInspectAndContext';
 // import MultisessionAppSupport from './MultiSession';
+import FullscreenPrompt from '@/components/FullscreenPrompt';
+import ReleaseNoteModal from '@/components/ReleaseNoteModal';
+import ClientOnly from '@/components/ui/ClientOnly';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import Head from 'next/head';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
-import ClientOnly from '@/components/ui/ClientOnly';
-import Offline from './offline';
-import Head from 'next/head';
 import MobileInfoPrompt from './components/MobileInfoPrompt';
-import FullscreenPrompt from '@/components/FullscreenPrompt';
+import Offline from './offline';
 
 export const metadata: Metadata = {
   title: {
@@ -164,6 +165,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ClientOnly>
               <MobileInfoPrompt />
+              <ReleaseNoteModal />
             </ClientOnly>
             <ClerkProviderWithTheme>
               {/* <MultisessionAppSupport> */}
