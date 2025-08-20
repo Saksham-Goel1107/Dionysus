@@ -87,17 +87,32 @@ These files and folders are required for best-in-class AI, Copilot, and team dev
 
 ---
 
-## 🆕 Recent & Notable Features
+## 🆕 Latest Features & Security Enhancements
 
-- **A/B Testing Opt-In System**: Users can opt-in/out of A/B tests, with backend-enforced limits and Clerk metadata. Admins see tester badges in user management.
-- **Userback Feedback Integration**: Userback widget now receives A/B tester status for targeted feedback collection.
-- **Pro & Tester Badges**: Visual badges for Pro and A/B tester users in both user and admin UIs.
-- **Newsletter Opt-In**: Users can subscribe to updates/newsletter, with backend validation and Clerk metadata.
-- **Confirmation Dialogs**: UI confirmation before opting out of A/B tests or newsletter.
-- **DevTools Detection**: Security feature to detect and respond to browser devtools usage.
-- **Live AI Chat Sidebar**: Persistent Gemini-powered chat for code/repo Q&A.
-- **Admin Analytics & User Management**: Enhanced dashboards, user search, and compliance tools.
-- **Performance & Security**: Improved Sentry/Arcjet integration, rate limiting, and error tracking.
+### 🛡️ Enterprise Security & Integration Suite
+- **n8n Self-Hosted Integration**: Secure n8n instance registration with advance plan protection, HIBP password validation, and automated email notifications with setup guides
+- **Advanced Password Security**: Have I Been Pwned integration using k-Anonymity API for breach detection during registration
+- **Database State Tracking**: Comprehensive registration status tracking with backend validation to prevent duplicate registrations
+- **DevTools Detection & Response**: Real-time detection of browser developer tools with security awareness messaging
+- **Enhanced Middleware Security**: Advanced bot detection, VPN/proxy filtering, and geographic access controls with detailed threat analysis
+
+### 🧪 User Experience & Testing Framework
+- **A/B Testing Program**: Smart opt-in/out system with backend-enforced participant limits (20 users), Clerk metadata integration, and admin visibility badges
+- **Newsletter Subscription System**: Google Sheets integration for subscriber management with confirmation dialogs and privacy-first approach
+- **Userback Feedback Integration**: Context-aware feedback collection with A/B tester status for targeted insights
+- **Pro & Tester Badges**: Visual identification system for Pro users and A/B testers across admin and user interfaces
+
+### 🚀 AI & Automation Features
+- **Live AI Chat Sidebar**: Persistent Gemini-powered assistant for code analysis, repository Q&A, and development guidance
+- **n8n Workflow Automation**: Enterprise-grade workflow automation including newsletter delivery, issue commenting, dynamic user creation, and error monitoring
+- **Smart Email Templates**: Comprehensive email system with n8n access details, security recommendations, and quick start guides
+- **HIBP Security Validation**: Client-side SHA-1 hashing for password breach checking without exposing sensitive data
+
+### 🔧 Developer Experience Improvements
+- **URL State Management**: Modal states persist in URL parameters for better UX and bookmarking
+- **Enhanced Error Handling**: Comprehensive error boundary with user-friendly messages and stack trace debugging
+- **Performance Monitoring**: Sentry integration with Vercel Speed Insights for real-time performance tracking
+- **Admin Analytics Dashboard**: Advanced user management, audit logging, and compliance tools for enterprise governance
 
 ```
 
@@ -107,6 +122,7 @@ Directory structure:
     ├── back-of-envelope.md
     ├── CODE_OF_CONDUCT.md
     ├── CODEOWNERS
+    ├── codeql-config.yml
     ├── commitlint.config.ts
     ├── components.json
     ├── CONTRIBUTING.md
@@ -137,6 +153,7 @@ Directory structure:
     ├── .prettierignore
     ├── .prettierrc
     ├── .travis.yml
+    ├── .vercelignore
     ├── prisma/
     │   └── schema.prisma
     ├── public/
@@ -180,13 +197,16 @@ Directory structure:
     │   │   │   │   ├── AppSidebar.tsx
     │   │   │   │   ├── ClientFeedbackForm.tsx
     │   │   │   │   ├── CurrentTimeDisplay.tsx
+    │   │   │   │   ├── LastUpdated.tsx
     │   │   │   │   ├── ProCrownUserButton.tsx
     │   │   │   │   └── UserButtonTutorial.tsx
     │   │   │   ├── advanced/
+    │   │   │   │   ├── AudioToText.tsx
     │   │   │   │   ├── CodeAnalytics.tsx
     │   │   │   │   ├── CodeFormatter.tsx
     │   │   │   │   ├── FileEncryptor.tsx
     │   │   │   │   ├── GitignoreModal.tsx
+    │   │   │   │   ├── ImageToText.tsx
     │   │   │   │   ├── Jwt.tsx
     │   │   │   │   ├── license.tsx
     │   │   │   │   ├── markdown-templates.ts
@@ -334,6 +354,8 @@ Directory structure:
     │   │   │   │       └── route.ts
     │   │   │   ├── ai-chat/
     │   │   │   │   └── route.ts
+    │   │   │   ├── audio-transcription/
+    │   │   │   │   └── route.ts
     │   │   │   ├── code-analytics/
     │   │   │   │   ├── quality.ts
     │   │   │   │   ├── route.ts
@@ -354,6 +376,8 @@ Directory structure:
     │   │   │   ├── github-commits/
     │   │   │   │   └── route.ts
     │   │   │   ├── has-password/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── image-analysis/
     │   │   │   │   └── route.ts
     │   │   │   ├── image-genration/
     │   │   │   │   └── route.ts
@@ -377,11 +401,15 @@ Directory structure:
     │   │   │   │       └── route.ts
     │   │   │   ├── process-meeting/
     │   │   │   │   └── route.ts
+    │   │   │   ├── proxy-n8n-register/
+    │   │   │   │   └── route.ts
     │   │   │   ├── readme-generator/
     │   │   │   │   └── route.ts
     │   │   │   ├── recaptcha-verify/
     │   │   │   │   └── route.ts
     │   │   │   ├── send-export-warning/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── send-n8n-registration-email/
     │   │   │   │   └── route.ts
     │   │   │   ├── send-password-change-warning/
     │   │   │   │   └── route.ts
@@ -482,6 +510,7 @@ Directory structure:
     │   │       └── redis.ts
     │   ├── components/
     │   │   ├── BlockInspectAndContext.tsx
+    │   │   ├── FullscreenPrompt.tsx
     │   │   ├── media-room.tsx
     │   │   ├── OnboardingChecklist.tsx
     │   │   ├── PasswordGate.tsx
@@ -497,6 +526,8 @@ Directory structure:
     │   │   │   └── LogoGeneratorModal.tsx
     │   │   ├── mvpblocks/
     │   │   │   └── gradient-typewriter.tsx
+    │   │   ├── n8n-registration/
+    │   │   │   └── N8nRegistrationModal.tsx
     │   │   ├── shsfui/
     │   │   │   └── button/
     │   │   │       └── get-started-button.tsx
@@ -609,7 +640,8 @@ Directory structure:
     │   │       ├── root.ts
     │   │       ├── trpc.ts
     │   │       └── routers/
-    │   │           └── project.ts
+    │   │           ├── project.ts
+    │   │           └── user.ts
     │   ├── styles/
     │   │   └── globals.css
     │   ├── trpc/
@@ -659,6 +691,7 @@ Directory structure:
         ├── commit-msg
         ├── pre-commit
         └── pre-push
+
 
 ```
 
@@ -847,8 +880,20 @@ Directory structure:
   <img src="Demo/n8n-auto-github-issue-commentor.png" alt="n8n-auto-github-issue-commentor" width="480" />
   <p style="font-size: 0.95em; color: #888;">
     <em>
-    This image showcases the automation of commenting on all new GitHub issues using n8n.
-    The image illustrates the workflow setup in n8n, which automatically posts a comment whenever a new issue is created in the repository.
+    This image showcases the automation of commenting on all new GitHub issues using n8n, which automatically posts a comment whenever a new issue is created in the repository.
+    </em>
+  </p>
+  <img src="Demo/n8n-dynamic-user-creator.png" alt="n8n-dynamic-user-creator" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+    This image showcases the workflow which dynamically creates a new user in the system using n8n.
+    Whenever a new user requests to get the self hosted version of n8n thats a feature with the advance users.
+    </em>
+  </p>
+  <img src="Demo/n8n-error-catcher.png" alt="n8n-error-catcher" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+    This image showcases the workflow which catches all the errors in any  workflow and process it using the ai to get to the root problem easily and mail me directly and also append a log in the Google Sheets for a later preview. This is an important workflow over all workflow which makes sure no workflow bugs out and cause any kind of problem.
     </em>
   </p>
 
