@@ -1,12 +1,33 @@
 import { db } from '@/server/db';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await currentUser();
-    if (!user) {
+    const { userId, has } = await auth();
+
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const n8nRegistrationEnabled = process.env.NEXT_PUBLIC_N8N_REGISTRATION !== 'false';
+
+    if (!n8nRegistrationEnabled) {
+      return NextResponse.json(
+        { error: 'N8N registration is not enabled.' },
+        { status: 403 },
+      );
+    }
+
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+
+    const hasAdvancePlan = has({ plan: 'dionysus_advance_pack' });
+
+    if (!hasAdvancePlan) {
+      return NextResponse.json(
+        { error: 'You need to upgrade to Advance Pack to use this feature.' },
+        { status: 403 },
+      );
     }
 
     // Check if user has already registered with n8n
@@ -50,7 +71,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // If n8n registration successful, update user's isN8nDone status
     await db.user.update({
       where: { emailAddress: user.emailAddresses[0]?.emailAddress },
       data: { isN8nDone: true },

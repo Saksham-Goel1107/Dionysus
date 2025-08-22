@@ -3,7 +3,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 
 const FullscreenPrompt: React.FC = () => {
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('fullscreenPromptDismissed') !== 'true';
+    }
+    return true;
+  });
   const [isMobile, setIsMobile] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
 
@@ -13,7 +18,10 @@ const FullscreenPrompt: React.FC = () => {
         window.innerWidth <= 768 ||
         /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       setIsMobile(mobile);
-      if (mobile) setShow(false);
+      if (mobile) {
+        setShow(false);
+        sessionStorage.setItem('fullscreenPromptDismissed', 'true');
+      }
     }
     checkMobile();
     window.addEventListener('resize', checkMobile);
@@ -21,6 +29,7 @@ const FullscreenPrompt: React.FC = () => {
     function handleClickOutside(event: MouseEvent) {
       if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
         setShow(false);
+        sessionStorage.setItem('fullscreenPromptDismissed', 'true');
       }
     }
     if (show) {
@@ -35,6 +44,7 @@ const FullscreenPrompt: React.FC = () => {
   useEffect(() => {
     if (window.innerHeight === screen.height && window.innerWidth === screen.width) {
       setShow(false);
+      sessionStorage.setItem('fullscreenPromptDismissed', 'true');
     }
   }, []);
 
@@ -48,6 +58,7 @@ const FullscreenPrompt: React.FC = () => {
       (elem as any).msRequestFullscreen();
     }
     setShow(false);
+    sessionStorage.setItem('fullscreenPromptDismissed', 'true');
   };
 
   if (!show || isMobile) return null;
