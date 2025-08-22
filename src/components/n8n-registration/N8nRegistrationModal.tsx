@@ -193,8 +193,14 @@ export const N8nRegistrationModal = ({ isOpen, onClose }: N8nRegistrationModalPr
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
               <Lock className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className={`text-center text-2xl font-bold ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Registration Disabled</h2>
-            <p className={`text-center ${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}>
+            <h2
+              className={`text-center text-2xl font-bold ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+            >
+              Registration Disabled
+            </h2>
+            <p
+              className={`text-center ${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}
+            >
               n8n registration is currently turned off. Please try again later.
             </p>
           </div>
@@ -228,138 +234,138 @@ export const N8nRegistrationModal = ({ isOpen, onClose }: N8nRegistrationModalPr
               </div>
             }
           >
-          <DialogHeader>
-            <DialogTitle>Register with n8n Instance</DialogTitle>
-            <DialogDescription>
-              Register your account with the self-hosted n8n instance. Your information will be used
-              for registration.
-            </DialogDescription>
-          </DialogHeader>
+            <DialogHeader>
+              <DialogTitle>Register with n8n Instance</DialogTitle>
+              <DialogDescription>
+                Register your account with the self-hosted n8n instance. Your information will be
+                used for registration.
+              </DialogDescription>
+            </DialogHeader>
 
-          {/* Show message if user has already registered */}
-          {n8nStatus?.isN8nDone && (
-            <Alert className="border-blue-200 bg-blue-50 text-blue-800">
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>
-                You have already registered with n8n! You can access your n8n instance at{' '}
-                <a
-                  href="https://n8n-ceaw.onrender.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:no-underline"
-                >
-                  https://n8n-ceaw.onrender.com
-                </a>
-              </AlertDescription>
-            </Alert>
-          )}
+            {/* Show message if user has already registered */}
+            {n8nStatus?.isN8nDone && (
+              <Alert className="border-blue-200 bg-blue-50 text-blue-800">
+                <CheckCircle className="h-4 w-4" />
+                <AlertDescription>
+                  You have already registered with n8n! You can access your n8n instance at{' '}
+                  <a
+                    href="https://n8n-ceaw.onrender.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:no-underline"
+                  >
+                    https://n8n-ceaw.onrender.com
+                  </a>
+                </AlertDescription>
+              </Alert>
+            )}
 
-          {/* Only show registration form if user hasn't registered yet */}
-          {!n8nStatus?.isN8nDone && (
-            <>
-              {status === 'success' && (
-                <Alert className="border-green-200 bg-green-50 text-green-800">
-                  <CheckCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    Successfully registered with n8n! This dialog will close automatically.
-                  </AlertDescription>
-                </Alert>
-              )}
+            {/* Only show registration form if user hasn't registered yet */}
+            {!n8nStatus?.isN8nDone && (
+              <>
+                {status === 'success' && (
+                  <Alert className="border-green-200 bg-green-50 text-green-800">
+                    <CheckCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Successfully registered with n8n! This dialog will close automatically.
+                    </AlertDescription>
+                  </Alert>
+                )}
 
-              {status === 'error' && (
-                <Alert className="border-red-200 bg-red-50 text-red-800">
-                  <XCircle className="h-4 w-4" />
-                  <AlertDescription>{errorMessage}</AlertDescription>
-                </Alert>
-              )}
+                {status === 'error' && (
+                  <Alert className="border-red-200 bg-red-50 text-red-800">
+                    <XCircle className="h-4 w-4" />
+                    <AlertDescription>{errorMessage}</AlertDescription>
+                  </Alert>
+                )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="userInfo">User Information</Label>
-                  <div className="rounded-md border bg-gray-50 p-3 dark:bg-gray-900">
-                    <p className="text-sm">
-                      <strong>Name:</strong> {user?.firstName} {user?.lastName}
-                    </p>
-                    <p className="text-sm">
-                      <strong>Email:</strong> {user?.emailAddresses[0]?.emailAddress}
-                    </p>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="userInfo">User Information</Label>
+                    <div className="rounded-md border bg-gray-50 p-3 dark:bg-gray-900">
+                      <p className="text-sm">
+                        <strong>Name:</strong> {user?.firstName} {user?.lastName}
+                      </p>
+                      <p className="text-sm">
+                        <strong>Email:</strong> {user?.emailAddresses[0]?.emailAddress}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="relative space-y-2">
-                  <Label htmlFor="password">n8n Password</Label>
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter password for n8n account"
-                    required
-                    minLength={8}
-                    disabled={isLoading || status === 'success'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-9 inline-flex items-center"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-600" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-600" />
-                    )}
-                  </button>
-                  {hibpWarning && <p className="mt-1 text-sm text-red-600">{hibpWarning}</p>}
-                </div>
+                  <div className="relative space-y-2">
+                    <Label htmlFor="password">n8n Password</Label>
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password for n8n account"
+                      required
+                      minLength={8}
+                      disabled={isLoading || status === 'success'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-3 top-9 inline-flex items-center"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-600" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-600" />
+                      )}
+                    </button>
+                    {hibpWarning && <p className="mt-1 text-sm text-red-600">{hibpWarning}</p>}
+                  </div>
 
-                <div className="relative space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
-                    required
-                    minLength={8}
-                    disabled={isLoading || status === 'success'}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    className="absolute right-3 top-9 inline-flex items-center"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-gray-600" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-600" />
-                    )}
-                  </button>
-                </div>
+                  <div className="relative space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Confirm your password"
+                      required
+                      minLength={8}
+                      disabled={isLoading || status === 'success'}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      className="absolute right-3 top-9 inline-flex items-center"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-600" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-600" />
+                      )}
+                    </button>
+                  </div>
 
-                <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleClose}
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isLoading || status === 'success' || !password || !confirmPassword}
-                  >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isLoading ? 'Registering...' : 'Register with n8n'}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </>
-          )}
-        </Protect>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleClose}
+                      disabled={isLoading}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isLoading || status === 'success' || !password || !confirmPassword}
+                    >
+                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isLoading ? 'Registering...' : 'Register with n8n'}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </>
+            )}
+          </Protect>
         )}
       </DialogContent>
     </Dialog>

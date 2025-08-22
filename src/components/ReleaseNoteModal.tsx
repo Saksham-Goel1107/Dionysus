@@ -75,8 +75,13 @@ export const ReleaseNoteModal: React.FC = () => {
       try {
         const response = await fetch('/client-version.json');
         const versionData: { releaseNoteVersion: number } = await response.json();
-        const storedVersion = Number(localStorage.getItem(LOCALSTORAGE_KEY) || '0');
-
+        const storedVersionRaw = localStorage.getItem(LOCALSTORAGE_KEY);
+        if (storedVersionRaw === null) {
+          localStorage.setItem(LOCALSTORAGE_KEY, String(versionData.releaseNoteVersion));
+          setLoading(false);
+          return;
+        }
+        const storedVersion = Number(storedVersionRaw);
         if (storedVersion < versionData.releaseNoteVersion) {
           const latestRelease = RELEASE_NOTES[0];
           if (latestRelease) {
@@ -90,7 +95,6 @@ export const ReleaseNoteModal: React.FC = () => {
         setLoading(false);
       }
     };
-
     checkVersion();
   }, []);
 

@@ -12,10 +12,7 @@ export async function POST(req: NextRequest) {
     const n8nRegistrationEnabled = process.env.NEXT_PUBLIC_N8N_REGISTRATION !== 'false';
 
     if (!n8nRegistrationEnabled) {
-      return NextResponse.json(
-        { error: 'N8N registration is not enabled.' },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: 'N8N registration is not enabled.' }, { status: 403 });
     }
 
     const client = await clerkClient();
