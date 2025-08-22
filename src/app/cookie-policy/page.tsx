@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
-import { Navbar } from '../components/navbar';
 import Link from 'next/link';
+import { Navbar } from '../components/navbar';
 
 export const metadata: Metadata = {
   title: 'Cookie & Privacy Policy | Dionysus',
@@ -233,7 +233,220 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="mb-3 text-xl font-semibold">8. Updates to This Policy</h2>
+          <h2 className="mb-3 text-xl font-semibold">
+            8. Third-Party Services & AI Content Disclaimer
+          </h2>
+          <p className="mb-4">
+            By using Dionysus, you acknowledge and agree to the terms and policies of all
+            third-party services we integrate with, including but not limited to:
+          </p>
+          <ul className="mb-4 list-disc space-y-2 pl-5">
+            <li>
+              <strong>Clerk:</strong> Authentication and user management -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://clerk.com/legal/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://clerk.com/legal/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>Google Gemini AI:</strong> Language model and AI responses -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://ai.google.dev/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://ai.google.dev/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>Sentry:</strong> Error monitoring and performance tracking -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://sentry.io/privacy/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://sentry.io/terms/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>Vercel:</strong> Hosting and analytics -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://vercel.com/legal/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://vercel.com/legal/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>GitHub:</strong> Repository integration and data synchronization -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://docs.github.com/en/site-policy/github-terms/github-terms-of-service"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>Stripe:</strong> Payment processing (when applicable) -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://stripe.com/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://stripe.com/legal/ssa"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <strong>Assembly AI:</strong> Speech-to-text transcription services -{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://www.assemblyai.com/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Privacy Policy
+              </a>{' '}
+              |{' '}
+              <a
+                className="text-blue-600 underline"
+                href="https://www.assemblyai.com/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Terms of Service
+              </a>
+            </li>
+          </ul>
+
+          <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+            <h3 className="mb-2 font-semibold text-yellow-800 dark:text-yellow-200">
+              ⚠️ AI Content Disclaimer
+            </h3>
+            <p className="mb-2 text-yellow-700 dark:text-yellow-300">
+              <strong>AI-Generated Content Notice:</strong> Our platform utilizes artificial
+              intelligence and machine learning models to generate content, responses, and
+              suggestions. You acknowledge and understand that:
+            </p>
+            <ul className="mb-2 list-disc space-y-1 pl-5 text-yellow-700 dark:text-yellow-300">
+              <li>AI-generated content may contain inaccuracies, errors, or misinformation</li>
+              <li>
+                AI responses should not be considered as professional advice (legal, medical,
+                financial, etc.)
+              </li>
+              <li>
+                You should verify any AI-generated information before relying on it for important
+                decisions
+              </li>
+              <li>AI models may reflect biases present in their training data</li>
+              <li>
+                We implement content filters, but AI may occasionally generate inappropriate or
+                offensive content
+              </li>
+            </ul>
+            <p className="text-yellow-700 dark:text-yellow-300">
+              <strong>Content Responsibility:</strong> Dionysus is not liable for any consequences
+              arising from the use of AI-generated content. You use AI features at your own
+              discretion and risk.
+            </p>
+          </div>
+
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+            <h3 className="mb-2 font-semibold text-red-800 dark:text-red-200">
+              🚫 Content Restrictions
+            </h3>
+            <p className="mb-2 text-red-700 dark:text-red-300">
+              You agree not to use our AI features to generate or attempt to generate:
+            </p>
+            <ul className="mb-2 list-disc space-y-1 pl-5 text-red-700 dark:text-red-300">
+              <li>Illegal, harmful, or malicious content</li>
+              <li>Content that violates intellectual property rights</li>
+              <li>Discriminatory, hateful, or harassing content</li>
+              <li>Explicit sexual or violent content</li>
+              <li>Misleading information intended to deceive or manipulate</li>
+              <li>Content that violates any applicable laws or regulations</li>
+            </ul>
+            <p className="text-red-700 dark:text-red-300">
+              Violation of these restrictions may result in immediate suspension or termination of
+              your account.
+            </p>
+          </div>
+
+          <p className="mb-4">
+            <strong>Third-Party Liability:</strong> We are not responsible for the actions,
+            policies, content, or services of third-party providers. Any issues with third-party
+            services should be directed to the respective service provider. By using our platform,
+            you agree to hold Dionysus harmless from any claims, damages, or losses arising from
+            your use of integrated third-party services.
+          </p>
+        </section>
+
+        <section className="mb-8">
+          <h2 className="mb-3 text-xl font-semibold">9. Updates to This Policy</h2>
           <p className="mb-4">
             We may update this Cookie & Privacy Policy at any time, for any reason, and reserve the
             right to do so without prior consent or notice to users. You are responsible for
@@ -245,7 +458,7 @@ export default function CookiePolicyPage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="mb-3 text-xl font-semibold">9. Contact & Support</h2>
+          <h2 className="mb-3 text-xl font-semibold">10. Contact & Support</h2>
           <p className="mb-4">
             If you have any questions, requests, or concerns about our Cookie & Privacy Policy or
             data practices, please contact us at{' '}
@@ -258,7 +471,7 @@ export default function CookiePolicyPage() {
 
         <div className="mt-8 border-t border-gray-200 pt-6 dark:border-gray-700">
           <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-            Last updated: July 28, 2025
+            Last updated: August 22, 2025
           </p>
         </div>
       </div>

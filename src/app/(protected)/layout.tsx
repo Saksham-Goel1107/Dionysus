@@ -13,6 +13,7 @@ import { redirect } from 'next/navigation';
 import AppSidebar from './_components/AppSidebar';
 import ClientFeedbackForm from './_components/ClientFeedbackForm';
 import CurrentTimeDisplay from './_components/CurrentTimeDisplay';
+import RandomQuotes from './_components/RandomQuotes';
 import UserButtonTutorial from './_components/UserButtonTutorial';
 import ProCrownUserButtonWrapper from './ProCrownUserButtonWrapper';
 
@@ -40,6 +41,7 @@ const Layout = async ({ children }: Props) => {
           <div className="flex items-center gap-2 rounded-md border border-sidebar-border bg-sidebar p-2 px-4 shadow">
             <SidebarTrigger />
             <CurrentTimeDisplay />
+            <RandomQuotes />
             <div className="ml-auto flex items-center justify-center gap-2">
               <div className="hidden items-center gap-2 sm:block md:flex">
                 <OrganizationSwitcher />
