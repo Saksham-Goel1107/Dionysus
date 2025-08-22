@@ -199,6 +199,7 @@ Directory structure:
     │   │   │   │   ├── CurrentTimeDisplay.tsx
     │   │   │   │   ├── LastUpdated.tsx
     │   │   │   │   ├── ProCrownUserButton.tsx
+    │   │   │   │   ├── RandomQuotes.tsx
     │   │   │   │   └── UserButtonTutorial.tsx
     │   │   │   ├── advanced/
     │   │   │   │   ├── AudioToText.tsx
@@ -415,6 +416,13 @@ Directory structure:
     │   │   │   │   └── route.ts
     │   │   │   ├── set-password/
     │   │   │   │   └── route.ts
+    │   │   │   ├── status-alerts/
+    │   │   │   │   ├── status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── subscribe/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── unsubscribe/
+    │   │   │   │       └── route.ts
     │   │   │   ├── stress-test/
     │   │   │   │   └── route.ts
     │   │   │   ├── stripe/
@@ -492,6 +500,8 @@ Directory structure:
     │   │   │   └── components/
     │   │   │       ├── IncidentHistory.tsx
     │   │   │       ├── MonitorCard.tsx
+    │   │   │       ├── StatusAlertBell.tsx
+    │   │   │       ├── StatusAlertSubscription.tsx
     │   │   │       ├── StatusChart.tsx
     │   │   │       └── StatusHeader.tsx
     │   │   ├── support/
@@ -515,6 +525,7 @@ Directory structure:
     │   │   ├── OnboardingChecklist.tsx
     │   │   ├── PasswordGate.tsx
     │   │   ├── PasswordStrengthMeter.tsx
+    │   │   ├── ReleaseNoteModal.tsx
     │   │   ├── Slide-Button.tsx
     │   │   ├── useNetworkStatus.ts
     │   │   ├── feedback/
@@ -691,6 +702,7 @@ Directory structure:
         ├── commit-msg
         ├── pre-commit
         └── pre-push
+
 
 
 ```
@@ -894,6 +906,12 @@ Directory structure:
   <p style="font-size: 0.95em; color: #888;">
     <em>
     This image showcases the workflow which catches all the errors in any  workflow and process it using the ai to get to the root problem easily and mail me directly and also append a log in the Google Sheets for a later preview. This is an important workflow over all workflow which makes sure no workflow bugs out and cause any kind of problem.
+    </em>
+  </p>
+  <img src="Demo/uptime-Status-n8n-Implementation.png" alt="n8uptime-Status-n8n-Implementation" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+    This image demonstrates the workflow that automatically sends email notifications to all subscribers whenever the system status changes—both when it goes down and when it comes back up. This ensures users are promptly informed about outages and recoveries, improving transparency and reliability.
     </em>
   </p>
 
