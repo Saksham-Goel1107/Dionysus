@@ -1,10 +1,11 @@
 'use client';
 
-import { RefreshCcw, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
+import { AlertTriangle, CheckCircle, RefreshCcw } from 'lucide-react';
+import StatusAlertBell from './StatusAlertBell';
 
 interface StatusHeaderProps {
   status: string;
@@ -25,7 +26,8 @@ export default function StatusHeader({
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-2 md:flex-row md:justify-between">
         <h1 className="text-3xl font-bold tracking-tight">System Status</h1>
-        <div className="mt-2 flex gap-2 md:mt-0">
+        <div className="mt-2 flex items-center gap-2 md:mt-0">
+          <StatusAlertBell />
           <Button variant="outline" size="sm" onClick={onRefresh}>
             <RefreshCcw className="mr-2 h-4 w-4" />
             Refresh Status

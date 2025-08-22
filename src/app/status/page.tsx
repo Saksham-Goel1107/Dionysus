@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
-import StatusHeader from './components/StatusHeader';
+import { useEffect, useState } from 'react';
+import { Navbar } from '../components/navbar';
 import IncidentHistory from './components/IncidentHistory';
 import MonitorCard from './components/MonitorCard';
-import { type Monitor, type UptimeRobotResponse } from './types';
+import StatusAlertSubscription from './components/StatusAlertSubscription';
 import StatusChart from './components/StatusChart';
-import { Navbar } from '../components/navbar';
+import StatusHeader from './components/StatusHeader';
+import { type Monitor, type UptimeRobotResponse } from './types';
 
 export default function StatusPage() {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
@@ -254,6 +255,9 @@ export default function StatusPage() {
             </Tabs>
           </>
         )}
+
+        {/* Status Alert Subscription */}
+        <StatusAlertSubscription />
 
         <div className="mt-12 text-center text-sm text-muted-foreground">
           <p>
