@@ -1,7 +1,6 @@
 import { ModeToggle } from '@/app/components/ThemeToggle';
 import { SignUp } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 // export default async function Page({ searchParams }: { searchParams: { [key: string]: string } }) {
@@ -74,17 +73,6 @@ export default async function Page() {
               },
             }}
           />
-        </div>
-        <div className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500">
-          By signing in, you agree to our{' '}
-          <Link href="/terms" className="underline hover:text-blue-600">
-            Terms
-          </Link>{' '}
-          and{' '}
-          <Link href="/privacy" className="underline hover:text-blue-600">
-            Privacy Policy
-          </Link>
-          .
         </div>
       </div>
     </div>

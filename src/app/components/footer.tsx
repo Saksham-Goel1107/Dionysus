@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Logo } from './logo';
 import { Github, Twitter, Linkedin, Loader2 } from 'lucide-react';
 import { ThemeSwitcher } from '@/components/ui/kibo-ui/theme-switcher';
+import { FullscreenToggle } from './FullscreenToggle';
 import { useTheme } from 'next-themes';
 import { useUser } from '@clerk/nextjs';
 import { useEffect, useState } from 'react';
@@ -29,15 +30,18 @@ export function Footer() {
               <GradientTypewriter words="Dionysus" />
             </div>
           </Link>
-          <ThemeSwitcher
-            className="mt-0.5"
-            defaultValue="system"
-            onChange={(theme) => {
-              if (typeof window !== 'undefined') {
-                setTheme(theme);
-              }
-            }}
-          />
+          <div className="flex flex-col items-center gap-2 md:items-start">
+            <ThemeSwitcher
+              className="mt-0.5"
+              defaultValue="system"
+              onChange={(theme) => {
+                if (typeof window !== 'undefined') {
+                  setTheme(theme);
+                }
+              }}
+            />
+            <FullscreenToggle className="mt-1" />
+          </div>
         </div>
         <div className="flex w-full flex-wrap items-center justify-center gap-3 sm:gap-4 md:w-auto md:gap-6">
           <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">

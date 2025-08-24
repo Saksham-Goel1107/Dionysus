@@ -18,6 +18,9 @@ export default function ClerkProviderWithTheme({ children }: { children: React.R
       appearance={{
         baseTheme: mounted && resolvedTheme === 'dark' ? [dark] : undefined,
       }}
+      waitlistUrl="/waitlist"
+      signUpUrl="/sign-up"
+      signInUrl="/sign-in"
     >
       {children}
     </ClerkProvider>
