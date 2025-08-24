@@ -7,6 +7,12 @@ export function useNetworkStatus() {
   const [isVerySlow, setIsVerySlow] = useState(false);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      setIsOffline(false);
+      setIsVerySlow(false);
+      return;
+    }
+
     const checkSpeed = async () => {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);

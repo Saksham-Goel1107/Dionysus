@@ -1,20 +1,21 @@
 'use client';
 import useProject from '@/hooks/use-project';
+import { api } from '@/trpc/react';
 import { ExternalLink, Github, MessageCirclePlus } from 'lucide-react';
 import Link from 'next/link';
-import CommitTabs from './_components/CommitTabs';
-import AskQuestionCard from './_components/AskQuestionCard';
-import MeetingCard from './_components/MeetingCard';
-import { api } from '@/trpc/react';
 import ArchiveButton from './_components/ArchiveButton';
+import AskQuestionCard from './_components/AskQuestionCard';
+import CommitTabs from './_components/CommitTabs';
+import MeetingCard from './_components/MeetingCard';
 const InviteButton = dynamic(() => import('./_components/InviteButton'), { ssr: false });
 
-import TeamMembers from './_components/TeamMembers';
-import dynamic from 'next/dynamic';
-import RepoMetricsCard from './_components/RepoMetricsCard';
 import { Button } from '@/components/ui/button';
+import { useFeatureFlag } from 'configcat-react';
+import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import RepoMetricsCard from './_components/RepoMetricsCard';
+import TeamMembers from './_components/TeamMembers';
 
 type Props = {};
 
@@ -23,6 +24,11 @@ const Page = ({}: Props) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLeavingLoading, setisLeavingLoading] = useState(false);
   const utils = api.useContext();
+
+  const { value: maintenanceScheduled } = useFeatureFlag('maintenancescheduled', false);
+  const { value: maintenanceDate } = useFeatureFlag('maintenancedate', '');
+  const { value: maintenanceTime } = useFeatureFlag('maintenancetime', '');
+
   const { data: isCreator } = api.project.isProjectCreator.useQuery(
     { projectId },
     { enabled: !!projectId },
@@ -83,20 +89,19 @@ const Page = ({}: Props) => {
     );
   }
 
-  const maintenanceScheduled = process.env.NEXT_PUBLIC_MAINTAINENCE_SCHEDULED;
-  const maintenanceDate = process.env.NEXT_PUBLIC_MAINTAINENCE_DATE;
-  const maintenanceTime = process.env.NEXT_PUBLIC_MAINTAINENCE_TIME;
-
   return (
     <div>
-      {maintenanceScheduled === 'true' && maintenanceDate && maintenanceTime && (
+      {maintenanceScheduled && maintenanceDate && maintenanceTime && (
         <div
           className="mb-4 flex items-center rounded-md bg-yellow-100 px-4 py-2 text-sm font-medium text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100"
           role="alert"
         >
           <span className="mr-2">⚠️</span>
-          Scheduled maintenance on <span className="mx-1 font-semibold">{maintenanceTime}</span>.
-          You shall be unable to access the site at that time.
+          Scheduled maintenance on{' '}
+          <span className="mx-1 font-semibold">
+            {maintenanceTime} on {maintenanceDate}
+          </span>
+          . You shall be unable to access the site at that time.
         </div>
       )}
 

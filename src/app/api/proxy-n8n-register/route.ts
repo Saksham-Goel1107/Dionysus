@@ -1,20 +1,26 @@
 import { db } from '@/server/db';
 import { auth, clerkClient } from '@clerk/nextjs/server';
+import * as configcat from 'configcat-node';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
+  let configCatClient: configcat.IConfigCatClient | null = null;
   try {
     const { userId, has } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const n8nRegistrationEnabled = process.env.NEXT_PUBLIC_N8N_REGISTRATION !== 'false';
+
+    configCatClient = configcat.getClient(process.env.CONFIGCAT_SDK_KEY!);
+    const n8nRegistrationEnabled = await configCatClient.getValueAsync(
+      'n8nregistrationenabled',
+      false,
+    );
 
     if (!n8nRegistrationEnabled) {
       return NextResponse.json({ error: 'N8N registration is not enabled.' }, { status: 403 });
     }
-
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
 
@@ -78,5 +84,9 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Proxy N8N registration error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  } finally {
+    if (configCatClient) {
+      configCatClient.dispose();
+    }
   }
 }

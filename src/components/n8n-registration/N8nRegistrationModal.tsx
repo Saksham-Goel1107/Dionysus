@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { api } from '@/trpc/react';
 import { Protect, useUser } from '@clerk/nextjs';
 import bcrypt from 'bcryptjs';
+import { useFeatureFlag } from 'configcat-react';
 import { CheckCircle, Eye, EyeOff, Loader2, Lock, XCircle } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -36,6 +37,8 @@ export const N8nRegistrationModal = ({ isOpen, onClose }: N8nRegistrationModalPr
   const [errorMessage, setErrorMessage] = useState('');
 
   const { resolvedTheme } = useTheme();
+
+  const { value: n8nRegistrationEnabled } = useFeatureFlag('n8nregistrationenabled', false);
 
   // Check if user has already registered with n8n
   const { data: n8nStatus, refetch: refetchN8nStatus } = api.user.getN8nStatus.useQuery(undefined, {
@@ -182,8 +185,6 @@ export const N8nRegistrationModal = ({ isOpen, onClose }: N8nRegistrationModalPr
   if (!isLoaded) {
     return null;
   }
-
-  const n8nRegistrationEnabled = process.env.NEXT_PUBLIC_N8N_REGISTRATION !== 'false';
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

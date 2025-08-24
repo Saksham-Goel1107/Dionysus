@@ -16,7 +16,7 @@ export async function GET() {
     const abTestingOptIn = metadata.abTestingOptIn === true;
 
     const currentCount = await getAbTestingSubscriberCount();
-    const limit = getAbTestingLimit();
+    const limit = await getAbTestingLimit();
 
     return NextResponse.json({
       success: true,

@@ -33,7 +33,7 @@ export async function POST(request: Request) {
 
     if (abTestingOptIn && !currentlyOptedIn) {
       const currentCount = await getAbTestingSubscriberCount();
-      const limit = getAbTestingLimit();
+      const limit = await getAbTestingLimit();
 
       if (currentCount >= limit) {
         return NextResponse.json(

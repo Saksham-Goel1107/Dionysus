@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 
 import { GeistSans } from 'geist/font/sans';
 import { type Metadata } from 'next';
+import { cookies } from 'next/headers';
 
 import { TRPCReactProvider } from '@/trpc/react';
 
@@ -20,6 +21,8 @@ import ClientOnly from '@/components/ui/ClientOnly';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import * as configcat from 'configcat-node';
+import { ConfigCatProvider } from 'configcat-react';
 import Head from 'next/head';
 import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
@@ -108,8 +111,31 @@ export const metadata: Metadata = {
   },
 };
 
+async function getMaintenanceMode(): Promise<boolean> {
+  let configCatClient: configcat.IConfigCatClient | null = null;
+
+  try {
+    configCatClient = configcat.getClient(process.env.CONFIGCAT_SDK_KEY!);
+    const isMaintenance = await configCatClient.getValueAsync('maintenancemode', false);
+    return isMaintenance;
+  } catch (error) {
+    console.error('Failed to get maintenance mode from ConfigCat:', error);
+  } finally {
+    if (configCatClient) {
+      configCatClient.dispose();
+    }
+  }
+  return false;
+}
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'true';
+  const isMaintenance = await getMaintenanceMode();
+
+  const cookieStore = await cookies();
+  const maintenanceBypass = cookieStore.get('maintenance_bypass');
+  const hasValidBypass = maintenanceBypass?.value === process.env.MAINTENANCE_BYPASS_SECRET;
+
+  const showMaintenance = isMaintenance && !hasValidBypass;
 
   return (
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
@@ -169,7 +195,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             </ClientOnly>
             <ClerkProviderWithTheme>
               {/* <MultisessionAppSupport> */}
-              {isMaintenance ? (
+              {showMaintenance ? (
                 <>
                   <MaintenanceScreen />
                   <BlockInspectAndContext />
@@ -181,39 +207,40 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                 </>
               ) : (
                 <>
-                  <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                  <TRPCReactProvider>
-                    <Offline>
-                      <Providers>{children}</Providers>
-                    </Offline>
-                  </TRPCReactProvider>
-                  <Toaster richColors />
-                  <ScrollToTopButton />
-                  <ClientOnly>
-                    <CustomContextMenu />
-                    <BlockInspectAndContext />
-                    <Analytics />
-                    <SpeedInsights />
-                    <FullscreenPrompt />
-                  </ClientOnly>
-                  <Script
-                    src="https://s.pageclip.co/v1/pageclip.js"
-                    charSet="utf-8"
-                    strategy="afterInteractive"
-                  ></Script>
-                  {process.env.NODE_ENV === 'production' && (
-                    <>
-                      <Script
-                        src="https://cdn.userway.org/widget.js"
-                        data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
-                      ></Script>
-                      <Script
-                        id="crisp-chat"
-                        type="text/javascript"
-                        strategy="afterInteractive"
-                        data-magic-browse="true"
-                        dangerouslySetInnerHTML={{
-                          __html: `
+                  <ConfigCatProvider sdkKey={process.env.CONFIGCAT_SDK_KEY || ''}>
+                    <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
+                    <TRPCReactProvider>
+                      <Offline>
+                        <Providers>{children}</Providers>
+                      </Offline>
+                    </TRPCReactProvider>
+                    <Toaster richColors />
+                    <ScrollToTopButton />
+                    <ClientOnly>
+                      <CustomContextMenu />
+                      <BlockInspectAndContext />
+                      <Analytics />
+                      <SpeedInsights />
+                      <FullscreenPrompt />
+                    </ClientOnly>
+                    <Script
+                      src="https://s.pageclip.co/v1/pageclip.js"
+                      charSet="utf-8"
+                      strategy="afterInteractive"
+                    ></Script>
+                    {process.env.NODE_ENV === 'production' && (
+                      <>
+                        <Script
+                          src="https://cdn.userway.org/widget.js"
+                          data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
+                        ></Script>
+                        <Script
+                          id="crisp-chat"
+                          type="text/javascript"
+                          strategy="afterInteractive"
+                          data-magic-browse="true"
+                          dangerouslySetInnerHTML={{
+                            __html: `
                             window.$crisp = [];
                             window.CRISP_WEBSITE_ID = \`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
                             window.$crisp.push(["safe", true]);
@@ -224,13 +251,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                               d.getElementsByTagName("head")[0].appendChild(s);
                             })();
                           `,
-                        }}
-                      />
-                      <Script
-                        id="hotjar"
-                        strategy="afterInteractive"
-                        dangerouslySetInnerHTML={{
-                          __html: `
+                          }}
+                        />
+                        <Script
+                          id="hotjar"
+                          strategy="afterInteractive"
+                          dangerouslySetInnerHTML={{
+                            __html: `
       (function(h,o,t,j,a,r){
           h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
           h._hjSettings={hjid:6468665,hjsv:6};
@@ -240,27 +267,28 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           a.appendChild(r);
       })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     `,
-                        }}
-                      />
-                      <Script
-                        async
-                        src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
-                      ></Script>
-                      <Script
-                        id="gtag"
-                        strategy="afterInteractive"
-                        dangerouslySetInnerHTML={{
-                          __html: `
+                          }}
+                        />
+                        <Script
+                          async
+                          src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
+                        ></Script>
+                        <Script
+                          id="gtag"
+                          strategy="afterInteractive"
+                          dangerouslySetInnerHTML={{
+                            __html: `
                             window.dataLayer = window.dataLayer || [];
                             function gtag(){dataLayer.push(arguments);}
                             gtag('js', new Date());
 
                             gtag('config', 'G-W02TQN9H65');
                           `,
-                        }}
-                      />
-                    </>
-                  )}
+                          }}
+                        />
+                      </>
+                    )}
+                  </ConfigCatProvider>
                 </>
               )}
               {/* </MultisessionAppSupport> */}

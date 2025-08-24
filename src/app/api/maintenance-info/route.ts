@@ -1,8 +1,33 @@
+import * as configcat from 'configcat-node';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const maintenanceEnd = new Date('2025-07-14T18:00:00Z').getTime();
-  if (process.env.NEXT_PUBLIC_MAINTAINENCE_MODE === 'false') {
+  let configCatClient: configcat.IConfigCatClient | null = null;
+  let isMaintenance = false;
+  let maintenanceEnd: number | undefined = undefined;
+  try {
+    configCatClient = configcat.getClient(process.env.CONFIGCAT_SDK_KEY!);
+    isMaintenance = await configCatClient.getValueAsync('maintenancemode', false);
+    const maintenanceEndValue = await configCatClient.getValueAsync('maintenanceend', '');
+    if (maintenanceEndValue) {
+      const parsed = Number(maintenanceEndValue);
+      if (!isNaN(parsed) && parsed > 0) {
+        maintenanceEnd = parsed;
+      } else {
+        const date = new Date(maintenanceEndValue);
+        if (!isNaN(date.getTime())) {
+          maintenanceEnd = date.getTime();
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to get maintenance info from ConfigCat:', error);
+  } finally {
+    if (configCatClient) {
+      configCatClient.dispose();
+    }
+  }
+  if (!isMaintenance) {
     return NextResponse.json({
       message: 'Site is not under maintenance mode and is perfectly working',
     });
