@@ -1,5 +1,5 @@
 import { clerkClient } from '@clerk/nextjs/server';
-import * as configcat from 'configcat-node';
+import { getFeatureFlagValue } from './configcat';
 
 export async function getAbTestingSubscriberCount(): Promise<number> {
   try {
@@ -35,11 +35,8 @@ export async function getAbTestingSubscriberCount(): Promise<number> {
 }
 
 export async function getAbTestingLimit(): Promise<number> {
-  let configCatClient: configcat.IConfigCatClient | null = null;
-
   try {
-    configCatClient = configcat.getClient(process.env.CONFIGCAT_SDK_KEY!);
-    const limit = await configCatClient.getValueAsync('abtestingsubscriberlimit', 20);
+    const limit = await getFeatureFlagValue('abtestingsubscriberlimit', 20);
 
     // Ensure we return a valid number
     if (typeof limit === 'number' && limit > 0) {
@@ -52,13 +49,9 @@ export async function getAbTestingLimit(): Promise<number> {
       return !isNaN(parsed) && parsed > 0 ? parsed : 20;
     }
 
-    return 20; // Default fallback
+    return 20;
   } catch (error) {
     console.error('Failed to get A/B testing limit from ConfigCat:', error);
     return 20;
-  } finally {
-    if (configCatClient) {
-      configCatClient.dispose();
-    }
   }
 }

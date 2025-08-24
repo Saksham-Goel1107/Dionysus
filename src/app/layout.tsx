@@ -19,9 +19,9 @@ import FullscreenPrompt from '@/components/FullscreenPrompt';
 import ReleaseNoteModal from '@/components/ReleaseNoteModal';
 import ClientOnly from '@/components/ui/ClientOnly';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { getFeatureFlagValue } from '@/lib/configcat';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import * as configcat from 'configcat-node';
 import { ConfigCatProvider } from 'configcat-react';
 import Head from 'next/head';
 import Script from 'next/script';
@@ -112,20 +112,12 @@ export const metadata: Metadata = {
 };
 
 async function getMaintenanceMode(): Promise<boolean> {
-  let configCatClient: configcat.IConfigCatClient | null = null;
-
   try {
-    configCatClient = configcat.getClient(process.env.CONFIGCAT_SDK_KEY!);
-    const isMaintenance = await configCatClient.getValueAsync('maintenancemode', false);
-    return isMaintenance;
+    return await getFeatureFlagValue('maintenancemode', false);
   } catch (error) {
     console.error('Failed to get maintenance mode from ConfigCat:', error);
-  } finally {
-    if (configCatClient) {
-      configCatClient.dispose();
-    }
+    return false;
   }
-  return false;
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
