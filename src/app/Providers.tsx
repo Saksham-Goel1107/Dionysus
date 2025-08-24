@@ -261,15 +261,14 @@ function Providers({ children }: { children: React.ReactNode }) {
       )}
       {!hideCookieBanner && <CookieBanner />}
       <div>
-        {userId ? (
-          <RecaptchaGate>
-            {children}
-            {process.env.NODE_ENV === 'production' && isClient && userData && (
-              <Script
-                id="userback"
-                strategy="afterInteractive"
-                dangerouslySetInnerHTML={{
-                  __html: `
+        <RecaptchaGate>
+          {children}
+          {process.env.NODE_ENV === 'production' && isClient && userData && userId && (
+            <Script
+              id="userback"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
       window.Userback = window.Userback || {};
       Userback.access_token = "${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN}";
       (async function() {
@@ -297,48 +296,44 @@ function Providers({ children }: { children: React.ReactNode }) {
         var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
       })(document);
                 `,
-                }}
-              />
-            )}
+              }}
+            />
+          )}
 
-            {!hideAiChat && <AiToolkitButton setIsSidebarOpen={setIsSidebarOpen} />}
-            {!hideAiChat && (
-              <AiChatSidebar
-                isOpen={isSidebarOpen}
-                onClose={() => {
-                  setIsSidebarOpen(false);
-                  document.body.style.overflow = '';
-                }}
-              />
-            )}
+          {!hideAiChat && userId && <AiToolkitButton setIsSidebarOpen={setIsSidebarOpen} />}
+          {!hideAiChat && userId && (
+            <AiChatSidebar
+              isOpen={isSidebarOpen}
+              onClose={() => {
+                setIsSidebarOpen(false);
+                document.body.style.overflow = '';
+              }}
+            />
+          )}
 
-            {showInactivityModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                <div className="max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl dark:bg-gray-900">
-                  <h2 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white">
-                    Inactivity Detected
-                  </h2>
-                  <p className="mb-4 text-gray-600 dark:text-gray-300">
-                    Redirecting to Google in <span className="font-bold">{countdown}</span>{' '}
-                    seconds...
-                  </p>
-                  <button
-                    className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-                    onClick={() => {
-                      setShowInactivityModal(false);
-                      setCountdown(10);
-                      if (countdownTimer.current) clearInterval(countdownTimer.current);
-                    }}
-                  >
-                    Stop Redirect
-                  </button>
-                </div>
+          {showInactivityModal && userId && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+              <div className="max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl dark:bg-gray-900">
+                <h2 className="mb-2 text-xl font-semibold text-gray-800 dark:text-white">
+                  Inactivity Detected
+                </h2>
+                <p className="mb-4 text-gray-600 dark:text-gray-300">
+                  Redirecting to Google in <span className="font-bold">{countdown}</span> seconds...
+                </p>
+                <button
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                  onClick={() => {
+                    setShowInactivityModal(false);
+                    setCountdown(10);
+                    if (countdownTimer.current) clearInterval(countdownTimer.current);
+                  }}
+                >
+                  Stop Redirect
+                </button>
               </div>
-            )}
-          </RecaptchaGate>
-        ) : (
-          children
-        )}
+            </div>
+          )}
+        </RecaptchaGate>
       </div>
     </>
   );

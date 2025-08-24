@@ -329,6 +329,7 @@ export default clerkMiddleware(async (auth, request) => {
       "connect-src 'self' https: wss: https://js.doppler.com https://va.vercel-scripts.com https://api.assemblyai.com https://js.stripe.com https://*.stripe.com https://generativelanguage.googleapis.com https://huggingface.co https://api-inference.huggingface.co https://api.github.com https://github.com https://www.google.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://www.recaptcha.net https://vitals.vercel-insights.com https://speed-insights.vercel.app https://sentry.io https://api.userback.io https://cdn.userway.org https://cdn.userway.com wss://client.relay.crisp.chat https://ws.hotjar.com https://client.crisp.chat https://crisp.chat https://api.ipregistry.co;",
       "font-src 'self' https: data: https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat;",
       "frame-src 'self' https://js.stripe.com https://vercel.live https://*.stripe.com https://www.gstatic.com https://www.google.com https://www.recaptcha.net https://browser.sentry-cdn.com https://accounts.google.com https://github.com https://api.github.com https://app.userback.io https://cdn.userway.org https://cdn.userway.com https://client.crisp.chat https://crisp.chat https://dionysus.crisp.help;",
+      "worker-src 'self' blob: data:;",
       "object-src 'none';",
       "frame-ancestors 'self' https://*.crisp.chat;",
       "base-uri 'self';",

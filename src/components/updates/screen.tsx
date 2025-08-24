@@ -2,7 +2,7 @@
 
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface MaintenanceInfo {
   maintenanceEnd?: number;
