@@ -20,24 +20,6 @@ const fallbackQuotes: Quote[] = [
   { text: 'Talk is cheap. Show me the code.', author: 'Linus Torvalds' },
 ];
 
-const quoteAPIs = [
-  {
-    name: 'quotable',
-    url: 'https://api.quotable.io/random?maxLength=100',
-    transform: (data: any) => ({ text: data.content, author: data.author }),
-  },
-  {
-    name: 'zenquotes',
-    url: 'https://zenquotes.io/api/random',
-    transform: (data: any) => ({ text: data[0].q, author: data[0].a }),
-  },
-  {
-    name: 'dummyjson',
-    url: 'https://dummyjson.com/quotes/random',
-    transform: (data: any) => ({ text: data.quote, author: data.author }),
-  },
-];
-
 export default function RandomQuotes() {
   const [quote, setQuote] = useState<Quote>(() => {
     const randomIndex = Math.floor(Math.random() * fallbackQuotes.length);
@@ -45,38 +27,19 @@ export default function RandomQuotes() {
   });
 
   const fetchQuote = async () => {
-    const shuffledAPIs = [...quoteAPIs].sort(() => Math.random() - 0.5);
-
-    for (const api of shuffledAPIs) {
-      try {
-        const response = await fetch(api.url, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const transformedQuote = api.transform(data);
-
-          if (transformedQuote.text.length <= 100) {
-            setQuote(transformedQuote);
-            return;
-          }
-        }
-      } catch (error) {
-        console.log(`Failed to fetch from ${api.name}:`, error);
-        continue;
+    try {
+      const response = await fetch('/api/quotes');
+      if (response.ok) {
+        const quote = await response.json();
+        setQuote(quote);
+        return;
       }
+    } catch (error) {
+      console.log('Failed to fetch quote:', error);
     }
 
     const randomIndex = Math.floor(Math.random() * fallbackQuotes.length);
-    const randomFallback = fallbackQuotes[randomIndex] || {
-      text: 'The only way to do great work is to love what you do.',
-      author: 'Steve Jobs',
-    };
-    setQuote(randomFallback);
+    setQuote(fallbackQuotes[randomIndex]!);
   };
 
   useEffect(() => {
