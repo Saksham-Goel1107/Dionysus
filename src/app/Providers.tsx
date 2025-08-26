@@ -12,6 +12,7 @@ import AiToolkitButton from './components/AiButton';
 import AiChatSidebar from './components/AiChatSidebar';
 import CookieBanner from './components/CookieBanner';
 import RecaptchaGate from './components/RecaptchaGate';
+import { useRouter } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -25,6 +26,7 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userId = user?.user?.id;
   const userData = user?.user;
   const [isAbTester, setIsAbTester] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -165,23 +167,30 @@ function Providers({ children }: { children: React.ReactNode }) {
         <div
           style={{
             position: 'fixed',
-            top: -6,
+            top: 0,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 99999,
-            pointerEvents: 'none',
-            width: 'auto',
-            paddingTop: 2,
+            pointerEvents: 'auto',
           }}
+          className="flex items-center gap-2"
         >
           <span
-            className="rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[10px] font-semibold text-white shadow"
-            style={{ letterSpacing: '0.08em', opacity: 0.8, lineHeight: 1 }}
+            className="cursor-default rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm"
+            style={{ letterSpacing: '0.08em', lineHeight: 1 }}
           >
-            A/B tester
+            A/B Tester
           </span>
+          <button
+            onClick={() => router.push('/alpha-help')}
+            className="cursor-pointer rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm transition-colors hover:bg-purple-600"
+            style={{ letterSpacing: '0.08em', lineHeight: 1 }}
+          >
+            A/B Support
+          </button>
         </div>
       )}
+
       {process.env.NODE_ENV === 'production' && (
         <>
           <div style={translateTabStyle} onClick={() => setShowTranslate((v) => !v)}>

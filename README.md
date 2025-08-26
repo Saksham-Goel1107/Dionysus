@@ -881,6 +881,8 @@ Directory structure:
   <img src="Demo/image15.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image16.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image17.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image18.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image19.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 
@@ -913,6 +915,12 @@ Directory structure:
     <em>
     This image demonstrates the workflow that automatically sends email notifications to all subscribers whenever the system status changes—both when it goes down and when it comes back up. This ensures users are promptly informed about outages and recoveries, improving transparency and reliability.
     </em>
+  </p>
+  <img src="Demo/n8n-alpha-tester-support.png" alt="n8n-alpha-tester-support" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+      This image demonstrates the workflow that provides support for alpha/beta users by capturing their issues and suggestions, processing them through AI analysis, and automatically creating high-priority tasks in Linear. This streamlined process ensures rapid response to user feedback and enables efficient prioritization of feature requests and bug fixes for continuous platform improvement.
+ </em>
   </p>
 
 ---
