@@ -93,15 +93,21 @@ const Page = ({}: Props) => {
     <div>
       {maintenanceScheduled && maintenanceDate && maintenanceTime && (
         <div
-          className="mb-4 flex items-center rounded-md bg-yellow-100 px-4 py-2 text-sm font-medium text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100"
+          className="mb-4 rounded-md bg-yellow-100 px-3 py-3 text-sm font-medium text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100 sm:px-4"
           role="alert"
         >
-          <span className="mr-2">⚠️</span>
-          Scheduled maintenance on{' '}
-          <span className="mx-1 font-semibold">
-            {maintenanceTime} on {maintenanceDate}
-          </span>
-          . You shall be unable to access the site at that time.
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 flex-shrink-0">⚠️</span>
+            <div className="min-w-0 flex-1">
+              <span className="block sm:inline">Scheduled maintenance on </span>
+              <span className="block font-semibold sm:inline">
+                {maintenanceTime} on {maintenanceDate}
+              </span>
+              <span className="block sm:inline">
+                . You shall be unable to access the site at that time.
+              </span>
+            </div>
+          </div>
         </div>
       )}
 

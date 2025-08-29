@@ -16,6 +16,7 @@ import React from 'react';
 import { toast } from 'sonner';
 import { askQuestion } from '../actions';
 import CodeReferences from './CodeReferences';
+import { Search } from 'lucide-react';
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
@@ -29,6 +30,41 @@ const AskQuestionCrad = () => {
   const [answer, setAnswer] = React.useState('');
   const saveAnswer = api.project.saveAnswer.useMutation();
   const refetch = useRefetch();
+
+  React.useEffect(() => {
+    const script = document.createElement('script');
+    script.src = `https://cse.google.com/cse.js?cx=${process.env.NEXT_PUBLIC_GOOGLE_CSE_ID}`;
+    script.async = true;
+    document.head.appendChild(script);
+    const style = document.createElement('style');
+    style.textContent = `
+      .dark .gsc-control-cse {
+        background-color: hsl(var(--card)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+      }
+      .dark .gsc-input-box {
+        background-color: hsl(var(--background)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+      }
+      .dark .gsc-input {
+        background-color: hsl(var(--background)) !important;
+        color: hsl(var(--foreground)) !important;
+      }
+      .dark .gsc-search-button {
+        background-color: hsl(var(--primary)) !important;
+        border: 1px solid hsl(var(--primary)) !important;
+      }
+      .dark .gsc-search-button:hover {
+        background-color: hsl(var(--primary)/0.9) !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(script);
+      document.head.removeChild(style);
+    };
+  }, []);
 
   const onSubmit = async (
     e?: React.FormEvent<HTMLFormElement> | React.KeyboardEvent<HTMLTextAreaElement>,
@@ -157,6 +193,19 @@ const AskQuestionCrad = () => {
               Ask Dionysus
             </Button>
           </form>
+
+          <div className="mt-6 border-t pt-6">
+            <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Search className="h-4 w-4" />
+              Search on Google
+            </div>
+            <div
+              className="gcse-search"
+              data-resultsUrl=""
+              data-newWindow="true"
+              data-linktarget="_blank"
+            ></div>
+          </div>
         </CardContent>
       </Card>
     </>
