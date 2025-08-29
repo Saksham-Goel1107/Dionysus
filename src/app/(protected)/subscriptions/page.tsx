@@ -43,20 +43,73 @@ export default function Page() {
       </div>
 
       {/* Organization Plan */}
-      <section className="mb-16 flex flex-col items-center justify-center rounded-xl border border-blue-200 bg-blue-50 p-8 text-center dark:border-blue-900 dark:bg-blue-950/60">
-        <h2 className="mb-2 text-2xl font-bold text-blue-800 dark:text-blue-200">
-          Organization Plan
-        </h2>
-        <p className="mb-6 max-w-xl text-base text-blue-900 dark:text-blue-100">
-          Need a custom solution for your company, enterprise, or large team? <br />
-          Contact us for tailored features, volume pricing, and dedicated support.
-        </p>
-        <Button asChild size="lg" className="gap-2 bg-blue-700 text-white hover:bg-blue-800">
-          <Link href="mailto:sakshamgoel1107@gmail.com?subject=Organization%20Plan%20Inquiry">
-            <Mail className="h-5 w-5" />
-            Contact Us
-          </Link>
-        </Button>
+      <section className="border-gradient-to-r mb-16 overflow-hidden rounded-2xl border-2 bg-gradient-to-br from-blue-50 via-white to-purple-50 p-8 shadow-xl dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+        <div className="text-center">
+          <div className="mb-4 inline-flex items-center rounded-full bg-gradient-to-r from-blue-100 to-purple-100 px-4 py-2 text-sm font-medium text-blue-800 dark:from-blue-900/50 dark:to-purple-900/50 dark:text-blue-200">
+            ✨ Enterprise Solution
+          </div>
+          <h2 className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent">
+            Organization Plan
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-700 dark:text-gray-300">
+            Unlock enterprise-grade features with custom solutions tailored for your organization.
+            Get volume pricing, dedicated support, and advanced security features.
+          </p>
+
+          <div className="mb-8 grid gap-6 md:grid-cols-3">
+            <div className="flex flex-col items-center rounded-xl bg-white/60 p-4 backdrop-blur-sm dark:bg-gray-800/60">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50">
+                <span className="text-2xl">🏢</span>
+              </div>
+              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Custom Features</h3>
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                Tailored functionality for your specific needs
+              </p>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-white/60 p-4 backdrop-blur-sm dark:bg-gray-800/60">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/50">
+                <span className="text-2xl">💰</span>
+              </div>
+              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Volume Pricing</h3>
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                Cost-effective solutions for large teams
+              </p>
+            </div>
+            <div className="flex flex-col items-center rounded-xl bg-white/60 p-4 backdrop-blur-sm dark:bg-gray-800/60">
+              <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+                <span className="text-2xl">🛡️</span>
+              </div>
+              <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">Priority Support</h3>
+              <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+                Dedicated support team and SLA
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col justify-center gap-4 sm:flex-row">
+            <Button
+              asChild
+              size="lg"
+              className="transform gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+            >
+              <Link href="/#ContactForm">
+                <MessageCircle className="h-5 w-5" />
+                Schedule a Call
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="gap-2 border-2 border-blue-200 bg-white/80 text-blue-700 hover:border-blue-300 hover:bg-blue-50"
+            >
+              <Link href="mailto:sakshamgoel1107@gmail.com?subject=Organization%20Plan%20Inquiry">
+                <Mail className="h-5 w-5" />
+                Email Us
+              </Link>
+            </Button>
+          </div>
+        </div>
       </section>
 
       {/* Features Section */}

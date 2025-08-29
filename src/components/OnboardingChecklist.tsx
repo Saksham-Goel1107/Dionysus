@@ -89,7 +89,7 @@ export default function OnboardingChecklist() {
   }, [checked, open, skipped, fullyDone]);
 
   // Checklist is removed after done or skipped, no undo
-  if (fullyDone || skipped) return null;
+  if (fullyDone || skipped || process.env.NODE_ENV !== 'production') return null;
 
   if (!open)
     return (

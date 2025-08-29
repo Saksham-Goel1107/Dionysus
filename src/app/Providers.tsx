@@ -70,7 +70,8 @@ function Providers({ children }: { children: React.ReactNode }) {
     pathname?.startsWith('/sign-up') ||
     pathname?.startsWith('/onboarding') ||
     pathname?.startsWith('/rate-limit') ||
-    pathname?.startsWith('/block');
+    pathname?.startsWith('/block') ||
+    process.env.NODE_ENV !== 'production';
 
   const hideCookieBanner =
     pathname === '/rate-limit' ||

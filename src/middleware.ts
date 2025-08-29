@@ -333,7 +333,7 @@ export default clerkMiddleware(async (auth, request) => {
       "object-src 'none';",
       "frame-ancestors 'self' https://*.crisp.chat;",
       "base-uri 'self';",
-      "form-action 'self';",
+      "form-action 'self' https://send.pageclip.co;",
       'upgrade-insecure-requests;',
     ].join(' '),
   );
