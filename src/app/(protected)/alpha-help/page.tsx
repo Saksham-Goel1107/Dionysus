@@ -7,18 +7,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useUser } from '@clerk/nextjs';
+import { useFeatureFlag } from 'configcat-react';
 import {
   AlertTriangle,
   Bot,
   CheckCircle2,
   Clock,
   Loader2,
+  Lock,
   Send,
   Shield,
   Sparkles,
   User,
   Users,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -39,6 +43,7 @@ interface StoredChatSession {
 
 export default function AlphaHelpPage() {
   const { user, isLoaded } = useUser();
+  const { resolvedTheme } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +52,8 @@ export default function AlphaHelpPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const STORAGE_KEY = 'alpha-chat-session';
   const SESSION_DURATION = 60 * 60 * 1000;
+
+  const { value: alphaHelpEnabled } = useFeatureFlag('alphahelpEnabled', false);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -335,6 +342,45 @@ export default function AlphaHelpPage() {
             <div className="text-sm text-muted-foreground">
               Interested in becoming an alpha tester? Click the user button in the header twice and
               check for available spots in the alpha testing program. Then get registered for it.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!alphaHelpEnabled) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+              <Lock className="h-8 w-8 text-red-600" />
+            </div>
+            <CardTitle
+              className={`text-2xl font-bold ${resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+            >
+              Alpha Help Disabled
+            </CardTitle>
+            <CardDescription
+              className={`${resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'} max-w-md`}
+            >
+              The Alpha Support Center is currently disabled. Please try again later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-center">
+            <Alert className="border-red-200 bg-red-50 text-red-800">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                This feature has been temporarily disabled by the system administrators.
+              </AlertDescription>
+            </Alert>
+            <div className="text-sm text-muted-foreground">
+              If you need immediate support, please contact our{' '}
+              <Link href="/supportAuth" className="font-bold text-blue-700">
+                Support team
+              </Link>{' '}
+              directly.
             </div>
           </CardContent>
         </Card>

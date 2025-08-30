@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { getFeatureFlagValue } from '@/lib/configcat';
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,6 +8,12 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const alphaHelpEnabled = await getFeatureFlagValue('alphahelpEnabled', false);
+
+    if (!alphaHelpEnabled) {
+      return NextResponse.json({ error: 'Alpha help is not enabled.' }, { status: 403 });
     }
 
     const abTestResponse = await fetch(

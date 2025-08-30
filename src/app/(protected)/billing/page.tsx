@@ -1,7 +1,28 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { CurrencySelector } from '@/components/ui/currency-selector';
 import { Slider } from '@/components/ui/slider';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  convertCurrency,
+  formatCurrency,
+  getCurrencyByCode,
+  getExchangeRates,
+  SUPPORTED_CURRENCIES,
+  type Currency,
+} from '@/lib/currencyConverter';
+import { api } from '@/trpc/react';
+import { InfoIcon, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+import React, { useEffect, useMemo } from 'react';
 
 declare global {
   interface Window {
@@ -10,10 +31,6 @@ declare global {
     };
   }
 }
-import { api } from '@/trpc/react';
-import { InfoIcon, Loader2 } from 'lucide-react';
-import React, { useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 
 const UserProfile = dynamic(() => import('@clerk/nextjs').then((mod) => mod.UserProfile), {
   ssr: false,
@@ -28,14 +45,6 @@ const PaymentForm = dynamic(() => import('./components/PaymentForm'), {
     </div>
   ),
 });
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 // import PaymentForm from './components/PaymentForm'; // Removed to prevent SSR issues
 import {
   Dialog,
@@ -45,8 +54,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { BarChart2 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
+import { BarChart2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { validateCouponCode } from './couponUtils';
 
@@ -87,6 +96,14 @@ const BillingPage = () => {
     discount: number;
     code: string;
   } | null>(null);
+
+  // Currency conversion state
+  const [selectedCurrency, setSelectedCurrency] = React.useState<Currency>(
+    getCurrencyByCode('INR') || SUPPORTED_CURRENCIES[0]!,
+  );
+  const [exchangeRates, setExchangeRates] = React.useState<Record<string, number>>({});
+  const [isLoadingRates, setIsLoadingRates] = React.useState(false);
+
   const { user: clerkUser } = useUser();
   const router = useRouter();
   const creditsToBuyAmount = creditsToBuy[0]!;
@@ -95,7 +112,16 @@ const BillingPage = () => {
   if (hasProPlan) totalDiscount += 10;
   if (mfaEnabled) totalDiscount += 10;
   if (appliedCoupon) totalDiscount += appliedCoupon.discount;
-  const discountedPrice = (basePrice * (1 - totalDiscount / 100)).toFixed(2);
+  const discountedPriceINR = basePrice * (1 - totalDiscount / 100);
+
+  // Convert price to selected currency
+  const convertedPrice = convertCurrency(
+    discountedPriceINR,
+    'INR',
+    selectedCurrency.code,
+    exchangeRates,
+  );
+  const formattedPrice = formatCurrency(convertedPrice, selectedCurrency);
 
   // Calculate discount breakdown
   const discountParts: string[] = useMemo(() => {
@@ -110,13 +136,30 @@ const BillingPage = () => {
 
   const utils = api.useUtils();
 
+  // Load exchange rates when component mounts or currency changes
+  React.useEffect(() => {
+    const loadExchangeRates = async () => {
+      setIsLoadingRates(true);
+      try {
+        const rates = await getExchangeRates();
+        setExchangeRates(rates);
+      } catch (error) {
+        console.error('Failed to load exchange rates:', error);
+      } finally {
+        setIsLoadingRates(false);
+      }
+    };
+
+    loadExchangeRates();
+  }, []);
+
   const handlePaymentSuccess = () => {
     setIsPaymentOpen(false);
     void utils.project.getMyTransactions.invalidate();
     void utils.project.getMyCredits.invalidate();
     const notify = () => {
       const title = '🎉 Credits Purchased!';
-      const body = `You have successfully purchased ${creditsToBuyAmount} credits for ₹${discountedPrice}. Thank you for your purchase!`;
+      const body = `You have successfully purchased ${creditsToBuyAmount} credits for ${formattedPrice}. Thank you for your purchase!`;
       const icon = '/public/logo.png';
       try {
         if (window.Notification) {
@@ -307,7 +350,7 @@ const BillingPage = () => {
         {totalDiscount > 0 && (
           <div className="mt-1 text-sm text-green-700">
             🎉 {totalDiscount}% discount applied! New price:{' '}
-            <span className="font-bold">₹{discountedPrice}</span>
+            <span className="font-bold">{formattedPrice}</span>
             {discountBreakdown && (
               <span className="mt-1 block text-xs text-green-700">
                 (Includes {discountBreakdown})
@@ -326,7 +369,37 @@ const BillingPage = () => {
           value={creditsToBuy}
           className="cursor-grab active:cursor-grabbing"
         />
+
+        {/* Price Display */}
+        <div className="mt-4 rounded-lg border bg-muted/50 p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Price for {creditsToBuyAmount} credits:</span>
+            <span className="text-lg font-bold">{formattedPrice}</span>
+          </div>
+          {selectedCurrency.code !== 'INR' && (
+            <div className="mt-1 text-xs text-muted-foreground">
+              Original price: ₹{discountedPriceINR.toFixed(2)}
+            </div>
+          )}
+        </div>
+
         <div className="h-4"></div>
+
+        {/* Currency Selector */}
+        <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+          <label htmlFor="currency-selector" className="text-sm font-medium">
+            Currency:
+          </label>
+          <CurrencySelector
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={setSelectedCurrency}
+            className="w-full sm:w-48"
+          />
+          {isLoadingRates && (
+            <span className="text-xs text-muted-foreground">Updating rates...</span>
+          )}
+        </div>
+
         {/* Coupon code UI */}
         <div className="mb-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
           <input
@@ -344,7 +417,7 @@ const BillingPage = () => {
         <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
           <DialogTrigger asChild>
             <Button className="w-full sm:w-auto">
-              Buy {creditsToBuyAmount} credits for ₹{discountedPrice}
+              Buy {creditsToBuyAmount} credits for {formattedPrice}
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md md:max-w-lg">
@@ -357,10 +430,19 @@ const BillingPage = () => {
             <div className="pt-2">
               <PaymentForm
                 creditsToBuy={creditsToBuyAmount}
-                price={discountedPrice}
+                price={discountedPriceINR.toFixed(2)}
                 discountBreakdown={discountBreakdown}
                 onSuccess={handlePaymentSuccess}
               />
+              {selectedCurrency.code !== 'INR' && (
+                <div className="mt-4 rounded-md border-amber-200 bg-amber-50 p-3 text-amber-800">
+                  <p className="text-xs">
+                    <strong>Note:</strong> Payment will be processed in Indian Rupees (₹
+                    {discountedPriceINR.toFixed(2)}). The {selectedCurrency.name} amount (
+                    {formattedPrice}) is shown for reference only.
+                  </p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>

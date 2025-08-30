@@ -1,12 +1,15 @@
 import React from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { User, Settings, Shield, Bell, CreditCard, Link, Sparkles } from 'lucide-react';
 
 const sections = [
-  { id: 'profile', label: 'Profile', icon: '👤' },
-  { id: 'account', label: 'Account', icon: '⚙️' },
-  { id: 'security', label: 'Security', icon: '🔒' },
-  { id: 'notifications', label: 'Notifications', icon: '🔔' },
-  { id: 'billing', label: 'Billing', icon: '💳' },
-  { id: 'integrations', label: 'Integrations', icon: '🔗' },
+  { id: 'profile', label: 'Profile', icon: User, description: 'Personal information' },
+  { id: 'account', label: 'Account', icon: Settings, description: 'Account preferences' },
+  { id: 'security', label: 'Security', icon: Shield, description: 'Privacy & authentication' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, description: 'Email & alerts' },
+  { id: 'billing', label: 'Billing', icon: CreditCard, description: 'Payments & subscriptions' },
+  { id: 'integrations', label: 'Integrations', icon: Link, description: 'Connected services' },
 ];
 
 export default function SettingsSidebar({
@@ -17,28 +20,89 @@ export default function SettingsSidebar({
   onSelect: (id: string) => void;
 }) {
   return (
-    <aside className="flex w-full flex-col border-b bg-white px-2 py-4 shadow-sm dark:bg-gray-900 md:min-h-[70vh] md:w-64 md:border-b-0 md:border-r md:px-4">
-      <h1 className="mb-4 text-center text-xl font-bold text-blue-700 dark:text-blue-300 md:text-left md:text-2xl">
-        Settings
-      </h1>
+    <Card className="border-0 bg-white/80 shadow-2xl backdrop-blur-lg dark:bg-gray-800/80">
+      <CardHeader className="pb-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+            <Settings className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                <Sparkles className="mr-1 h-3 w-3" />
+                Alpha
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
 
-      {/* Scrollable nav on mobile with snap */}
-      <nav className="scroll-snap-x flex flex-row justify-start gap-2 overflow-x-auto scroll-smooth whitespace-nowrap md:flex-col md:justify-start md:overflow-visible">
-        {sections.map((section) => (
-          <button
-            key={section.id}
-            className={`scroll-snap-align-start flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition md:text-base ${
-              current === section.id
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-white'
-                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800'
-            }`}
-            onClick={() => onSelect(section.id)}
-          >
-            <span className="text-lg">{section.icon}</span>
-            <span>{section.label}</span>
-          </button>
-        ))}
-      </nav>
-    </aside>
+      <CardContent className="space-y-2">
+        <nav className="space-y-1">
+          {sections.map((section) => {
+            const IconComponent = section.icon;
+            const isActive = current === section.id;
+
+            return (
+              <button
+                key={section.id}
+                className={`group flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-200 ${
+                  isActive
+                    ? 'scale-[1.02] transform bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:scale-[1.01] hover:transform hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700/50'
+                }`}
+                onClick={() => onSelect(section.id)}
+              >
+                <div
+                  className={`rounded-lg p-2 ${
+                    isActive
+                      ? 'bg-white/20'
+                      : 'bg-gray-100 group-hover:bg-gray-200 dark:bg-gray-700 dark:group-hover:bg-gray-600'
+                  }`}
+                >
+                  <IconComponent
+                    className={`h-4 w-4 ${
+                      isActive ? 'text-white' : 'text-gray-600 dark:text-gray-300'
+                    }`}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={`text-sm font-medium ${
+                      isActive ? 'text-white' : 'text-gray-900 dark:text-gray-100'
+                    }`}
+                  >
+                    {section.label}
+                  </div>
+                  <div
+                    className={`truncate text-xs ${
+                      isActive ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
+                    }`}
+                  >
+                    {section.description}
+                  </div>
+                </div>
+                {isActive && <div className="h-2 w-2 rounded-full bg-white shadow-lg"></div>}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="mt-8 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div className="text-center">
+            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              ⚡ Enhanced with Alpha features
+            </p>
+            <div className="flex justify-center">
+              <Badge variant="outline" className="text-xs">
+                Premium Settings
+              </Badge>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
