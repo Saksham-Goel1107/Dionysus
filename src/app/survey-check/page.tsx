@@ -1,21 +1,22 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useTheme } from 'next-themes';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { UserButton, useUser } from '@clerk/nextjs';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription,
   DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/components/ui/dialog';
+import { UserButton, useUser } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
 const surveySchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
@@ -44,6 +45,8 @@ export default function SurveyPage() {
   const [submitError, setSubmitError] = useState('');
   const [dontSubscribe, setDontSubscribe] = useState(false);
   const [showDontSubscribeDialog, setShowDontSubscribeDialog] = useState(false);
+  const [canSkipSurvey, setCanSkipSurvey] = useState(false);
+  const [showSkipDialog, setShowSkipDialog] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const { theme, setTheme } = useTheme();
 
@@ -149,22 +152,82 @@ export default function SurveyPage() {
     }
   };
 
+  const handleSkipSurvey = async () => {
+    if (!user?.id) {
+      setSubmitError('User authentication failed. Please try again.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      // Mark survey as done without submitting data
+      const response = await fetch('/api/survey/skip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to skip survey');
+      }
+
+      router.push('/dashboard');
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'An error occurred while skipping survey',
+      );
+    } finally {
+      setIsSubmitting(false);
+      setShowSkipDialog(false);
+    }
+  };
+
   useEffect(() => {
-    async function checkSurveyStatus() {
-      if (isLoaded && user) {
+    if (!isLoaded) return;
+
+    if (!user) {
+      router.replace('/sign-in');
+      return;
+    }
+
+    // Check if onboarding is complete via Clerk metadata
+    const onboardingComplete = user.publicMetadata?.onboardingComplete;
+    if (!onboardingComplete) {
+      console.log('Onboarding not complete, redirecting to /onboarding');
+      router.replace('/onboarding');
+      return;
+    }
+
+    async function checkSurveyStatusAndFeatures() {
+      try {
+        // Check survey status
         const res = await fetch('/api/survey-status');
-        const { done } = await res.json();
-        if (done) {
-          router.replace('/dashboard');
+        if (res.ok) {
+          const { done } = await res.json();
+          if (done) {
+            router.replace('/dashboard');
+            return;
+          }
         }
+
+        const skipRes = await fetch('/api/survey/skip-enabled');
+        if (skipRes.ok) {
+          const { canSkip } = await skipRes.json();
+          setCanSkipSurvey(canSkip);
+        } else {
+          setCanSkipSurvey(false);
+        }
+      } catch (error) {
+        console.error('Error checking survey status or feature flags:', error);
       }
     }
-    checkSurveyStatus();
-  }, [isLoaded, user, router]);
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.replace('/sign-in');
-    }
+
+    checkSurveyStatusAndFeatures();
   }, [isLoaded, user, router]);
 
   if (!isLoaded || !user) {
@@ -576,17 +639,34 @@ export default function SurveyPage() {
                     Don&apos;t subscribe to newsletter
                   </label>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !isDirty || !isValid}
-                  className={`inline-flex justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
-                    theme === 'dark'
-                      ? 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
-                      : 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-50'
-                  }`}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Survey'}
-                </button>
+                <div className="flex justify-end gap-4">
+                  {canSkipSurvey && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowSkipDialog(true)}
+                      disabled={isSubmitting}
+                      className={
+                        theme === 'dark'
+                          ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }
+                    >
+                      Skip Survey
+                    </Button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !isDirty || !isValid}
+                    className={`inline-flex justify-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+                      theme === 'dark'
+                        ? 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-900'
+                        : 'border-blue-700 bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 focus:ring-offset-slate-50'
+                    }`}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Survey'}
+                  </button>
+                </div>
               </div>
             </div>
           </form>
@@ -620,6 +700,34 @@ export default function SurveyPage() {
                 Cancel
               </button>
             </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSkipDialog} onOpenChange={setShowSkipDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Skip Survey?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to skip the survey? This helps us understand your needs and
+              improve our platform. You can not fill this out later.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowSkipDialog(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSkipSurvey}
+              disabled={isSubmitting}
+              className="bg-orange-600 text-white hover:bg-orange-700"
+            >
+              {isSubmitting ? 'Skipping...' : 'Skip Survey'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
