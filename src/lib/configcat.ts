@@ -10,7 +10,7 @@ export function getConfigCatClient(): configcat.IConfigCatClient {
     }
 
     configCatClient = configcat.getClient(sdkKey, configcat.PollingMode.AutoPoll, {
-      pollIntervalSeconds: 900,
+      // pollIntervalSeconds: 900,
       requestTimeoutMs: 10000,
     });
   }

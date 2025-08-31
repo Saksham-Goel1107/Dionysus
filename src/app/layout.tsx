@@ -13,6 +13,7 @@ import { GoogleOneTap } from '@clerk/nextjs';
 import { Toaster } from 'sonner';
 import MaintenanceScreen from '../components/updates/screen';
 import Providers from './Providers';
+import AnnouncementBell from './components/AnnouncementBell';
 import { ThemeProvider } from './components/theme-provider';
 // import MultisessionAppSupport from './MultiSession';
 import FullscreenPrompt from '@/components/FullscreenPrompt';
@@ -208,6 +209,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     </TRPCReactProvider>
                     <Toaster richColors />
                     <ScrollToTopButton />
+                    <AnnouncementBell />
                     <ClientOnly>
                       <CustomContextMenu />
                       <BlockInspectAndContext />

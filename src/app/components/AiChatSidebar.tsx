@@ -58,9 +58,11 @@ const formatMessageContent = (content: string) => {
 export default function AiChatSidebar({
   isOpen,
   onClose,
+  isVisible = true,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  isVisible?: boolean;
 }) {
   const router = useRouter();
   const [message, setMessage] = useState('');
@@ -222,6 +224,10 @@ export default function AiChatSidebar({
       setIsListening(true);
     }
   };
+
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <>

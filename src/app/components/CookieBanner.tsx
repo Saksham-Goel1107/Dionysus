@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogClose,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-export default function CookieBanner() {
+export default function CookieBanner({ isVisible = true }: { isVisible?: boolean }) {
   const [visible, setVisible] = useState(false);
   const [ip, setIp] = useState<string | null>(null);
   const [ipDetails, setIpDetails] = useState<any>(null);
@@ -41,7 +41,7 @@ export default function CookieBanner() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  if (!visible || !isVisible) return null;
 
   const handleLeave = () => {
     window.location.href = 'https://www.google.com';

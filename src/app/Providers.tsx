@@ -5,14 +5,13 @@ import { useClientVersionCheck } from '@/lib/clientVersionCheck';
 import { useUser } from '@clerk/nextjs';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 import { getPerformance } from 'firebase/performance';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 import AiToolkitButton from './components/AiButton';
 import AiChatSidebar from './components/AiChatSidebar';
 import CookieBanner from './components/CookieBanner';
 import RecaptchaGate from './components/RecaptchaGate';
-import { useRouter } from 'next/navigation';
 
 declare global {
   interface Window {
@@ -69,15 +68,9 @@ function Providers({ children }: { children: React.ReactNode }) {
     pathname?.startsWith('/sign-in') ||
     pathname?.startsWith('/sign-up') ||
     pathname?.startsWith('/onboarding') ||
-    pathname?.startsWith('/rate-limit') ||
-    pathname?.startsWith('/block') ||
     process.env.NODE_ENV !== 'production';
 
-  const hideCookieBanner =
-    pathname === '/rate-limit' ||
-    pathname === '/block' ||
-    pathname === '/updates' ||
-    pathname === '/cookie-policy';
+  const hideCookieBanner = pathname === '/updates' || pathname === '/cookie-policy';
 
   const [showInactivityModal, setShowInactivityModal] = useState(false);
   const [countdown, setCountdown] = useState(10);
@@ -269,7 +262,7 @@ function Providers({ children }: { children: React.ReactNode }) {
           />
         </>
       )}
-      {!hideCookieBanner && <CookieBanner />}
+      <CookieBanner isVisible={!hideCookieBanner} />
       <div>
         <RecaptchaGate>
           {children}
@@ -310,16 +303,18 @@ function Providers({ children }: { children: React.ReactNode }) {
             />
           )}
 
-          {!hideAiChat && userId && <AiToolkitButton setIsSidebarOpen={setIsSidebarOpen} />}
-          {!hideAiChat && userId && (
-            <AiChatSidebar
-              isOpen={isSidebarOpen}
-              onClose={() => {
-                setIsSidebarOpen(false);
-                document.body.style.overflow = '';
-              }}
-            />
-          )}
+          <AiToolkitButton
+            setIsSidebarOpen={setIsSidebarOpen}
+            isVisible={!hideAiChat && !!userId}
+          />
+          <AiChatSidebar
+            isOpen={isSidebarOpen}
+            onClose={() => {
+              setIsSidebarOpen(false);
+              document.body.style.overflow = '';
+            }}
+            isVisible={!hideAiChat && !!userId}
+          />
 
           {showInactivityModal && userId && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">

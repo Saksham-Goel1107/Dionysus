@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState, useRef, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
@@ -16,9 +16,6 @@ const PUBLIC_ROUTE_PREFIXES = [
   '/support',
   '/status',
   '/api/recaptcha-verify(.*)',
-  '/rate-limit',
-  '/block',
-  '/blocked',
 ];
 
 function isPublicRoute(pathname: string) {
@@ -100,68 +97,69 @@ export default function RecaptchaGate({ children }: { children: React.ReactNode 
     };
   }, [handleVerification, pathname]);
 
+  const shouldShowError =
+    error && (process.env.NODE_ENV !== 'production' || !isPublicRoute(pathname));
+
   return (
     <>
       {children}
-      {error && (process.env.NODE_ENV !== 'production' || !isPublicRoute(pathname)) && (
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: '100vh',
+          width: '100vw',
+          background: 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)',
+          color: '#fff',
+          display: shouldShowError ? 'flex' : 'none',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          fontFamily: 'Inter, sans-serif',
+          textAlign: 'center',
+          padding: '2.5rem 1.5rem',
+          boxShadow: '0 0 0 100vmax rgba(0,0,0,0.7)',
+          transition: 'background 0.4s',
+        }}
+      >
         <div
           style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            height: '100vh',
-            width: '100vw',
-            background: 'radial-gradient(circle at 60% 40%, #2d2d2d 0%, #111 100%)',
-            color: '#fff',
+            background: 'rgba(30,30,30,0.98)',
+            borderRadius: 20,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+            padding: '2.5rem 2rem 2rem 2rem',
+            minWidth: 320,
+            maxWidth: 420,
+            border: '2px solid #f33',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 9999,
-            fontFamily: 'Inter, sans-serif',
-            textAlign: 'center',
-            padding: '2.5rem 1.5rem',
-            boxShadow: '0 0 0 100vmax rgba(0,0,0,0.7)',
-            transition: 'background 0.4s',
           }}
         >
-          <div
-            style={{
-              background: 'rgba(30,30,30,0.98)',
-              borderRadius: 20,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
-              padding: '2.5rem 2rem 2rem 2rem',
-              minWidth: 320,
-              maxWidth: 420,
-              border: '2px solid #f33',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
+          <span
+            style={{ fontSize: '3rem', marginBottom: 18, filter: 'drop-shadow(0 2px 8px #f33a)' }}
           >
-            <span
-              style={{ fontSize: '3rem', marginBottom: 18, filter: 'drop-shadow(0 2px 8px #f33a)' }}
-            >
-              🛡️
-            </span>
-            <>
-              <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}>
-                Access Blocked
-              </h1>
-              <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
-              <div style={{ marginTop: 24, fontSize: '0.98rem', color: '#aaa' }}>
-                This page is protected by reCAPTCHA.
-                <br />
-                If you believe this is a mistake, please refresh or contact{' '}
-                <a className="font-semibold text-blue-500" href="mailto:sakshamgoel1107@gmail.com">
-                  support
-                </a>
-                .
-              </div>
-            </>
-          </div>
+            🛡️
+          </span>
+          <>
+            <h1 style={{ fontSize: '1.7rem', fontWeight: 700, marginBottom: 10, color: '#f33' }}>
+              Access Blocked
+            </h1>
+            <p style={{ fontSize: '1.1rem', opacity: 0.92, marginBottom: 0 }}>{error}</p>
+            <div style={{ marginTop: 24, fontSize: '0.98rem', color: '#aaa' }}>
+              This page is protected by reCAPTCHA.
+              <br />
+              If you believe this is a mistake, please refresh or contact{' '}
+              <a className="font-semibold text-blue-500" href="mailto:sakshamgoel1107@gmail.com">
+                support
+              </a>
+              .
+            </div>
+          </>
         </div>
-      )}
+      </div>
     </>
   );
 }

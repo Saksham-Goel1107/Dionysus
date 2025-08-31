@@ -6,7 +6,6 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { shouldRedirectToSurvey } from '@/lib/survey';
 import { OrganizationSwitcher } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import { Inbox } from '@novu/nextjs';
 import { Heart } from 'lucide-react';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -22,7 +21,7 @@ type Props = {
 };
 
 const Layout = async ({ children }: Props) => {
-  const { userId, sessionClaims } = await auth();
+  const { sessionClaims } = await auth();
 
   if (!sessionClaims?.metadata?.onboardingComplete) {
     return redirect('/onboarding');
@@ -45,14 +44,6 @@ const Layout = async ({ children }: Props) => {
             <div className="ml-auto flex items-center justify-center gap-2">
               <div className="hidden items-center gap-2 sm:block md:flex">
                 <OrganizationSwitcher />
-              </div>
-              <div className="dark:bg-gray-300">
-                {userId && process.env.NEXT_PUBLIC_NOVU_KEY && (
-                  <Inbox
-                    applicationIdentifier={process.env.NEXT_PUBLIC_NOVU_KEY}
-                    subscriber={userId}
-                  />
-                )}
               </div>
               <ModeToggle />
               <ProCrownUserButtonWrapper />

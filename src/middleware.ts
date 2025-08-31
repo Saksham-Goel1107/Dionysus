@@ -153,14 +153,18 @@ function createBlockedOverlay(reason: string, details?: string[]) {
           <div class="icon">🚫</div>
           <h1 class="title">Access Restricted</h1>
           <p class="message">${reason}</p>
-          ${details && details.length > 0 ? `
+          ${
+            details && details.length > 0
+              ? `
             <div class="details">
               <h3>Security Issues Detected:</h3>
               <ul>
-                ${details.map(detail => `<li>${detail}</li>`).join('')}
+                ${details.map((detail) => `<li>${detail}</li>`).join('')}
               </ul>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
           <div class="contact">
             <p><strong>Need Help?</strong></p>
             <p>If you believe this is an error, please contact support:</p>
@@ -370,14 +374,14 @@ export default clerkMiddleware(async (auth, request) => {
       return new NextResponse(
         createBlockedOverlay(
           'Automated tools and scripts are not allowed to access this service.',
-          [`Suspicious User-Agent detected: ${userAgent}`, 'Please use a standard web browser']
+          [`Suspicious User-Agent detected: ${userAgent}`, 'Please use a standard web browser'],
         ),
         {
           status: 403,
           headers: {
             'Content-Type': 'text/html',
-            'Cache-Control': 'no-store'
-          }
+            'Cache-Control': 'no-store',
+          },
         },
       );
     }
@@ -415,15 +419,15 @@ export default clerkMiddleware(async (auth, request) => {
                 '• Disable VPN or proxy if active',
                 '• Avoid using Tor or anonymous browsers',
                 '• Ensure your browser is not flagged as an automation tool',
-                '• Try using a standard, residential network'
-              ]
+                '• Try using a standard, residential network',
+              ],
             ),
             {
               status: 403,
               headers: {
                 'Content-Type': 'text/html',
-                'Cache-Control': 'no-store'
-              }
+                'Cache-Control': 'no-store',
+              },
             },
           );
         }
@@ -464,7 +468,6 @@ export default clerkMiddleware(async (auth, request) => {
     }
   }
 
-
   const isHighLoadApiRoute =
     pathname.startsWith('/api/ai-') ||
     pathname.startsWith('/api/git-') ||
@@ -476,51 +479,42 @@ export default clerkMiddleware(async (auth, request) => {
     if (isHighLoadApiRoute) {
       const rateLimitHeader = request.headers.get('x-ratelimit-remaining');
       if (rateLimitHeader === '0' || decision.isDenied()) {
-        return new NextResponse(
-          createRateLimitOverlay(),
-          {
-            status: 429,
-            headers: {
-              'Content-Type': 'text/html',
-              'Cache-Control': 'no-store',
-              'Retry-After': '60'
-            }
-          }
-        );
+        return new NextResponse(createRateLimitOverlay(), {
+          status: 429,
+          headers: {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'no-store',
+            'Retry-After': '60',
+          },
+        });
       }
     }
   }
 
   if (decision.isDenied() && !pathname.startsWith('/api/uptime')) {
-    return new NextResponse(
-      createRateLimitOverlay(),
-      {
-        status: 429,
-        headers: {
-          'Content-Type': 'text/html',
-          'Cache-Control': 'no-store',
-          'Retry-After': '60'
-        }
-      }
-    );
+    return new NextResponse(createRateLimitOverlay(), {
+      status: 429,
+      headers: {
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-store',
+        'Retry-After': '60',
+      },
+    });
   }
 
   if (country && notAllowedCountries.includes(country)) {
     return new NextResponse(
-      createBlockedOverlay(
-        `Access from ${country} is currently restricted.`,
-        [
-          'This service is not available in your region',
-          'Please contact support if you need assistance'
-        ]
-      ),
+      createBlockedOverlay(`Access from ${country} is currently restricted.`, [
+        'This service is not available in your region',
+        'Please contact support if you need assistance',
+      ]),
       {
         status: 403,
         headers: {
           'Content-Type': 'text/html',
-          'Cache-Control': 'no-store'
-        }
-      }
+          'Cache-Control': 'no-store',
+        },
+      },
     );
   }
 
@@ -549,21 +543,18 @@ export default clerkMiddleware(async (auth, request) => {
 
       if (isBlocked) {
         return new NextResponse(
-          createBlockedOverlay(
-            'Your account has been temporarily suspended.',
-            [
-              'Your account access has been restricted',
-              'This may be due to terms of service violations',
-              'Contact support for account restoration'
-            ]
-          ),
+          createBlockedOverlay('Your account has been temporarily suspended.', [
+            'Your account access has been restricted',
+            'This may be due to terms of service violations',
+            'Contact support for account restoration',
+          ]),
           {
             status: 403,
             headers: {
               'Content-Type': 'text/html',
-              'Cache-Control': 'no-store'
-            }
-          }
+              'Cache-Control': 'no-store',
+            },
+          },
         );
       }
     }
@@ -595,19 +586,16 @@ export default clerkMiddleware(async (auth, request) => {
   const recaptchaFailed = request.cookies.get('recaptcha_failed')?.value === 'true';
   if (recaptchaFailed && isApiRouteGlobal && !isRecaptchaVerifyApi) {
     return new NextResponse(
-      createBlockedOverlay(
-        'Security verification required.',
-        [
-          'reCAPTCHA verification failed',
-          'Please complete the security check to continue',
-          'Refresh the page to try again'
-        ]
-      ),
+      createBlockedOverlay('Security verification required.', [
+        'reCAPTCHA verification failed',
+        'Please complete the security check to continue',
+        'Refresh the page to try again',
+      ]),
       {
         status: 403,
         headers: {
           'Content-Type': 'text/html',
-          'Cache-Control': 'no-store'
+          'Cache-Control': 'no-store',
         },
       },
     );

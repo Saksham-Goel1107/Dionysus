@@ -1,9 +1,9 @@
 'use client';
 
+import { useTheme } from 'next-themes';
+import Image from 'next/image';
 import * as React from 'react';
 import { markOnboardingComplete } from './completeOnboardingAction';
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
 
 const ONBOARDING_FINISHED_KEY = 'onboarding-finished';
 
@@ -152,16 +152,20 @@ function OnboardingPage() {
 
   React.useEffect(() => {
     document.body.style.overflow = 'hidden';
+
     // Show skip after 20 seconds on the first step
     let timer: NodeJS.Timeout | undefined;
     if (step === 0 && !showSkip) {
-      timer = setTimeout(() => setShowSkip(true), 20000);
-    } else if (step !== 0 && showSkip) {
-      setShowSkip(false);
+      timer = setTimeout(() => {
+        setShowSkip(true);
+      }, 20000);
     }
+
     return () => {
       document.body.style.overflow = '';
-      if (timer) clearTimeout(timer);
+      if (timer) {
+        clearTimeout(timer);
+      }
     };
   }, [step, showSkip]);
 
@@ -172,27 +176,40 @@ function OnboardingPage() {
       if (typeof window !== 'undefined') {
         localStorage.removeItem(ONBOARDING_FINISHED_KEY);
         setRedirecting(true);
+
         const pollForOnboarding = async (maxTries = 15, interval = 800) => {
           for (let i = 0; i < maxTries; i++) {
-            // @ts-ignore
-            if (window.Clerk && window.Clerk.user) {
+            try {
               // @ts-ignore
-              await window.Clerk.user.reload();
+              if (window.Clerk && window.Clerk.user) {
+                // @ts-ignore
+                await window.Clerk.user.reload();
+              }
+              // Use useUser hook to get latest user
+              const user = window.Clerk?.user || null;
+              if (user && user.publicMetadata && user.publicMetadata.onboardingComplete) {
+                window.location.href = '/survey-check';
+                return;
+              }
+              await new Promise((res) => setTimeout(res, interval));
+            } catch (error) {
+              console.error('Error during onboarding polling:', error);
+              break;
             }
-            // Use useUser hook to get latest user
-            const user = window.Clerk?.user || null;
-            if (user && user.publicMetadata && user.publicMetadata.onboardingComplete) {
-              window.location.href = '/survey-check';
-              return;
-            }
-            await new Promise((res) => setTimeout(res, interval));
           }
           // Fallback: force reload to get new session
           window.location.reload();
         };
-        pollForOnboarding();
+
+        pollForOnboarding().catch(() => {
+          // Fallback if polling fails
+          window.location.reload();
+        });
       }
-    } catch {}
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setRedirecting(false);
+    }
   }, []);
 
   if (showMeetDev) {
@@ -282,8 +299,12 @@ function OnboardingPage() {
     );
   }
 
-  // Guard: If current is undefined, show nothing (shouldn't happen)
-  if (!current) return null;
+  // Don't render main onboarding if current step is invalid
+  const shouldShowOnboarding = current && !showMeetDev;
+
+  if (!shouldShowOnboarding) {
+    return null;
+  }
 
   return (
     <div className="relative z-50 flex min-h-screen w-full items-center justify-center bg-gray-900/80 transition-colors duration-300 dark:bg-black/90">

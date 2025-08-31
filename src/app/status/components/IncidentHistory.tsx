@@ -14,14 +14,14 @@ const formatDuration = (minutes: number): string => {
   if (minutes < 60) {
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  
+
   if (remainingMinutes === 0) {
     return `${hours} hour${hours !== 1 ? 's' : ''}`;
   }
-  
+
   return `${hours} hour${hours !== 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes !== 1 ? 's' : ''}`;
 };
 
@@ -41,7 +41,7 @@ const generateIncidents = (monitors: Monitor[]) => {
         const hasNoDuration = !log.duration || log.duration === 0;
         const isMonitorCurrentlyDown = monitor.status === 0 || monitor.status === 1; // 0 = paused, 1 = not checked yet, 2 = up, 8 = seems down, 9 = down
         const isOngoing = hasNoDuration && isMonitorCurrentlyDown;
-        
+
         currentIncident = {
           id: `incident-${monitor.id}-${log.datetime}`,
           monitorId: monitor.id,
@@ -91,19 +91,19 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
             <div key={incident.id} className="border-b pb-6 last:border-0">
               <div className="mb-2 flex flex-col md:flex-row md:items-center md:justify-between">
                 <h3 className="text-lg font-semibold">{incident.monitorName} Outage</h3>
-                <Badge 
+                <Badge
                   variant={
-                    incident.status === 'resolved' 
-                      ? 'outline' 
-                      : incident.status === 'ongoing' 
-                        ? 'destructive' 
+                    incident.status === 'resolved'
+                      ? 'outline'
+                      : incident.status === 'ongoing'
+                        ? 'destructive'
                         : 'secondary'
                   }
                 >
-                  {incident.status === 'resolved' 
-                    ? 'Resolved' 
-                    : incident.status === 'ongoing' 
-                      ? 'Ongoing' 
+                  {incident.status === 'resolved'
+                    ? 'Resolved'
+                    : incident.status === 'ongoing'
+                      ? 'Ongoing'
                       : 'Under Investigation'}
                 </Badge>
               </div>
@@ -118,28 +118,32 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                 <span>·</span>
                 <span>
                   Duration:{' '}
-                  {incident.status === 'ongoing' 
-                    ? 'Ongoing' 
-                    : typeof incident.duration === 'number' && !isNaN(incident.duration) && incident.duration > 0
+                  {incident.status === 'ongoing'
+                    ? 'Ongoing'
+                    : typeof incident.duration === 'number' &&
+                        !isNaN(incident.duration) &&
+                        incident.duration > 0
                       ? formatDuration(incident.duration)
-                      : 'Unknown'
-                  }
+                      : 'Unknown'}
                 </span>
               </div>
 
               <div className="space-y-3">
-                <div className="rounded-md bg-orange-50 border border-orange-200 p-3 dark:bg-orange-950/20 dark:border-orange-800">
+                <div className="rounded-md border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950/20">
                   <p className="mb-1 text-sm font-medium text-orange-700 dark:text-orange-300">
-                    {format(incident.startTime, 'HH:mm')} - {incident.status === 'ongoing' ? 'Issue detected' : 'System detected issues'}
+                    {format(incident.startTime, 'HH:mm')} -{' '}
+                    {incident.status === 'ongoing' ? 'Issue detected' : 'System detected issues'}
                   </p>
                   <p className="text-sm text-orange-600 dark:text-orange-400">
                     Our monitoring system detected that {incident.monitorName} was not responding
-                    properly. The team was {incident.status === 'ongoing' ? 'immediately' : 'automatically'} notified and {incident.status === 'ongoing' ? 'is investigating' : 'began investigation'}.
+                    properly. The team was{' '}
+                    {incident.status === 'ongoing' ? 'immediately' : 'automatically'} notified and{' '}
+                    {incident.status === 'ongoing' ? 'is investigating' : 'began investigation'}.
                   </p>
                 </div>
 
                 {incident.status === 'resolved' && incident.endTime && (
-                  <div className="rounded-md bg-green-50 border border-green-200 p-3 dark:bg-green-950/20 dark:border-green-800">
+                  <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/20">
                     <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
                       {format(incident.endTime, 'HH:mm')} - Issue resolved
                     </p>
@@ -150,20 +154,23 @@ export default function IncidentHistory({ monitors }: IncidentHistoryProps) {
                   </div>
                 )}
                 {incident.status === 'resolved' && !incident.endTime && (
-                  <div className="rounded-md bg-green-50 border border-green-200 p-3 dark:bg-green-950/20 dark:border-green-800">
-                    <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">Resolution time unknown</p>
+                  <div className="rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/20">
+                    <p className="mb-1 text-sm font-medium text-green-700 dark:text-green-300">
+                      Resolution time unknown
+                    </p>
                     <p className="text-sm text-green-600 dark:text-green-400">
                       The issue was resolved, but the exact resolution time is unavailable.
                     </p>
                   </div>
                 )}
                 {incident.status === 'ongoing' && (
-                  <div className="rounded-md bg-red-50 border border-red-200 p-3 dark:bg-red-950/20 dark:border-red-800">
+                  <div className="rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/20">
                     <p className="mb-1 text-sm font-medium text-red-700 dark:text-red-300">
                       Ongoing - Under investigation
                     </p>
                     <p className="text-sm text-red-600 dark:text-red-400">
-                      Our team is actively working to resolve this issue. We will provide updates as they become available.
+                      Our team is actively working to resolve this issue. We will provide updates as
+                      they become available.
                     </p>
                   </div>
                 )}

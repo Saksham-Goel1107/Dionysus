@@ -1,11 +1,13 @@
 'use client';
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 export default function AiToolkitButton({
   setIsSidebarOpen,
+  isVisible = true,
 }: {
   setIsSidebarOpen: (val: boolean | ((prev: boolean) => boolean)) => void;
+  isVisible?: boolean;
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
   let timeout: NodeJS.Timeout;
@@ -35,7 +37,11 @@ export default function AiToolkitButton({
   };
 
   return (
-    <div className="relative z-50" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div
+      className={`relative z-50 ${isVisible ? 'block' : 'hidden'}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         onClick={() => {
           setIsSidebarOpen(true);
