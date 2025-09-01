@@ -378,8 +378,8 @@ export const projectRouter = createTRPCRouter({
         };
       }
 
-      // If still processing, try to re-trigger the processing
-      if (meeting.status === 'PROCESSING') {
+      // If still processing or failed, try to re-trigger the processing
+      if (meeting.status === 'PROCESSING' || meeting.status === 'FAILED') {
         try {
           // Import the processMeeting function
           const { processMeeting } = await import('@/lib/assembly');
@@ -417,7 +417,21 @@ export const projectRouter = createTRPCRouter({
           };
         } catch (error) {
           console.error('Error re-processing meeting:', error);
-          throw new Error('Failed to re-process meeting. Please try again.');
+
+          // Update meeting status to FAILED in the database
+          await ctx.db.meeting.update({
+            where: { id: meeting.id },
+            data: {
+              status: 'FAILED',
+            },
+          });
+
+          return {
+            status: 'FAILED',
+            hasTranscript: !!meeting.transcript,
+            issuesCount: meeting.issues.length,
+            message: 'Meeting processing failed. You can try refreshing again.',
+          };
         }
       }
 

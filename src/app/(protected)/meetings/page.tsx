@@ -9,13 +9,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import useProject from '@/hooks/use-project';
 import useRefetch from '@/hooks/use-refetch';
 import { api } from '@/trpc/react';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock, Search, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import MeetingCard from '../dashboard/_components/MeetingCard';
 import RefreshButton from './_components/RefreshButton';
@@ -41,6 +42,20 @@ const MeetingsPage = () => {
   const { resolvedTheme } = useTheme();
   const [hasProPlan, sethasProPlan] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Sort meetings by newest first and filter by search query
+  const sortedAndFilteredMeetings = useMemo(() => {
+    if (!meetings) return [];
+
+    const filtered = meetings.filter((meeting) =>
+      meeting.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+
+    return filtered.sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+  }, [meetings, searchQuery]);
 
   useEffect(() => {
     (async () => {
@@ -103,8 +118,30 @@ const MeetingsPage = () => {
         <>
           <MeetingCard />
           <div className="h-6" />
-          <div className="flex items-center justify-between px-4 sm:px-0">
+          <div className="flex flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-0">
             <h1 className="text-xl font-semibold">Meetings</h1>
+            {meetings && meetings.length > 0 && (
+              <div className="flex items-center">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    placeholder="Search meetings..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-10 pr-10"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      aria-label="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {!meetings ? (
@@ -112,54 +149,82 @@ const MeetingsPage = () => {
               <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
               <p className="text-lg text-gray-500 dark:text-gray-300">Loading meetings...</p>
             </div>
-          ) : meetings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 text-center text-lg text-gray-500 dark:text-gray-300">
-              <span className="mb-4 text-5xl">💤</span>
-              <h2 className="mb-4 text-3xl font-bold">No Meetings Analysed Yet</h2>
-              <p className="mb-6 max-w-xl text-base sm:text-lg">
-                You haven&apos;t analysed any meetings for this project yet.
-                <br />
-                Once you do, they will appear here for easy access and review.
+          ) : sortedAndFilteredMeetings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center px-4 py-12 text-center text-lg text-gray-500 dark:text-gray-300 sm:py-24">
+              <span className="mb-4 text-4xl sm:text-5xl">💤</span>
+              <h2 className="mb-4 text-xl font-bold sm:text-2xl lg:text-3xl">
+                {searchQuery ? 'No meetings found' : 'No Meetings Analysed Yet'}
+              </h2>
+              <p className="mb-6 max-w-xs text-sm sm:max-w-md sm:text-base lg:max-w-xl lg:text-lg">
+                {searchQuery ? (
+                  <>
+                    No meetings match your search for &quot;{searchQuery}&quot;.
+                    <br className="hidden sm:block" />
+                    <span className="sm:hidden"> </span>
+                    Try a different search term or clear the search.
+                  </>
+                ) : (
+                  <>
+                    You haven&apos;t analysed any meetings for this project yet.
+                    <br className="hidden sm:block" />
+                    <span className="sm:hidden"> </span>
+                    Once you do, they will appear here for easy access and review.
+                  </>
+                )}
               </p>
-              <span className="text-sm text-gray-400">
-                Start by uploading or recording a meeting to see it here.
-              </span>
+              {!searchQuery && (
+                <span className="text-xs text-gray-400 sm:text-sm">
+                  Start by uploading or recording a meeting to see it here.
+                </span>
+              )}
             </div>
           ) : (
             <>
               <ul className="mt-4 divide-y divide-gray-200 px-4 sm:px-0">
-                {meetings.map((meeting) => (
+                {sortedAndFilteredMeetings.map((meeting) => (
                   <li
                     key={meeting.id}
-                    className="flex flex-col justify-between gap-4 py-5 sm:flex-row sm:items-center"
+                    className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:py-5"
                   >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+                    <div className="min-w-0 flex-1 space-y-2 sm:space-y-1">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
                         {meeting.status === 'COMPLETED' ? (
                           <Link
                             href={`/meetings/${meeting.id}`}
-                            className="break-all text-sm font-semibold"
+                            className="break-words text-sm font-semibold leading-tight hover:underline sm:break-all"
                           >
                             {meeting.name}
                           </Link>
                         ) : (
-                          <span className="break-all text-sm font-semibold">{meeting.name}</span>
+                          <span className="break-words text-sm font-semibold leading-tight sm:break-all">
+                            {meeting.name}
+                          </span>
                         )}
                         {meeting.status === 'PROCESSING' && (
-                          <Badge className="mt-1 w-fit bg-yellow-500 text-white sm:mt-0">
+                          <Badge className="w-fit bg-yellow-500 px-2 py-1 text-xs text-white sm:mt-0">
                             Processing...
                           </Badge>
                         )}
                       </div>
-                      <div className="mt-1 flex flex-wrap gap-x-2 text-xs text-gray-500">
+                      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 sm:gap-x-4">
                         <p className="whitespace-nowrap">
                           {meeting.createdAt.toLocaleDateString()}
                         </p>
-                        <p className="truncate">{meeting.issues.length} issues</p>
+                        {/* Show creation time only on larger screens for responsiveness */}
+                        <p className="hidden whitespace-nowrap md:block">
+                          {meeting.createdAt.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}
+                        </p>
+                        <p className="whitespace-nowrap">
+                          {meeting.issues.length} {meeting.issues.length === 1 ? 'issue' : 'issues'}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap justify-end gap-2 sm:flex-nowrap">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end sm:gap-2 lg:flex-nowrap">
                       <RefreshButton
                         meetingId={meeting.id}
                         status={meeting.status}
@@ -179,6 +244,17 @@ const MeetingsPage = () => {
                         </>
                       )}
 
+                      {meeting.status === 'FAILED' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full border-red-300 text-red-600 hover:bg-red-50 sm:w-auto"
+                          disabled
+                        >
+                          Failed to Process
+                        </Button>
+                      )}
+
                       {/* Only show delete button to project creator */}
                       {isCreator && (
                         <Button
@@ -191,7 +267,11 @@ const MeetingsPage = () => {
                           }}
                           className="w-full sm:w-auto"
                         >
-                          Delete
+                          {deleteMeeting.isPending ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            'Delete'
+                          )}
                         </Button>
                       )}
                     </div>

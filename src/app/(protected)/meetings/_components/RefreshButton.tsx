@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import useRefetch from '@/hooks/use-refetch';
 import { api } from '@/trpc/react';
-import { Check, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { AlertCircle, Check, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 interface RefreshButtonProps {
@@ -29,6 +29,14 @@ export default function RefreshButton({
   >('idle');
   const refetch = useRefetch();
 
+  // Cleanup effect to prevent stuck loading states
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      toast.dismiss(`refresh-${meetingId}`);
+    };
+  }, [meetingId]);
+
   const syncMeetingStatus = api.project.syncMeetingStatus.useMutation({
     onSuccess: (_data) => {
       setLoadingStage('completing');
@@ -48,6 +56,13 @@ export default function RefreshButton({
       toast.error(`Failed to refresh meeting: ${error.message}`);
       setIsRefreshing(false);
     },
+    onSettled: () => {
+      // Ensure loading states are always reset after a delay
+      setTimeout(() => {
+        setLoadingStage('idle');
+        setIsRefreshing(false);
+      }, 1000);
+    },
   });
 
   const handleRefresh = async () => {
@@ -61,8 +76,8 @@ export default function RefreshButton({
       description: 'Connecting to server',
     });
 
-    // Simulate brief checking period for better UX
-    setTimeout(() => {
+    try {
+      // Start processing immediately
       setLoadingStage('processing');
       toast.loading('Processing meeting data...', {
         id: `refresh-${meetingId}`,
@@ -72,12 +87,14 @@ export default function RefreshButton({
           onClick: () => toast.dismiss(`refresh-${meetingId}`),
         },
       });
-    }, 600);
 
-    try {
       await syncMeetingStatus.mutateAsync({ meetingId });
-    } catch {
-      // Error handling is done in onError callback
+    } catch (error) {
+      // Ensure we reset states on any error
+      setLoadingStage('idle');
+      setIsRefreshing(false);
+      toast.dismiss(`refresh-${meetingId}`);
+      console.error('Refresh failed:', error);
     }
   };
 
@@ -135,6 +152,34 @@ export default function RefreshButton({
           </TooltipTrigger>
           <TooltipContent>
             <p>Meeting processing completed</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  // Show alert icon for failed meetings with tooltip and retry option
+  if (status === 'FAILED') {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+              size={size}
+              className="flex h-8 w-8 items-center justify-center rounded-full border-red-200 bg-red-50 p-0 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:hover:bg-red-900/30"
+            >
+              {isRefreshing ? (
+                getRefreshIcon()
+              ) : (
+                <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isRefreshing ? getTooltipText() : 'Meeting processing failed - click to retry'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

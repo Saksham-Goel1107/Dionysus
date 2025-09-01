@@ -30,10 +30,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unatuthorized' }, { status: 401 });
   }
 
+  let meetingId: string | undefined;
+
   try {
     const body = await req.json();
-
-    const { meetingUrl, meetingId } = bodyParser.parse(body);
+    const parsed = bodyParser.parse(body);
+    const { meetingUrl } = parsed;
+    meetingId = parsed.meetingId; // Store for potential error handling
 
     const { summaries, transcript } = await processMeeting(meetingUrl);
 
@@ -44,7 +47,7 @@ export async function POST(req: NextRequest) {
         gist: summary.gist,
         headline: summary.headline,
         summary: summary.summary,
-        meetingId,
+        meetingId: meetingId as string,
       })),
     });
 
@@ -58,7 +61,23 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch {
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } catch (error) {
+    console.error('Meeting processing failed:', error);
+
+    // Update meeting status to FAILED in the database if we have meetingId
+    if (meetingId) {
+      try {
+        await db.meeting.update({
+          where: { id: meetingId },
+          data: {
+            status: 'FAILED',
+          },
+        });
+      } catch (updateError) {
+        console.error('Failed to update meeting status to FAILED:', updateError);
+      }
+    }
+
+    return NextResponse.json({ error: 'Meeting processing failed' }, { status: 500 });
   }
 }
