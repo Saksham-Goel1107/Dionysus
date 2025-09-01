@@ -386,56 +386,6 @@ export default clerkMiddleware(async (auth, request) => {
       );
     }
 
-    if (process.env.IPREGISTRY_ENABLED === 'true') {
-      try {
-        const res = await fetch(
-          `https://api.ipregistry.co/${ip}?key=${process.env.IPREGISTRY_API_KEY}`,
-        );
-        const data = await res.json();
-
-        const reasons: string[] = [];
-
-        if (data.security?.is_proxy) reasons.push('Proxy detected');
-        if (data.security?.is_tor) reasons.push('Tor network detected');
-        if (data.security?.is_vpn) reasons.push('VPN detected');
-        if (data.security?.is_crawler) reasons.push('Bot or crawler detected');
-        if (data.security?.is_threat) reasons.push('Known threat actor IP');
-        if (data.security?.is_relay) reasons.push('Relay/Anonymizer network detected');
-        if (data.security?.is_bogon) reasons.push('Bogon IP (non-routable)');
-        if (data.security?.is_datacenter) reasons.push('Cloud provider or VM environment');
-        if (data.security?.threat_types?.includes('automation'))
-          reasons.push('Automation tools detected');
-        if (data.company?.type === 'hosting') reasons.push('Hosting provider IP');
-        if (data.company?.name?.toLowerCase().includes('aws')) reasons.push('AWS server');
-        if (data.company?.domain?.includes('digitalocean')) reasons.push('DigitalOcean server');
-
-        if (reasons.length > 0) {
-          return new NextResponse(
-            createBlockedOverlay(
-              'Your request has been blocked due to security policy violations.',
-              [
-                ...reasons,
-                'Suggestions:',
-                '• Disable VPN or proxy if active',
-                '• Avoid using Tor or anonymous browsers',
-                '• Ensure your browser is not flagged as an automation tool',
-                '• Try using a standard, residential network',
-              ],
-            ),
-            {
-              status: 403,
-              headers: {
-                'Content-Type': 'text/html',
-                'Cache-Control': 'no-store',
-              },
-            },
-          );
-        }
-      } catch (error) {
-        console.error('IPRegistry error:', error);
-      }
-    }
-  }
   const isApiRoute = pathname.startsWith('/api/') || pathname.startsWith('/trpc/');
 
   if (isAdminRoute(request)) {
