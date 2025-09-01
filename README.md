@@ -883,6 +883,7 @@ Directory structure:
   <img src="Demo/image17.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image18.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image19.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image20.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 
@@ -920,6 +921,12 @@ Directory structure:
   <p style="font-size: 0.95em; color: #888;">
     <em>
       This image demonstrates the workflow that provides support for alpha/beta users by capturing their issues and suggestions, processing them through AI analysis, and automatically creating high-priority tasks in Linear. This streamlined process ensures rapid response to user feedback and enables efficient prioritization of feature requests and bug fixes for continuous platform improvement.
+ </em>
+  </p>
+  <img src="Demo/n8n-auto-github-Pull-request-reviewer.png" alt="n8n-auto-github-Pull-request-reviewer" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+      This image demonstrates the workflow that automatically reviews the new pull requests and leave a comment over their analysing the security as well as the code quality and the changes significace so that the reviewer has just to read the conclusion and will have a better understanding of the context.
  </em>
   </p>
 

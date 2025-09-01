@@ -1,16 +1,6 @@
 'use client';
-import useProject from '@/hooks/use-project';
-import { api } from '@/trpc/react';
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import useRefetch from '@/hooks/use-refetch';
-import MeetingCard from '../dashboard/_components/MeetingCard';
-import TranscriptViewer from './_components/TranscriptViewer';
-import { Loader2, Lock } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +9,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import useProject from '@/hooks/use-project';
+import useRefetch from '@/hooks/use-refetch';
+import { api } from '@/trpc/react';
+import { Loader2, Lock } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import MeetingCard from '../dashboard/_components/MeetingCard';
+import RefreshButton from './_components/RefreshButton';
+import TranscriptViewer from './_components/TranscriptViewer';
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
@@ -26,6 +27,7 @@ const MeetingsPage = () => {
     { projectId },
     {
       refetchInterval: 4000,
+      enabled: !!projectId,
     },
   );
   const { data: isCreator } = api.project.isProjectCreator.useQuery(
@@ -55,11 +57,14 @@ const MeetingsPage = () => {
     })();
   }, []);
 
-  if (loading) {
+  // Show loading state while checking plan or if no projectId yet
+  if (loading || !projectId) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
-        <p className="text-lg text-gray-500 dark:text-gray-300">Checking your plan...</p>
+        <p className="text-lg text-gray-500 dark:text-gray-300">
+          {!projectId ? 'Loading project...' : 'Checking your plan...'}
+        </p>
       </div>
     );
   }
@@ -98,8 +103,16 @@ const MeetingsPage = () => {
         <>
           <MeetingCard />
           <div className="h-6" />
-          <h1 className="px-4 text-xl font-semibold sm:px-0">Meetings</h1>
-          {!meetings || meetings.length === 0 ? (
+          <div className="flex items-center justify-between px-4 sm:px-0">
+            <h1 className="text-xl font-semibold">Meetings</h1>
+          </div>
+
+          {!meetings ? (
+            <div className="flex min-h-[40vh] flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+              <p className="text-lg text-gray-500 dark:text-gray-300">Loading meetings...</p>
+            </div>
+          ) : meetings.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center text-lg text-gray-500 dark:text-gray-300">
               <span className="mb-4 text-5xl">💤</span>
               <h2 className="mb-4 text-3xl font-bold">No Meetings Analysed Yet</h2>
@@ -147,6 +160,13 @@ const MeetingsPage = () => {
                     </div>
 
                     <div className="flex flex-wrap justify-end gap-2 sm:flex-nowrap">
+                      <RefreshButton
+                        meetingId={meeting.id}
+                        status={meeting.status}
+                        size="sm"
+                        showText={false}
+                      />
+
                       {meeting.status === 'COMPLETED' && (
                         <>
                           <Link href={`/meetings/${meeting.id}`}>

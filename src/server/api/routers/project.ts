@@ -1,11 +1,11 @@
-import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { pullCommits } from '@/lib/github';
 import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
-import crypto from 'crypto';
-import type { Project } from '@/types/Project';
 import { readReplicaDb2 } from '@/server/read-replica-2-db';
+import type { Project } from '@/types/Project';
+import crypto from 'crypto';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 interface ProjectWithCreatorId {
   id: string;
@@ -343,6 +343,91 @@ export const projectRouter = createTRPCRouter({
           issues: true,
         },
       });
+    }),
+  syncMeetingStatus: protectedProcedure
+    .input(z.object({ meetingId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user has access to this meeting
+      const meeting = await ctx.db.meeting.findFirst({
+        where: {
+          id: input.meetingId,
+          project: {
+            userToProjects: {
+              some: {
+                userId: ctx.user.userId!,
+              },
+            },
+          },
+        },
+        include: {
+          issues: true,
+        },
+      });
+
+      if (!meeting) {
+        throw new Error('Meeting not found or unauthorized');
+      }
+
+      // If already completed, return current status
+      if (meeting.status === 'COMPLETED') {
+        return {
+          status: 'COMPLETED',
+          hasTranscript: !!meeting.transcript,
+          issuesCount: meeting.issues.length,
+          message: 'Meeting already completed',
+        };
+      }
+
+      // If still processing, try to re-trigger the processing
+      if (meeting.status === 'PROCESSING') {
+        try {
+          // Import the processMeeting function
+          const { processMeeting } = await import('@/lib/assembly');
+
+          // Re-process the meeting
+          const { summaries, transcript } = await processMeeting(meeting.meetingUrl);
+
+          // Update the database
+          await ctx.db.issue.createMany({
+            data: summaries.map((summary) => ({
+              start: summary.start,
+              end: summary.end,
+              gist: summary.gist,
+              headline: summary.headline,
+              summary: summary.summary,
+              meetingId: meeting.id,
+            })),
+            skipDuplicates: true, // Avoid duplicates if already exists
+          });
+
+          await ctx.db.meeting.update({
+            where: { id: meeting.id },
+            data: {
+              status: 'COMPLETED',
+              name: summaries[0]?.headline || meeting.name,
+              transcript: transcript,
+            },
+          });
+
+          return {
+            status: 'COMPLETED',
+            hasTranscript: true,
+            issuesCount: summaries.length,
+            message: 'Meeting processing completed successfully',
+          };
+        } catch (error) {
+          console.error('Error re-processing meeting:', error);
+          throw new Error('Failed to re-process meeting. Please try again.');
+        }
+      }
+
+      // Handle other statuses
+      return {
+        status: meeting.status,
+        hasTranscript: !!meeting.transcript,
+        issuesCount: meeting.issues.length,
+        message: `Meeting status: ${meeting.status}`,
+      };
     }),
   deleteMeeting: protectedProcedure
     .input(z.object({ meetingId: z.string() }))
