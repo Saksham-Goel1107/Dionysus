@@ -7,6 +7,8 @@ import { Copy, Download, Eye, ImageIcon, RotateCcw, Upload } from 'lucide-react'
 import Image from 'next/image';
 import React, { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import MDEditor from '@uiw/react-md-editor';
+import { useTheme } from 'next-themes';
 
 interface AnalysisResponse {
   analysis: string;
@@ -19,6 +21,7 @@ const ImageToText: React.FC = () => {
   const [analysis, setAnalysis] = useState<string>('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [question, setQuestion] = useState<string>('Describe what you see in this image');
+  const { theme } = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -361,9 +364,11 @@ const ImageToText: React.FC = () => {
               </div>
             </div>
 
-            <div className="min-h-[200px] rounded-md border bg-background p-3">
+            <div className="min-h-[200px] rounded-md border bg-background p-4" data-color-mode={theme === 'dark' ? 'dark' : 'light'}>
               {analysis ? (
-                <div className="whitespace-pre-wrap text-sm leading-relaxed">{analysis}</div>
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <MDEditor.Markdown source={analysis} />
+                </div>
               ) : (
                 <div className="text-sm text-muted-foreground">Analysis will appear here...</div>
               )}

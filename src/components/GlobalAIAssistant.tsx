@@ -1240,7 +1240,7 @@ const GlobalAIAssistant: React.FC = () => {
             </Button>
           </div>
 
-          <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="hidden mt-2 md:flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-4">
               <span>
                 Press{' '}

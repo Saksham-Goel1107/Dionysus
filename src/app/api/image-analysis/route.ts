@@ -1,4 +1,5 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { HumanMessage } from '@langchain/core/messages';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -76,8 +77,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
     }
 
-    const genAI = new GoogleGenerativeAI(geminiApiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    const model = new ChatGoogleGenerativeAI({
+      model: 'gemini-2.5-flash',
+      apiKey: geminiApiKey,
+    });
 
     const imageBuffer = await imageFile.arrayBuffer();
     const imageBase64 = Buffer.from(imageBuffer).toString('base64');
@@ -92,16 +95,24 @@ export async function POST(request: NextRequest) {
       else mimeType = 'image/jpeg';
     }
 
-    const imagePart = {
-      inlineData: {
-        data: imageBase64,
-        mimeType: mimeType,
-      },
-    };
+    // Create a HumanMessage with both text and image
+    const message = new HumanMessage({
+      content: [
+        {
+          type: 'text',
+          text: question.trim(),
+        },
+        {
+          type: 'image_url',
+          image_url: {
+            url: `data:${mimeType};base64,${imageBase64}`,
+          },
+        },
+      ],
+    });
 
-    const result = await model.generateContent([question.trim(), imagePart]);
-    const response = await result.response;
-    const analysisText = response.text();
+    const result = await model.invoke([message]);
+    const analysisText = result.content as string;
 
     if (!analysisText) {
       return NextResponse.json({ error: 'No analysis generated' }, { status: 500 });

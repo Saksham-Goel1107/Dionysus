@@ -424,6 +424,22 @@ const CustomContextMenu = () => {
 
       <div className="my-2 border-t border-gray-200 dark:border-zinc-700" />
 
+      <button
+        onClick={() => {
+          setVisible(false);
+          // Trigger the AI modal by dispatching the keyboard event
+          const event = new KeyboardEvent('keydown', {
+            key: 'J',
+            ctrlKey: true,
+            shiftKey: true,
+            bubbles: true
+          });
+          document.dispatchEvent(event);
+        }}
+        className={`${buttonClass} text-purple-600 dark:text-purple-400`}
+      >
+        🤖 Get AI Help <span className="ml-[30px] text-[10px] text-slate-500">Ctrl + Shift + J</span>
+      </button>
       <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
         Share Site
       </button>

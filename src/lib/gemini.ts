@@ -2,10 +2,10 @@ function isRedisReady() {
   return redis && redisEnabled && redis.status === 'ready';
 }
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LangChainTracer } from 'langchain/callbacks';
 import { Document } from '@langchain/core/documents';
+import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { Redis } from 'ioredis';
+import { LangChainTracer } from 'langchain/callbacks';
 
 let redis: Redis | null = null;
 let tracer: LangChainTracer | null = null;
@@ -127,9 +127,16 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   });
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-const model = genAI.getGenerativeModel({
+// Initialize LangChain models
+const llm = new ChatGoogleGenerativeAI({
   model: 'gemini-2.5-flash',
+  apiKey: process.env.GEMINI_API_KEY!,
+  callbacks: tracer ? [tracer] : undefined,
+});
+
+const embeddingModel = new GoogleGenerativeAIEmbeddings({
+  model: 'text-embedding-004',
+  apiKey: process.env.GEMINI_API_KEY!,
 });
 
 async function checkRateLimit(
@@ -189,8 +196,7 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
     throw new Error('Rate limit exceeded for commit summaries. Please try again later.');
   }
 
-  const prompt = [
-    `You are an expert programmer summarizing a git diff for the project "${projectName}".
+  const prompt = `You are an expert programmer summarizing a git diff for the project "${projectName}".
     Only refer to changes relevant to this project.
     Ignore unrelated or external context.
         \`\`\`
@@ -219,12 +225,14 @@ export const aiSummariseCommit = async (diff: string, projectName: string) => {
         Do not include parts of the example in your summary.
         Do not use any abrevation or punctuation like i am happy to provide or good question no comments like this just provide answer but the answer should be very descriptive covering each and every point
         Do not use Okay, I understand you're asking about but give direct answer
-        It is given only as an example of appropriate comments. `,
-    `Please summarise the following diff file: \n\n${diff}`,
-  ];
+        It is given only as an example of appropriate comments.
 
-  const response = await model.generateContent(prompt);
-  return response.response.text();
+        Please summarise the following diff file:
+
+${diff}`;
+
+  const response = await llm.invoke(prompt);
+  return response.content as string;
 };
 
 export const summariseCode = async (doc: Document) => {
@@ -234,18 +242,16 @@ export const summariseCode = async (doc: Document) => {
   }
   try {
     const code = doc.pageContent.slice(0, 10000);
-    const prompt = [
-      `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects`,
-      `You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file
+    const prompt = `You are an intelligent senior software engineer who specialises in onboarding junior software engineers onto projects.
+            You are onboarding a junior software engineer and explaining to them the purpose of the ${doc.metadata.source} file
             Here is the code:
             ---
             ${code}
             ---
-            Give a summary no more than 100 words of the code above`,
-    ];
+            Give a summary no more than 100 words of the code above`;
 
-    const response = await model.generateContent(prompt);
-    return response.response.text();
+    const response = await llm.invoke(prompt);
+    return response.content as string;
   } catch (error) {
     console.error(error);
     return '';
@@ -258,13 +264,8 @@ export const generateEmbedding = async (summary: string) => {
     throw new Error('Rate limit exceeded for embeddings generation. Please try again later.');
   }
 
-  const embeddingModel = genAI.getGenerativeModel({
-    model: 'text-embedding-004',
-  });
-
-  const result = await embeddingModel.embedContent(summary);
-  const embedding = result.embedding;
-  return embedding.values;
+  const result = await embeddingModel.embedQuery(summary);
+  return result;
 };
 
 export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: string } | string> {
@@ -283,10 +284,12 @@ export async function askGemini(prompt: string): Promise<{ yaml?: string; tip?: 
     };
   }
   try {
-    const localGenAI = new GoogleGenerativeAI(apiKey);
-    const localModel = localGenAI.getGenerativeModel({
+    const localLlm = new ChatGoogleGenerativeAI({
       model: 'gemini-2.5-flash',
+      apiKey: apiKey,
+      callbacks: tracer ? [tracer] : undefined,
     });
+
     const context = `
 You are a professional DevOps engineer.
 Generate a production-ready CI/CD YAML file based on the user's request.
@@ -298,8 +301,8 @@ Respond in this format:
 1. YAML in a markdown code block (\`\`\`yaml ... \`\`\`)
 2. Tip at the end
 `;
-    const result = await localModel.generateContent(context);
-    const text = await result.response.text();
+    const result = await localLlm.invoke(context);
+    const text = result.content as string;
     const yamlMatch = text.match(/```ya?ml([\s\S]*?)```/i);
     const tipMatch = text.match(/Tip:(.*)/i);
     return {

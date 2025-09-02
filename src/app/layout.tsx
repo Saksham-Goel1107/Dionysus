@@ -209,10 +209,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                         <Providers>{children}</Providers>
                       </Offline>
                     </TRPCReactProvider>
-                    <Toaster richColors />
-                    <ScrollToTopButton />
-                    <AnnouncementBell />
                     <ClientOnly>
+                      <Toaster richColors />
+                      <ScrollToTopButton />
+                      <AnnouncementBell />
                       <CustomContextMenu />
                       <BlockInspectAndContext />
                       <Analytics />
