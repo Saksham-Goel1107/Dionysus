@@ -16,14 +16,21 @@ import {
   Bot,
   Copy,
   ExternalLink,
+  File,
+  FileImage,
+  FileText,
   Lightbulb,
   LogIn,
   Mic,
   MicOff,
+  Monitor,
+  Paperclip,
   Send,
   Shield,
+  Smartphone,
   Sparkles,
   Trash2,
+  Upload,
   Volume2,
   VolumeX,
   X,
@@ -42,6 +49,16 @@ interface Message {
   timestamp: Date;
   id: string;
   sources?: string[];
+  attachments?: FileAttachment[];
+}
+
+interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  content?: string; // For text files
+  url?: string; // For images
 }
 
 const GlobalAIAssistant: React.FC = () => {
@@ -58,6 +75,9 @@ const GlobalAIAssistant: React.FC = () => {
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -76,6 +96,22 @@ const GlobalAIAssistant: React.FC = () => {
   // Storage key for persistence
   const STORAGE_KEY = 'dionysus-ai-assistant-conversation';
   const STORAGE_CONTEXT_KEY = 'dionysus-ai-assistant-context';
+
+  // Mobile detection effect
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileDevice = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+        userAgent.toLowerCase(),
+      );
+      const isSmallScreen = window.innerWidth < 768; // Less than md breakpoint
+      setIsMobile(isMobileDevice || isSmallScreen);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Security function to sanitize input
   const sanitizeInput = (input: string): string => {
@@ -451,6 +487,200 @@ const GlobalAIAssistant: React.FC = () => {
     };
   }, [isOpen]);
 
+  // Cleanup effect for URL objects
+  useEffect(() => {
+    return () => {
+      // Cleanup any URL objects when component unmounts
+      attachedFiles.forEach((file) => {
+        if (file.url) {
+          URL.revokeObjectURL(file.url);
+        }
+      });
+    };
+  }, [attachedFiles]);
+
+  // File handling functions
+  const validateFile = (file: File): { isValid: boolean; error?: string } => {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      'text/plain',
+      'text/markdown',
+      'text/csv',
+      'application/json',
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    // Security: Check for suspicious file names
+    const suspiciousPatterns = [
+      /\.exe$/i,
+      /\.bat$/i,
+      /\.sh$/i,
+      /\.scr$/i,
+      /\.com$/i,
+      /\.pif$/i,
+      /\.cmd$/i,
+      /\.vbs$/i,
+      /\.js$/i,
+      /\.jar$/i,
+      /\.app$/i,
+      /\.deb$/i,
+      /\.rpm$/i,
+      /\.dmg$/i,
+      /\.pkg$/i,
+      /\.msi$/i,
+    ];
+
+    const hasSuspiciousName = suspiciousPatterns.some((pattern) => pattern.test(file.name));
+
+    if (hasSuspiciousName) {
+      return { isValid: false, error: 'File type not allowed for security reasons.' };
+    }
+
+    if (file.size > maxSize) {
+      return { isValid: false, error: 'File size must be less than 10MB' };
+    }
+
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        isValid: false,
+        error: 'File type not supported. Please use text, image, PDF, or document files.',
+      };
+    }
+
+    // Additional check for empty files
+    if (file.size === 0) {
+      return { isValid: false, error: 'Empty files are not allowed.' };
+    }
+
+    return { isValid: true };
+  };
+
+  const processFile = async (file: File): Promise<FileAttachment> => {
+    const fileId = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    if (file.type.startsWith('image/')) {
+      // Convert image to base64 for API processing and create blob URL for preview
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+
+      return {
+        id: fileId,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        url: URL.createObjectURL(file), // For preview only
+        content: dataUrl, // For API processing
+      };
+    } else if (file.type.startsWith('text/') || file.type === 'application/json') {
+      const content = await file.text();
+      return {
+        id: fileId,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        content: content.substring(0, 5000), // Limit content length
+      };
+    } else {
+      // For other file types (PDFs, docs), convert to base64
+      const arrayBuffer = await file.arrayBuffer();
+      const base64 = Buffer.from(arrayBuffer).toString('base64');
+      const dataUrl = `data:${file.type};base64,${base64}`;
+
+      return {
+        id: fileId,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        content: dataUrl,
+      };
+    }
+  };
+
+  const handleFileUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    const maxFiles = 5;
+
+    if (attachedFiles.length + fileArray.length > maxFiles) {
+      setInputError(`You can only attach up to ${maxFiles} files at once.`);
+      return;
+    }
+
+    const newAttachments: FileAttachment[] = [];
+
+    for (const file of fileArray) {
+      const validation = validateFile(file);
+      if (!validation.isValid) {
+        setInputError(validation.error || 'Invalid file');
+        return;
+      }
+
+      try {
+        const attachment = await processFile(file);
+        newAttachments.push(attachment);
+      } catch (error) {
+        console.error('Error processing file:', error);
+        setInputError('Error processing file. Please try again.');
+        return;
+      }
+    }
+
+    setAttachedFiles((prev) => [...prev, ...newAttachments]);
+    setInputError('');
+  };
+
+  const removeAttachment = (fileId: string) => {
+    setAttachedFiles((prev) => {
+      const updated = prev.filter((file) => file.id !== fileId);
+      // Clean up object URLs for images
+      const removedFile = prev.find((file) => file.id === fileId);
+      if (removedFile?.url) {
+        URL.revokeObjectURL(removedFile.url);
+      }
+      return updated;
+    });
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+
+    if (e.dataTransfer.files.length > 0) {
+      handleFileUpload(e.dataTransfer.files);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileIcon = (fileType: string) => {
+    if (fileType.startsWith('image/')) return <FileImage className="h-4 w-4" />;
+    if (fileType.includes('text') || fileType.includes('json'))
+      return <FileText className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim() || isLoading) return;
@@ -489,10 +719,12 @@ const GlobalAIAssistant: React.FC = () => {
       content: sanitizedQuestion,
       timestamp: new Date(),
       id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setQuestion('');
+    setAttachedFiles([]); // Clear attachments after sending
     setIsLoading(true);
 
     // Create assistant message with streaming content
@@ -527,6 +759,7 @@ const GlobalAIAssistant: React.FC = () => {
           })), // Sanitize history
           platform: 'dionysus', // Platform identifier
           userId: 'authenticated', // Don't send actual user ID for privacy
+          attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
         }),
       });
 
@@ -771,6 +1004,127 @@ const GlobalAIAssistant: React.FC = () => {
 
   if (!isOpen) return null;
 
+  // Show mobile prompt if on mobile device
+  if (isMobile) {
+    return (
+      <div
+        ref={overlayRef}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm dark:bg-black/80"
+        style={{
+          animation: isOpen ? 'fadeIn 0.2s ease-out' : undefined,
+        }}
+      >
+        <style jsx>{`
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          @keyframes slideUp {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        `}</style>
+
+        <div
+          className="relative mx-4 w-full max-w-md rounded-xl border border-border bg-background p-8 shadow-2xl dark:border-gray-700 dark:shadow-black/50"
+          style={{
+            animation: isOpen ? 'slideUp 0.3s ease-out' : undefined,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Close Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClose}
+            className="absolute right-4 top-4 h-6 w-6 p-0 hover:bg-muted dark:hover:bg-gray-700"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
+          {/* Header */}
+          <div className="mb-6 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30">
+              <div className="relative">
+                <Monitor className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+                <Smartphone className="absolute -bottom-1 -right-1 h-4 w-4 text-orange-500 dark:text-orange-400" />
+              </div>
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-foreground">Switch to Desktop</h3>
+            <p className="text-sm text-muted-foreground">
+              The AI Assistant works best on larger screens for optimal file handling and
+              conversation management.
+            </p>
+          </div>
+
+          {/* Features List */}
+          <div className="mb-6 space-y-3">
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 dark:bg-gray-800/50">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                <FileImage className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              </div>
+              <span className="text-sm text-foreground">File upload & preview</span>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 dark:bg-gray-800/50">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <Mic className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+              <span className="text-sm text-foreground">Voice input & text-to-speech</span>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 dark:bg-gray-800/50">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+                <Bot className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              </div>
+              <span className="text-sm text-foreground">Enhanced AI conversations</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <Button
+              onClick={handleClose}
+              className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 dark:from-violet-500 dark:to-purple-500 dark:hover:from-violet-600 dark:hover:to-purple-600"
+            >
+              <Monitor className="mr-2 h-4 w-4" />
+              Continue on Desktop
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="w-full border-border hover:bg-muted dark:border-gray-600 dark:hover:bg-gray-800"
+            >
+              Close Assistant
+            </Button>
+          </div>
+
+          {/* Footer Note */}
+          <div className="mt-6 rounded-lg bg-blue-50 p-3 dark:bg-blue-950/20">
+            <div className="flex items-start gap-2">
+              <Shield className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                For the best experience with file uploads, voice input, and advanced features,
+                please use a desktop or tablet device.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Show loading state while authentication is loading
   if (!isLoaded) {
     return (
@@ -859,59 +1213,59 @@ const GlobalAIAssistant: React.FC = () => {
           <ScrollArea className="flex-1">
             {/* Header with animated AI icon */}
             <div className="relative px-8 pb-8 pt-12 text-center">
-            <div
-              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-400 dark:to-purple-500"
-              style={{ animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite' }}
-            >
-              <Bot className="h-10 w-10 text-white" />
-            </div>
-
-            <h2 className="mb-3 text-2xl font-bold text-foreground">Meet Your AI Assistant</h2>
-
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Get instant help, code suggestions, and insights about your repositories with our
-              intelligent AI assistant.
-            </p>
-          </div>
-
-          {/* Features */}
-          <div className="px-8 pb-6">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
-                  <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                </div>
-                <span className="text-sm text-foreground">AI-powered code analysis</span>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-                  <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-                <span className="text-sm text-foreground">Smart suggestions & insights</span>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                  <Bot className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </div>
-                <span className="text-sm text-foreground">24/7 development companion</span>
-              </div>
-            </div>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="px-8 pb-8">
-            <div className="space-y-3">
-              <Button
-                onClick={() => router.push('/sign-in')}
-                className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 dark:from-violet-500 dark:to-purple-500 dark:hover:from-violet-600 dark:hover:to-purple-600"
+              <div
+                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-400 dark:to-purple-500"
+                style={{ animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite' }}
               >
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign In to Continue
-              </Button>
+                <Bot className="h-10 w-10 text-white" />
+              </div>
+
+              <h2 className="mb-3 text-2xl font-bold text-foreground">Meet Your AI Assistant</h2>
+
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Get instant help, code suggestions, and insights about your repositories with our
+                intelligent AI assistant.
+              </p>
             </div>
-          </div>
+
+            {/* Features */}
+            <div className="px-8 pb-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/30">
+                    <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <span className="text-sm text-foreground">AI-powered code analysis</span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+                    <Lightbulb className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <span className="text-sm text-foreground">Smart suggestions & insights</span>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                    <Bot className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <span className="text-sm text-foreground">24/7 development companion</span>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="px-8 pb-8">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => router.push('/sign-in')}
+                  className="w-full bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-700 hover:to-purple-700 dark:from-violet-500 dark:to-purple-500 dark:hover:from-violet-600 dark:hover:to-purple-600"
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In to Continue
+                </Button>
+              </div>
+            </div>
 
             {/* Footer */}
             <div className="border-t border-border bg-muted/20 px-8 py-4 dark:border-gray-700 dark:bg-gray-800/20">
@@ -981,7 +1335,7 @@ const GlobalAIAssistant: React.FC = () => {
           <div className="ml-auto flex items-center gap-2">
             <div className="hidden text-xs text-muted-foreground sm:block">
               Press
-              <kbd className="rounded border border-border bg-background mx-1 px-1.5 py-0.5 text-xs shadow-sm dark:border-gray-600 dark:bg-gray-800">
+              <kbd className="mx-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs shadow-sm dark:border-gray-600 dark:bg-gray-800">
                 Esc
               </kbd>
               to close
@@ -1090,7 +1444,50 @@ const GlobalAIAssistant: React.FC = () => {
                               )}
                             </div>
                           ) : (
-                            <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                            <div>
+                              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+
+                              {/* Display Attachments for User Messages */}
+                              {message.attachments && message.attachments.length > 0 && (
+                                <div className="mt-3 border-t border-primary-foreground/20 pt-2">
+                                  <div className="mb-2 flex items-center gap-1 text-xs font-medium opacity-80">
+                                    <Paperclip className="h-3 w-3" />
+                                    Attachments:
+                                  </div>
+                                  <div className="space-y-2">
+                                    {message.attachments.map((attachment) => (
+                                      <div
+                                        key={attachment.id}
+                                        className="flex items-center gap-2 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-xs"
+                                      >
+                                        {getFileIcon(attachment.type)}
+                                        <span className="flex-1 truncate">{attachment.name}</span>
+                                        <span className="opacity-70">
+                                          {formatFileSize(attachment.size)}
+                                        </span>
+                                        {attachment.url && attachment.type.startsWith('image/') && (
+                                          // Just disabling the lint to prevent Image tag warnings
+                                          // eslint-disable-next-line
+                                          <img
+                                            src={attachment.url}
+                                            alt={attachment.name}
+                                            className="h-8 w-8 cursor-pointer rounded object-cover"
+                                            onError={(e) => {
+                                              // Hide image if it fails to load
+                                              e.currentTarget.style.display = 'none';
+                                            }}
+                                            onClick={() => {
+                                              // Open image in new tab for larger view
+                                              window.open(attachment.url, '_blank');
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           )}
                           <div className="mt-1 text-xs opacity-70">
                             {message.timestamp.toLocaleTimeString()}
@@ -1187,6 +1584,9 @@ const GlobalAIAssistant: React.FC = () => {
         <form
           onSubmit={handleSubmit}
           className="border-t border-border bg-muted/20 p-4 dark:border-gray-700 dark:bg-gray-800/20"
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
         >
           {/* Error Display */}
           {inputError && (
@@ -1198,92 +1598,193 @@ const GlobalAIAssistant: React.FC = () => {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Textarea
-              ref={textareaRef}
-              value={question}
-              onChange={(e) => {
-                setQuestion(e.target.value);
-                setInputError(''); // Clear error on input change
-              }}
-              placeholder="Ask me about this page, Dionysus features, or development topics..."
-              className={`max-h-[120px] min-h-[44px] flex-1 resize-none border-border bg-background focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
-                inputError ? 'border-red-500 dark:border-red-400' : ''
-              }`}
-              maxLength={MAX_MESSAGE_LENGTH}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-            />
-            <Button
-              type="button"
-              onClick={toggleVoiceInput}
-              disabled={!recognition}
-              className={`self-end ${
-                isListening
-                  ? 'bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700'
-                  : 'bg-gray-500 hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700'
-              }`}
-              title={isListening ? 'Stop voice input' : 'Start voice input'}
-            >
-              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-            </Button>
-            <Button
-              type="submit"
-              disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
-              className="self-end bg-primary hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-700"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="hidden mt-2 md:flex items-center justify-between text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <span>
-                Press{' '}
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
-                  Enter
-                </kbd>{' '}
-                to send,{' '}
-                <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
-                  Shift + Enter
-                </kbd>{' '}
-                for new line
-              </span>
-              <span className="text-xs">
-                {question.length}/{MAX_MESSAGE_LENGTH}
-              </span>
-              {recognition && (
-                <span className="text-xs text-blue-600 dark:text-blue-400">
-                  🎤 Voice input available
-                </span>
-              )}
+          {/* File Attachments Display */}
+          {attachedFiles.length > 0 && (
+            <div className="mb-3 rounded-lg border border-border bg-background/50 p-3 dark:border-gray-600 dark:bg-gray-800/50">
+              <div className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Paperclip className="h-4 w-4" />
+                Attached Files ({attachedFiles.length})
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
+                  >
+                    {getFileIcon(file.type)}
+                    <span className="max-w-[150px] truncate">{file.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(file.size)}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeAttachment(file.id)}
+                      className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-3">
-              {rateLimitCount > 0 && (
-                <span className="text-xs text-orange-600 dark:text-orange-400">
-                  {rateLimitCount}/{MAX_QUESTIONS_PER_HOUR} questions this hour
-                </span>
-              )}
-              {messages.length > 0 && (
-                <div className="text-xs text-muted-foreground">
-                  {messages.length} message{messages.length !== 1 ? 's' : ''} • Auto-saved
+          {/* Main Input Container */}
+          <div
+            className={`relative rounded-lg border-2 border-dashed transition-colors ${
+              isDragOver
+                ? 'border-primary bg-primary/5 dark:border-blue-400 dark:bg-blue-400/5'
+                : 'border-transparent'
+            }`}
+          >
+            <div className="flex gap-2">
+              {/* Text Input */}
+              <div className="relative flex-1">
+                <Textarea
+                  ref={textareaRef}
+                  value={question}
+                  onChange={(e) => {
+                    setQuestion(e.target.value);
+                    setInputError(''); // Clear error on input change
+                  }}
+                  placeholder="Ask me about this page, Dionysus features, or development topics..."
+                  className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pr-20 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
+                    inputError ? 'border-red-500 dark:border-red-400' : ''
+                  }`}
+                  maxLength={MAX_MESSAGE_LENGTH}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e);
+                    }
+                  }}
+                />
+
+                {/* Input Actions */}
+                <div className="absolute bottom-2 right-2 flex gap-1">
+                  {/* File Upload Button */}
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    accept=".txt,.md,.csv,.json,.pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
+                    onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => document.getElementById('file-upload')?.click()}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                    title="Attach files"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                  </Button>
+
+                  {/* Voice Input Button */}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleVoiceInput}
+                    disabled={!recognition}
+                    className={`h-8 w-8 p-0 ${
+                      isListening
+                        ? 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                    title={isListening ? 'Stop voice input' : 'Start voice input'}
+                  >
+                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  </Button>
                 </div>
-              )}
+              </div>
+
+              {/* Send Button */}
+              <Button
+                type="submit"
+                disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
+                className="self-end bg-primary hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-700"
+                size="lg"
+              >
+                <Send className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Drag & Drop Overlay */}
+            {isDragOver && (
+              <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-primary/10 backdrop-blur-sm dark:bg-blue-400/10">
+                <div className="flex flex-col items-center gap-2 text-primary dark:text-blue-400">
+                  <Upload className="h-8 w-8" />
+                  <span className="text-sm font-medium">Drop files here to attach</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-2 space-y-2">
+            {/* Desktop Info Row */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <div className="flex items-center gap-4">
+                <span>
+                  Press{' '}
+                  <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
+                    Enter
+                  </kbd>{' '}
+                  to send,{' '}
+                  <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
+                    Shift + Enter
+                  </kbd>{' '}
+                  for new line
+                </span>
+                <span className="text-xs">
+                  {question.length}/{MAX_MESSAGE_LENGTH}
+                </span>
+                <span className="text-xs text-blue-600 dark:text-blue-400">
+                  🌐 Web Search Enabled
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {rateLimitCount > 0 && (
+                  <span className="text-xs text-orange-600 dark:text-orange-400">
+                    {rateLimitCount}/{MAX_QUESTIONS_PER_HOUR} questions this hour
+                  </span>
+                )}
+                {messages.length > 0 && (
+                  <div className="text-xs text-muted-foreground">
+                    {messages.length} message{messages.length !== 1 ? 's' : ''} • Auto-saved
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Security Notice */}
-          <div className="mt-2 rounded-md bg-violet-50 p-2 dark:bg-violet-950/20">
-            <div className="flex items-center gap-2">
-              <Shield className="h-3 w-3 text-violet-600 dark:text-violet-400" />
-              <p className="text-xs text-violet-700 dark:text-violet-300">
-                Ask questions about Dionysus, development, or this page.
-              </p>
+          {/* File Upload & Security Notice */}
+          <div className="mt-2 space-y-2">
+            {/* File Support Info */}
+            <div className="rounded-md bg-blue-50 p-2 dark:bg-blue-950/20">
+              <div className="flex items-center gap-2">
+                <Paperclip className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  Drag & drop or click 📎 to attach files. Supports: images, documents, text files
+                  (max 10MB, 5 files)
+                </p>
+              </div>
+            </div>
+
+            {/* Security Notice */}
+            <div className="rounded-md bg-violet-50 p-2 dark:bg-violet-950/20">
+              <div className="flex items-center gap-2">
+                <Shield className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+                <p className="text-xs text-violet-700 dark:text-violet-300">
+                  Ask questions about Dionysus, development, or this page. Files are processed
+                  securely. Web search capabilities.
+                </p>
+              </div>
             </div>
           </div>
         </form>

@@ -49,8 +49,8 @@ const GlobalSearch: React.FC = () => {
           typeof window.google.search.cse.element.render === 'function'
         ) {
           window.google.search.cse.element.render({
-            div: "gcse-search-global",
-            tag: 'search'
+            div: 'gcse-search-global',
+            tag: 'search',
           });
         }
       };
@@ -158,7 +158,7 @@ const GlobalSearch: React.FC = () => {
     'TailwindCSS components',
     'Node.js examples',
     'JavaScript fundamentals',
-    'CSS grid layouts'
+    'CSS grid layouts',
   ];
 
   const programmingSuggestions = [
@@ -169,7 +169,7 @@ const GlobalSearch: React.FC = () => {
     'Database optimization techniques',
     'Authentication implementation',
     'Performance optimization tips',
-    'Testing strategies'
+    'Testing strategies',
   ];
 
   if (!isOpen) return null;
@@ -177,7 +177,7 @@ const GlobalSearch: React.FC = () => {
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 backdrop-blur-sm pt-[10vh]"
+      className="fixed inset-0 z-[9999] flex items-start justify-center bg-black/60 pt-[10vh] backdrop-blur-sm"
       style={{
         animation: isOpen ? 'fadeIn 0.2s ease-out' : undefined,
       }}
@@ -204,24 +204,28 @@ const GlobalSearch: React.FC = () => {
       `}</style>
 
       <div
-        className="relative w-full max-w-3xl mx-4 bg-background border border-border rounded-lg shadow-2xl max-h-[80vh] overflow-hidden"
+        className="relative mx-4 max-h-[80vh] w-full max-w-3xl overflow-hidden rounded-lg border border-border bg-background shadow-2xl"
         style={{
           animation: isOpen ? 'slideUp 0.3s ease-out' : undefined,
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 p-4 border-b border-border bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50">
+        <div className="flex items-center gap-3 border-b border-border bg-gradient-to-r from-blue-50 to-indigo-50 p-4 dark:from-blue-950/50 dark:to-indigo-950/50">
           <div className="flex items-center gap-2">
             <div className="relative">
               <Search className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse" />
+              <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-green-500" />
             </div>
             <span className="text-sm font-semibold text-foreground">Global Search</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <div className="text-xs text-muted-foreground hidden sm:block">
-              Press <kbd className="px-1.5 py-0.5 text-xs bg-background border border-border rounded">Esc</kbd> to close
+            <div className="hidden text-xs text-muted-foreground sm:block">
+              Press{' '}
+              <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-xs">
+                Esc
+              </kbd>{' '}
+              to close
             </div>
             <Button
               variant="ghost"
@@ -235,7 +239,7 @@ const GlobalSearch: React.FC = () => {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-6 max-h-[calc(80vh-120px)] overflow-y-auto">
+        <div className="max-h-[calc(80vh-120px)] space-y-6 overflow-y-auto p-4">
           {/* Google Custom Search */}
           <div>
             <div className="mb-3 flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -258,18 +262,20 @@ const GlobalSearch: React.FC = () => {
               <Lightbulb className="h-4 w-4" />
               Quick Searches
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {quickSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => {
-                    const searchInput = document.querySelector('#gcse-search-global input[type="text"]') as HTMLInputElement;
+                    const searchInput = document.querySelector(
+                      '#gcse-search-global input[type="text"]',
+                    ) as HTMLInputElement;
                     if (searchInput) {
                       searchInput.value = suggestion;
                       searchInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                   }}
-                  className="text-xs px-3 py-2 bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors text-left"
+                  className="rounded-md border border-border bg-muted px-3 py-2 text-left text-xs transition-colors hover:bg-muted/80"
                 >
                   {suggestion}
                 </button>
@@ -283,18 +289,20 @@ const GlobalSearch: React.FC = () => {
               <Lightbulb className="h-4 w-4" />
               Programming Help
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {programmingSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => {
-                    const searchInput = document.querySelector('#gcse-search-global input[type="text"]') as HTMLInputElement;
+                    const searchInput = document.querySelector(
+                      '#gcse-search-global input[type="text"]',
+                    ) as HTMLInputElement;
                     if (searchInput) {
                       searchInput.value = suggestion;
                       searchInput.dispatchEvent(new Event('input', { bubbles: true }));
                     }
                   }}
-                  className="text-xs px-3 py-2 bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors text-left"
+                  className="rounded-md border border-border bg-muted px-3 py-2 text-left text-xs transition-colors hover:bg-muted/80"
                 >
                   {suggestion}
                 </button>
@@ -304,14 +312,9 @@ const GlobalSearch: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-border bg-muted/30">
+        <div className="border-t border-border bg-muted/30 px-4 py-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClose}
-              className="text-xs h-7"
-            >
+            <Button variant="outline" size="sm" onClick={handleClose} className="h-7 text-xs">
               Close
             </Button>
           </div>

@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client';
 
 import { useUser } from '@clerk/nextjs';
@@ -7,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 declare global {
   interface Window {
     SpeechRecognition: any;
+    // @ts-ignore
     webkitSpeechRecognition: any;
   }
 }

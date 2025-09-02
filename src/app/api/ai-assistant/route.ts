@@ -1,4 +1,5 @@
 import { auth } from '@clerk/nextjs/server';
+import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { LangChainTracer } from 'langchain/callbacks';
@@ -19,10 +20,178 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  attachments?: FileAttachment[];
 }
+
+interface FileAttachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  content?: string; // For text files
+  url?: string; // For images (base64 data URL)
+}
+
+// File validation constants
+const MAX_FILES_PER_REQUEST = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50MB total
+const ALLOWED_FILE_TYPES = [
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+  'application/json',
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
+// Daily file upload limits per user
+const dailyUploadLimits = new Map<
+  string,
+  { count: number; totalSize: number; resetTime: number }
+>();
+
+// File validation function
+const validateFileAttachments = (
+  attachments: FileAttachment[],
+  userId: string,
+): { isValid: boolean; error?: string } => {
+  if (!attachments || attachments.length === 0) {
+    return { isValid: true };
+  }
+
+  // Check file count limit
+  if (attachments.length > MAX_FILES_PER_REQUEST) {
+    return {
+      isValid: false,
+      error: `Too many files. Maximum ${MAX_FILES_PER_REQUEST} files allowed per request.`,
+    };
+  }
+
+  // Check individual file sizes and types
+  let totalSize = 0;
+  for (const attachment of attachments) {
+    if (attachment.size > MAX_FILE_SIZE) {
+      return {
+        isValid: false,
+        error: `File "${attachment.name}" is too large. Maximum size is 10MB.`,
+      };
+    }
+
+    if (!ALLOWED_FILE_TYPES.includes(attachment.type)) {
+      return { isValid: false, error: `File type "${attachment.type}" is not supported.` };
+    }
+
+    totalSize += attachment.size;
+  }
+
+  // Check total size limit
+  if (totalSize > MAX_TOTAL_SIZE) {
+    return { isValid: false, error: `Total file size exceeds 50MB limit.` };
+  }
+
+  // Check daily limits
+  const now = Date.now();
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const userLimit = dailyUploadLimits.get(userId);
+
+  if (!userLimit || now > userLimit.resetTime) {
+    // Reset daily limit
+    dailyUploadLimits.set(userId, {
+      count: attachments.length,
+      totalSize: totalSize,
+      resetTime: now + oneDayMs,
+    });
+  } else {
+    // Check if adding these files would exceed daily limits
+    const maxDailyFiles = 50;
+    const maxDailySize = 500 * 1024 * 1024; // 500MB per day
+
+    if (userLimit.count + attachments.length > maxDailyFiles) {
+      return {
+        isValid: false,
+        error: `Daily file upload limit exceeded. You can upload up to ${maxDailyFiles} files per day.`,
+      };
+    }
+
+    if (userLimit.totalSize + totalSize > maxDailySize) {
+      return {
+        isValid: false,
+        error: `Daily upload size limit exceeded. You can upload up to 500MB per day.`,
+      };
+    }
+
+    // Update daily limits
+    userLimit.count += attachments.length;
+    userLimit.totalSize += totalSize;
+  }
+
+  return { isValid: true };
+};
+
+// Process file attachments for AI context
+const processFileAttachments = (attachments: FileAttachment[]): string => {
+  if (!attachments || attachments.length === 0) {
+    return '';
+  }
+
+  let context = '\n\n--- ATTACHED FILES ---\n';
+
+  for (const attachment of attachments) {
+    context += `\nFile: ${attachment.name} (${attachment.type}, ${attachment.size} bytes)\n`;
+
+    if (attachment.content) {
+      // Check if it's a base64 image
+      if (attachment.type.startsWith('image/') && attachment.content.startsWith('data:')) {
+        context += `Content: [Image file - base64 encoded visual content provided for analysis]\n`;
+      } else {
+        // Sanitize file content to prevent injection attacks
+        const sanitizedContent = sanitizeInput(attachment.content);
+
+        // Additional security: scan for suspicious patterns
+        const suspiciousPatterns = [
+          /<script/i,
+          /javascript:/i,
+          /vbscript:/i,
+          /on\w+=/i,
+          /eval\(/i,
+          /document\./i,
+          /window\./i,
+          /alert\(/i,
+        ];
+
+        const hasSuspiciousContent = suspiciousPatterns.some((pattern) =>
+          pattern.test(sanitizedContent),
+        );
+
+        if (hasSuspiciousContent) {
+          context += `Content: [File content filtered for security]\n`;
+        } else {
+          // For text files, include the content (truncated for safety)
+          context += `Content: ${sanitizedContent.substring(0, 2000)}${sanitizedContent.length > 2000 ? '...[truncated]' : ''}\n`;
+        }
+      }
+    } else if (attachment.url && attachment.type.startsWith('image/')) {
+      // For images with URL (legacy support)
+      context += `Content: [Image file - visual content]\n`;
+    } else {
+      // For other files, just note the metadata
+      context += `Content: [Binary file - metadata only]\n`;
+    }
+  }
+
+  context += '\n--- END ATTACHED FILES ---\n';
+  return context;
+};
 
 // Rate limiting cache (in production, use Redis or database)
 const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
+const fileUploadRateLimit = new Map<string, { count: number; resetTime: number }>();
 
 // Security function to sanitize input
 const sanitizeInput = (input: string): string => {
@@ -36,7 +205,7 @@ const sanitizeInput = (input: string): string => {
     .substring(0, 5000); // Limit input length
 };
 
-// Rate limiting function
+// Enhanced rate limiting function with separate file upload limits
 const checkRateLimit = (userId: string): boolean => {
   const now = Date.now();
   const hourInMs = 60 * 60 * 1000;
@@ -50,6 +219,29 @@ const checkRateLimit = (userId: string): boolean => {
   }
 
   if (userLimit.count >= maxRequestsPerHour) {
+    return false;
+  }
+
+  userLimit.count++;
+  return true;
+};
+
+// File upload rate limiting (separate from general API rate limiting)
+const checkFileUploadRateLimit = (userId: string, hasFiles: boolean): boolean => {
+  if (!hasFiles) return true; // No files, no special rate limit needed
+
+  const now = Date.now();
+  const hourInMs = 60 * 60 * 1000;
+  const maxFileUploadsPerHour = 20; // More restrictive for file uploads
+
+  const userLimit = fileUploadRateLimit.get(userId);
+
+  if (!userLimit || now > userLimit.resetTime) {
+    fileUploadRateLimit.set(userId, { count: 1, resetTime: now + hourInMs });
+    return true;
+  }
+
+  if (userLimit.count >= maxFileUploadsPerHour) {
     return false;
   }
 
@@ -249,7 +441,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 });
     }
 
-    const { question, context, conversationHistory, platform } = await request.json();
+    const { question, context, conversationHistory, platform, attachments } = await request.json();
     const { userId } = await auth();
 
     // Authentication check
@@ -260,12 +452,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Rate limiting
+    // Rate limiting (general API and file uploads)
     if (!checkRateLimit(userId)) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
         { status: 429 },
       );
+    }
+
+    if (!checkFileUploadRateLimit(userId, !!(attachments && attachments.length > 0))) {
+      return NextResponse.json(
+        { error: 'File upload rate limit exceeded. Please try again later.' },
+        { status: 429 },
+      );
+    }
+
+    // Validate file attachments first (before other validations)
+    if (attachments) {
+      const fileValidation = validateFileAttachments(attachments, userId);
+      if (!fileValidation.isValid) {
+        // Log potential abuse attempts
+        console.warn(`File upload rejected for user ${userId}: ${fileValidation.error}`, {
+          userId,
+          attachmentCount: attachments.length,
+          totalSize: attachments.reduce((sum: number, file: FileAttachment) => sum + file.size, 0),
+          fileTypes: attachments.map((file: FileAttachment) => file.type),
+        });
+
+        return NextResponse.json({ error: fileValidation.error }, { status: 400 });
+      }
+
+      // Log successful file uploads for monitoring
+      console.log(`File upload accepted for user ${userId}`, {
+        userId,
+        attachmentCount: attachments.length,
+        totalSize: attachments.reduce((sum: number, file: FileAttachment) => sum + file.size, 0),
+        fileTypes: attachments.map((file: FileAttachment) => file.type),
+      });
     }
 
     // Input validation
@@ -340,6 +563,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Process file attachments
+    const attachmentContext = processFileAttachments(attachments);
+
     const systemPrompt = `You are an intelligent AI assistant for the Dionysus platform - an enterprise GitHub analytics and collaboration SaaS platform built with Next.js, TypeScript, tRPC, Prisma, and PostgreSQL. You provide AI-powered code analysis, meeting transcription, team collaboration, and comprehensive repository insights.
 
 IMPORTANT CAPABILITIES:
@@ -347,6 +573,8 @@ IMPORTANT CAPABILITIES:
 - You can search for current information, documentation, tutorials, and resources
 - You can find and recommend specific YouTube videos, GitHub repositories, and other resources
 - You can provide up-to-date information about technologies, frameworks, and best practices
+- You can analyze attached files including text documents, images, and code files
+- You can reference file contents in your responses when relevant
 
 STRICT GUIDELINES:
 - ONLY answer questions related to the Dionysus platform, development, coding, GitHub, or the current page
@@ -360,26 +588,62 @@ STRICT GUIDELINES:
 - If web search results are available, incorporate them into your response and provide source citations
 - Feel free to recommend specific tutorials, videos, documentation, and resources when relevant
 - You can search for and find current, specific recommendations rather than giving generic advice
+- When files are attached, analyze their content and incorporate insights into your response
+- For code files, provide suggestions for improvement, explain functionality, or help debug issues
+- For images, describe what you see and how it relates to the user's question
+- For documents, summarize key points and relate them to the query
 
 CURRENT PAGE INFORMATION:
 ${sanitizedContext}
 
 ${conversationContext}
 
+${attachmentContext}
+
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
-Provide a helpful response about the Dionysus platform or development topics based on the current page context${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.`;
+Provide a helpful response about the Dionysus platform or development topics based on the current page context${attachmentContext ? ', attached files,' : ''}${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.`;
 
-    const messages = [
-      {
-        role: 'system' as const,
-        content: systemPrompt,
-      },
-      {
-        role: 'user' as const,
-        content: sanitizedQuestion,
-      },
-    ];
+    // Prepare messages with proper multimodal support
+    const systemMessage = new SystemMessage(systemPrompt);
+
+    // Check if we have image attachments to include directly in the message
+    interface ImageAttachment extends FileAttachment {
+      content: string; // base64 data URL required for images
+    }
+
+    const imageAttachments: ImageAttachment[] =
+      attachments?.filter(
+        (attachment: FileAttachment): attachment is ImageAttachment =>
+          attachment.type.startsWith('image/') &&
+          typeof attachment.content === 'string' &&
+          attachment.content.startsWith('data:'),
+      ) ?? [];
+
+    let userMessage;
+
+    if (imageAttachments && imageAttachments.length > 0) {
+      // For multimodal input, create content array with text and images
+      const content = [
+        {
+          type: 'text',
+          text: sanitizedQuestion,
+        },
+        ...imageAttachments.map((attachment) => ({
+          type: 'image_url',
+          image_url: {
+            url: attachment.content, // base64 data URL
+          },
+        })),
+      ];
+
+      userMessage = new HumanMessage({ content });
+    } else {
+      // Text-only message
+      userMessage = new HumanMessage(sanitizedQuestion);
+    }
+
+    const messages = [systemMessage, userMessage];
 
     try {
       // Create streaming response

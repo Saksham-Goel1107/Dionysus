@@ -432,13 +432,14 @@ const CustomContextMenu = () => {
             key: 'J',
             ctrlKey: true,
             shiftKey: true,
-            bubbles: true
+            bubbles: true,
           });
           document.dispatchEvent(event);
         }}
-        className={`${buttonClass} text-purple-600 dark:text-purple-400`}
+        className={`${buttonClass} text-purple-600 dark:text-purple-400 hidden md:block`}
       >
-        🤖 Get AI Help <span className="ml-[30px] text-[10px] text-slate-500">Ctrl + Shift + J</span>
+        🤖 Get AI Help{' '}
+        <span className="ml-[30px] text-[10px] text-slate-500">Ctrl + Shift + J</span>
       </button>
       <button onClick={handleShare} className={`${buttonClass} text-blue-600 dark:text-blue-400`}>
         Share Site

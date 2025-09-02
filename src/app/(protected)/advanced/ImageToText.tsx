@@ -364,7 +364,10 @@ const ImageToText: React.FC = () => {
               </div>
             </div>
 
-            <div className="min-h-[200px] rounded-md border bg-background p-4" data-color-mode={theme === 'dark' ? 'dark' : 'light'}>
+            <div
+              className="min-h-[200px] rounded-md border bg-background p-4"
+              data-color-mode={theme === 'dark' ? 'dark' : 'light'}
+            >
               {analysis ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none">
                   <MDEditor.Markdown source={analysis} />
