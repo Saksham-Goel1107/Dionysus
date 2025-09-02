@@ -39,34 +39,17 @@ const RepoMetricsCard = ({ githubUrl }: { githubUrl: string }) => {
     if (!repo) return;
     setLoading(true);
 
-    const token = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `token ${token}`;
-    }
-
-    Promise.all([
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}`, { headers }).then((r) =>
-        r.ok ? r.json() : null,
-      ),
-      fetch(`https://api.github.com/repos/${repo.owner}/${repo.repo}/pulls?state=open`, {
-        headers,
-      }).then((r) => (r.ok ? r.json() : null)),
-    ])
-      .then(([repoData, prs]) => {
-        if (!repoData || !prs) {
+    fetch(
+      `/api/github-metrics?owner=${encodeURIComponent(repo.owner ?? '')}&repo=${encodeURIComponent(repo.repo ?? '')}`,
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data || data.error) {
           setMetrics(null);
           setLoading(false);
           return;
         }
-        setMetrics({
-          size: repoData.size ?? 0, // in KB
-          openIssues: (repoData.open_issues_count ?? 0) - (Array.isArray(prs) ? prs.length : 0),
-          openPRs: Array.isArray(prs) ? prs.length : 0,
-          forks: repoData.forks_count ?? 0,
-          stars: repoData.stargazers_count ?? 0,
-          watchers: repoData.watchers_count ?? 0,
-        });
+        setMetrics(data);
       })
       .catch(() => {
         setMetrics(null);

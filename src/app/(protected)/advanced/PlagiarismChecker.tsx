@@ -11,169 +11,18 @@ import {
 } from '@/components/ui/dialog';
 import Image from 'next/image';
 
-// List of config files to skip
-const CONFIG_FILES = [
-  'next.config.js',
-  'next-env.d.ts',
-  'tsconfig.json',
-  'tailwind.config.ts',
-  'postcss.config.js',
-  'prettier.config.js',
-  'package.json',
-  'package-lock.json',
-  'yarn.lock',
-  'pnpm-lock.yaml',
-  'vite.config.js',
-  'vite.config.ts',
-  'webpack.config.js',
-  'babel.config.js',
-  'jest.config.js',
-  'cypress.config.js',
-  'playwright.config.js',
-  'eslint.config.js',
-  'eslintrc.js',
-  'commitlint.config.js',
-  'prisma/schema.prisma',
-  'prisma/migrations',
-  'README.md',
-  'LICENSE.md',
-  'CODE_OF_CONDUCT.md',
-  'CONTRIBUTING.md',
-  'SECURITY.md',
-  'public/robots.txt',
-  'public/site.webmanifest',
-  'public/favicon.ico',
-  'public/logo.png',
-];
-
 async function checkPlagiarism(repoUrl: string, startIdx = 0): Promise<any[]> {
-  const match = repoUrl.match(/github\.com\/([^/]+)\/([^/?#]+)/);
-  if (!match) throw new Error('Invalid GitHub repo URL');
-  const [_, owner, repo] = match;
-
-  const GITHUB_PAT = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-  const headers: Record<string, string> = {
-    Accept: 'application/vnd.github+json',
-    ...(GITHUB_PAT && { Authorization: `Bearer ${GITHUB_PAT}` }),
-  };
-
-  const treeRes = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/git/trees/HEAD?recursive=1`,
-    { headers },
-  );
-  if (!treeRes.ok) throw new Error('Failed to fetch file list. Ensure the repo is public.');
-  const { tree } = await treeRes.json();
-
-  // Filter out only non-blob, config, shadcn/ui, node_modules, and duplicate files
-  const seenFiles = new Set();
-  const codeFiles = tree.filter(
-    (f: any) =>
-      f.type === 'blob' &&
-      /\.(js|ts|py|java|cpp|c|cs|rb|php|rs|swift|kt|m|scala|sh|pl|rb|dart|jsx|tsx)$/i.test(
-        f.path,
-      ) &&
-      !CONFIG_FILES.some((cfg) => f.path.endsWith(cfg)) &&
-      !/components[\\\/]ui[\\\/]/i.test(f.path) && // skip shadcn/ui components
-      !/node_modules[\\\/]/i.test(f.path) && // skip node_modules just in case
-      !seenFiles.has(f.path) &&
-      seenFiles.add(f.path),
-  );
-
-  const results: any[] = [];
-  let checked = 0;
-  let idx = startIdx;
-  let attempts = 0;
-  // Try up to 50 attempts to find 5 valid files (avoid infinite loop if many files are empty)
-  while (checked < 5 && idx < codeFiles.length && attempts < 50) {
-    const file = codeFiles[idx++];
-    attempts++;
-    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/HEAD/${file.path}`;
-    const fileRes = await fetch(rawUrl);
-    if (!fileRes.ok) continue;
-
-    const content = await fileRes.text();
-    let snippet = content.trim();
-    // Try to extract a short, single-line snippet for the search query
-    let searchSnippet = '';
-    // Prefer a non-empty, non-comment, non-import line (for code files)
-    const lines = snippet
-      .split(/\r?\n/)
-      .map((l) => l.trim())
-      .filter(Boolean);
-    searchSnippet =
-      lines.find(
-        (l) =>
-          l &&
-          !l.startsWith('//') &&
-          !l.startsWith('/*') &&
-          !l.startsWith('*') &&
-          !l.startsWith('import') &&
-          !l.startsWith('export') &&
-          l.length > 10,
-      ) ||
-      lines[0] ||
-      '';
-    // Fallback: use up to 100 chars of the snippet
-    if (searchSnippet.length > 100) searchSnippet = searchSnippet.slice(0, 100);
-    // Fallback: if still too long or empty, use up to 50 chars
-    if (!searchSnippet && snippet.length > 0) searchSnippet = snippet.slice(0, 50);
-    if (!searchSnippet) continue;
-
-    let searchUrl = `https://api.github.com/search/code?q=${encodeURIComponent(searchSnippet)}+in:file`;
-    let searchRes = await fetch(searchUrl, { headers });
-    // If 403 error, throw a rate limit error
-    if (searchRes.status === 403) {
-      throw new Error(
-        'GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.',
-      );
-    }
-    // If 422 error, retry with a shorter snippet (first 30 chars)
-    if (searchRes.status === 422 && searchSnippet.length > 30) {
-      searchSnippet = searchSnippet.slice(0, 30);
-      searchUrl = `https://api.github.com/search/code?q=${encodeURIComponent(searchSnippet)}+in:file`;
-      searchRes = await fetch(searchUrl, { headers });
-      if (searchRes.status === 403) {
-        throw new Error(
-          'GitHub API rate limit reached or access denied. Please wait a few minutes and try again. If you are using a token, ensure it is valid and has the correct scopes.',
-        );
-      }
-    }
-    if (!searchRes.ok) continue;
-
-    const searchData = await searchRes.json();
-    // Show up to 5 unique file matches (by repo+path) that are not the same repo
-    const uniqueMatches: any[] = [];
-    const seen = new Set();
-    for (const item of searchData.items || []) {
-      const key = item.repository.full_name + '/' + item.path;
-      if (
-        item.repository.full_name !== `${owner}/${repo}` &&
-        item.repository.owner.login !== owner &&
-        !seen.has(key)
-      ) {
-        uniqueMatches.push({
-          repo: item.repository.full_name,
-          path: item.path,
-          html_url: item.html_url,
-          user: item.repository.owner.login,
-          avatar_url: item.repository.owner.avatar_url,
-          user_url: item.repository.owner.html_url,
-        });
-        seen.add(key);
-        if (uniqueMatches.length >= 5) break;
-      }
-    }
-
-    results.push({
-      file: file.path,
-      snippet: searchSnippet,
-      matches: uniqueMatches,
-    });
-    checked++; // Only increment if a valid file is found
-    await new Promise((r) => setTimeout(r, 800)); // delay to avoid rate limit
+  const res = await fetch('/api/plagiarism-check', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ repoUrl, startIdx }),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error || 'Unknown error');
   }
-
-  return results;
+  const data = await res.json();
+  return data.results || [];
 }
 
 const isValidGithubUrl = (url: string) => {
@@ -344,6 +193,8 @@ const PlagiarismChecker: React.FC = () => {
                             <Image
                               src={match.avatar_url}
                               alt={match.user}
+                              width={16}
+                              height={16}
                               className="h-4 w-4 rounded-full"
                             />
                             {match.user}

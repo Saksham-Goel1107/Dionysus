@@ -10,13 +10,13 @@ import useRefetch from '@/hooks/use-refetch';
 import { api } from '@/trpc/react';
 import MDEditor from '@uiw/react-md-editor';
 import { readStreamableValue } from 'ai/rsc';
+import { Search } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import React from 'react';
 import { toast } from 'sonner';
 import { askQuestion } from '../actions';
 import CodeReferences from './CodeReferences';
-import { Search } from 'lucide-react';
 
 const AskQuestionCrad = () => {
   const { project } = useProject();
