@@ -343,7 +343,7 @@ export default function AiChatSidebar({
                   </kbd>{' '}
                   +{' '}
                   <kbd className="rounded-lg border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-800 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-100">
-                    J
+                    M
                   </kbd>{' '}
                   or{' '}
                   <kbd className="rounded-lg border border-gray-200 bg-gray-100 px-1.5 py-0.5 text-xs font-semibold text-gray-800 dark:border-gray-500 dark:bg-gray-600 dark:text-gray-100">

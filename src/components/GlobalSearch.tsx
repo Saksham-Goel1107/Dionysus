@@ -1,8 +1,27 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
-import { Search, X, Lightbulb } from 'lucide-react';
+import { Bot, Lightbulb, Search, Sparkles, X } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
+
+// TypeScript declarations for Google Custom Search
+declare global {
+  interface Window {
+    google?: {
+      search?: {
+        cse?: {
+          element?: {
+            render: (options: { div: string; tag: string }) => void;
+          };
+        };
+      };
+    };
+    __gcse?: {
+      parsetags?: string;
+      callback?: () => void;
+    };
+  }
+}
 
 const GlobalSearch: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,87 +47,60 @@ const GlobalSearch: React.FC = () => {
   // Load Google Custom Search when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Remove any existing script and style
-      const existingScript = document.querySelector('script[src*="cse.google.com"]');
-      const existingStyle = document.querySelector('style[data-global-search]');
-
-      if (existingScript) existingScript.remove();
-      if (existingStyle) existingStyle.remove();
-
-      const script = document.createElement('script');
-      script.src = `https://cse.google.com/cse.js?cx=${process.env.NEXT_PUBLIC_GOOGLE_CSE_ID || 'your-search-engine-id'}`;
-      script.async = true;
-      script.onload = () => {
-        // Initialize the search after script loads
-        if (
-          typeof window !== 'undefined' &&
-          window.google &&
-          window.google.search &&
-          window.google.search.cse &&
-          window.google.search.cse.element &&
-          typeof window.google.search.cse.element.render === 'function'
-        ) {
-          window.google.search.cse.element.render({
-            div: 'gcse-search-global',
-            tag: 'search',
-          });
-        }
-      };
-      document.head.appendChild(script);
-
       const style = document.createElement('style');
       style.setAttribute('data-global-search', 'true');
       style.textContent = `
-        .gsc-control-cse {
-          background-color: transparent !important;
-          border: none !important;
-          padding: 0 !important;
-        }
-        .gsc-input-box {
-          background-color: hsl(var(--background)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-          border-radius: 6px !important;
-        }
-        .gsc-input {
-          background-color: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-          font-size: 14px !important;
-          padding: 8px 12px !important;
-        }
-        .gsc-search-button {
-          background-color: hsl(var(--primary)) !important;
-          border: 1px solid hsl(var(--primary)) !important;
-          border-radius: 6px !important;
-        }
-        .gsc-search-button:hover {
-          background-color: hsl(var(--primary)/0.9) !important;
-        }
         .dark .gsc-control-cse {
-          background-color: transparent !important;
-          border: none !important;
-        }
-        .dark .gsc-input-box {
-          background-color: hsl(var(--background)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-        }
-        .dark .gsc-input {
-          background-color: hsl(var(--background)) !important;
-          color: hsl(var(--foreground)) !important;
-        }
-        .dark .gsc-search-button {
-          background-color: hsl(var(--primary)) !important;
-          border: 1px solid hsl(var(--primary)) !important;
-        }
-        .dark .gsc-search-button:hover {
-          background-color: hsl(var(--primary)/0.9) !important;
-        }
+        background-color: hsl(var(--card)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+      }
+      .dark .gsc-input-box {
+        background-color: hsl(var(--background)) !important;
+        border: 1px solid hsl(var(--border)) !important;
+      }
+      .dark .gsc-input {
+        background-color: hsl(var(--background)) !important;
+        color: hsl(var(--foreground)) !important;
+      }
+      .dark .gsc-search-button {
+        background-color: hsl(var(--primary)) !important;
+        border: 1px solid hsl(var(--primary)) !important;
+      }
+      .dark .gsc-search-button:hover {
+        background-color: hsl(var(--primary)/0.9) !important;
+      }
       `;
       document.head.appendChild(style);
 
-      return () => {
-        if (document.head.contains(script)) {
-          document.head.removeChild(script);
+      // Initialize Google Custom Search
+      const initializeGoogleSearch = () => {
+        if (window.google?.search?.cse?.element) {
+          try {
+            // Clear existing search element
+            const existingElement = document.getElementById('gcse-search-global');
+            if (existingElement) {
+              existingElement.innerHTML = '';
+            }
+
+            // Render the search element
+            window.google.search.cse.element.render({
+              div: 'gcse-search-global',
+              tag: 'search',
+            });
+          } catch (error) {
+            console.warn('Failed to initialize Google Custom Search:', error);
+          }
+        } else {
+          // If Google CSE is not loaded yet, try again after a delay
+          setTimeout(initializeGoogleSearch, 500);
         }
+      };
+
+      // Wait for the DOM to be ready, then initialize
+      const timeoutId = setTimeout(initializeGoogleSearch, 100);
+
+      return () => {
+        clearTimeout(timeoutId);
         if (document.head.contains(style)) {
           document.head.removeChild(style);
         }
@@ -316,6 +308,26 @@ const GlobalSearch: React.FC = () => {
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <Button variant="outline" size="sm" onClick={handleClose} className="h-7 text-xs">
               Close
+            </Button>
+            <Button
+              onClick={() => {
+                const event = new KeyboardEvent('keydown', {
+                  key: 'M',
+                  ctrlKey: true,
+                  shiftKey: true,
+                  bubbles: true,
+                });
+                document.dispatchEvent(event);
+                handleClose(); // Close search modal when opening AI assistant
+              }}
+              className="group relative hidden h-8 gap-2 overflow-hidden bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 px-4 text-xs font-medium text-white transition-all duration-300 hover:from-blue-600 hover:via-purple-600 hover:to-cyan-600 hover:shadow-lg hover:shadow-blue-500/25 md:flex"
+              size="sm"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <Bot className="relative h-4 w-4 transition-transform duration-300 group-hover:scale-110" />
+              <span className="relative">AI Assistant</span>
+              <Sparkles className="relative h-3 w-3 animate-pulse text-yellow-200" />
+              <span className="relative ml-1 text-[10px] opacity-70">Ctrl+Shift+M</span>
             </Button>
           </div>
         </div>

@@ -32,10 +32,6 @@ const AskQuestionCrad = () => {
   const refetch = useRefetch();
 
   React.useEffect(() => {
-    const script = document.createElement('script');
-    script.src = `https://cse.google.com/cse.js?cx=${process.env.NEXT_PUBLIC_GOOGLE_CSE_ID}`;
-    script.async = true;
-    document.head.appendChild(script);
     const style = document.createElement('style');
     style.textContent = `
       .dark .gsc-control-cse {
@@ -60,9 +56,32 @@ const AskQuestionCrad = () => {
     `;
     document.head.appendChild(style);
 
+    const initializeGoogleSearch = () => {
+      if (window.google?.search?.cse?.element) {
+        try {
+          const container = document.getElementById('gcse-search-ask-card');
+          if (container) {
+            container.innerHTML = '';
+            window.google.search.cse.element.render({
+              div: 'gcse-search-ask-card',
+              tag: 'search',
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to initialize Google Custom Search:', error);
+        }
+      } else {
+        setTimeout(initializeGoogleSearch, 500);
+      }
+    };
+
+    const timeoutId = setTimeout(initializeGoogleSearch, 100);
+
     return () => {
-      document.head.removeChild(script);
-      document.head.removeChild(style);
+      clearTimeout(timeoutId);
+      if (document.head.contains(style)) {
+        document.head.removeChild(style);
+      }
     };
   }, []);
 
@@ -200,10 +219,12 @@ const AskQuestionCrad = () => {
               Search on Google
             </div>
             <div
+              id="gcse-search-ask-card"
               className="gcse-search"
-              data-resultsUrl=""
-              data-newWindow="true"
+              data-resultsurl=""
+              data-newwindow="true"
               data-linktarget="_blank"
+              style={{ minHeight: 56 }}
             ></div>
           </div>
         </CardContent>

@@ -30,6 +30,7 @@ import {
   Shield,
   Smartphone,
   Sparkles,
+  Square,
   Trash2,
   Upload,
   Volume2,
@@ -80,6 +81,8 @@ const GlobalAIAssistant: React.FC = () => {
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -115,6 +118,15 @@ const GlobalAIAssistant: React.FC = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Cleanup effect for abort controller
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
 
   // Security function to sanitize input
   const sanitizeInput = (input: string): string => {
@@ -524,7 +536,7 @@ const GlobalAIAssistant: React.FC = () => {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.shiftKey && event.key === 'J') {
+      if (event.ctrlKey && event.shiftKey && event.key === 'M') {
         event.preventDefault();
         setIsOpen(true);
         // Page context will be captured in the isOpen useEffect
@@ -794,6 +806,28 @@ const GlobalAIAssistant: React.FC = () => {
     return <File className="h-4 w-4" />;
   };
 
+  const stopGeneration = () => {
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+    }
+    setIsLoading(false);
+    setIsGenerating(false);
+
+    // Update the last assistant message to indicate it was stopped
+    setMessages((prev) => {
+      const lastMessage = prev[prev.length - 1];
+      if (lastMessage && lastMessage.role === 'assistant') {
+        return prev.map((msg, index) =>
+          index === prev.length - 1
+            ? { ...msg, content: msg.content + '\n\n*[Generation stopped by user]*' }
+            : msg,
+        );
+      }
+      return prev;
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!question.trim() || isLoading) return;
@@ -839,6 +873,11 @@ const GlobalAIAssistant: React.FC = () => {
     setQuestion('');
     setAttachedFiles([]); // Clear attachments after sending
     setIsLoading(true);
+    setIsGenerating(true);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
 
     // Create assistant message with streaming content
     const assistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -887,6 +926,7 @@ const GlobalAIAssistant: React.FC = () => {
           userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
         }),
+        signal: controller.signal, // Add abort signal
       });
 
       if (!response.ok) {
@@ -915,6 +955,8 @@ const GlobalAIAssistant: React.FC = () => {
 
                 if (data === '[DONE]') {
                   setIsLoading(false);
+                  setIsGenerating(false);
+                  setAbortController(null);
                   break;
                 }
 
@@ -951,6 +993,8 @@ const GlobalAIAssistant: React.FC = () => {
                       ),
                     );
                     setIsLoading(false);
+                    setIsGenerating(false);
+                    setAbortController(null);
                   } else if (parsed.type === 'error') {
                     throw new Error(parsed.error || 'Streaming error');
                   }
@@ -986,6 +1030,12 @@ const GlobalAIAssistant: React.FC = () => {
     } catch (error) {
       console.error('Error getting AI response:', error);
 
+      // Check if it was aborted
+      if (error instanceof Error && error.name === 'AbortError') {
+        // Don't show error message for user-initiated stops
+        return;
+      }
+
       // Update the assistant message with error
       setMessages((prev) =>
         prev.map((msg) =>
@@ -1000,10 +1050,19 @@ const GlobalAIAssistant: React.FC = () => {
       );
     } finally {
       setIsLoading(false);
+      setIsGenerating(false);
+      setAbortController(null);
     }
   };
 
   const handleClose = () => {
+    // Stop any ongoing generation when closing
+    if (abortController) {
+      abortController.abort();
+      setAbortController(null);
+    }
+    setIsLoading(false);
+    setIsGenerating(false);
     setIsOpen(false);
   };
 
@@ -1663,19 +1722,23 @@ const GlobalAIAssistant: React.FC = () => {
                         <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                       </div>
                       <div className="max-w-[85%] rounded-lg border bg-card p-3 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="flex gap-1">
-                            <div className="h-2 w-2 animate-bounce rounded-full bg-current" />
-                            <div
-                              className="h-2 w-2 animate-bounce rounded-full bg-current"
-                              style={{ animationDelay: '0.1s' }}
-                            />
-                            <div
-                              className="h-2 w-2 animate-bounce rounded-full bg-current"
-                              style={{ animationDelay: '0.2s' }}
-                            />
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className="flex gap-1">
+                              <div className="h-2 w-2 animate-bounce rounded-full bg-current" />
+                              <div
+                                className="h-2 w-2 animate-bounce rounded-full bg-current"
+                                style={{ animationDelay: '0.1s' }}
+                              />
+                              <div
+                                className="h-2 w-2 animate-bounce rounded-full bg-current"
+                                style={{ animationDelay: '0.2s' }}
+                              />
+                            </div>
+                            <span>
+                              {isGenerating ? 'AI is generating...' : 'AI is thinking...'}
+                            </span>
                           </div>
-                          <span>AI is thinking...</span>
                         </div>
                       </div>
                     </div>
@@ -1693,10 +1756,10 @@ const GlobalAIAssistant: React.FC = () => {
                 onClick={scrollToBottom}
                 variant="secondary"
                 size="sm"
-                className="h-10 w-10 rounded-full border border-border bg-background/95 p-0 shadow-xl backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-muted dark:bg-gray-800/95 dark:hover:bg-gray-700"
+                className="h-10 w-10 rounded-full border border-border bg-white/95 p-0 shadow-xl backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-muted dark:bg-gray-800/95 dark:hover:bg-gray-700"
                 title="Scroll to bottom"
               >
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-4 w-4 text-gray-700 dark:text-gray-100" />
               </Button>
             </div>
           )}
@@ -1843,15 +1906,26 @@ const GlobalAIAssistant: React.FC = () => {
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
 
-                {/* Send Button */}
-                <Button
-                  type="submit"
-                  disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
-                  className="h-8 w-8 bg-primary p-0 hover:bg-primary/90 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
-                  title="Send message"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                {/* Send/Stop Button */}
+                {isGenerating ? (
+                  <Button
+                    type="button"
+                    onClick={stopGeneration}
+                    className="h-8 w-8 bg-red-500 p-0 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700"
+                    title="Stop generation"
+                  >
+                    <Square className="h-4 w-4 fill-current" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
+                    className="h-8 w-8 bg-primary p-0 hover:bg-primary/90 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+                    title="Send message"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </div>
 

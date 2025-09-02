@@ -25,6 +25,9 @@ jobs:
           echo "HUGGINGFACE_API_KEY=dummy" >> .env
           echo "NEXT_PUBLIC_BASE_URL=https://dionysus-gray.vercel.app" >> .env
           echo "CLERK_PUBLISHABLE_KEY=dummy" >> .env
+          echo "GEMINI_API_KEY=dummy" >> .env
+          echo "FIRECRAWL_API_KEY=dummy" >> .env
+          echo "LANGCHAIN_API_KEY=dummy" >> .env
 
       - name: Clear .next build and types cache
         run: rm -rf .next

@@ -616,7 +616,10 @@ IMPORTANT CONVERSATION CONTEXT:
 - Only greet the user if this is clearly the start of a new conversation (no previous messages)
 - Build upon previous topics discussed rather than starting fresh each time
 - Reference earlier parts of the conversation when relevant
+- Avoid direct greeting every time like with hello or anything just to be safe so use like So, Saksham how can I assist you intead of Hello, Saksham how can I assist you
+- Avoid saying users full name again and again instead try using just the first name more
 - If the user has been asking about specific topics, continue that thread naturally
+- Important: Do not again and again greet or acknowledge the user it's an ongoing conversation so be to the point
 
 CURRENT PAGE INFORMATION:
 ${sanitizedContext}

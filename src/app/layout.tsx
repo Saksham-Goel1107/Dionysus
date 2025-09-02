@@ -230,7 +230,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                       <>
                         <Script
                           src="https://cdn.userway.org/widget.js"
-                          data-account={process.env.NEXT_PUBLIC_USERWAY_ACCOUNT}
+                          data-account={process.env.USERWAY_ACCOUNT}
                         ></Script>
                         <Script
                           id="crisp-chat"
@@ -240,7 +240,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                           dangerouslySetInnerHTML={{
                             __html: `
                             window.$crisp = [];
-                            window.CRISP_WEBSITE_ID = \`${process.env.NEXT_PUBLIC_CRISP_TOKEN}\`;
+                            window.CRISP_WEBSITE_ID = \`${process.env.CRISP_TOKEN}\`;
                             window.$crisp.push(["safe", true]);
                             (function(){
                               var d = document, s = d.createElement("script");
@@ -284,6 +284,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                           `,
                           }}
                         />
+                        <Script
+                          strategy="beforeInteractive"
+                          src={`https://cse.google.com/cse.js?cx=${process.env.GOOGLE_CSE_ID}`}
+                        ></Script>
                       </>
                     )}
                   </ConfigCatProvider>
