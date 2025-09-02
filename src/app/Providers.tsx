@@ -70,7 +70,7 @@ function Providers({ children }: { children: React.ReactNode }) {
     pathname?.startsWith('/onboarding') ||
     process.env.NODE_ENV !== 'production';
 
-  const hideCookieBanner = pathname === '/updates' || pathname === '/cookie-policy';
+  const hideCookieBanner = pathname === '/updates' || pathname === '/cookie-policy' || process.env.NODE_ENV !== 'production';
 
   const [showInactivityModal, setShowInactivityModal] = useState(false);
   const [countdown, setCountdown] = useState(10);

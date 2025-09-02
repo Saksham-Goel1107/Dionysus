@@ -119,10 +119,7 @@ const GitGraphs = () => {
                   a.download = `${repo}_diagram.png`;
                   a.click();
                   a.remove();
-                } else {
-                  const err = await res.json();
-                  alert('Failed to generate diagram: ' + err?.error || 'Unknown error');
-                }
+                } 
               }}
               className="relative mt-4 rounded-xl border-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
             >

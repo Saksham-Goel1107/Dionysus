@@ -244,7 +244,6 @@ const CiCd = () => {
   const handleCopy = async () => {
     if (yaml) {
       await navigator.clipboard.writeText(yaml);
-      alert('✅ YAML copied to clipboard!');
     }
   };
 

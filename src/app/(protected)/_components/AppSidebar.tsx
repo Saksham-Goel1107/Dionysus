@@ -323,8 +323,13 @@ const AppSidebar = ({}: Props) => {
                 if (filtered.length === 0) {
                   return (
                     <SidebarMenuItem>
-                      <div className="w-full select-none px-3 py-2 text-center text-sm text-gray-400 dark:text-gray-500">
-                        Nothing available
+                      <div
+                        className={cn(
+                          'w-full select-none text-center text-sm text-gray-400 dark:text-gray-500',
+                          open ? 'px-3 py-2' : 'px-1 py-2 text-xs',
+                        )}
+                      >
+                        {open ? 'Nothing available' : 'No data'}
                       </div>
                     </SidebarMenuItem>
                   );

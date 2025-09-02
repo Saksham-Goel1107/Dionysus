@@ -9,6 +9,9 @@ export const env = createEnv({
   server: {
     DATABASE_URL: z.string().url(),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    GEMINI_API_KEY: z.string().min(1),
+    FIRECRAWL_API_KEY: z.string().min(1).optional(),
+    LANGCHAIN_API_KEY: z.string().min(1).optional(),
   },
 
   /**
@@ -28,6 +31,9 @@ export const env = createEnv({
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+    LANGCHAIN_API_KEY: process.env.LANGCHAIN_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

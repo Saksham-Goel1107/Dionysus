@@ -32,7 +32,6 @@ const SSBox = () => {
       });
     } else {
       navigator.clipboard.writeText(shareText);
-      alert('Share text copied to clipboard!');
     }
   };
 
