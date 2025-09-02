@@ -436,7 +436,7 @@ const CustomContextMenu = () => {
           });
           document.dispatchEvent(event);
         }}
-        className={`${buttonClass} text-purple-600 dark:text-purple-400 hidden md:block`}
+        className={`${buttonClass} hidden text-purple-600 dark:text-purple-400 md:block`}
       >
         🤖 Get AI Help{' '}
         <span className="ml-[30px] text-[10px] text-slate-500">Ctrl + Shift + J</span>

@@ -441,7 +441,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 });
     }
 
-    const { question, context, conversationHistory, platform, attachments } = await request.json();
+    const { question, context, conversationHistory, platform, attachments, userInfo } =
+      await request.json();
     const { userId } = await auth();
 
     // Authentication check
@@ -554,8 +555,7 @@ export async function POST(request: NextRequest) {
       conversationHistory.length > 0
     ) {
       conversationContext = '\n\nPREVIOUS CONVERSATION:\n';
-      conversationHistory.slice(-5).forEach((msg: Message) => {
-        // Limit to last 5 messages
+      conversationHistory.slice(-10).forEach((msg: Message) => {
         if (msg.role && msg.content && typeof msg.content === 'string') {
           const sanitizedContent = sanitizeInput(msg.content);
           conversationContext += `${msg.role.toUpperCase()}: ${sanitizedContent}\n`;
@@ -565,6 +565,23 @@ export async function POST(request: NextRequest) {
 
     // Process file attachments
     const attachmentContext = processFileAttachments(attachments);
+
+    // Build user context for personalization
+    let userContext = '';
+    if (userInfo) {
+      userContext = '\n\nUSER INFORMATION (for personalization):';
+      if (userInfo.fullName || userInfo.firstName) {
+        userContext += `\n- Name: ${userInfo.fullName || userInfo.firstName + (userInfo.lastName ? ' ' + userInfo.lastName : '')}`;
+      }
+      if (userInfo.email) {
+        userContext += `\n- Email: ${userInfo.email}`;
+      }
+      if (userInfo.username) {
+        userContext += `\n- Username: ${userInfo.username}`;
+      }
+      userContext +=
+        '\n- Use this information to personalize responses (e.g., address the user by name when appropriate)';
+    }
 
     const systemPrompt = `You are an intelligent AI assistant for the Dionysus platform - an enterprise GitHub analytics and collaboration SaaS platform built with Next.js, TypeScript, tRPC, Prisma, and PostgreSQL. You provide AI-powered code analysis, meeting transcription, team collaboration, and comprehensive repository insights.
 
@@ -593,12 +610,22 @@ STRICT GUIDELINES:
 - For images, describe what you see and how it relates to the user's question
 - For documents, summarize key points and relate them to the query
 
+IMPORTANT CONVERSATION CONTEXT:
+- You are continuing an ongoing conversation with the user
+- Review the previous conversation history to maintain context and avoid repetitive greetings
+- Only greet the user if this is clearly the start of a new conversation (no previous messages)
+- Build upon previous topics discussed rather than starting fresh each time
+- Reference earlier parts of the conversation when relevant
+- If the user has been asking about specific topics, continue that thread naturally
+
 CURRENT PAGE INFORMATION:
 ${sanitizedContext}
 
 ${conversationContext}
 
 ${attachmentContext}
+
+${userContext}
 
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 

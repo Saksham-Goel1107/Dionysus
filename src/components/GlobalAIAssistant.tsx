@@ -14,6 +14,7 @@ import MDEditor from '@uiw/react-md-editor';
 import {
   AlertTriangle,
   Bot,
+  ChevronDown,
   Copy,
   ExternalLink,
   File,
@@ -75,6 +76,7 @@ const GlobalAIAssistant: React.FC = () => {
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -82,10 +84,11 @@ const GlobalAIAssistant: React.FC = () => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { theme } = useTheme();
-  const { isLoaded, isSignedIn } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
 
   // Security and validation constants
   const MAX_QUESTIONS_PER_HOUR = 50;
@@ -370,6 +373,12 @@ const GlobalAIAssistant: React.FC = () => {
             top: scrollViewport.scrollHeight,
             behavior: 'smooth',
           });
+          // Update scroll button state after auto-scroll
+          setTimeout(() => {
+            const { scrollTop, scrollHeight, clientHeight } = scrollViewport;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+            setShowScrollToBottom(!isAtBottom && messages.length > 0);
+          }, 300);
         }, 100);
       } else {
         // Fallback to the ScrollArea element or parent element scrolling
@@ -381,11 +390,91 @@ const GlobalAIAssistant: React.FC = () => {
               top: scrollElement.scrollHeight,
               behavior: 'smooth',
             });
+            // Update scroll button state after auto-scroll
+            setTimeout(() => {
+              const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+              const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+              setShowScrollToBottom(!isAtBottom && messages.length > 0);
+            }, 300);
           }, 100);
         }
       }
     }
   }, [messages, isLoading]);
+
+  // Scroll detection for show/hide scroll to bottom button
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      // Debounce scroll events
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        if (messagesEndRef.current && messages.length > 0) {
+          const scrollViewport = messagesEndRef.current.closest(
+            '[data-radix-scroll-area-viewport]',
+          );
+          const scrollElement =
+            scrollViewport ||
+            messagesEndRef.current.closest('.scroll-area') ||
+            messagesEndRef.current.parentElement;
+
+          if (scrollElement) {
+            const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // Increased threshold to 50px
+            setShowScrollToBottom(!isAtBottom && messages.length > 1); // Show if not at bottom and has more than 1 message
+          }
+        }
+      }, 50); // 50ms debounce
+    };
+
+    // Add scroll listener to the scroll area
+    if (messagesEndRef.current) {
+      const scrollViewport = messagesEndRef.current.closest('[data-radix-scroll-area-viewport]');
+      const scrollElement =
+        scrollViewport ||
+        messagesEndRef.current.closest('.scroll-area') ||
+        messagesEndRef.current.parentElement;
+
+      if (scrollElement) {
+        scrollElement.addEventListener('scroll', handleScroll);
+        // Trigger initial check
+        setTimeout(handleScroll, 100);
+        return () => {
+          clearTimeout(scrollTimeout);
+          scrollElement.removeEventListener('scroll', handleScroll);
+        };
+      }
+    }
+
+    return () => clearTimeout(scrollTimeout);
+  }, [messages.length]);
+
+  // Function to scroll to bottom
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      const scrollViewport = messagesEndRef.current.closest('[data-radix-scroll-area-viewport]');
+      const scrollElement =
+        scrollViewport ||
+        messagesEndRef.current.closest('.scroll-area') ||
+        messagesEndRef.current.parentElement;
+
+      if (scrollElement) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: 'smooth',
+        });
+
+        // Hide the scroll button immediately and check again after scroll animation
+        setShowScrollToBottom(false);
+        setTimeout(() => {
+          const { scrollTop, scrollHeight, clientHeight } = scrollElement;
+          const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+          setShowScrollToBottom(!isAtBottom && messages.length > 1);
+        }, 100); // Reduced timeout for faster response
+      }
+    }
+  };
 
   const capturePageContext = React.useCallback(() => {
     try {
@@ -438,8 +527,7 @@ const GlobalAIAssistant: React.FC = () => {
       if (event.ctrlKey && event.shiftKey && event.key === 'J') {
         event.preventDefault();
         setIsOpen(true);
-        // Capture current page context when opening
-        capturePageContext();
+        // Page context will be captured in the isOpen useEffect
       } else if (event.key === 'Escape' && isOpen) {
         event.preventDefault();
         setIsOpen(false);
@@ -450,12 +538,37 @@ const GlobalAIAssistant: React.FC = () => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, capturePageContext]);
 
-  // Focus textarea when modal opens
+  // Focus textarea when modal opens and scroll to bottom if there are messages
   useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      textareaRef.current.focus();
+    if (isOpen) {
+      // Capture page context when modal opens
+      capturePageContext();
+
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+      }
+
+      // Scroll to bottom if there are messages
+      if (messages.length > 0 && messagesEndRef.current) {
+        setTimeout(() => {
+          const scrollViewport = messagesEndRef.current?.closest(
+            '[data-radix-scroll-area-viewport]',
+          );
+          const scrollElement =
+            scrollViewport ||
+            messagesEndRef.current?.closest('.scroll-area') ||
+            messagesEndRef.current?.parentElement;
+
+          if (scrollElement) {
+            scrollElement.scrollTo({
+              top: scrollElement.scrollHeight,
+              behavior: 'smooth',
+            });
+          }
+        }, 150); // Slight delay to ensure DOM is ready
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, messages.length, capturePageContext]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -744,6 +857,18 @@ const GlobalAIAssistant: React.FC = () => {
       // Additional security: validate context before sending
       const safeContext = sanitizeInput(currentContext);
 
+      // Prepare user information for personalization
+      const userInfo = user
+        ? {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            fullName: user.fullName || '',
+            email: user.primaryEmailAddress?.emailAddress || '',
+            username: user.username || '',
+            hasImage: !!user.imageUrl,
+          }
+        : null;
+
       const response = await fetch('/api/ai-assistant', {
         method: 'POST',
         headers: {
@@ -753,12 +878,13 @@ const GlobalAIAssistant: React.FC = () => {
         body: JSON.stringify({
           question: sanitizedQuestion,
           context: safeContext,
-          conversationHistory: messages.slice(-5).map((msg) => ({
+          conversationHistory: messages.slice(-10).map((msg) => ({
             ...msg,
             content: sanitizeInput(msg.content),
-          })), // Sanitize history
+          })), // Send last 10 messages for better context
           platform: 'dionysus', // Platform identifier
           userId: 'authenticated', // Don't send actual user ID for privacy
+          userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
         }),
       });
@@ -1364,25 +1490,27 @@ const GlobalAIAssistant: React.FC = () => {
         </div>
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="scroll-area h-full">
-            <div className="space-y-4 p-4 pb-6" style={{ minHeight: '400px' }}>
+        <div className="relative flex-1 overflow-hidden">
+          <ScrollArea ref={scrollAreaRef} className="scroll-area h-full">
+            <div className="space-y-4 p-4 pb-6">
               {messages.length === 0 ? (
-                <div className="py-8 text-center">
-                  <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                  <h3 className="mb-2 text-lg font-medium text-foreground">
-                    Hi! I&apos;m your AI page assistant
-                  </h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    I can help you understand this page and answer questions about what you&apos;re
-                    seeing. Your conversation is automatically saved and will persist across
-                    sessions.
-                  </p>
-                  <div className="text-xs text-muted-foreground">
-                    Current page:{' '}
-                    <span className="rounded bg-muted px-2 py-1 font-mono text-xs dark:bg-gray-800">
-                      {pathname}
-                    </span>
+                <div className="flex h-full min-h-[200px] items-center justify-center py-8 text-center">
+                  <div>
+                    <Bot className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 text-lg font-medium text-foreground">
+                      Hi! I&apos;m your AI page assistant
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      I can help you understand this page and answer questions about what
+                      you&apos;re seeing. Your conversation is automatically saved and will persist
+                      across sessions.
+                    </p>
+                    <div className="text-xs text-muted-foreground">
+                      Current page:{' '}
+                      <span className="rounded bg-muted px-2 py-1 font-mono text-xs dark:bg-gray-800">
+                        {pathname}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -1523,7 +1651,7 @@ const GlobalAIAssistant: React.FC = () => {
                       {message.role === 'user' && (
                         <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary ring-2 ring-primary/20 dark:bg-blue-600 dark:ring-blue-500/20">
                           <span className="text-xs font-bold text-primary-foreground dark:text-white">
-                            U
+                            {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
                           </span>
                         </div>
                       )}
@@ -1557,6 +1685,21 @@ const GlobalAIAssistant: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
+
+          {/* Scroll to Bottom Button */}
+          {(showScrollToBottom || messages.length > 1) && (
+            <div className="absolute bottom-4 right-4 z-20">
+              <Button
+                onClick={scrollToBottom}
+                variant="secondary"
+                size="sm"
+                className="h-10 w-10 rounded-full border border-border bg-background/95 p-0 shadow-xl backdrop-blur-sm transition-all duration-200 hover:scale-110 hover:bg-muted dark:bg-gray-800/95 dark:hover:bg-gray-700"
+                title="Scroll to bottom"
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Quick Questions */}
@@ -1639,79 +1782,77 @@ const GlobalAIAssistant: React.FC = () => {
                 : 'border-transparent'
             }`}
           >
-            <div className="flex gap-2">
-              {/* Text Input */}
-              <div className="relative flex-1">
-                <Textarea
-                  ref={textareaRef}
-                  value={question}
-                  onChange={(e) => {
-                    setQuestion(e.target.value);
-                    setInputError(''); // Clear error on input change
-                  }}
-                  placeholder="Ask me about this page, Dionysus features, or development topics..."
-                  className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pr-20 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
-                    inputError ? 'border-red-500 dark:border-red-400' : ''
-                  }`}
-                  maxLength={MAX_MESSAGE_LENGTH}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e);
-                    }
-                  }}
+            {/* Text Input with Integrated Send Button */}
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={question}
+                onChange={(e) => {
+                  setQuestion(e.target.value);
+                  setInputError(''); // Clear error on input change
+                }}
+                placeholder="Ask me about this page, Dionysus features, or development topics..."
+                className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pr-28 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
+                  inputError ? 'border-red-500 dark:border-red-400' : ''
+                }`}
+                maxLength={MAX_MESSAGE_LENGTH}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+              />
+
+              {/* Input Actions - File Upload, Voice, and Send */}
+              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                {/* File Upload Button */}
+                <input
+                  type="file"
+                  id="file-upload"
+                  multiple
+                  accept=".txt,.md,.csv,.json,.pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
+                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                  className="hidden"
                 />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                  className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                  title="Attach files"
+                >
+                  <Paperclip className="h-4 w-4" />
+                </Button>
 
-                {/* Input Actions */}
-                <div className="absolute bottom-2 right-2 flex gap-1">
-                  {/* File Upload Button */}
-                  <input
-                    type="file"
-                    id="file-upload"
-                    multiple
-                    accept=".txt,.md,.csv,.json,.pdf,.jpg,.jpeg,.png,.gif,.webp,.doc,.docx"
-                    onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
-                    className="hidden"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => document.getElementById('file-upload')?.click()}
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                    title="Attach files"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                  </Button>
+                {/* Voice Input Button */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleVoiceInput}
+                  disabled={!recognition}
+                  className={`h-8 w-8 p-0 ${
+                    isListening
+                      ? 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                  title={isListening ? 'Stop voice input' : 'Start voice input'}
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
 
-                  {/* Voice Input Button */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={toggleVoiceInput}
-                    disabled={!recognition}
-                    className={`h-8 w-8 p-0 ${
-                      isListening
-                        ? 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-500'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                    title={isListening ? 'Stop voice input' : 'Start voice input'}
-                  >
-                    {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  </Button>
-                </div>
+                {/* Send Button */}
+                <Button
+                  type="submit"
+                  disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
+                  className="h-8 w-8 bg-primary p-0 hover:bg-primary/90 disabled:opacity-50 dark:bg-blue-600 dark:hover:bg-blue-700"
+                  title="Send message"
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
               </div>
-
-              {/* Send Button */}
-              <Button
-                type="submit"
-                disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
-                className="self-end bg-primary hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-700"
-                size="lg"
-              >
-                <Send className="h-5 w-5" />
-              </Button>
             </div>
 
             {/* Drag & Drop Overlay */}
