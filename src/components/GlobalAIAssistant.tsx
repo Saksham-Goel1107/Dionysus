@@ -134,7 +134,7 @@ const GlobalAIAssistant: React.FC = () => {
     return input
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .replace(/javascript:/gi, '')
+      .replace(/\b(?:javascript|data|vbscript):/gi, '')
       .replace(/on\w+\s*=/gi, '')
       .trim();
   };
