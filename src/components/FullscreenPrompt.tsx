@@ -13,6 +13,10 @@ const FullscreenPrompt: React.FC = () => {
   const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      setShow(false);
+      sessionStorage.setItem('fullscreenPromptDismissed', 'true');
+    }
     function checkMobile() {
       const mobile =
         window.innerWidth <= 768 ||

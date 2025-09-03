@@ -24,6 +24,7 @@ import TranscriptViewer from './_components/TranscriptViewer';
 
 const MeetingsPage = () => {
   const { projectId } = useProject();
+  const { data: projectsData, isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
   const { data: meetings } = api.project.getMeetings.useQuery(
     { projectId },
     {
@@ -72,14 +73,59 @@ const MeetingsPage = () => {
     })();
   }, []);
 
-  // Show loading state while checking plan or if no projectId yet
-  if (loading || !projectId) {
+  if (loading || isProjectsLoading) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
         <p className="text-lg text-gray-500 dark:text-gray-300">
-          {!projectId ? 'Loading project...' : 'Checking your plan...'}
+          {isProjectsLoading ? 'Loading projects...' : 'Checking your plan...'}
         </p>
+      </div>
+    );
+  }
+
+  // Check if user has any projects
+  const hasProjects = projectsData && Array.isArray(projectsData) && projectsData.length > 0;
+
+  if (!hasProjects) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-4 px-4 text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+          <svg
+            className="h-8 w-8 text-blue-600 dark:text-blue-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+            />
+          </svg>
+        </div>
+        <h2
+          className={`text-2xl font-bold ${
+            resolvedTheme === 'dark' ? 'text-white' : 'text-gray-800'
+          }`}
+        >
+          No Projects Found
+        </h2>
+        <p
+          className={`${
+            resolvedTheme === 'dark' ? 'text-gray-200' : 'text-gray-600'
+          } max-w-md text-sm sm:text-base`}
+        >
+          You need to create a project first before accessing meetings. <br />
+          Projects help organize your repositories and meetings.
+        </p>
+        <Link href="/create">
+          <Button size="lg" className="mt-2">
+            Create Your First Project
+          </Button>
+        </Link>
       </div>
     );
   }

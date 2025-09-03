@@ -1,10 +1,11 @@
 'use client';
 import useProject from '@/hooks/use-project';
-import { useTheme } from 'next-themes';
 import { api } from '@/trpc/react';
-import { useMemo } from 'react';
+import { Loader2 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Image from 'next/image';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useMemo } from 'react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 type Props = {};
 
@@ -113,8 +114,10 @@ const CenterLabel = ({ totalCommits }: { totalCommits: number }) => {
 
 const ContributionChart = ({}: Props) => {
   const { projectId } = useProject();
-  const { data: commits } = api.project.getCommits.useQuery({ projectId });
-  const { resolvedTheme } = useTheme(); // Always call all hooks first, before any conditional returns
+  const { data: commits, isLoading: isCommitsLoading } = api.project.getCommits.useQuery({
+    projectId,
+  });
+  const { resolvedTheme } = useTheme();
   const contributionData = useMemo(() => {
     if (!commits) return [];
 
@@ -154,6 +157,15 @@ const ContributionChart = ({}: Props) => {
   const totalCommits = useMemo(() => {
     return commits ? commits.length : 0;
   }, [commits]);
+
+  if (isCommitsLoading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-gray-500 dark:text-gray-300" />
+        <span className="ml-3 text-sm text-gray-500 dark:text-gray-300">Loading commits...</span>
+      </div>
+    );
+  }
 
   if (!commits || commits.length === 0) {
     return <div className="py-10 text-center">No commits data available</div>;

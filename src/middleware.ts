@@ -3,180 +3,224 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { geolocation } from '@vercel/functions';
 import { NextResponse } from 'next/server';
 
-function createBlockedOverlay(reason: string, details?: string[]) {
+function createBlockedOverlay(
+  reason: string,
+  details?: string[],
+  options?: { showSignOut?: boolean },
+) {
   return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Access Restricted - Dionysus</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-          color: white;
-          overflow: hidden;
-        }
-        .overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: linear-gradient(135deg, rgba(30, 41, 59, 0.98) 0%, rgba(51, 65, 85, 0.98) 100%);
-          backdrop-filter: blur(10px);
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          z-index: 999999;
-          animation: fadeIn 0.3s ease-out;
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding: 2rem 1rem;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
-        .card {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          padding: 3rem;
-          max-width: 600px;
-          width: 90%;
-          text-align: center;
-          backdrop-filter: blur(20px);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-          animation: pulse 2s infinite ease-in-out;
-          margin: auto;
-          min-height: fit-content;
-          max-height: calc(100vh - 4rem);
-          overflow-y: auto;
-          position: relative;
-        }
-        .icon {
-          font-size: 4rem;
-          margin-bottom: 1.5rem;
-          opacity: 0.9;
-        }
-        .title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          margin-bottom: 1rem;
-          background: linear-gradient(45deg, #ef4444, #f97316);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .message {
-          font-size: 1.2rem;
-          margin-bottom: 2rem;
-          opacity: 0.9;
-          line-height: 1.6;
-        }
-        .details {
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin: 2rem 0;
-          text-align: left;
-        }
-        .details h3 {
-          color: #fbbf24;
-          margin-bottom: 1rem;
-          font-size: 1.1rem;
-        }
-        .details ul {
-          list-style: none;
-          padding: 0;
-        }
-        .details li {
-          padding: 0.5rem 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          font-size: 0.95rem;
-        }
-        .details li:last-child {
-          border-bottom: none;
-        }
-        .details li::before {
-          content: "⚠️ ";
-          margin-right: 0.5rem;
-        }
-        .contact {
-          background: rgba(59, 130, 246, 0.2);
-          border: 1px solid rgba(59, 130, 246, 0.3);
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-top: 2rem;
-        }
-        .contact a {
-          color: #60a5fa;
-          text-decoration: none;
-          font-weight: 600;
-        }
-        .contact a:hover {
-          text-decoration: underline;
-        }
-        .retry-btn {
-          background: linear-gradient(45deg, #3b82f6, #6366f1);
-          border: none;
-          color: white;
-          padding: 1rem 2rem;
-          border-radius: 12px;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          margin-top: 1.5rem;
-          transition: all 0.3s ease;
-        }
-        .retry-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-        }
-        @media (max-width: 768px) {
-          .card { padding: 2rem; margin: 1rem; }
-          .title { font-size: 2rem; }
-          .message { font-size: 1rem; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="overlay">
-        <div class="card">
-          <div class="icon">🚫</div>
-          <h1 class="title">Access Restricted</h1>
-          <p class="message">${reason}</p>
-          ${
-            details && details.length > 0
-              ? `
-            <div class="details">
-              <h3>Security Issues Detected:</h3>
-              <ul>
-                ${details.map((detail) => `<li>${detail}</li>`).join('')}
-              </ul>
-            </div>
-          `
-              : ''
-          }
-          <div class="contact">
-            <p><strong>Need Help?</strong></p>
-            <p>If you believe this is an error, please contact support:</p>
-            <p><a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a></p>
-          </div>
-          <button class="retry-btn" onclick="window.location.reload()">
-            🔄 Try Again
-          </button>
+   <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Access Restricted - Dionysus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 999999;
+      animation: fadeIn 0.4s ease-out forwards;
+      overflow-y: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      animation: slideUp 0.45s ease-out;
+      margin: auto;
+      min-height: fit-content;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .icon {
+      font-size: 3.2rem;
+      margin-bottom: 1.2rem;
+      color: #ef4444;
+      text-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+    }
+
+    .title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(45deg, #f43f5e, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .message {
+      font-size: 1.1rem;
+      margin-bottom: 1.8rem;
+      opacity: 0.95;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+
+    .details {
+      background: rgba(15, 23, 42, 0.55);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin: 1.8rem 0;
+      text-align: left;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .details h3 {
+      color: #fbbf24;
+      margin-bottom: 0.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .details ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .details li {
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .details li:last-child { border-bottom: none; }
+    .details li::before { content: "⚠️"; flex-shrink: 0; }
+
+    .contact {
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .contact a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .contact a:hover { text-decoration: underline; }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 1.8rem;
+    }
+
+    .retry-btn {
+      border: none;
+      color: white;
+      padding: 0.9rem 1.6rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .retry-btn.primary {
+      background: linear-gradient(45deg, #3b82f6, #6366f1);
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.35);
+    }
+
+    .retry-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(59, 130, 246, 0.5);
+    }
+
+    .retry-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .retry-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .card { padding: 2rem 1.5rem; }
+      .title { font-size: 1.9rem; }
+      .message { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <div class="icon">🚫</div>
+      <h1 class="title">Access Restricted</h1>
+      <p class="message">${reason}</p>
+
+      ${
+        details && details.length > 0
+          ? `
+        <div class="details">
+          <h3>Security Issues Detected:</h3>
+          <ul>
+            ${details.map((detail) => `<li>${detail}</li>`).join('')}
+          </ul>
         </div>
+      `
+          : ''
+      }
+
+      <div class="contact">
+        <p><strong>Need Help?</strong></p>
+        <p>If you believe this is an error, please contact support:</p>
+        <p><a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a></p>
       </div>
-    </body>
-    </html>
+
+      <div class="actions">
+        <button class="retry-btn primary" onclick="window.location.reload()">🔄 Try Again</button>
+        ${options?.showSignOut ? `<a class="retry-btn secondary" href="/sign-out" style="text-decoration:none;display:inline-block;text-align:center;">🔓 Sign out</a>` : ''}
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
   `;
 }
 
@@ -184,124 +228,185 @@ function createBlockedOverlay(reason: string, details?: string[]) {
 function createRateLimitOverlay() {
   return `
     <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Rate Limited - Dionysus</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-          color: white;
-          overflow-x: hidden;
-        }
-        .overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.98) 100%);
-          backdrop-filter: blur(10px);
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          z-index: 999999;
-          animation: slideIn 0.5s ease-out;
-          overflow-y: auto;
-          overflow-x: hidden;
-          padding: 2rem 1rem;
-        }
-        @keyframes slideIn {
-          from { transform: translateY(-100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .card {
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          padding: 3rem;
-          max-width: 500px;
-          width: 90%;
-          text-align: center;
-          backdrop-filter: blur(20px);
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-          margin: auto;
-          min-height: fit-content;
-          max-height: calc(100vh - 4rem);
-          overflow-y: auto;
-          position: relative;
-        }
-        .icon {
-          font-size: 4rem;
-          margin-bottom: 1.5rem;
-          animation: bounce 1s infinite;
-        }
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-20px); }
-          60% { transform: translateY(-10px); }
-        }
-        .title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          margin-bottom: 1rem;
-          background: linear-gradient(45deg, #fbbf24, #f59e0b);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-        }
-        .message {
-          font-size: 1.2rem;
-          margin-bottom: 2rem;
-          opacity: 0.9;
-          line-height: 1.6;
-        }
-        .timer {
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin: 2rem 0;
-          font-size: 1.1rem;
-          font-weight: 600;
-        }
-        .countdown {
-          font-size: 2rem;
-          color: #fbbf24;
-          font-weight: 700;
-        }
-        @media (max-width: 768px) {
-          .card { padding: 2rem; margin: 1rem; }
-          .title { font-size: 2rem; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="overlay">
-        <div class="card">
-          <div class="icon">⏰</div>
-          <h1 class="title">Rate Limited</h1>
-          <p class="message">You're making requests too quickly. Please slow down to continue.</p>
-          <div class="timer">
-            <p>Please wait: <span class="countdown" id="countdown">60</span> seconds</p>
-          </div>
-        </div>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Rate Limited - Dionysus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 999999;
+      animation: fadeIn 0.4s ease-out forwards;
+      overflow-y: auto;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(22px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      margin: auto;
+      min-height: fit-content;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.45s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0;}
+      to { transform: translateY(0); opacity: 1;}
+    }
+    .icon {
+      font-size: 3.1rem;
+      margin-bottom: 1.1rem;
+      color: #fbbf24;
+      text-shadow: 0 0 12px rgba(251,191,36,0.45);
+      animation: bounce 1.4s infinite;
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0);}
+      40% { transform: translateY(-12px);}
+      60% { transform: translateY(-5px);}
+    }
+    .title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.7rem;
+      background: linear-gradient(45deg, #facc15, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .message {
+      font-size: 1.08rem;
+      margin-bottom: 1.7rem;
+      opacity: 0.93;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+    .timer {
+      background: rgba(0,0,0,0.32);
+      border-radius: 12px;
+      padding: 1.1rem 1rem;
+      margin: 1.4rem 0 1.8rem 0;
+      font-size: 1.01rem;
+      font-weight: 500;
+      border: 1px solid rgba(251,191,36,0.23);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .countdown {
+      font-size: 2rem;
+      color: #facc15;
+      font-weight: 700;
+      text-shadow: 0 0 8px rgba(251,191,36,0.5);
+      letter-spacing: 1px;
+      margin-top: 0.2rem;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+    .retry-btn {
+      border: none;
+      color: white;
+      padding: 0.85rem 1.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      background: linear-gradient(45deg, #3b82f6, #6366f1);
+      box-shadow: 0 6px 18px rgba(59,130,246,0.28);
+    }
+    .retry-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 10px 24px rgba(59,130,246,0.38);
+    }
+    .support {
+      margin-top: 1.7rem;
+      font-size: 0.97rem;
+      background: rgba(37,99,235,0.13);
+      border-radius: 10px;
+      padding: 1rem;
+      border: 1px solid rgba(37,99,235,0.18);
+    }
+    .support a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .support a:hover { text-decoration: underline; }
+    @media (max-width: 600px) {
+      .card { padding: 1.5rem 0.7rem; }
+      .title { font-size: 1.4rem;}
+      .message { font-size: 0.97rem;}
+      .countdown { font-size: 1.3rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <div class="icon">⏰</div>
+      <h1 class="title">Rate Limited</h1>
+      <p class="message">You're making requests too quickly.<br>Please slow down to continue.</p>
+      <div class="timer">
+        <span>Please wait:</span>
+        <span class="countdown" id="countdown">60</span> seconds
       </div>
-      <script>
-        let timeLeft = 60;
-        const countdown = document.getElementById('countdown');
-        const timer = setInterval(() => {
-          timeLeft--;
-          countdown.textContent = timeLeft;
-          if (timeLeft <= 0) {
-            clearInterval(timer);
-            window.location.reload();
-          }
-        }, 1000);
-      </script>
-    </body>
-    </html>
+      <div class="actions">
+        <button class="retry-btn" onclick="window.location.reload()">🔄 Try Again</button>
+      </div>
+      <div class="support">
+        <strong>Need Help?</strong>
+        <br>
+        Contact support: <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    let timeLeft = 60;
+    const countdown = document.getElementById('countdown');
+    const timer = setInterval(() => {
+      timeLeft--;
+      countdown.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        window.location.reload();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
   `;
 }
 
@@ -543,11 +648,15 @@ export default clerkMiddleware(async (auth, request) => {
 
       if (isBlocked) {
         return new NextResponse(
-          createBlockedOverlay('Your account has been temporarily suspended.', [
-            'Your account access has been restricted',
-            'This may be due to terms of service violations',
-            'Contact support for account restoration',
-          ]),
+          createBlockedOverlay(
+            'Your account has been temporarily suspended.',
+            [
+              'Your account access has been restricted',
+              'This may be due to terms of service violations',
+              'Contact support for account restoration',
+            ],
+            { showSignOut: true },
+          ),
           {
             status: 403,
             headers: {

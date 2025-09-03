@@ -182,7 +182,7 @@ export default function AnnouncementBell() {
   // Get unread count
   const unreadCount = announcements.filter((a) => !readAnnouncements.has(a.id)).length;
 
-  // Don't render if feature is disabled
+  if (process.env.NODE_ENV === 'development') return null;
   if (!isAnnouncementsEnabled) {
     return null;
   }

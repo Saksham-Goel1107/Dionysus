@@ -182,12 +182,20 @@ export const N8nRegistrationModal = ({ isOpen, onClose }: N8nRegistrationModalPr
     }
   };
 
+  const handleDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      if (!isLoading) {
+        handleClose();
+      }
+    }
+  };
+
   if (!isLoaded) {
     return null;
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         {!n8nRegistrationEnabled ? (
           <div className="flex min-h-[40vh] flex-col items-center justify-center space-y-4">
