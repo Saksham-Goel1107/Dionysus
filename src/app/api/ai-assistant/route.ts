@@ -4,6 +4,7 @@ import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { LangChainTracer } from 'langchain/callbacks';
 import { NextRequest, NextResponse } from 'next/server';
+import sanitizeHtml from 'sanitize-html';
 
 // Initialize Firecrawl
 const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
@@ -196,15 +197,20 @@ const fileUploadRateLimit = new Map<string, { count: number; resetTime: number }
 // Security function to sanitize input
 const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return '';
-  return input
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-    .replace(/javascript:/gi, '')
-    .replace(/vbscript:/gi, '')
-    .replace(/data:/gi, '')
-    .replace(/on\w+\s*=/gi, '')
-    .trim()
-    .substring(0, 5000); // Limit input length
+  // Use sanitize-html to thoroughly remove scripts, iframes, event handlers, etc.
+  const sanitized = sanitizeHtml(input, {
+    allowedTags: [ 'b', 'i', 'em', 'strong', 'u', 'p', 'br', 'ul', 'ol', 'li', 'a', 'span' ],
+    allowedAttributes: {
+      'a': [ 'href', 'name', 'target' ],
+      'span': [ 'style' ],
+    },
+    allowedSchemes: [ 'http', 'https', 'mailto' ],
+    allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],
+    // Remove all other tags, attributes, protocols
+    allowProtocolRelative: false,
+    disallowedTagsMode: 'discard'
+  });
+  return sanitized.trim().substring(0, 5000); // Limit input length
 };
 
 // Enhanced rate limiting function with separate file upload limits
