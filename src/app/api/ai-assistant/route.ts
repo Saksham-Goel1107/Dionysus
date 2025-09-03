@@ -199,16 +199,16 @@ const sanitizeInput = (input: string): string => {
   if (typeof input !== 'string') return '';
   // Use sanitize-html to thoroughly remove scripts, iframes, event handlers, etc.
   const sanitized = sanitizeHtml(input, {
-    allowedTags: [ 'b', 'i', 'em', 'strong', 'u', 'p', 'br', 'ul', 'ol', 'li', 'a', 'span' ],
+    allowedTags: ['b', 'i', 'em', 'strong', 'u', 'p', 'br', 'ul', 'ol', 'li', 'a', 'span'],
     allowedAttributes: {
-      'a': [ 'href', 'name', 'target' ],
-      'span': [ 'style' ],
+      a: ['href', 'name', 'target'],
+      span: ['style'],
     },
-    allowedSchemes: [ 'http', 'https', 'mailto' ],
-    allowedSchemesAppliedToAttributes: [ 'href', 'src', 'cite' ],
+    allowedSchemes: ['http', 'https', 'mailto'],
+    allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
     // Remove all other tags, attributes, protocols
     allowProtocolRelative: false,
-    disallowedTagsMode: 'discard'
+    disallowedTagsMode: 'discard',
   });
   return sanitized.trim().substring(0, 5000); // Limit input length
 };
