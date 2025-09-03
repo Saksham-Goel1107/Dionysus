@@ -40,6 +40,7 @@ import {
 import { useTheme } from 'next-themes';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
+import sanitizeHtml from 'sanitize-html';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
@@ -130,18 +131,8 @@ const GlobalAIAssistant: React.FC = () => {
 
   // Security function to sanitize input
   const sanitizeInput = (input: string): string => {
-    // Remove potential XSS vectors repeatedly until fully sanitized
-    let previous: string;
-    do {
-      previous = input;
-      input = input
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-        .replace(/\b(?:javascript|data|vbscript):/gi, '')
-        .replace(/on\w+\s*=/gi, '')
-        .trim();
-    } while (input !== previous);
-    return input;
+    // Use well-tested library for complete HTML sanitization
+    return sanitizeHtml(input);
   };
 
   // Function to validate if question is relevant to the platform
