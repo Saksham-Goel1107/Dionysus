@@ -27,11 +27,11 @@ import {
   Cog,
   CreditCard,
   LayoutDashboard,
+  Loader2,
   Plus,
   Presentation,
   Workflow,
 } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';

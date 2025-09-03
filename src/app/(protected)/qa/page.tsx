@@ -25,16 +25,15 @@ import {
 } from '@/components/ui/dialog';
 
 const NoProjectsCard = () => {
-
   const { isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
   if (isProjectsLoading) {
-      return (
-        <div className="flex h-full flex-col items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
-          <p className="mt-4 text-lg text-gray-500 dark:text-gray-300">Loading projects...</p>
-        </div>
-      );
-    }
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="mt-4 text-lg text-gray-500 dark:text-gray-300">Loading projects...</p>
+      </div>
+    );
+  }
 
   return (
     <Card className="flex flex-col items-center justify-center p-8 text-center">
