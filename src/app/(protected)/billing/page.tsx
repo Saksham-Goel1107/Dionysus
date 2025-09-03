@@ -89,6 +89,7 @@ const BillingPage = () => {
   const [checkingDiscount, setCheckingDiscount] = React.useState(false);
   const [discountError, setDiscountError] = React.useState<string | null>(null);
   const [hasProPlan, sethasProPlan] = React.useState(false);
+  const [isCheckingPlan, setIsCheckingPlan] = React.useState(false);
   const [mfaEnabled, setMfaEnabled] = React.useState(false);
   const [showProfile, setShowProfile] = React.useState(false);
   const [couponInput, setCouponInput] = React.useState('');
@@ -104,6 +105,20 @@ const BillingPage = () => {
   );
   const [exchangeRates, setExchangeRates] = React.useState<Record<string, number>>({});
   const [isLoadingRates, setIsLoadingRates] = React.useState(false);
+
+  // Filter state
+  const [showFilterModal, setShowFilterModal] = React.useState(false);
+  const [showAllHistory, setShowAllHistory] = React.useState(false);
+  const [filters, setFilters] = React.useState({
+    dateFrom: '',
+    dateTo: '',
+    amountOperator: 'all' as 'all' | 'greater' | 'less' | 'equal',
+    amountValue: '',
+    minAmount: '',
+    maxAmount: '',
+    creditsOperator: 'all' as 'all' | 'greater' | 'less' | 'equal',
+    creditsValue: '',
+  });
 
   const { user: clerkUser } = useUser();
   const router = useRouter();
@@ -127,15 +142,131 @@ const BillingPage = () => {
   // Calculate discount breakdown
   const discountParts: string[] = useMemo(() => {
     const parts: string[] = [];
-    if (hasProPlan) parts.push('10% Pro Plan');
-    if (mfaEnabled) parts.push('10% MFA');
-    if (discount && discountCountry) parts.push(`${discount}% ${discountCountry}`);
-    if (appliedCoupon) parts.push(`${appliedCoupon.discount}% Coupon`);
+    if (hasProPlan) parts.push('10% discount for Premium users');
+    if (mfaEnabled) parts.push('10% discount for MFA');
+    if (discount && discountCountry) parts.push(`${discount}% discount for ${discountCountry}`);
+    if (appliedCoupon) parts.push(`${appliedCoupon.discount}% discount on Coupon`);
     return parts;
   }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon]);
   const discountBreakdown = discountParts.join(' + ');
 
   const utils = api.useUtils();
+
+  const filteredTransactions = useMemo(() => {
+    if (!transactions) return [];
+
+    let filtered = transactions.filter((transaction) => {
+      // Validate transaction object structure for security
+      if (
+        !transaction ||
+        typeof transaction !== 'object' ||
+        !transaction.id ||
+        !transaction.createdAt ||
+        typeof transaction.credits !== 'number'
+      ) {
+        return false;
+      }
+
+      // Date filtering with proper validation
+      if (filters.dateFrom || filters.dateTo) {
+        const transactionDate = new Date(transaction.createdAt);
+        if (isNaN(transactionDate.getTime())) return false; // Invalid date
+
+        if (filters.dateFrom) {
+          const fromDate = new Date(filters.dateFrom);
+          if (isNaN(fromDate.getTime()) || transactionDate < fromDate) return false;
+        }
+
+        if (filters.dateTo) {
+          const toDate = new Date(filters.dateTo + 'T23:59:59');
+          if (isNaN(toDate.getTime()) || transactionDate > toDate) return false;
+        }
+      }
+
+      // Amount filtering with minAmount and maxAmount range
+      if (filters.minAmount || filters.maxAmount) {
+        const amountINR = (transaction.credits / 50) * 75;
+        const amountInCurrency = convertCurrency(
+          amountINR,
+          'INR',
+          selectedCurrency.code,
+          exchangeRates,
+        );
+
+        if (filters.minAmount) {
+          const minAmount = parseFloat(filters.minAmount);
+          if (isNaN(minAmount) || minAmount < 0 || amountInCurrency < minAmount) return false;
+        }
+
+        if (filters.maxAmount) {
+          const maxAmount = parseFloat(filters.maxAmount);
+          if (isNaN(maxAmount) || maxAmount < 0 || amountInCurrency > maxAmount) return false;
+        }
+      }
+
+      // Credits filtering with validation
+      if (filters.creditsOperator !== 'all' && filters.creditsValue) {
+        const filterCredits = parseInt(filters.creditsValue);
+        if (isNaN(filterCredits) || filterCredits < 0) return false; // Invalid or negative credits
+
+        if (filters.creditsOperator === 'greater' && transaction.credits <= filterCredits)
+          return false;
+        if (filters.creditsOperator === 'less' && transaction.credits >= filterCredits)
+          return false;
+        if (filters.creditsOperator === 'equal' && transaction.credits !== filterCredits)
+          return false;
+      }
+
+      return true;
+    });
+
+    // Apply view limit if not showing all
+    if (!showAllHistory && filtered.length > 10) {
+      filtered = filtered.slice(0, 10);
+    }
+
+    return filtered;
+  }, [transactions, filters, selectedCurrency, exchangeRates, showAllHistory]);
+
+  // Secure filter input validation
+  const handleFilterChange = (field: string, value: string) => {
+    // Sanitize and validate input
+    let sanitizedValue = value.trim();
+
+    if (field === 'minAmount' || field === 'maxAmount' || field === 'creditsValue') {
+      // Only allow positive numbers
+      sanitizedValue = sanitizedValue.replace(/[^0-9.]/g, '');
+      const numValue = parseFloat(sanitizedValue);
+      if (numValue < 0 || sanitizedValue.split('.').length > 2) return; // Prevent negative or invalid numbers
+    }
+
+    if (field === 'dateFrom' || field === 'dateTo') {
+      // Validate date format
+      if (sanitizedValue && isNaN(new Date(sanitizedValue).getTime())) return;
+    }
+
+    setFilters((prev) => ({ ...prev, [field]: sanitizedValue }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      dateFrom: '',
+      dateTo: '',
+      amountOperator: 'all',
+      amountValue: '',
+      minAmount: '',
+      maxAmount: '',
+      creditsOperator: 'all',
+      creditsValue: '',
+    });
+  };
+
+  const hasActiveFilters =
+    filters.dateFrom ||
+    filters.dateTo ||
+    filters.minAmount ||
+    filters.maxAmount ||
+    filters.creditsOperator !== 'all';
 
   // Load exchange rates when component mounts or currency changes
   React.useEffect(() => {
@@ -238,13 +369,16 @@ const BillingPage = () => {
   };
   useEffect(() => {
     (async () => {
+      setIsCheckingPlan(true);
       try {
         const res = await fetch('/api/user/pro-status');
         if (!res.ok) throw new Error('Failed to fetch pro status');
         const data = await res.json();
-        sethasProPlan(data.pro);
+        sethasProPlan(Boolean(data.pro));
       } catch {
         sethasProPlan(false);
+      } finally {
+        setIsCheckingPlan(false);
       }
     })();
   }, []);
@@ -338,25 +472,66 @@ const BillingPage = () => {
             )}
           </div>
         )}
-        {hasProPlan && (
-          <div className="mt-1 text-sm text-green-700">
-            Pro/Advance Plan: Additional 10% discount applied!
-          </div>
-        )}
-        {discountCountry && (
-          <div className="mt-1 text-sm">
-            Location: <span className="font-semibold">{discountCountry}</span>
-          </div>
-        )}
+        <div className="mt-2">
+          {isCheckingPlan ? (
+            <div className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+              <Loader2 className="h-4 w-4 animate-spin" /> Checking plan-based discounts...
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              {(() => {
+                const items: { key: string; label: string; tone?: 'emerald' | 'amber' | 'gray' }[] =
+                  [];
+                if (hasProPlan)
+                  items.push({
+                    key: 'pro',
+                    label: 'Discount for Premium users — 10% off',
+                    tone: 'emerald',
+                  });
+                if (mfaEnabled)
+                  items.push({ key: 'mfa', label: 'Discount for MFA — 10% off', tone: 'emerald' });
+                if (discount && discountCountry)
+                  items.push({
+                    key: 'country',
+                    label: `Discount of ${discount}% for ${discountCountry}`,
+                    tone: 'emerald',
+                  });
+                if (appliedCoupon)
+                  items.push({
+                    key: 'coupon',
+                    label: `Discount of ${appliedCoupon.discount}% on Coupon`,
+                    tone: 'amber',
+                  });
+
+                return items.map((item) => (
+                  <span
+                    key={item.key}
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${
+                      item.tone === 'emerald'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : item.tone === 'amber'
+                          ? 'bg-amber-50 text-amber-800'
+                          : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200'
+                    }`}
+                  >
+                    {item.label}
+                  </span>
+                ));
+              })()}
+
+              {!hasProPlan && (
+                <Button variant="ghost" size="sm" onClick={() => router.push('/subscriptions')}>
+                  Manage plan
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+
         {totalDiscount > 0 && (
           <div className="mt-1 text-sm text-green-700">
             🎉 {totalDiscount}% discount applied! New price:{' '}
             <span className="font-bold">{formattedPrice}</span>
-            {discountBreakdown && (
-              <span className="mt-1 block text-xs text-green-700">
-                (Includes {discountBreakdown})
-              </span>
-            )}
           </div>
         )}
         {discountError && <div className="mt-1 text-sm text-red-600">{discountError}</div>}
@@ -421,14 +596,14 @@ const BillingPage = () => {
               Buy {creditsToBuyAmount} credits for {formattedPrice}
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md md:max-w-lg">
+          <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-md md:max-w-lg">
             <DialogHeader className="mb-4">
               <DialogTitle>Purchase Credits</DialogTitle>
               <DialogDescription>
                 Enter your card details to purchase {creditsToBuyAmount} credits.
               </DialogDescription>
             </DialogHeader>
-            <div className="pt-2">
+            <div className="px-4 pb-4 pt-2">
               <PaymentForm
                 creditsToBuy={creditsToBuyAmount}
                 price={discountedPriceINR.toFixed(2)}
@@ -525,19 +700,95 @@ const BillingPage = () => {
               discounted if the discount got applied
             </p>
           </div>
-          <div className="flex w-full justify-end sm:w-auto">
-            <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+          <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => setShowFilterModal(true)}
+                disabled={isTransactionsLoading}
+                className={`group inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium shadow-sm transition-all duration-200 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 ${
+                  hasActiveFilters
+                    ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-blue-100 hover:from-blue-100 hover:to-blue-200'
+                    : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                title="Filter transactions"
+              >
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:scale-110"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"
+                    />
+                  </svg>
+                  <span>Filter</span>
+                  {hasActiveFilters && (
+                    <span className="animate-pulse rounded-full bg-blue-600 px-2 py-0.5 text-xs font-bold text-white shadow-md">
+                      {filteredTransactions.length}
+                    </span>
+                  )}
+                </div>
+              </button>
+
+              {transactions && transactions.length > 10 && (
+                <button
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  disabled={isTransactionsLoading}
+                  className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
+                  title={showAllHistory ? 'Show recent transactions' : 'Show all transactions'}
+                >
+                  <svg
+                    className="h-4 w-4 transition-transform group-hover:scale-110"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    {showAllHistory ? (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 15l7-7 7 7"
+                      />
+                    ) : (
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    )}
+                  </svg>
+                  <span>{showAllHistory ? 'Show Recent' : 'View All'}</span>
+                  <span className="text-xs text-gray-500">
+                    ({showAllHistory ? '10' : transactions.length})
+                  </span>
+                </button>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 shadow-sm">
               {isTransactionsLoading ? (
-                <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Checking...
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-700">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading history...</span>
                 </span>
               ) : (
-                <>
-                  {transactions?.length ?? 0}{' '}
-                  {transactions?.length === 1 ? 'purchase' : 'purchases'}
-                </>
+                <span className="text-lg font-semibold text-blue-800">
+                  {hasActiveFilters ? filteredTransactions.length : (transactions?.length ?? 0)}{' '}
+                  {(hasActiveFilters
+                    ? filteredTransactions.length
+                    : (transactions?.length ?? 0)) === 1
+                    ? 'purchase'
+                    : 'purchases'}
+                </span>
               )}
-            </span>
+            </div>
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -552,35 +803,59 @@ const BillingPage = () => {
             </TableHeader>
             <TableBody>
               {transactions?.length ? (
-                transactions.map((transaction: Transaction) => (
-                  <TableRow key={transaction.id} className="transition hover:bg-muted">
-                    <TableCell>
-                      <div>
+                filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((transaction: Transaction) => (
+                    <TableRow key={transaction.id} className="transition hover:bg-muted">
+                      <TableCell>
+                        <div>
+                          <span className="font-medium">
+                            {new Date(transaction.createdAt).toLocaleDateString()}
+                          </span>
+                          <span className="block text-xs text-muted-foreground">
+                            {new Date(transaction.createdAt).toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="rounded bg-green-50 px-2 py-1 font-semibold text-green-700">
+                          +{transaction.credits} credits
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
+                          Success
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
                         <span className="font-medium">
-                          {new Date(transaction.createdAt).toLocaleDateString()}
+                          {formatCurrency(
+                            convertCurrency(
+                              (transaction.credits / 50) * 75,
+                              'INR',
+                              selectedCurrency.code,
+                              exchangeRates,
+                            ),
+                            selectedCurrency,
+                          )}
                         </span>
-                        <span className="block text-xs text-muted-foreground">
-                          {new Date(transaction.createdAt).toLocaleTimeString()}
-                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                      <div className="flex flex-col items-center gap-2">
+                        <span>No transactions match your filters</span>
+                        <button
+                          onClick={clearFilters}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Clear filters
+                        </button>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <span className="rounded bg-green-50 px-2 py-1 font-semibold text-green-700">
-                        +{transaction.credits} credits
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800">
-                        Success
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <span className="font-medium">
-                        ₹{((transaction.credits / 50) * 75).toFixed(2)}
-                      </span>
-                    </TableCell>
                   </TableRow>
-                ))
+                )
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
@@ -618,6 +893,235 @@ const BillingPage = () => {
           </Table>
         </div>
       </div>
+
+      {/* Filter Modal */}
+      <Dialog open={showFilterModal} onOpenChange={setShowFilterModal}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border-none bg-white shadow-2xl dark:bg-gray-900 sm:max-w-lg">
+          <DialogHeader className="space-y-3 pb-2">
+            <DialogTitle className="flex items-center gap-3 text-xl font-semibold text-gray-900 dark:text-gray-100">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg">
+                <svg
+                  className="h-5 w-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"
+                  />
+                </svg>
+              </div>
+              Filter Transactions
+            </DialogTitle>
+            <DialogDescription className="text-base text-gray-600 dark:text-gray-400">
+              Filter your purchase history by date range, amount, or credits to find specific
+              transactions.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-8 py-4">
+            {/* Date Range Filters */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <svg
+                  className="h-4 w-4 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                Date Range
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    From
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateFrom}
+                    onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                    min="2025-08-01"
+                    max="2025-09-03"
+                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    To
+                  </label>
+                  <input
+                    type="date"
+                    value={filters.dateTo}
+                    onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                    min="2025-08-01"
+                    max="2025-09-03"
+                    className="w-full rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Amount Filter */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <svg
+                  className="h-4 w-4 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                  />
+                </svg>
+                Amount Range (₹)
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  placeholder="Minimum amount"
+                  value={filters.minAmount}
+                  onChange={(e) => handleFilterChange('minAmount', e.target.value)}
+                  min="0"
+                  step="1"
+                  className="rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+                />
+                <input
+                  type="number"
+                  placeholder="Maximum amount"
+                  value={filters.maxAmount}
+                  onChange={(e) => handleFilterChange('maxAmount', e.target.value)}
+                  min="0"
+                  step="0.01"
+                  className="rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+                />
+              </div>
+            </div>
+
+            {/* Credits Filter */}
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <svg
+                  className="h-4 w-4 text-gray-500 dark:text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Credits Filter
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <select
+                  value={filters.creditsOperator}
+                  onChange={(e) =>
+                    setFilters((prev) => ({
+                      ...prev,
+                      creditsOperator: e.target.value as any,
+                    }))
+                  }
+                  className="rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:focus:border-blue-400 dark:focus:bg-gray-700"
+                >
+                  <option value="all">All</option>
+                  <option value="greater">Greater than</option>
+                  <option value="less">Less than</option>
+                  <option value="equal">Equal to</option>
+                </select>
+                <input
+                  type="number"
+                  placeholder="Credits"
+                  value={filters.creditsValue}
+                  onChange={(e) =>
+                    setFilters((prev) => ({ ...prev, creditsValue: e.target.value }))
+                  }
+                  disabled={filters.creditsOperator === 'all'}
+                  className="col-span-2 rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 placeholder-gray-400 transition-all duration-200 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/20 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500 dark:focus:border-blue-400 dark:focus:bg-gray-700 dark:disabled:bg-gray-700 dark:disabled:text-gray-500"
+                />
+              </div>
+            </div>
+
+            {/* Filter Results Summary */}
+            {hasActiveFilters && (
+              <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 shadow-sm dark:border-blue-800 dark:from-blue-900/20 dark:to-indigo-900/20">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 shadow-sm">
+                    <svg
+                      className="h-4 w-4 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    <span className="font-bold">{filteredTransactions.length}</span> of{' '}
+                    <span className="font-bold">{transactions?.length || 0}</span> transactions
+                    match your filters
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-8 flex justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+            <Button
+              variant="outline"
+              onClick={clearFilters}
+              className="flex items-center gap-2 rounded-xl border-2 px-6 py-3 font-medium transition-all duration-200 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              Clear All
+            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowFilterModal(false)}
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-600 hover:to-indigo-700 hover:shadow-xl dark:from-blue-600 dark:to-indigo-700 dark:hover:from-blue-700 dark:hover:to-indigo-800"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                Apply Filters
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

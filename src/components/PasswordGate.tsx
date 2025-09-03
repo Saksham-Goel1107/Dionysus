@@ -263,12 +263,12 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
           }}
         >
           {/* Loader */}
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Loader2
               className="h-12 w-12 animate-spin"
               style={{ color: resolvedTheme === 'dark' ? '#3af' : '#2563eb' }}
             />
-            </div>
+          </div>
 
           {/* Title */}
           <div
