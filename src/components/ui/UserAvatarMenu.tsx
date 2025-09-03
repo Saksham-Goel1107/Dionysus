@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { AvatarStack } from '@/components/ui/kibo-ui/avatar-stack';
 import { UserButton, useUser } from '@clerk/nextjs';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -108,6 +108,7 @@ const PRODUCT_LINKS = [
 export default function UserAvatarMenu() {
   const [showMenu, setShowMenu] = useState(false);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
+  const [isCheckingPassword, setIsCheckingPassword] = useState(true);
   const [showNewsletterPopup, setShowNewsletterPopup] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -128,10 +129,25 @@ export default function UserAvatarMenu() {
   const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/has-password')
-      .then((res) => res.json())
-      .then((data) => setHasPassword(!!data.hasPassword))
-      .catch(() => setHasPassword(null));
+    let mounted = true;
+    (async () => {
+      setIsCheckingPassword(true);
+      try {
+        const res = await fetch('/api/has-password');
+        const data = await res.json();
+        if (!mounted) return;
+        setHasPassword(!!data.hasPassword);
+      } catch {
+        if (!mounted) return;
+        setHasPassword(null);
+      } finally {
+        if (!mounted) return;
+        setIsCheckingPassword(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -399,23 +415,34 @@ export default function UserAvatarMenu() {
             </span>
             Check Dionysus Status
           </Button>
-          <Button
-            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
-            variant="ghost"
-            onClick={() => {
-              setShowMenu(false);
-              if (hasPassword) {
-                router.push('/unlock');
-              } else {
-                router.push('/lock');
-              }
-            }}
-          >
-            <span role="img" aria-label="Lock" className="mr-2">
-              {hasPassword === false ? '🔒' : '🔓'}
-            </span>
-            {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
-          </Button>
+          {isCheckingPassword ? (
+            <Button
+              className="w-full justify-start rounded-lg py-3 text-base font-semibold text-amber-700"
+              variant="ghost"
+              disabled
+            >
+              <Loader2 className="mr-2 h-4 w-4 animate-spin text-amber-500" />
+              Checking...
+            </Button>
+          ) : (
+            <Button
+              className="w-full justify-start rounded-lg py-3 text-base font-semibold text-amber-700 hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900"
+              variant="ghost"
+              onClick={() => {
+                setShowMenu(false);
+                if (hasPassword) {
+                  router.push('/unlock');
+                } else {
+                  router.push('/lock');
+                }
+              }}
+            >
+              <span role="img" aria-label="Lock" className="mr-2">
+                {hasPassword === false ? '🔒' : '🔓'}
+              </span>
+              {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
+            </Button>
+          )}
           <Button
             className="w-full justify-start rounded-lg py-3 text-base font-semibold text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
             variant="ghost"

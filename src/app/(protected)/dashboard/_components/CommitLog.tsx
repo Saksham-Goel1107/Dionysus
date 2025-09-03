@@ -1,17 +1,19 @@
 import useProject from '@/hooks/use-project';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
-import { ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+import { ExternalLink, Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import Link from 'next/link';
 import React from 'react';
 
 type Props = {};
 
 const CommitLog = ({}: Props) => {
   const { projectId, project } = useProject();
-  const { data: commits } = api.project.getCommits.useQuery({ projectId });
+  const { data: commits, isLoading: isCommitsLoading } = api.project.getCommits.useQuery({
+    projectId,
+  });
   const sortedCommits = React.useMemo(() => {
     if (!commits) return [];
     return [...commits]
@@ -23,6 +25,16 @@ const CommitLog = ({}: Props) => {
   React.useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
+
+  if (isCommitsLoading) {
+    return (
+      <div className="w-full">
+        <div className="flex h-32 items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-500 dark:text-gray-300" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

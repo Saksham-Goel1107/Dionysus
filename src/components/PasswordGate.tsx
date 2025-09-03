@@ -6,6 +6,7 @@ import { ModeToggle } from '@/app/components/ThemeToggle';
 import Script from 'next/script';
 import GradientTypewriter from './mvpblocks/gradient-typewriter';
 import { Logo } from '@/app/components/logo';
+import { Loader2 } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -212,7 +213,104 @@ export default function PasswordGate({ children }: { children: React.ReactNode }
     return min === 1 ? 'in 1 minute' : `in ${min} minutes`;
   }
 
-  if (hasPassword === null) return null;
+  if (hasPassword === null)
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background:
+            resolvedTheme === 'dark'
+              ? 'radial-gradient(circle at 60% 40%, #1a1b26 0%, #0d0e13 100%)'
+              : 'radial-gradient(circle at 60% 40%, #eef2ff 0%, #f9fafb 100%)',
+          transition: 'background 0.6s ease',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 36,
+            filter: 'drop-shadow(0 4px 18px rgba(58,140,255,0.35))',
+          }}
+        >
+          <Logo />
+          <GradientTypewriter words="Dionysus" />
+        </div>
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            background:
+              resolvedTheme === 'dark' ? 'rgba(30, 35, 45, 0.7)' : 'rgba(255, 255, 255, 0.75)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: 16,
+            border: `1.5px solid ${resolvedTheme === 'dark' ? '#3af6' : '#3a8cff44'}`,
+            boxShadow:
+              resolvedTheme === 'dark'
+                ? '0 12px 40px rgba(0,0,0,0.4)'
+                : '0 12px 40px rgba(37,99,235,0.1)',
+            padding: '2.5rem 2.5rem 2rem',
+            minWidth: 340,
+            maxWidth: 420,
+            textAlign: 'center',
+            transition: 'all 0.4s ease',
+          }}
+        >
+          {/* Loader */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Loader2
+              className="h-12 w-12 animate-spin"
+              style={{ color: resolvedTheme === 'dark' ? '#3af' : '#2563eb' }}
+            />
+            </div>
+
+          {/* Title */}
+          <div
+            style={{
+              marginTop: 20,
+              fontWeight: 700,
+              fontSize: 22,
+              color: resolvedTheme === 'dark' ? '#3af' : '#2563eb',
+              textShadow:
+                resolvedTheme === 'dark'
+                  ? '0 2px 10px rgba(58,175,255,0.35)'
+                  : '0 2px 6px rgba(37,99,235,0.25)',
+            }}
+          >
+            Checking Access...
+          </div>
+
+          {/* Description */}
+          <div
+            style={{
+              marginTop: 12,
+              fontSize: 15,
+              lineHeight: 1.6,
+              color: resolvedTheme === 'dark' ? '#ddd' : '#444',
+              opacity: 0.9,
+            }}
+          >
+            Please wait while we securely verify your access.
+            <br />
+            <span
+              style={{
+                fontSize: 13,
+                color: resolvedTheme === 'dark' ? '#aaa' : '#666',
+              }}
+            >
+              This helps keep your data safe.
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+
   if (!hasPassword) return <>{children}</>;
 
   if (unlocked) return <>{children}</>;

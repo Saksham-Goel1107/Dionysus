@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import AskQuestionCrad from '../dashboard/_components/AskQuestionCard';
 import CodeReferences from '../dashboard/_components/CodeReferences';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { useTheme } from 'next-themes';
@@ -25,6 +25,17 @@ import {
 } from '@/components/ui/dialog';
 
 const NoProjectsCard = () => {
+
+  const { isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
+  if (isProjectsLoading) {
+      return (
+        <div className="flex h-full flex-col items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+          <p className="mt-4 text-lg text-gray-500 dark:text-gray-300">Loading projects...</p>
+        </div>
+      );
+    }
+
   return (
     <Card className="flex flex-col items-center justify-center p-8 text-center">
       <div className="rounded-full bg-primary/10 p-3">

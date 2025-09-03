@@ -79,7 +79,8 @@ const BillingPage = () => {
     }
   }, []);
   const { data: user } = api.project.getMyCredits.useQuery();
-  const { data: transactions } = api.project.getMyTransactions.useQuery();
+  const { data: transactions, isLoading: isTransactionsLoading } =
+    api.project.getMyTransactions.useQuery();
   const [creditsToBuy, setCreditsToBuy] = React.useState<number[]>([100]);
   const [isPaymentOpen, setIsPaymentOpen] = React.useState(false);
   const [isGraphOpen, setIsGraphOpen] = React.useState(false);
@@ -526,7 +527,16 @@ const BillingPage = () => {
           </div>
           <div className="flex w-full justify-end sm:w-auto">
             <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
-              {transactions?.length ?? 0} {transactions?.length === 1 ? 'purchase' : 'purchases'}
+              {isTransactionsLoading ? (
+                <span className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Checking...
+                </span>
+              ) : (
+                <>
+                  {transactions?.length ?? 0}{' '}
+                  {transactions?.length === 1 ? 'purchase' : 'purchases'}
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -575,22 +585,31 @@ const BillingPage = () => {
                 <TableRow>
                   <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
                     <div className="flex flex-col items-center gap-2">
-                      <svg
-                        width="32"
-                        height="32"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        className="text-muted-foreground"
-                      >
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                        <path
-                          d="M8 12h8M12 8v8"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span>No purchase history yet</span>
+                      {isTransactionsLoading ? (
+                        <div className="inline-flex items-center gap-2 text-sm">
+                          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                          <span aria-live="polite">Loading purchase history...</span>
+                        </div>
+                      ) : (
+                        <>
+                          <svg
+                            width="32"
+                            height="32"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            className="text-muted-foreground"
+                          >
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                            <path
+                              d="M8 12h8M12 8v8"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <span>No purchase history yet</span>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

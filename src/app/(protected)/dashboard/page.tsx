@@ -1,7 +1,7 @@
 'use client';
 import useProject from '@/hooks/use-project';
 import { api } from '@/trpc/react';
-import { ExternalLink, Github, MessageCirclePlus } from 'lucide-react';
+import { ExternalLink, Github, MessageCirclePlus, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import ArchiveButton from './_components/ArchiveButton';
 import AskQuestionCard from './_components/AskQuestionCard';
@@ -21,6 +21,7 @@ type Props = {};
 
 const Page = ({}: Props) => {
   const { project, projects, projectId } = useProject();
+  const { isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLeavingLoading, setisLeavingLoading] = useState(false);
   const utils = api.useContext();
@@ -64,6 +65,15 @@ const Page = ({}: Props) => {
   const cancelLeaveProject = () => {
     setShowConfirm(false);
   };
+
+  if (isProjectsLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500 dark:text-gray-300" />
+        <p className="mt-4 text-lg text-gray-500 dark:text-gray-300">Loading projects...</p>
+      </div>
+    );
+  }
 
   if (!projects || projects.length === 0) {
     return (
