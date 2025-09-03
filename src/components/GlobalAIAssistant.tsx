@@ -130,13 +130,18 @@ const GlobalAIAssistant: React.FC = () => {
 
   // Security function to sanitize input
   const sanitizeInput = (input: string): string => {
-    // Remove potential XSS vectors
-    return input
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-      .replace(/\b(?:javascript|data|vbscript):/gi, '')
-      .replace(/on\w+\s*=/gi, '')
-      .trim();
+    // Remove potential XSS vectors repeatedly until fully sanitized
+    let previous: string;
+    do {
+      previous = input;
+      input = input
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+        .replace(/\b(?:javascript|data|vbscript):/gi, '')
+        .replace(/on\w+\s*=/gi, '')
+        .trim();
+    } while (input !== previous);
+    return input;
   };
 
   // Function to validate if question is relevant to the platform
