@@ -188,3 +188,26 @@ model CouponUsage {
 
   @@unique([couponId, userId]) // Prevent same user from using same coupon multiple times
 }
+
+model GlobalPlan {
+  id          String              @id @default(cuid())
+  name        String              // Plan name like "Summer Deal", "Black Friday"
+  description String?             // Optional description
+  discount    Int                 // Discount percentage
+  isActive    Boolean             @default(true)
+  expiresAt   DateTime?           // Optional expiry date
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  createdBy   String              // Admin user ID who created it
+  usages      GlobalPlanUsage[]   // Track who used this plan
+}
+
+model GlobalPlanUsage {
+  id           String     @id @default(cuid())
+  globalPlanId String
+  userId       String
+  usedAt       DateTime   @default(now())
+  globalPlan   GlobalPlan @relation(fields: [globalPlanId], references: [id], onDelete: Cascade)
+
+  @@unique([globalPlanId, userId]) // Prevent same user from using same plan multiple times
+}

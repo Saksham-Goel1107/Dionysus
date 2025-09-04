@@ -37,6 +37,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { AlertCircle, Check, Clock, Copy, Download, RefreshCw, Search, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import GlobalPlansManagement from './GlobalPlansManagement';
 
 interface CouponData {
   id: string;
@@ -503,6 +504,12 @@ export default function CouponsManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Global Plans Management (embedded) */}
+      <div className="mt-8">
+        <h2 className="mb-4 text-2xl font-semibold">Global Plans</h2>
+        <GlobalPlansManagement />
+      </div>
     </div>
   );
 }

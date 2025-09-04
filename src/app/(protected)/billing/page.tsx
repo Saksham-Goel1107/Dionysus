@@ -57,6 +57,7 @@ import {
 import { useUser } from '@clerk/nextjs';
 import { BarChart2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import GlobalPlans from './components/GlobalPlans';
 import { validateCouponCode } from './couponUtils';
 
 const india_discount = true;
@@ -99,6 +100,10 @@ const BillingPage = () => {
     code: string;
     couponId: string;
   } | null>(null);
+  const [appliedGlobalPlan, setAppliedGlobalPlan] = React.useState<{
+    discount: number;
+    planName: string;
+  } | null>(null);
   const [isFirstPurchase, setIsFirstPurchase] = React.useState(false);
   const [checkingFirstPurchase, setCheckingFirstPurchase] = React.useState(true);
 
@@ -131,6 +136,7 @@ const BillingPage = () => {
   if (hasProPlan) totalDiscount += 10;
   if (mfaEnabled) totalDiscount += 10;
   if (appliedCoupon) totalDiscount += appliedCoupon.discount;
+  if (appliedGlobalPlan) totalDiscount += appliedGlobalPlan.discount;
   if (isFirstPurchase) totalDiscount += 10;
   const discountedPriceINR = basePrice * (1 - totalDiscount / 100);
 
@@ -150,9 +156,19 @@ const BillingPage = () => {
     if (mfaEnabled) parts.push('10% discount for MFA');
     if (discount && discountCountry) parts.push(`${discount}% discount for ${discountCountry}`);
     if (appliedCoupon) parts.push(`${appliedCoupon.discount}% discount on Coupon`);
+    if (appliedGlobalPlan)
+      parts.push(`${appliedGlobalPlan.discount}% discount from ${appliedGlobalPlan.planName}`);
     if (isFirstPurchase) parts.push('10% discount for First Purchase');
     return parts;
-  }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon, isFirstPurchase]);
+  }, [
+    hasProPlan,
+    mfaEnabled,
+    discount,
+    discountCountry,
+    appliedCoupon,
+    appliedGlobalPlan,
+    isFirstPurchase,
+  ]);
   const discountBreakdown = discountParts.join(' + ');
 
   const utils = api.useUtils();
@@ -415,8 +431,15 @@ const BillingPage = () => {
       setCouponStatus('Invalid or expired coupon code.');
       return;
     }
-    if (result.success === false && result.status === 429) {
-      setCouponStatus(result.message || 'Rate limit exceeded. Please try again later.');
+    // Type guard for error result
+    if (
+      typeof result === 'object' &&
+      'success' in result &&
+      result.success === false &&
+      'status' in result &&
+      (result as { status?: number }).status === 429
+    ) {
+      setCouponStatus((result as { message?: string }).message || 'Rate limit exceeded. Please try again later.');
       return;
     }
     if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
@@ -530,6 +553,12 @@ const BillingPage = () => {
                     label: `Discount of ${appliedCoupon.discount}% on Coupon`,
                     tone: 'amber',
                   });
+                if (appliedGlobalPlan)
+                  items.push({
+                    key: 'globalPlan',
+                    label: `${appliedGlobalPlan.planName} — ${appliedGlobalPlan.discount}% off`,
+                    tone: 'amber',
+                  });
                 if (isFirstPurchase)
                   items.push({
                     key: 'firstPurchase',
@@ -611,6 +640,15 @@ const BillingPage = () => {
           {isLoadingRates && (
             <span className="text-xs text-muted-foreground">Updating rates...</span>
           )}
+        </div>
+
+        {/* Global Plans */}
+        <div className="mb-4">
+          <GlobalPlans
+            onPlanApplied={(discount, planName) => {
+              setAppliedGlobalPlan({ discount, planName });
+            }}
+          />
         </div>
 
         {/* Coupon code UI */}
