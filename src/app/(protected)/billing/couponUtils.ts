@@ -18,8 +18,8 @@ export async function generateCouponCode(
     if (!sessionClaims?.metadata?.role)
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     if (
-      email !== process.env.ADMIN_EMAIL &&
-      userId !== process.env.ADMIN_USER_ID &&
+      email !== process.env.ADMIN_EMAIL ||
+      userId !== process.env.ADMIN_USER_ID ||
       sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
     ) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

@@ -10,8 +10,8 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const planId = params.id;
+    const awaitedParams = await params;
+    const planId = awaitedParams.id;
 
     // Check if global plan exists and is active
     const globalPlan = await prisma.globalPlan.findUnique({
@@ -44,21 +44,14 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
       );
     }
 
-    // Apply the global plan by creating a usage record
-    const usage = await prisma.globalPlanUsage.create({
-      data: {
-        globalPlanId: planId,
-        userId,
-      },
-    });
-
+    // Return global plan details without creating usage record
     return NextResponse.json({
-      message: 'Global plan applied successfully',
+      message: 'Global plan validated successfully',
       discount: globalPlan.discount,
       planName: globalPlan.name,
-      usage,
+      planId: globalPlan.id,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error applying global plan:', error);
 
     // Handle unique constraint violation (user already used this plan)

@@ -57,7 +57,13 @@ export default async function AdminSurveysPage() {
     );
   }
 
-  const [roleDistribution, industryDistribution, companySizeDistribution, usagePurposeDistribution, featureInterest] = await Promise.all([
+  const [
+    roleDistribution,
+    industryDistribution,
+    companySizeDistribution,
+    usagePurposeDistribution,
+    featureInterest,
+  ] = await Promise.all([
     db.survey.groupBy({
       by: ['role'],
       _count: true,

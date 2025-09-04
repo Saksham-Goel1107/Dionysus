@@ -3,6 +3,7 @@
 import { db } from '@/server/db';
 import { auth } from '@clerk/nextjs/server';
 import Stripe from 'stripe';
+import prisma from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-24.acacia',
@@ -77,6 +78,7 @@ export async function verifyAndUpdateCredits(
 export async function createPaymentIntent(
   credits: number,
   couponId?: string,
+  globalPlanId?: string,
 ): Promise<{ clientSecret: string | null }> {
   try {
     const { userId } = await auth();
@@ -95,7 +97,7 @@ export async function createPaymentIntent(
         const { applyCouponCode } = await import('./couponUtils');
         const couponResult = await applyCouponCode(couponId, userId);
 
-        if (couponResult.success) {
+        if (couponResult.success && 'discount' in couponResult) {
           discount = couponResult.discount;
           amount = Math.round(amount * (1 - discount / 100));
         }
@@ -113,6 +115,7 @@ export async function createPaymentIntent(
         credits,
         userId: userId.toString(),
         ...(couponId && { couponId, discount }),
+        ...(globalPlanId && { globalPlanId }),
       },
       automatic_payment_methods: {
         enabled: true,
@@ -186,6 +189,21 @@ export async function processCompletedPayment(
         },
       },
     });
+
+    // Apply global plan if it was used in this payment
+    const globalPlanId = paymentIntent.metadata.globalPlanId;
+    if (globalPlanId) {
+      try {
+        await prisma.globalPlanUsage.create({
+          data: {
+            globalPlanId: globalPlanId,
+            userId: userId.toString(),
+          },
+        });
+      } catch (error) {
+        console.error('Error applying global plan after payment:', error);
+      }
+    }
 
     // Mark the transaction as completed
     await db.stripeTransaction.update({

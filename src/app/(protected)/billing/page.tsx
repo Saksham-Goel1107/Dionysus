@@ -103,6 +103,7 @@ const BillingPage = () => {
   const [appliedGlobalPlan, setAppliedGlobalPlan] = React.useState<{
     discount: number;
     planName: string;
+    planId: string;
   } | null>(null);
   const [isFirstPurchase, setIsFirstPurchase] = React.useState(false);
   const [checkingFirstPurchase, setCheckingFirstPurchase] = React.useState(true);
@@ -116,7 +117,6 @@ const BillingPage = () => {
 
   // Filter state
   const [showFilterModal, setShowFilterModal] = React.useState(false);
-  const [showAllHistory, setShowAllHistory] = React.useState(false);
   const [filters, setFilters] = React.useState({
     dateFrom: '',
     dateTo: '',
@@ -242,12 +242,12 @@ const BillingPage = () => {
     });
 
     // Apply view limit if not showing all
-    if (!showAllHistory && filtered.length > 10) {
+    if (filtered.length > 10) {
       filtered = filtered.slice(0, 10);
     }
 
     return filtered;
-  }, [transactions, filters, selectedCurrency, exchangeRates, showAllHistory]);
+  }, [transactions, filters, selectedCurrency, exchangeRates]);
 
   // Secure filter input validation
   const handleFilterChange = (field: string, value: string) => {
@@ -306,43 +306,49 @@ const BillingPage = () => {
     loadExchangeRates();
   }, []);
 
-  const handlePaymentSuccess = () => {
-    setIsPaymentOpen(false);
-    void utils.project.getMyTransactions.invalidate();
-    void utils.project.getMyCredits.invalidate();
-    const notify = () => {
-      const title = '🎉 Credits Purchased!';
-      const body = `You have successfully purchased ${creditsToBuyAmount} credits for ${formattedPrice}. Thank you for your purchase!`;
-      const icon = '/public/logo.png';
-      try {
-        if (window.Notification) {
-          const redirectToDashboard = () => {
-            window.location.href = '/dashboard';
-          };
-          if (Notification.permission === 'granted') {
-            const notification = new Notification(title, { body, icon });
-            notification.onclick = redirectToDashboard;
-          } else if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then((permission) => {
-              if (permission === 'granted') {
-                const notification = new Notification(title, { body, icon });
-                notification.onclick = redirectToDashboard;
-              }
-            });
-          }
-        } else {
-          if (window?.toast) {
-            window.toast.success(body);
-          }
-        }
-      } catch {
-        if (window?.toast) {
+const handlePaymentSuccess = () => {
+  setIsPaymentOpen(false);
+  void utils.project.getMyTransactions.invalidate();
+  void utils.project.getMyCredits.invalidate();
+
+  const title = '🎉 Credits Purchased!';
+  const body = `You have successfully purchased ${creditsToBuyAmount} credits for ${formattedPrice}. Thank you for your purchase!`;
+  const icon = `${window.location.origin}/logo.png`;
+
+  const redirectToDashboard = () => {
+    window.location.href = '/dashboard';
+  };
+
+  const showNotification = () => {
+    try {
+      const notification = new Notification(title, { body, icon });
+      notification.onclick = redirectToDashboard;
+    } catch {
+      if (window?.toast) {
+        window.toast.success(body);
+      }
+    }
+  };
+
+  if ('Notification' in window) {
+    if (Notification.permission === 'granted') {
+      showNotification();
+    } else if (Notification.permission !== 'denied') {
+      Notification.requestPermission().then((permission) => {
+        if (permission === 'granted') {
+          showNotification();
+        } else if (typeof window !== 'undefined' && 'toast' in window && window.toast) {
           window.toast.success(body);
         }
-      }
-    };
-    notify();
-  };
+      });
+    } else if ((window as any)?.toast) {
+      (window as any).toast.success(body);
+    }
+  } else if ((window as any)?.toast) {
+    (window as any).toast.success(body);
+  }
+};
+
 
   useEffect(() => {
     if (clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled) {
@@ -439,7 +445,9 @@ const BillingPage = () => {
       'status' in result &&
       (result as { status?: number }).status === 429
     ) {
-      setCouponStatus((result as { message?: string }).message || 'Rate limit exceeded. Please try again later.');
+      setCouponStatus(
+        (result as { message?: string }).message || 'Rate limit exceeded. Please try again later.',
+      );
       return;
     }
     if (appliedCoupon && appliedCoupon.code === couponInput.trim()) {
@@ -645,8 +653,8 @@ const BillingPage = () => {
         {/* Global Plans */}
         <div className="mb-4">
           <GlobalPlans
-            onPlanApplied={(discount, planName) => {
-              setAppliedGlobalPlan({ discount, planName });
+            onPlanApplied={(discount, planName, planId) => {
+              setAppliedGlobalPlan({ discount, planName, planId });
             }}
           />
         </div>
@@ -684,6 +692,7 @@ const BillingPage = () => {
                 price={discountedPriceINR.toFixed(2)}
                 discountBreakdown={discountBreakdown}
                 couponId={appliedCoupon?.couponId}
+                globalPlanId={appliedGlobalPlan?.planId}
                 onSuccess={handlePaymentSuccess}
               />
               {selectedCurrency.code !== 'INR' && (
@@ -810,42 +819,6 @@ const BillingPage = () => {
                   )}
                 </div>
               </button>
-
-              {transactions && transactions.length > 10 && (
-                <button
-                  onClick={() => setShowAllHistory(!showAllHistory)}
-                  disabled={isTransactionsLoading}
-                  className="group inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50"
-                  title={showAllHistory ? 'Show recent transactions' : 'Show all transactions'}
-                >
-                  <svg
-                    className="h-4 w-4 transition-transform group-hover:scale-110"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    {showAllHistory ? (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 15l7-7 7 7"
-                      />
-                    ) : (
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    )}
-                  </svg>
-                  <span>{showAllHistory ? 'Show Recent' : 'View All'}</span>
-                  <span className="text-xs text-gray-500">
-                    ({showAllHistory ? '10' : transactions.length})
-                  </span>
-                </button>
-              )}
             </div>
 
             <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 shadow-sm">

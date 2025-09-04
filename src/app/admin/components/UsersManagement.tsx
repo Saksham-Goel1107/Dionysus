@@ -77,7 +77,9 @@ interface UsersManagementProps {
 export default function UsersManagement({ users }: UsersManagementProps) {
   const [localUsers, setLocalUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'pro' | 'regular' | 'abTester'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'pro' | 'regular' | 'abTester'>(
+    'all',
+  );
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' }>({
     key: 'createdAt',
@@ -100,7 +102,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
 
   useEffect(() => {
     async function fetchClerkMetadata() {
-  setIsInitialLoading(true);
+      setIsInitialLoading(true);
       const updatedUsers = await Promise.all(
         users.map(async (user) => {
           try {
@@ -113,8 +115,8 @@ export default function UsersManagement({ users }: UsersManagementProps) {
           }
         }),
       );
-  setLocalUsers(updatedUsers);
-  setIsInitialLoading(false);
+      setLocalUsers(updatedUsers);
+      setIsInitialLoading(false);
     }
     fetchClerkMetadata();
   }, [users]);
@@ -538,7 +540,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
       </AlertDialog>
 
       <Dialog open={userDetailsOpen} onOpenChange={setUserDetailsOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               User Details

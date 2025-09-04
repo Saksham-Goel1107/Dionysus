@@ -35,6 +35,7 @@ interface PaymentFormProps {
   onSuccess: () => void;
   discountBreakdown?: string;
   couponId?: string;
+  globalPlanId?: string;
 }
 
 const CheckoutForm: React.FC<PaymentFormProps> = ({
@@ -43,6 +44,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
   onSuccess,
   discountBreakdown,
   couponId,
+  globalPlanId,
 }) => {
   const router = useRouter();
   const stripe = useStripe();
@@ -60,7 +62,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
     const initializePayment = async () => {
       try {
         setIsLoading(true);
-        const result = await createPaymentIntent(creditsToBuy, couponId);
+        const result = await createPaymentIntent(creditsToBuy, couponId, globalPlanId);
 
         if (result.clientSecret) {
           setClientSecret(result.clientSecret);
@@ -85,7 +87,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
     };
 
     initializePayment();
-  }, [creditsToBuy, couponId, toast]);
+  }, [creditsToBuy, couponId, globalPlanId, toast]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -333,6 +335,7 @@ export default function PaymentForm({
   onSuccess,
   discountBreakdown,
   couponId,
+  globalPlanId,
 }: PaymentFormProps) {
   return (
     <Elements
@@ -360,6 +363,7 @@ export default function PaymentForm({
             onSuccess={onSuccess}
             discountBreakdown={discountBreakdown}
             couponId={couponId}
+            globalPlanId={globalPlanId}
           />
         </CardContent>
       </Card>

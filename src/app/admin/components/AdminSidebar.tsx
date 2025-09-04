@@ -15,7 +15,7 @@ import {
   ChartLine,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { UserButton,useUser } from '@clerk/nextjs';
+import { UserButton, useUser } from '@clerk/nextjs';
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -64,7 +64,7 @@ export default function AdminSidebar() {
   useEffect(() => {
     const savedState = document.cookie
       .split('; ')
-      .find(row => row.startsWith('admin-sidebar-collapsed='))
+      .find((row) => row.startsWith('admin-sidebar-collapsed='))
       ?.split('=')[1];
     if (savedState) {
       setCollapsed(savedState === 'true');
@@ -136,7 +136,9 @@ export default function AdminSidebar() {
         <ThemeToggle collapsed={collapsed} />
         <div className="mt-2 flex items-center gap-3">
           <UserButton />
-          {!collapsed && <span className="text-sm font-medium">{user?.firstName || 'Admin User'}</span>}
+          {!collapsed && (
+            <span className="text-sm font-medium">{user?.firstName || 'Admin User'}</span>
+          )}
         </div>
       </div>
     </aside>

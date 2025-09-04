@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     }
 
     const { action } = await request.json();
-    const awaitedParams = await params
+    const awaitedParams = await params;
     const planId = awaitedParams.id;
 
     const globalPlan = await prisma.globalPlan.findUnique({

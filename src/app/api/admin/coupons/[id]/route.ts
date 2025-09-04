@@ -14,8 +14,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Check admin privileges
     if (
-      email !== process.env.ADMIN_EMAIL &&
-      userId !== process.env.ADMIN_USER_ID &&
+      email !== process.env.ADMIN_EMAIL ||
+      userId !== process.env.ADMIN_USER_ID ||
       sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
     ) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -92,8 +92,8 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
 
     // Check admin privileges
     if (
-      email !== process.env.ADMIN_EMAIL &&
-      userId !== process.env.ADMIN_USER_ID &&
+      email !== process.env.ADMIN_EMAIL ||
+      userId !== process.env.ADMIN_USER_ID ||
       sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
     ) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

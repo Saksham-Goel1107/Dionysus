@@ -2,6 +2,7 @@ import { db } from '@/server/db';
 import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import prisma from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-02-24.acacia',
@@ -64,6 +65,32 @@ export async function POST(request: NextRequest) {
           },
         },
       });
+
+      // Apply coupon if it was used in this payment
+      const couponId = session.metadata?.couponId;
+      if (couponId) {
+        try {
+          const { applyCouponCode } = await import('@/app/(protected)/billing/couponUtils');
+          await applyCouponCode(couponId, userId);
+        } catch (error) {
+          console.error('Error applying coupon after payment:', error);
+        }
+      }
+
+      // Apply global plan if it was used in this payment
+      const globalPlanId = session.metadata?.globalPlanId;
+      if (globalPlanId) {
+        try {
+          await prisma.globalPlanUsage.create({
+            data: {
+              globalPlanId: globalPlanId,
+              userId: userId,
+            },
+          });
+        } catch (error) {
+          console.error('Error applying global plan after payment:', error);
+        }
+      }
 
       // Mark as completed after credits are added
       await db.stripeTransaction.update({
