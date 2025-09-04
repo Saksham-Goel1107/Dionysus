@@ -33,7 +33,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <AdminSidebar />
       <main className="flex-1 overflow-y-auto">
-        <AutoRefresh interval={15} />
+        <AutoRefresh interval={60} />
         {children}
       </main>
     </div>

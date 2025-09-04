@@ -185,6 +185,51 @@ function createBlockedOverlay(
       .message { font-size: 1rem; }
     }
   </style>
+  <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
+<script>
+  window.Clerk ||= {};
+  
+  async function initClerk() {
+    try {
+      if (window.Clerk && typeof window.Clerk.load === 'function') {
+        await window.Clerk.load();
+      }
+    } catch (error) {
+      console.error('Failed to load Clerk:', error);
+    }
+  }
+  
+  async function signOutUser() {
+    try {
+      if (window.Clerk && typeof window.Clerk.signOut === 'function') {
+        await window.Clerk.signOut({ redirectUrl: '/' });
+      } else {
+        // Fallback: clear cookies and redirect
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Sign out failed:', error);
+      // Fallback: clear cookies and redirect
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      });
+      window.location.href = '/';
+    }
+  }
+  
+  window.addEventListener("load", initClerk);
+  
+  // Retry loading Clerk if it fails initially
+  setTimeout(() => {
+    if (!window.Clerk || typeof window.Clerk.load !== 'function') {
+      initClerk();
+    }
+  }, 2000);
+</script>
+
 </head>
 <body>
   <div class="overlay">
@@ -214,7 +259,14 @@ function createBlockedOverlay(
 
       <div class="actions">
         <button class="retry-btn primary" onclick="window.location.reload()">🔄 Try Again</button>
-        ${options?.showSignOut ? `<a class="retry-btn secondary" href="/sign-out" style="text-decoration:none;display:inline-block;text-align:center;">🔓 Sign out</a>` : ''}
+${
+  options?.showSignOut
+    ? `<button class="retry-btn secondary" onclick="signOutUser()">
+  🔓 Sign out
+</button>
+`
+    : ''
+}
       </div>
     </div>
   </div>

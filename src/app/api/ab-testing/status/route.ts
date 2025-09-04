@@ -8,6 +8,10 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
+    
+    if (process.env.NODE_ENV !== 'production'){
+      return NextResponse.json({ success: true, abTestingOptIn: true, currentCount: 0, limit: 1000, spotsRemaining: 1000 });
+    }
 
     const client = await clerkClient();
     const user = await client.users.getUser(userId);

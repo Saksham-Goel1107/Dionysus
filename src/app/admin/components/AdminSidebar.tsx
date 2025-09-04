@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ import {
   ChartLine,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { UserButton,useUser } from '@clerk/nextjs';
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -58,6 +59,23 @@ function ThemeToggle({ collapsed }: { collapsed: boolean }) {
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { user } = useUser();
+
+  useEffect(() => {
+    const savedState = document.cookie
+      .split('; ')
+      .find(row => row.startsWith('admin-sidebar-collapsed='))
+      ?.split('=')[1];
+    if (savedState) {
+      setCollapsed(savedState === 'true');
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    const newState = !collapsed;
+    setCollapsed(newState);
+    document.cookie = `admin-sidebar-collapsed=${newState}; path=/; max-age=${365 * 24 * 60 * 60}`;
+  };
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -80,7 +98,7 @@ export default function AdminSidebar() {
           <h1 className="text-xl font-bold text-blue-600 dark:text-blue-400">Admin Panel</h1>
         )}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggleCollapsed}
           className="rounded-md p-1 hover:bg-gray-100 dark:hover:bg-gray-800"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
@@ -117,10 +135,8 @@ export default function AdminSidebar() {
       <div className="border-t border-gray-200 p-4 dark:border-gray-800">
         <ThemeToggle collapsed={collapsed} />
         <div className="mt-2 flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-white">
-            A
-          </div>
-          {!collapsed && <span className="text-sm font-medium">Admin User</span>}
+          <UserButton />
+          {!collapsed && <span className="text-sm font-medium">{user?.firstName || 'Admin User'}</span>}
         </div>
       </div>
     </aside>

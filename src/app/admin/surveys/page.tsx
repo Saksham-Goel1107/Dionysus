@@ -20,90 +20,91 @@ export default async function AdminSurveysPage() {
     redirect('/');
   }
 
-  const surveyResponses = await db.survey.findMany({
-    include: {
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          emailAddress: true,
-          isPro: true,
+  const [surveyResponses, totalUsers, completedSurveys] = await Promise.all([
+    db.survey.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            emailAddress: true,
+            isPro: true,
+          },
         },
       },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
-
-  const roleDistribution = await db.survey.groupBy({
-    by: ['role'],
-    _count: true,
-    orderBy: {
-      _count: {
-        role: 'desc',
+      orderBy: {
+        createdAt: 'desc',
       },
-    },
-  });
+    }),
+    db.user.count(),
+    db.survey.count(),
+  ]);
 
-  const industryDistribution = await db.survey.groupBy({
-    by: ['industry'],
-    _count: true,
-    orderBy: {
-      _count: {
-        industry: 'desc',
-      },
-    },
-  });
+  if (completedSurveys === 0) {
+    return (
+      <>
+        <SurveyHeader />
+        <div className="flex min-h-[400px] items-center justify-center">
+          <div className="text-center">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No Survey Data</h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              No survey responses have been collected yet.
+            </p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
-  const companySizeDistribution = await db.survey.groupBy({
-    by: ['companySize'],
-    _count: true,
-  });
+  const [roleDistribution, industryDistribution, companySizeDistribution, usagePurposeDistribution, featureInterest] = await Promise.all([
+    db.survey.groupBy({
+      by: ['role'],
+      _count: true,
+      where: { role: { not: null } },
+      orderBy: { _count: { role: 'desc' } },
+    }),
+    db.survey.groupBy({
+      by: ['industry'],
+      _count: true,
+      where: { industry: { not: null } },
+      orderBy: { _count: { industry: 'desc' } },
+    }),
+    db.survey.groupBy({
+      by: ['companySize'],
+      _count: true,
+      where: { companySize: { not: null } },
+    }),
+    db.survey.groupBy({
+      by: ['usagePurpose'],
+      _count: true,
+      where: { usagePurpose: { not: null } },
+      orderBy: { _count: { usagePurpose: 'desc' } },
+    }),
+    db.survey.findMany({
+      select: { expectedFeatures: true },
+    }),
+  ]);
 
-  const usagePurposeDistribution = await db.survey.groupBy({
-    by: ['usagePurpose'],
-    _count: true,
-    orderBy: {
-      _count: {
-        usagePurpose: 'desc',
-      },
-    },
-  });
-
-  const featureInterest = await db.survey.findMany({
-    select: {
-      expectedFeatures: true,
-    },
-  });
-
-  let featureCounts: Record<string, number> = {};
+  const featureCounts: Record<string, number> = {};
   featureInterest.forEach((survey) => {
     if (Array.isArray(survey.expectedFeatures)) {
       survey.expectedFeatures.forEach((feature) => {
-        featureCounts[feature] = (featureCounts[feature] || 0) + 1;
+        if (feature) featureCounts[feature] = (featureCounts[feature] || 0) + 1;
       });
     }
   });
 
-  const totalUsers = await db.user.count();
-  const completedSurveys = await db.survey.count();
   const completionRate = totalUsers > 0 ? (completedSurveys / totalUsers) * 100 : 0;
-
-  const safeRoleDistribution = roleDistribution.map((item) => ({
-    ...item,
-    role: item.role === null ? undefined : item.role,
-  }));
 
   const mappedSurveyResponses = surveyResponses.map((survey) => ({
     ...survey,
-    role: survey.role === null ? undefined : survey.role,
-    industry: survey.industry === null ? undefined : survey.industry,
+    role: survey.role || undefined,
+    industry: survey.industry || undefined,
     user: {
       ...survey.user,
-      firstName: survey.user.firstName === null ? undefined : survey.user.firstName,
-      lastName: survey.user.lastName === null ? undefined : survey.user.lastName,
+      firstName: survey.user.firstName || undefined,
+      lastName: survey.user.lastName || undefined,
     },
   }));
 
@@ -112,10 +113,13 @@ export default async function AdminSurveysPage() {
       <SurveyHeader />
       <SurveyDashboard
         surveyResponses={mappedSurveyResponses}
-        roleDistribution={safeRoleDistribution}
+        roleDistribution={roleDistribution.map((item) => ({
+          ...item,
+          role: item.role ?? undefined,
+        }))}
         industryDistribution={industryDistribution.map((item) => ({
           ...item,
-          industry: item.industry === null ? undefined : item.industry,
+          industry: item.industry ?? undefined,
         }))}
         teamSizeDistribution={companySizeDistribution}
         goalDistribution={usagePurposeDistribution}

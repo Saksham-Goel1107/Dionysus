@@ -77,7 +77,8 @@ interface UsersManagementProps {
 export default function UsersManagement({ users }: UsersManagementProps) {
   const [localUsers, setLocalUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'pro' | 'regular'>('all');
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'pro' | 'regular' | 'abTester'>('all');
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState<{ key: keyof User; direction: 'asc' | 'desc' }>({
     key: 'createdAt',
     direction: 'desc',
@@ -99,6 +100,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
 
   useEffect(() => {
     async function fetchClerkMetadata() {
+  setIsInitialLoading(true);
       const updatedUsers = await Promise.all(
         users.map(async (user) => {
           try {
@@ -111,7 +113,8 @@ export default function UsersManagement({ users }: UsersManagementProps) {
           }
         }),
       );
-      setLocalUsers(updatedUsers);
+  setLocalUsers(updatedUsers);
+  setIsInitialLoading(false);
     }
     fetchClerkMetadata();
   }, [users]);
@@ -152,7 +155,8 @@ export default function UsersManagement({ users }: UsersManagementProps) {
     const matchesFilter =
       selectedFilter === 'all' ||
       (selectedFilter === 'pro' && user.isPro) ||
-      (selectedFilter === 'regular' && !user.isPro);
+      (selectedFilter === 'regular' && !user.isPro) ||
+      (selectedFilter === 'abTester' && !!user.publicMetadata?.abTestingOptIn);
 
     return matchesSearch && matchesFilter;
   });
@@ -308,7 +312,9 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                       ? 'All Users'
                       : selectedFilter === 'pro'
                         ? 'Pro Users'
-                        : 'Regular Users'}
+                        : selectedFilter === 'regular'
+                          ? 'Regular Users'
+                          : 'A/B Testers'}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -321,13 +327,24 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                   <DropdownMenuItem onClick={() => setSelectedFilter('regular')}>
                     Regular Users
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSelectedFilter('abTester')}>
+                    A/B Testers
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border">
+          <div className="relative rounded-md border">
+            {isInitialLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 dark:bg-black/60">
+                <div className="flex flex-col items-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <p className="mt-2 text-sm text-muted-foreground">Loading users...</p>
+                </div>
+              </div>
+            )}
             <Table>
               <TableHeader>
                 <TableRow>
@@ -468,14 +485,6 @@ export default function UsersManagement({ users }: UsersManagementProps) {
                                 Unban User
                               </DropdownMenuItem>
                             )}
-
-                            <DropdownMenuItem
-                              className="flex cursor-pointer items-center gap-2 text-red-600"
-                              onClick={() => setDialog({ type: 'delete', user })}
-                            >
-                              <Shield size={16} />
-                              Delete User
-                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -529,7 +538,7 @@ export default function UsersManagement({ users }: UsersManagementProps) {
       </AlertDialog>
 
       <Dialog open={userDetailsOpen} onOpenChange={setUserDetailsOpen}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               User Details
