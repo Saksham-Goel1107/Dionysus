@@ -97,7 +97,10 @@ const BillingPage = () => {
   const [appliedCoupon, setAppliedCoupon] = React.useState<{
     discount: number;
     code: string;
+    couponId: string;
   } | null>(null);
+  const [isFirstPurchase, setIsFirstPurchase] = React.useState(false);
+  const [checkingFirstPurchase, setCheckingFirstPurchase] = React.useState(true);
 
   // Currency conversion state
   const [selectedCurrency, setSelectedCurrency] = React.useState<Currency>(
@@ -128,6 +131,7 @@ const BillingPage = () => {
   if (hasProPlan) totalDiscount += 10;
   if (mfaEnabled) totalDiscount += 10;
   if (appliedCoupon) totalDiscount += appliedCoupon.discount;
+  if (isFirstPurchase) totalDiscount += 10;
   const discountedPriceINR = basePrice * (1 - totalDiscount / 100);
 
   // Convert price to selected currency
@@ -146,8 +150,9 @@ const BillingPage = () => {
     if (mfaEnabled) parts.push('10% discount for MFA');
     if (discount && discountCountry) parts.push(`${discount}% discount for ${discountCountry}`);
     if (appliedCoupon) parts.push(`${appliedCoupon.discount}% discount on Coupon`);
+    if (isFirstPurchase) parts.push('10% discount for First Purchase');
     return parts;
-  }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon]);
+  }, [hasProPlan, mfaEnabled, discount, discountCountry, appliedCoupon, isFirstPurchase]);
   const discountBreakdown = discountParts.join(' + ');
 
   const utils = api.useUtils();
@@ -383,10 +388,29 @@ const BillingPage = () => {
     })();
   }, []);
 
+  // Check if user is making their first purchase
+  useEffect(() => {
+    (async () => {
+      setCheckingFirstPurchase(true);
+      try {
+        // Check if user has any previous transactions
+        if (transactions && transactions.length === 0) {
+          setIsFirstPurchase(true);
+        } else {
+          setIsFirstPurchase(false);
+        }
+      } catch {
+        setIsFirstPurchase(false);
+      } finally {
+        setCheckingFirstPurchase(false);
+      }
+    })();
+  }, [transactions]);
+
   // Coupon apply logic
   const handleApplyCoupon = async () => {
     setCouponStatus('Checking...');
-    const result = await validateCouponCode(couponInput.trim());
+    const result = await validateCouponCode(couponInput.trim(), clerkUser?.id);
     if (!result) {
       setCouponStatus('Invalid or expired coupon code.');
       return;
@@ -399,7 +423,11 @@ const BillingPage = () => {
       setCouponStatus('Coupon already used.');
       return;
     }
-    setAppliedCoupon({ discount: result.discount ?? 0, code: couponInput.trim() });
+    setAppliedCoupon({
+      discount: result.discount ?? 0,
+      code: couponInput.trim(),
+      couponId: result.couponId,
+    });
     setCouponStatus(`Coupon applied! ${result.discount}% off.`);
   };
 
@@ -473,9 +501,9 @@ const BillingPage = () => {
           </div>
         )}
         <div className="mt-2">
-          {isCheckingPlan ? (
+          {isCheckingPlan || checkingFirstPurchase ? (
             <div className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-              <Loader2 className="h-4 w-4 animate-spin" /> Checking plan-based discounts...
+              <Loader2 className="h-4 w-4 animate-spin" /> Checking available discounts...
             </div>
           ) : (
             <div className="flex flex-wrap items-center gap-2">
@@ -502,6 +530,12 @@ const BillingPage = () => {
                     label: `Discount of ${appliedCoupon.discount}% on Coupon`,
                     tone: 'amber',
                   });
+                if (isFirstPurchase)
+                  items.push({
+                    key: 'firstPurchase',
+                    label: 'First Purchase — 10% off',
+                    tone: 'emerald',
+                  });
 
                 return items.map((item) => (
                   <span
@@ -520,9 +554,12 @@ const BillingPage = () => {
               })()}
 
               {!hasProPlan && (
-                <Button variant="ghost" size="sm" onClick={() => router.push('/subscriptions')}>
-                  Manage plan
-                </Button>
+                <>
+                  <p>Users on Prenium plan has extra 10% discount</p>
+                  <Button variant="ghost" size="sm" onClick={() => router.push('/subscriptions')}>
+                    Manage plan
+                  </Button>
+                </>
               )}
             </div>
           )}
@@ -608,6 +645,7 @@ const BillingPage = () => {
                 creditsToBuy={creditsToBuyAmount}
                 price={discountedPriceINR.toFixed(2)}
                 discountBreakdown={discountBreakdown}
+                couponId={appliedCoupon?.couponId}
                 onSuccess={handlePaymentSuccess}
               />
               {selectedCurrency.code !== 'INR' && (

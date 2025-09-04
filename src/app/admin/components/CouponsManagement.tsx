@@ -1,23 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { generateCouponCode } from '@/app/(protected)/billing/couponUtils';
-import { format } from 'date-fns';
-import { Copy, Check, Search, Download, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -26,19 +22,40 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { AlertCircle, Check, Clock, Copy, Download, RefreshCw, Search, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface CouponData {
+  id: string;
   code: string;
   discount: number;
-  expiryTime: Date;
-  createdAt: Date;
-  status: 'active' | 'expired' | 'used';
+  expiresAt: string;
+  createdAt: string;
+  isUsed: boolean;
+  usedAt?: string;
+  usedBy?: string;
+  isExpired: boolean;
+  maxUses: number;
+  currentUses: number;
 }
 
 export default function CouponsManagement() {
   const [discount, setDiscount] = useState(10);
   const [minutes, setMinutes] = useState(60); // Default: 1 hour
+  const [maxUses, setMaxUses] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('all');
@@ -46,28 +63,33 @@ export default function CouponsManagement() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCouponCode, setNewCouponCode] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Load coupon history from localStorage on mount
-  useEffect(() => {
+  // Load coupons from database on mount
+  const fetchCoupons = React.useCallback(async () => {
     try {
-      const savedCoupons = localStorage.getItem('adminCouponHistory');
-      if (savedCoupons) {
-        const parsedCoupons = JSON.parse(savedCoupons);
+      setIsLoading(true);
+      const response = await fetch('/api/admin/coupons');
+      if (!response.ok) throw new Error('Failed to fetch coupons');
 
-        // Convert date strings back to Date objects
-        const formattedCoupons = parsedCoupons.map((coupon: any) => ({
-          ...coupon,
-          expiryTime: new Date(coupon.expiryTime),
-          createdAt: new Date(coupon.createdAt),
-        }));
-
-        setCouponHistory(formattedCoupons);
-      }
+      const data = await response.json();
+      setCouponHistory(data.coupons || []);
     } catch (error) {
-      console.error('Error loading coupon history:', error);
+      console.error('Error fetching coupons:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load coupons.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
 
   // Generate a new coupon
   const handleGenerate = async (e: React.FormEvent) => {
@@ -75,50 +97,129 @@ export default function CouponsManagement() {
     setIsGenerating(true);
 
     try {
-      const code = await generateCouponCode(discount, minutes);
-
-      if (typeof code === 'string') {
-        setNewCouponCode(code);
-
-        // Calculate expiry time
-        const expiryTime = new Date();
-        expiryTime.setMinutes(expiryTime.getMinutes() + minutes);
-
-        // Create new coupon entry
-        const newCoupon: CouponData = {
-          code,
+      const response = await fetch('/api/admin/coupons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           discount,
-          expiryTime,
-          createdAt: new Date(),
-          status: 'active',
-        };
+          expiresInMinutes: minutes,
+          maxUses,
+        }),
+      });
 
-        // Add to history and save to localStorage
-        const updatedHistory = [newCoupon, ...couponHistory];
-        setCouponHistory(updatedHistory);
-        localStorage.setItem('adminCouponHistory', JSON.stringify(updatedHistory));
-
-        setIsDialogOpen(true);
-
-        toast({
-          title: 'Coupon Generated',
-          description: `${discount}% discount coupon created successfully.`,
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to generate coupon code.',
-          variant: 'destructive',
-        });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to generate coupon');
       }
-    } catch {
+
+      const data = await response.json();
+      setNewCouponCode(data.coupon.code);
+      setIsDialogOpen(true);
+
+      // Refresh the coupon list
+      await fetchCoupons();
+
+      toast({
+        title: 'Coupon Generated',
+        description: `${discount}% discount coupon created successfully.`,
+      });
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to generate coupon code.',
+        description: error.message || 'Failed to generate coupon code.',
         variant: 'destructive',
       });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Expire coupon early
+  const handleExpireCoupon = async (couponId: string) => {
+    try {
+      const response = await fetch(`/api/admin/coupons/${couponId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'expire' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to expire coupon');
+      }
+
+      await fetchCoupons();
+
+      toast({
+        title: 'Coupon Expired',
+        description: 'Coupon has been marked as expired.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to expire coupon.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Delete coupon
+  const handleDeleteCoupon = async (couponId: string) => {
+    try {
+      const response = await fetch(`/api/admin/coupons/${couponId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete coupon');
+      }
+
+      await fetchCoupons();
+
+      toast({
+        title: 'Coupon Deleted',
+        description: 'Coupon has been permanently deleted.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete coupon.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Reinitialize coupon
+  const handleReinitializeCoupon = async (couponId: string) => {
+    try {
+      const response = await fetch(`/api/admin/coupons/${couponId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reinitialize' }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to reinitialize coupon');
+      }
+
+      await fetchCoupons();
+
+      toast({
+        title: 'Coupon Reinitialized',
+        description: 'Coupon has been reset and is now active again.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to reinitialize coupon.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -134,16 +235,25 @@ export default function CouponsManagement() {
     });
   };
 
+  // Get coupon status
+  const getCouponStatus = (coupon: CouponData) => {
+    if (coupon.isExpired) return 'expired';
+    if (new Date(coupon.expiresAt) < new Date()) return 'expired';
+    if (coupon.currentUses >= coupon.maxUses) return 'used';
+    return 'active';
+  };
+
   // Filter coupons based on search and tab
   const filteredCoupons = couponHistory.filter((coupon) => {
     const matchesSearch = coupon.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const status = getCouponStatus(coupon);
 
     if (activeTab === 'all') return matchesSearch;
     if (activeTab === 'active') {
-      return matchesSearch && coupon.expiryTime > new Date() && coupon.status !== 'used';
+      return matchesSearch && status === 'active';
     }
     if (activeTab === 'expired') {
-      return matchesSearch && (coupon.expiryTime <= new Date() || coupon.status === 'used');
+      return matchesSearch && (status === 'expired' || status === 'used');
     }
 
     return matchesSearch;
@@ -151,16 +261,18 @@ export default function CouponsManagement() {
 
   // Export coupons to CSV
   const exportToCSV = () => {
-    const headers = ['Code', 'Discount', 'Created At', 'Expiry Time', 'Status'];
+    const headers = ['Code', 'Discount', 'Created At', 'Expiry Time', 'Status', 'Uses', 'Max Uses'];
     const csvContent = [
       headers.join(','),
       ...filteredCoupons.map((coupon) =>
         [
           coupon.code,
           `${coupon.discount}%`,
-          format(coupon.createdAt, 'yyyy-MM-dd HH:mm:ss'),
-          format(coupon.expiryTime, 'yyyy-MM-dd HH:mm:ss'),
-          coupon.status,
+          format(new Date(coupon.createdAt), 'yyyy-MM-dd HH:mm:ss'),
+          format(new Date(coupon.expiresAt), 'yyyy-MM-dd HH:mm:ss'),
+          getCouponStatus(coupon),
+          coupon.currentUses,
+          coupon.maxUses,
         ].join(','),
       ),
     ].join('\n');
@@ -235,49 +347,28 @@ export default function CouponsManagement() {
                   </div>
                   <Slider
                     value={[minutes]}
-                    min={5}
+                    min={60}
                     max={10080} // 7 days in minutes
-                    step={5}
-                    onValueChange={(values) => setMinutes(values[0] ?? discount)}
+                    step={60}
+                    onValueChange={(values) => setMinutes(values[0] ?? minutes)}
                   />
                 </div>
-                <div className="mt-2 flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMinutes(15)}
-                    className="text-xs"
-                  >
-                    15m
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMinutes(60)}
-                    className="text-xs"
-                  >
-                    1h
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMinutes(24 * 60)}
-                    className="text-xs"
-                  >
-                    1d
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMinutes(7 * 24 * 60)}
-                    className="text-xs"
-                  >
-                    7d
-                  </Button>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Maximum Uses</label>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">{maxUses} uses</span>
+                    <span className="text-sm text-gray-500">Max: 100</span>
+                  </div>
+                  <Slider
+                    value={[maxUses]}
+                    min={1}
+                    max={100}
+                    step={1}
+                    onValueChange={(values) => setMaxUses(values[0] ?? maxUses)}
+                  />
                 </div>
               </div>
 
@@ -288,97 +379,124 @@ export default function CouponsManagement() {
           </CardContent>
         </Card>
 
-        {/* Coupon History */}
+        {/* Quick Stats */}
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Coupon History</CardTitle>
-            <CardDescription>Manage your generated coupons</CardDescription>
-            <div className="mt-2 flex items-center justify-between gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <Input
-                  placeholder="Search coupons..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
+            <CardTitle>Quick Stats</CardTitle>
+            <CardDescription>Overview of coupon usage and performance</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">All Coupons</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="expired">Expired</TabsTrigger>
-              </TabsList>
-              <TabsContent value="all" className="m-0">
-                <CouponTable
-                  coupons={filteredCoupons}
-                  copyToClipboard={copyToClipboard}
-                  copiedCode={copiedCode}
-                />
-              </TabsContent>
-              <TabsContent value="active" className="m-0">
-                <CouponTable
-                  coupons={filteredCoupons}
-                  copyToClipboard={copyToClipboard}
-                  copiedCode={copiedCode}
-                />
-              </TabsContent>
-              <TabsContent value="expired" className="m-0">
-                <CouponTable
-                  coupons={filteredCoupons}
-                  copyToClipboard={copyToClipboard}
-                  copiedCode={copiedCode}
-                />
-              </TabsContent>
-            </Tabs>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="rounded-lg border p-4">
+                <div className="text-2xl font-bold">{couponHistory.length}</div>
+                <p className="text-sm text-gray-500">Total Coupons</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <div className="text-2xl font-bold">
+                  {couponHistory.filter((c) => getCouponStatus(c) === 'active').length}
+                </div>
+                <p className="text-sm text-gray-500">Active Coupons</p>
+              </div>
+              <div className="rounded-lg border p-4">
+                <div className="text-2xl font-bold">
+                  {couponHistory.filter((c) => getCouponStatus(c) === 'used').length}
+                </div>
+                <p className="text-sm text-gray-500">Used Coupons</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* New Coupon Dialog */}
+      {/* Coupon History */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Coupon History</CardTitle>
+          <CardDescription>Manage existing coupons and view usage statistics</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Search and Filter */}
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search coupons..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
+              <TabsList>
+                <TabsTrigger value="all">All ({couponHistory.length})</TabsTrigger>
+                <TabsTrigger value="active">
+                  Active ({couponHistory.filter((c) => getCouponStatus(c) === 'active').length})
+                </TabsTrigger>
+                <TabsTrigger value="expired">
+                  Expired ({couponHistory.filter((c) => getCouponStatus(c) !== 'active').length})
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-sm text-gray-500">Loading coupons...</div>
+            </div>
+          ) : (
+            <Tabs value={activeTab} className="w-full">
+              <TabsContent value="all" className="mt-0">
+                <CouponTable
+                  coupons={filteredCoupons}
+                  onCopy={copyToClipboard}
+                  onExpire={handleExpireCoupon}
+                  onDelete={handleDeleteCoupon}
+                  onReinitialize={handleReinitializeCoupon}
+                  copiedCode={copiedCode}
+                  getCouponStatus={getCouponStatus}
+                />
+              </TabsContent>
+              <TabsContent value="active" className="mt-0">
+                <CouponTable
+                  coupons={filteredCoupons}
+                  onCopy={copyToClipboard}
+                  onExpire={handleExpireCoupon}
+                  onDelete={handleDeleteCoupon}
+                  onReinitialize={handleReinitializeCoupon}
+                  copiedCode={copiedCode}
+                  getCouponStatus={getCouponStatus}
+                />
+              </TabsContent>
+              <TabsContent value="expired" className="mt-0">
+                <CouponTable
+                  coupons={filteredCoupons}
+                  onCopy={copyToClipboard}
+                  onExpire={handleExpireCoupon}
+                  onDelete={handleDeleteCoupon}
+                  onReinitialize={handleReinitializeCoupon}
+                  copiedCode={copiedCode}
+                  getCouponStatus={getCouponStatus}
+                />
+              </TabsContent>
+            </Tabs>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Success Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Coupon Created</DialogTitle>
+            <DialogTitle>Coupon Generated Successfully!</DialogTitle>
             <DialogDescription>
-              Coupon code has been generated successfully. Copy the code to share with users.
+              Your new coupon code has been generated. Share this code with users.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 rounded-md bg-gray-100 p-4 dark:bg-gray-900">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Discount</p>
-                <p className="text-lg font-bold">{discount}% OFF</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Valid for</p>
-                <p className="font-medium">
-                  {minutes < 60
-                    ? `${minutes} minutes`
-                    : minutes === 60
-                      ? '1 hour'
-                      : minutes < 1440
-                        ? `${minutes / 60} hours`
-                        : `${minutes / 1440} days`}
-                </p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <p className="mb-1 text-sm font-medium text-gray-500 dark:text-gray-400">
-                Coupon Code
-              </p>
-              <div className="flex items-center justify-between rounded-md border bg-white p-2 dark:bg-gray-950">
-                <code className="break-all font-mono text-sm text-blue-600 dark:text-blue-400">
-                  {newCouponCode}
-                </code>
-                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(newCouponCode)}>
-                  {copiedCode === newCouponCode ? <Check size={16} /> : <Copy size={16} />}
-                </Button>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 rounded-md bg-gray-50 p-4 dark:bg-gray-800">
+            <code className="flex-1 font-mono text-lg font-semibold">{newCouponCode}</code>
+            <Button variant="ghost" size="icon" onClick={() => copyToClipboard(newCouponCode)}>
+              {copiedCode === newCouponCode ? <Check size={16} /> : <Copy size={16} />}
+            </Button>
           </div>
           <DialogFooter>
             <Button onClick={() => setIsDialogOpen(false)}>Close</Button>
@@ -389,89 +507,172 @@ export default function CouponsManagement() {
   );
 }
 
-// Helper component for coupon table
+// Coupon Table Component
+interface CouponTableProps {
+  coupons: CouponData[];
+  onCopy: (code: string) => void;
+  onExpire: (id: string) => void;
+  onDelete: (id: string) => void;
+  onReinitialize: (id: string) => void;
+  copiedCode: string | null;
+  getCouponStatus: (coupon: CouponData) => string;
+}
+
 function CouponTable({
   coupons,
-  copyToClipboard,
+  onCopy,
+  onExpire,
+  onDelete,
+  onReinitialize,
   copiedCode,
-}: {
-  coupons: CouponData[];
-  copyToClipboard: (code: string) => void;
-  copiedCode: string | null;
-}) {
-  const now = new Date();
+  getCouponStatus,
+}: CouponTableProps) {
+  if (coupons.length === 0) {
+    return (
+      <div className="flex h-32 items-center justify-center rounded-md border border-dashed">
+        <div className="text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">No coupons found</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Discount</TableHead>
             <TableHead>Code</TableHead>
-            <TableHead className="hidden md:table-cell">Created</TableHead>
-            <TableHead className="hidden md:table-cell">Expires</TableHead>
+            <TableHead>Discount</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="w-[60px]">Copy</TableHead>
+            <TableHead>Uses</TableHead>
+            <TableHead>Created</TableHead>
+            <TableHead>Expires</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {coupons.length > 0 ? (
-            coupons.map((coupon) => {
-              const isExpired = coupon.expiryTime < now || coupon.status === 'used';
-
-              return (
-                <TableRow key={coupon.code}>
-                  <TableCell className="font-medium">{coupon.discount}%</TableCell>
-                  <TableCell className="font-mono text-xs text-gray-600 dark:text-gray-400">
-                    {coupon.code.length > 16 ? `${coupon.code.substring(0, 16)}...` : coupon.code}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {format(coupon.createdAt, 'MMM d, HH:mm')}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {format(coupon.expiryTime, 'MMM d, HH:mm')}
-                  </TableCell>
-                  <TableCell>
-                    {isExpired ? (
-                      <Badge
-                        variant="outline"
-                        className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                      >
-                        Expired
-                      </Badge>
-                    ) : (
-                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                        Active
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
+          {coupons.map((coupon) => {
+            const status = getCouponStatus(coupon);
+            return (
+              <TableRow key={coupon.id}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <code className="font-mono font-semibold">{coupon.code}</code>
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => copyToClipboard(coupon.code)}
+                      className="h-6 w-6"
+                      onClick={() => onCopy(coupon.code)}
                     >
-                      {copiedCode === coupon.code ? (
-                        <Check size={16} className="text-green-600 dark:text-green-400" />
-                      ) : (
-                        <Copy size={16} />
-                      )}
+                      {copiedCode === coupon.code ? <Check size={12} /> : <Copy size={12} />}
                     </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center">
-                <div className="flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                  <AlertCircle className="mb-2 h-8 w-8 opacity-50" />
-                  <span>No coupons found</span>
-                  <span className="text-sm">Generate your first coupon to get started</span>
-                </div>
-              </TableCell>
-            </TableRow>
-          )}
+                  </div>
+                </TableCell>
+                <TableCell>{coupon.discount}%</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      status === 'active'
+                        ? 'default'
+                        : status === 'used'
+                          ? 'secondary'
+                          : 'destructive'
+                    }
+                  >
+                    {status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  {coupon.currentUses} / {coupon.maxUses}
+                </TableCell>
+                <TableCell>{format(new Date(coupon.createdAt), 'MMM d, yyyy')}</TableCell>
+                <TableCell>{format(new Date(coupon.expiresAt), 'MMM d, yyyy')}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex items-center justify-end gap-1">
+                    {status === 'active' && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Clock size={14} />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Expire Coupon</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to expire this coupon? This action will make it
+                              unusable immediately.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onExpire(coupon.id)}>
+                              Expire Coupon
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                    {(status === 'expired' || status === 'used') &&
+                      new Date(coupon.expiresAt) > new Date() && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-green-600">
+                              <RefreshCw size={14} />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Reinitialize Coupon</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to reinitialize this coupon? This will reset
+                                its usage and make it active again.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => onReinitialize(coupon.id)}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                Reinitialize Coupon
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600">
+                          <Trash2 size={14} />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Coupon</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this coupon? This action cannot be
+                            undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => onDelete(coupon.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Coupon
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

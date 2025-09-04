@@ -1,12 +1,12 @@
 'use server';
+import prisma from '@/lib/prisma';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-import { getRedisClient } from '@/lib/rate-limit';
 
 export async function generateCouponCode(
   discount: number,
   expiresInMinutes: number = 10,
+  maxUses: number = 1,
   bypassSecret?: string,
 ) {
   if (!bypassSecret || bypassSecret !== process.env.BYPASS_COUPON_SECRET) {
@@ -25,50 +25,155 @@ export async function generateCouponCode(
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
   }
-  const secret = process.env.COUPON_SECRET!;
-  const exp = Date.now() + expiresInMinutes * 60 * 1000;
-  const payload = `${discount}:${exp}`;
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(payload);
-  const sigHex = hmac.digest('hex');
-  return Buffer.from(`${payload}:${sigHex}`).toString('base64');
+
+  try {
+    // Generate unique coupon code
+    const code = generateUniqueCode();
+
+    // Calculate expiry time
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes);
+
+    const coupon = await prisma.coupon.create({
+      data: {
+        code,
+        discount,
+        expiresAt,
+        createdBy: 'admin', // Will be replaced with actual userId in API
+        maxUses,
+      },
+    });
+
+    return coupon.code;
+  } catch (error) {
+    console.error('Error generating coupon:', error);
+    throw error;
+  }
+}
+
+function generateUniqueCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 8; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 export async function validateCouponCode(code: string, userId?: string) {
   try {
-    const redis = await getRedisClient();
-    const key = `coupon:validate:${userId || 'anon'}`;
-    const maxReq = 10;
-    const windowSec = 60 * 60; // 1 hour
+    // Find coupon in database
+    const coupon = await prisma.coupon.findUnique({
+      where: { code: code.toUpperCase() },
+    });
 
-    const reqCount = await redis.incr(key);
-    if (reqCount === 1) {
-      await redis.expire(key, windowSec);
+    if (!coupon) {
+      return null;
     }
-    if (reqCount > maxReq) {
-      return {
-        success: false,
-        message: 'Rate limit exceeded',
-        status: 429,
-      };
+
+    // Check if coupon is expired
+    if (coupon.isExpired || coupon.expiresAt < new Date()) {
+      return null;
     }
+
+    // Check if coupon has reached max uses
+    if (coupon.currentUses >= coupon.maxUses) {
+      return null;
+    }
+
+    // Check if user has already used this coupon (if userId provided)
+    if (userId) {
+      const existingUsage = await prisma.couponUsage.findUnique({
+        where: {
+          couponId_userId: {
+            couponId: coupon.id,
+            userId: userId,
+          },
+        },
+      });
+
+      if (existingUsage) {
+        return null; // User has already used this coupon
+      }
+    }
+
+    return {
+      discount: coupon.discount,
+      couponId: coupon.id,
+    };
   } catch (error) {
-    console.warn('Redis error in coupon validation, continuing without rate limiting:', error);
-  }
-
-  const secret = process.env.COUPON_SECRET!;
-  try {
-    const decoded = Buffer.from(code, 'base64').toString('utf-8');
-    const [discount, exp, sigHex] = decoded.split(':');
-    if (!discount || !exp || !sigHex) return null;
-    if (Date.now() > parseInt(exp)) return null;
-    const payload = `${discount}:${exp}`;
-    const hmac = crypto.createHmac('sha256', secret);
-    hmac.update(payload);
-    const expectedSig = hmac.digest('hex');
-    if (expectedSig !== sigHex) return null;
-    return { discount: parseInt(discount), exp: parseInt(exp) };
-  } catch {
+    console.error('Error validating coupon:', error);
     return null;
+  }
+}
+
+export async function applyCouponCode(couponId: string, userId: string) {
+  try {
+    // Use transaction to ensure atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Get current coupon state
+      const coupon = await tx.coupon.findUnique({
+        where: { id: couponId },
+      });
+
+      if (!coupon) {
+        throw new Error('Coupon not found');
+      }
+
+      // Recheck all conditions
+      if (coupon.isExpired || coupon.expiresAt < new Date()) {
+        throw new Error('Coupon has expired');
+      }
+
+      if (coupon.currentUses >= coupon.maxUses) {
+        throw new Error('Coupon has been used maximum number of times');
+      }
+
+      // Check if user has already used this coupon
+      const existingUsage = await tx.couponUsage.findUnique({
+        where: {
+          couponId_userId: {
+            couponId: couponId,
+            userId: userId,
+          },
+        },
+      });
+
+      if (existingUsage) {
+        throw new Error('You have already used this coupon');
+      }
+
+      // Create usage record
+      await tx.couponUsage.create({
+        data: {
+          couponId: couponId,
+          userId: userId,
+        },
+      });
+
+      // Update coupon usage
+      const updatedCoupon = await tx.coupon.update({
+        where: { id: couponId },
+        data: {
+          currentUses: { increment: 1 },
+          usedAt: new Date(),
+          usedBy: userId,
+          isUsed: coupon.maxUses === 1, // Mark as used only if it's a single-use coupon
+        },
+      });
+
+      return {
+        success: true,
+        discount: updatedCoupon.discount,
+      };
+    });
+
+    return result;
+  } catch (error: any) {
+    console.error('Error applying coupon:', error);
+    return {
+      success: false,
+      message: error.message || 'Internal server error',
+    };
   }
 }

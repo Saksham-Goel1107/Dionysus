@@ -1,15 +1,14 @@
-import { CardElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/trpc/react';
-import { createPaymentIntent } from '../actions';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { AlertCircle, CreditCard, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
-import './payment-form.css';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPaymentIntent } from '../actions';
 import './payment-form.css';
 
 const stripePromise = loadStripe(
@@ -35,6 +34,7 @@ interface PaymentFormProps {
   price: string;
   onSuccess: () => void;
   discountBreakdown?: string;
+  couponId?: string;
 }
 
 const CheckoutForm: React.FC<PaymentFormProps> = ({
@@ -42,6 +42,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
   price,
   onSuccess,
   discountBreakdown,
+  couponId,
 }) => {
   const router = useRouter();
   const stripe = useStripe();
@@ -59,7 +60,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
     const initializePayment = async () => {
       try {
         setIsLoading(true);
-        const result = await createPaymentIntent(creditsToBuy);
+        const result = await createPaymentIntent(creditsToBuy, couponId);
 
         if (result.clientSecret) {
           setClientSecret(result.clientSecret);
@@ -84,7 +85,7 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
     };
 
     initializePayment();
-  }, [creditsToBuy, toast]);
+  }, [creditsToBuy, couponId, toast]);
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -331,6 +332,7 @@ export default function PaymentForm({
   price,
   onSuccess,
   discountBreakdown,
+  couponId,
 }: PaymentFormProps) {
   return (
     <Elements
@@ -357,6 +359,7 @@ export default function PaymentForm({
             price={price}
             onSuccess={onSuccess}
             discountBreakdown={discountBreakdown}
+            couponId={couponId}
           />
         </CardContent>
       </Card>

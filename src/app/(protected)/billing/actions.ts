@@ -76,6 +76,7 @@ export async function verifyAndUpdateCredits(
 
 export async function createPaymentIntent(
   credits: number,
+  couponId?: string,
 ): Promise<{ clientSecret: string | null }> {
   try {
     const { userId } = await auth();
@@ -84,8 +85,25 @@ export async function createPaymentIntent(
       throw new Error('Unauthorized!');
     }
 
-    // Calculate amount based on credits
-    const amount = Math.round((credits / 50) * 75 * 100); // In cents (e.g. 1500 = $15.00)
+    // Calculate base amount based on credits
+    let amount = Math.round((credits / 50) * 75 * 100); // In cents (e.g. 1500 = $15.00)
+    let discount = 0;
+
+    // Apply coupon discount if provided
+    if (couponId) {
+      try {
+        const { applyCouponCode } = await import('./couponUtils');
+        const couponResult = await applyCouponCode(couponId, userId);
+
+        if (couponResult.success) {
+          discount = couponResult.discount;
+          amount = Math.round(amount * (1 - discount / 100));
+        }
+      } catch (error) {
+        console.error('Error applying coupon:', error);
+        // Continue without coupon if there's an error
+      }
+    }
 
     // Create a PaymentIntent with the order amount and currency
     const paymentIntent = await stripe.paymentIntents.create({
@@ -94,6 +112,7 @@ export async function createPaymentIntent(
       metadata: {
         credits,
         userId: userId.toString(),
+        ...(couponId && { couponId, discount }),
       },
       automatic_payment_methods: {
         enabled: true,

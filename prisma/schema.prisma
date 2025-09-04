@@ -161,3 +161,30 @@ enum PlanType {
   FREE
   PRO
 }
+
+model Coupon {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  discount    Int          // Discount percentage
+  expiresAt   DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  isUsed      Boolean      @default(false)
+  usedAt      DateTime?
+  usedBy      String?      // User ID who used the coupon
+  createdBy   String       // Admin user ID who created it
+  isExpired   Boolean      @default(false) // Manually expired by admin
+  maxUses     Int          @default(1) // How many times can be used
+  currentUses Int          @default(0) // How many times it has been used
+  usages      CouponUsage[] // Track individual usage
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  usedAt    DateTime @default(now())
+  coupon    Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@unique([couponId, userId]) // Prevent same user from using same coupon multiple times
+}
