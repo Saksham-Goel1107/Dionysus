@@ -20,7 +20,7 @@ export async function generateCouponCode(
     if (
       email !== process.env.ADMIN_EMAIL ||
       userId !== process.env.ADMIN_USER_ID ||
-      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }

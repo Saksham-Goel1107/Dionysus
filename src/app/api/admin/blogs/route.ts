@@ -70,7 +70,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { title, slug, content, excerpt, coverImage, isPublished, tags } = await request.json();
+    const { title, slug, content, excerpt, coverImage, isPublished, tags, publishedAt } =
+      await request.json();
 
     if (!title?.trim() || !content?.trim()) {
       return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
@@ -98,6 +99,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine publishedAt: allow scheduling via provided publishedAt, otherwise set to now when publishing immediately
+    const publishedAtDate = publishedAt ? new Date(publishedAt) : isPublished ? new Date() : null;
+
     const blog = await prisma.blog.create({
       data: {
         title,
@@ -106,7 +110,7 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt || null,
         coverImage: coverImage || null,
         isPublished,
-        publishedAt: isPublished ? new Date() : null,
+        publishedAt: publishedAtDate,
         authorId: userId,
         tags: {
           connect: tagConnections,

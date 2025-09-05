@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImageInsertDialog } from '@/components/ui/image-insert-dialog';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Eye, Image as ImageIcon, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Eye, Image as ImageIcon, Save } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -30,6 +31,7 @@ interface BlogFormData {
   content: string;
   coverImage: string;
   isPublished: boolean;
+  publishedAt?: string | null;
   tags: string[];
 }
 
@@ -46,6 +48,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     content: '',
     coverImage: '',
     isPublished: false,
+    publishedAt: isEdit ? null : new Date().toISOString(),
     tags: [],
   });
   const [tagInput, setTagInput] = useState('');
@@ -71,6 +74,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         content: blog.content,
         coverImage: blog.coverImage || '',
         isPublished: blog.isPublished,
+        publishedAt: blog.publishedAt || null,
         tags: blog.tags.map((tag: any) => tag.name),
       });
     } catch (error: any) {
@@ -153,6 +157,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
       const payload = {
         ...formData,
         isPublished: shouldPublish !== undefined ? shouldPublish : formData.isPublished,
+        ...(formData.publishedAt ? { publishedAt: formData.publishedAt } : {}),
         ...(isEdit && { action: 'update' }),
       };
 
@@ -202,7 +207,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
   }
 
   return (
-    <div className="mx-auto max-w-6xl p-6">
+    <div className="mx-auto min-h-screen max-w-6xl overflow-hidden p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/admin/blogs">
@@ -235,9 +240,9 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid min-h-0 grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Main Content */}
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-h-0 space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Post Content</CardTitle>
@@ -292,7 +297,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
                     }
                   />
                 </div>
-                <div data-color-mode="light">
+                <div data-color-mode="light" className="max-h-[65vh] min-h-[500px] overflow-auto">
                   <MDEditor
                     value={formData.content}
                     onChange={(value) => setFormData((prev) => ({ ...prev, content: value || '' }))}
@@ -306,7 +311,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="min-h-0 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>Publishing</CardTitle>
@@ -323,37 +328,23 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
                 <Label htmlFor="published">Published</Label>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => handleSave(false)}
-                  disabled={isSaving || isPublishing}
-                  className="w-full"
-                  variant="outline"
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                      Saving Draft...
-                    </>
-                  ) : (
-                    'Save Draft'
-                  )}
-                </Button>
-
-                <Button
-                  onClick={() => handleSave(true)}
-                  disabled={isSaving || isPublishing}
-                  className="w-full"
-                >
-                  {isPublishing ? (
-                    <>
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    'Publish Blog'
-                  )}
-                </Button>
+              <div className="space-y-2">
+                <Label>Publish Date</Label>
+                <div className="w-full">
+                  <Calendar
+                    mode="single"
+                    selected={formData.publishedAt ? new Date(formData.publishedAt) : undefined}
+                    onSelect={(date) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        publishedAt: date ? date.toISOString() : null,
+                      }))
+                    }
+                  />
+                </div>
+                <p className="text-xs text-gray-500">
+                  Leave empty to publish immediately (or on publish action).
+                </p>
               </div>
             </CardContent>
           </Card>

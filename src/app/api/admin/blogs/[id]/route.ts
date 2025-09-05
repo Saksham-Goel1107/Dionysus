@@ -67,7 +67,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { action, title, slug, content, excerpt, coverImage, isPublished, tags } =
+    const { action, title, slug, content, excerpt, coverImage, isPublished, tags, publishedAt } =
       await request.json();
     const awaitedParams = await params;
     const blogId = awaitedParams.id;
@@ -139,6 +139,13 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
         },
       });
 
+      // Use provided publishedAt if present, otherwise preserve existing logic
+      const publishedAtDate = publishedAt
+        ? new Date(publishedAt)
+        : isPublished && !blog.publishedAt
+          ? new Date()
+          : blog.publishedAt;
+
       const updatedBlog = await prisma.blog.update({
         where: { id: blogId },
         data: {
@@ -148,7 +155,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           excerpt: excerpt || null,
           coverImage: coverImage || null,
           isPublished,
-          publishedAt: isPublished && !blog.publishedAt ? new Date() : blog.publishedAt,
+          publishedAt: publishedAtDate,
           tags: {
             connect: tagConnections,
           },

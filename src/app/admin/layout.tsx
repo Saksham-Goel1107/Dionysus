@@ -1,8 +1,8 @@
-import React from 'react';
-import { redirect } from 'next/navigation';
 import { auth, currentUser } from '@clerk/nextjs/server';
+import { redirect } from 'next/navigation';
+import React from 'react';
 import AdminSidebar from './components/AdminSidebar';
-import AutoRefresh from './components/AutoRefresh';
+// import AutoRefresh from './components/AutoRefresh';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { userId, sessionClaims } = await auth();
@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const isAdmin =
     userEmail === process.env.ADMIN_EMAIL &&
     userId === process.env.ADMIN_USER_ID &&
-    sessionClaims?.metadata?.role === `${process.env.ADMIN_SECRET}`;
+    sessionClaims?.metadata?.role === process.env.ADMIN_SECRET;
 
   if (!isAdmin) {
     throw redirect('/');
@@ -33,7 +33,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       <AdminSidebar />
       <main className="flex-1 overflow-y-auto">
-        <AutoRefresh interval={60} />
+        {/* <AutoRefresh interval={60} /> */}{' '}
+        {/* Uncomment to enable auto-refresh that is suggested for security purposes but disabling to prevent the irritation of it*/}
         {children}
       </main>
     </div>

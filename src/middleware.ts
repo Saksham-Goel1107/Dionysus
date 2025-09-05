@@ -621,7 +621,7 @@ export default clerkMiddleware(async (auth, request) => {
     if (
       userEmail !== ADMIN_EMAIL &&
       userId !== ADMIN_USER_ID &&
-      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.redirect(new URL('/', request.url));
     }

@@ -118,7 +118,7 @@ These files and folders are required for best-in-class AI, Copilot, and team dev
 
 Directory structure:
 └── saksham-goel1107-dionysus/
-    ├── README.md
+    ├── ANNOUNCEMENT_CONFIGURATION.md
     ├── back-of-envelope.md
     ├── CODE_OF_CONDUCT.md
     ├── CODEOWNERS
@@ -212,7 +212,6 @@ Directory structure:
     │   │   │   │   ├── license.tsx
     │   │   │   │   ├── markdown-templates.ts
     │   │   │   │   ├── MarkdownGenModal.tsx
-    │   │   │   │   ├── MediaOptimizer.tsx
     │   │   │   │   ├── MetaDataGenerator.tsx
     │   │   │   │   ├── page.tsx
     │   │   │   │   ├── PlagiarismChecker.tsx
@@ -226,11 +225,15 @@ Directory structure:
     │   │   │   │       ├── FunctionBarChart.tsx
     │   │   │   │       ├── PieChart.tsx
     │   │   │   │       └── QualityBarChart.tsx
+    │   │   │   ├── alpha-help/
+    │   │   │   │   ├── layout.tsx
+    │   │   │   │   └── page.tsx
     │   │   │   ├── billing/
     │   │   │   │   ├── actions.ts
     │   │   │   │   ├── couponUtils.ts
     │   │   │   │   ├── page.tsx
     │   │   │   │   ├── components/
+    │   │   │   │   │   ├── GlobalPlans.tsx
     │   │   │   │   │   ├── payment-form.css
     │   │   │   │   │   └── PaymentForm.tsx
     │   │   │   │   └── success/
@@ -286,6 +289,8 @@ Directory structure:
     │   │   │   │   │   └── _components/
     │   │   │   │   │       └── IssueList.tsx
     │   │   │   │   └── _components/
+    │   │   │   │       ├── MeetingsLoadingSkeleton.tsx
+    │   │   │   │       ├── RefreshButton.tsx
     │   │   │   │       └── TranscriptViewer.tsx
     │   │   │   ├── my-data/
     │   │   │   │   └── page.tsx
@@ -319,6 +324,15 @@ Directory structure:
     │   │   │   ├── page.tsx
     │   │   │   ├── analytics/
     │   │   │   │   └── page.tsx
+    │   │   │   ├── blogs/
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   ├── [id]/
+    │   │   │   │   │   └── edit/
+    │   │   │   │   │       └── page.tsx
+    │   │   │   │   ├── components/
+    │   │   │   │   │   └── BlogEditor.tsx
+    │   │   │   │   └── create/
+    │   │   │   │       └── page.tsx
     │   │   │   ├── components/
     │   │   │   │   ├── AdminDashboard.tsx
     │   │   │   │   ├── AdminSidebar.tsx
@@ -326,12 +340,17 @@ Directory structure:
     │   │   │   │   ├── AutoRefresh.tsx
     │   │   │   │   ├── CouponsManagement.tsx
     │   │   │   │   ├── FinancesDashboard.tsx
+    │   │   │   │   ├── GlobalPlansManagement.tsx
     │   │   │   │   ├── SurveyDashboard.tsx
     │   │   │   │   ├── SurveyHeader.tsx
     │   │   │   │   └── UsersManagement.tsx
     │   │   │   ├── coupons/
     │   │   │   │   └── page.tsx
     │   │   │   ├── finances/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── global-plans/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── image-upload/
     │   │   │   │   └── page.tsx
     │   │   │   ├── surveys/
     │   │   │   │   ├── layout.tsx
@@ -349,18 +368,45 @@ Directory structure:
     │   │   │   ├── admin/
     │   │   │   │   ├── block-user/
     │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── blogs/
+    │   │   │   │   │   ├── route.ts
+    │   │   │   │   │   └── [id]/
+    │   │   │   │   │       └── route.ts
+    │   │   │   │   ├── coupons/
+    │   │   │   │   │   ├── route.ts
+    │   │   │   │   │   └── [id]/
+    │   │   │   │   │       └── route.ts
+    │   │   │   │   ├── global-plans/
+    │   │   │   │   │   ├── route.ts
+    │   │   │   │   │   └── [id]/
+    │   │   │   │   │       └── route.ts
+    │   │   │   │   ├── images/
+    │   │   │   │   │   └── route.ts
     │   │   │   │   ├── user-details/
     │   │   │   │   │   └── route.ts
     │   │   │   │   └── user-status/
     │   │   │   │       └── route.ts
+    │   │   │   ├── ai-assistant/
+    │   │   │   │   └── route.ts
     │   │   │   ├── ai-chat/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── alpha-support/
     │   │   │   │   └── route.ts
     │   │   │   ├── audio-transcription/
     │   │   │   │   └── route.ts
+    │   │   │   ├── blogs/
+    │   │   │   │   ├── route.ts
+    │   │   │   │   └── [slug]/
+    │   │   │   │       └── route.ts
     │   │   │   ├── code-analytics/
     │   │   │   │   ├── quality.ts
     │   │   │   │   ├── route.ts
     │   │   │   │   └── quality/
+    │   │   │   │       └── route.ts
+    │   │   │   ├── coupons/
+    │   │   │   │   ├── apply/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── validate/
     │   │   │   │       └── route.ts
     │   │   │   ├── create/
     │   │   │   │   └── route.ts
@@ -376,6 +422,13 @@ Directory structure:
     │   │   │   │   └── route.ts
     │   │   │   ├── github-commits/
     │   │   │   │   └── route.ts
+    │   │   │   ├── github-metrics/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── global-plans/
+    │   │   │   │   ├── route.ts
+    │   │   │   │   └── [id]/
+    │   │   │   │       └── apply/
+    │   │   │   │           └── route.ts
     │   │   │   ├── has-password/
     │   │   │   │   └── route.ts
     │   │   │   ├── image-analysis/
@@ -393,6 +446,10 @@ Directory structure:
     │   │   │   ├── meeting-transcript/
     │   │   │   │   └── [meetingId]/
     │   │   │   │       └── route.ts
+    │   │   │   ├── meetings/
+    │   │   │   │   └── [meetingId]/
+    │   │   │   │       └── sync-status/
+    │   │   │   │           └── route.ts
     │   │   │   ├── newsletter/
     │   │   │   │   ├── status/
     │   │   │   │   │   └── route.ts
@@ -400,9 +457,13 @@ Directory structure:
     │   │   │   │   │   └── route.ts
     │   │   │   │   └── unsubscribe/
     │   │   │   │       └── route.ts
+    │   │   │   ├── plagiarism-check/
+    │   │   │   │   └── route.ts
     │   │   │   ├── process-meeting/
     │   │   │   │   └── route.ts
     │   │   │   ├── proxy-n8n-register/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── quotes/
     │   │   │   │   └── route.ts
     │   │   │   ├── readme-generator/
     │   │   │   │   └── route.ts
@@ -435,7 +496,11 @@ Directory structure:
     │   │   │   │   └── webhook/
     │   │   │   │       └── route.ts
     │   │   │   ├── survey/
-    │   │   │   │   └── route.ts
+    │   │   │   │   ├── route.ts
+    │   │   │   │   ├── skip/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── skip-enabled/
+    │   │   │   │       └── route.ts
     │   │   │   ├── survey-status/
     │   │   │   │   └── route.ts
     │   │   │   ├── sync-pro-status/
@@ -445,6 +510,8 @@ Directory structure:
     │   │   │   │       └── route.ts
     │   │   │   ├── unlock/
     │   │   │   │   └── route.ts
+    │   │   │   ├── upload/
+    │   │   │   │   └── route.ts
     │   │   │   ├── uptime/
     │   │   │   │   └── route.ts
     │   │   │   ├── user/
@@ -452,17 +519,19 @@ Directory structure:
     │   │   │   │       └── route.ts
     │   │   │   └── verify-password/
     │   │   │       └── route.ts
-    │   │   ├── block/
-    │   │   │   └── page.tsx
-    │   │   ├── blocked/
-    │   │   │   └── page.tsx
+    │   │   ├── blogs/
+    │   │   │   ├── page.tsx
+    │   │   │   └── [slug]/
+    │   │   │       └── page.tsx
     │   │   ├── components/
     │   │   │   ├── AiButton.tsx
     │   │   │   ├── AiChatSidebar.tsx
+    │   │   │   ├── AnnouncementBell.tsx
     │   │   │   ├── Battery.tsx
     │   │   │   ├── CookieBanner.tsx
     │   │   │   ├── features.tsx
     │   │   │   ├── footer.tsx
+    │   │   │   ├── FullscreenToggle.tsx
     │   │   │   ├── hero.tsx
     │   │   │   ├── how-it-works.tsx
     │   │   │   ├── logo.tsx
@@ -485,9 +554,6 @@ Directory structure:
     │   │   │   └── page.tsx
     │   │   ├── privacy/
     │   │   │   └── page.tsx
-    │   │   ├── rate-limit/
-    │   │   │   ├── page.tsx
-    │   │   │   └── RateLimitRedirector.tsx
     │   │   ├── sign-in/
     │   │   │   └── [[...sign-in]]/
     │   │   │       └── page.tsx
@@ -516,11 +582,15 @@ Directory structure:
     │   │   ├── types/
     │   │   │   ├── global.d.ts
     │   │   │   └── speech-recognition.d.ts
-    │   │   └── utils/
-    │   │       └── redis.ts
+    │   │   ├── utils/
+    │   │   │   └── redis.ts
+    │   │   └── waitlist/
+    │   │       └── page.tsx
     │   ├── components/
     │   │   ├── BlockInspectAndContext.tsx
+    │   │   ├── ContactForm.tsx
     │   │   ├── FullscreenPrompt.tsx
+    │   │   ├── GlobalSearch.tsx
     │   │   ├── media-room.tsx
     │   │   ├── OnboardingChecklist.tsx
     │   │   ├── PasswordGate.tsx
@@ -551,6 +621,7 @@ Directory structure:
     │   │   │   ├── badge.tsx
     │   │   │   ├── breadcrumb.tsx
     │   │   │   ├── button.tsx
+    │   │   │   ├── calendar.tsx
     │   │   │   ├── card-with-gradient.tsx
     │   │   │   ├── card.tsx
     │   │   │   ├── carousel.tsx
@@ -563,6 +634,7 @@ Directory structure:
     │   │   │   ├── CommitGraphModal.tsx
     │   │   │   ├── content-layout.tsx
     │   │   │   ├── context-menu.tsx
+    │   │   │   ├── currency-selector.tsx
     │   │   │   ├── CustomContextMenu.tsx
     │   │   │   ├── dialog.tsx
     │   │   │   ├── drawer.tsx
@@ -570,6 +642,9 @@ Directory structure:
     │   │   │   ├── ErrorBoundary.tsx
     │   │   │   ├── form.tsx
     │   │   │   ├── hover-card.tsx
+    │   │   │   ├── image-insert-dialog.tsx
+    │   │   │   ├── image-upload.tsx
+    │   │   │   ├── image-url-generator.tsx
     │   │   │   ├── input-otp.tsx
     │   │   │   ├── input.tsx
     │   │   │   ├── label.tsx
@@ -581,6 +656,7 @@ Directory structure:
     │   │   │   ├── progress.tsx
     │   │   │   ├── radio-group.tsx
     │   │   │   ├── resizable.tsx
+    │   │   │   ├── SafeImage.tsx
     │   │   │   ├── scroll-area.tsx
     │   │   │   ├── ScrollToTopButton.tsx
     │   │   │   ├── select.tsx
@@ -624,7 +700,9 @@ Directory structure:
     │   │   ├── checkAndSyncProStatus.ts
     │   │   ├── clientVersionCheck.ts
     │   │   ├── cloudinary.ts
+    │   │   ├── configcat.ts
     │   │   ├── creditsAlert.ts
+    │   │   ├── currencyConverter.ts
     │   │   ├── email.ts
     │   │   ├── gemini.ts
     │   │   ├── github-loader.ts
@@ -661,6 +739,7 @@ Directory structure:
     │   │   └── server.ts
     │   └── types/
     │       ├── FormInput.ts
+    │       ├── global.d.ts
     │       ├── Project.ts
     │       └── typhonjs-escomplex.d.ts
     ├── .cursor/
@@ -702,8 +781,6 @@ Directory structure:
         ├── commit-msg
         ├── pre-commit
         └── pre-push
-
-
 
 ```
 
@@ -866,10 +943,13 @@ Directory structure:
   <img src="Demo/image9.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image2.png" alt="Dionysus Platform" width="400" />
-   <img src="Demo/image3.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image3.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image10.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image4.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image13.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image21.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image22.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image23.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image5.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image6.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image7.png" alt="Dionysus Platform" width="400" />
@@ -884,6 +964,10 @@ Directory structure:
   <img src="Demo/image18.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image19.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image20.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image26.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image24.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/image25.png" alt="Dionysus Platform" width="400" />
+  <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 

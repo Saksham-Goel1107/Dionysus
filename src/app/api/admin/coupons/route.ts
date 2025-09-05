@@ -16,7 +16,7 @@ export async function GET() {
     if (
       email !== process.env.ADMIN_EMAIL ||
       userId !== process.env.ADMIN_USER_ID ||
-      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     if (
       email !== process.env.ADMIN_EMAIL ||
       userId !== process.env.ADMIN_USER_ID ||
-      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
