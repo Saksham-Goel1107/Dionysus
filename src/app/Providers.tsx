@@ -12,6 +12,11 @@ import AiToolkitButton from './components/AiButton';
 import AiChatSidebar from './components/AiChatSidebar';
 import CookieBanner from './components/CookieBanner';
 import RecaptchaGate from './components/RecaptchaGate';
+import LogRocket from 'logrocket';
+if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_LOGROCKET_KEY) {
+  LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_KEY);
+}
+
 
 declare global {
   interface Window {
@@ -26,6 +31,15 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userData = user?.user;
   const [isAbTester, setIsAbTester] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (user?.user && process.env.NODE_ENV === 'production') {
+      LogRocket.identify(user.user.id, {
+        name: user.user.fullName || 'Anonymus',
+        email: user.user.primaryEmailAddress?.emailAddress || 'anonymus@example.com',
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {

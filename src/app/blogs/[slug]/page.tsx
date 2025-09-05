@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { useUser } from '@clerk/nextjs';
 
 interface BlogPost {
   id: string;
@@ -33,6 +34,7 @@ export default function BlogPostPage() {
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const { toast } = useToast();
+  const user = useUser();
 
   const fetchBlog = useCallback(async () => {
     try {
@@ -259,30 +261,34 @@ export default function BlogPostPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSummarize}
-                    disabled={isSummarizing}
-                    className="flex items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                  >
-                    <Sparkles size={16} className={isSummarizing ? 'animate-spin' : ''} />
-                    {isSummarizing ? 'Summarizing...' : 'AI Summary'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleShare}
-                    className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                  >
-                    <Share2 size={16} />
-                    Share
-                  </Button>
+                  <>
+                    {user.isSignedIn && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSummarize}
+                        disabled={isSummarizing}
+                        className="flex items-center gap-2 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                      >
+                        <Sparkles size={16} className={isSummarizing ? 'animate-spin' : ''} />
+                        {isSummarizing ? 'Summarizing...' : 'AI Summary'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleShare}
+                      className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    >
+                      <Share2 size={16} />
+                      Share
+                    </Button>
+                  </>
                 </div>
               </div>
 
               {/* AI Summary */}
-              {showSummary && (
+              {showSummary && user.isSignedIn && (
                 <div className="mt-6 rounded-lg border border-purple-200 bg-purple-50 p-4 dark:border-purple-800 dark:bg-purple-900/20">
                   <div className="mb-2 flex items-center gap-2 text-sm font-medium text-purple-800 dark:text-purple-200">
                     <Sparkles size={16} />

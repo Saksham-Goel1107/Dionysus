@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Github, MessageSquare, FileAudio, ArrowRight } from 'lucide-react';
+import { Github, MessageSquare, FileAudio } from 'lucide-react';
 
 export function HowItWorks() {
   return (
@@ -44,7 +44,6 @@ export function HowItWorks() {
             </CardContent>
             <CardFooter>
               <Button variant="ghost" className="w-full" disabled>
-                Connect <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardFooter>
           </Card>
@@ -66,7 +65,6 @@ export function HowItWorks() {
             </CardContent>
             <CardFooter>
               <Button variant="ghost" className="w-full" disabled>
-                Ask <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardFooter>
           </Card>
@@ -88,7 +86,6 @@ export function HowItWorks() {
             </CardContent>
             <CardFooter>
               <Button variant="ghost" className="w-full" disabled>
-                Upload <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardFooter>
           </Card>

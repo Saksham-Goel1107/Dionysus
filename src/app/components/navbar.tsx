@@ -137,6 +137,9 @@ export function Navbar() {
               <Link href="/about" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
                 About
               </Link>
+              <Link href="/blogs" className="nav-link">
+                Blogs
+              </Link>
               <Link href="/status" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
                 Status
               </Link>

@@ -1,6 +1,7 @@
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
 import { LangChainTracer } from 'langchain/callbacks';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server'
 
 // Initialize tracer if available
 let tracer: LangChainTracer | null = null;
@@ -9,9 +10,7 @@ if (process.env.LANGCHAIN_API_KEY) {
     projectName: 'dionysus-blog-summary',
   });
 }
-
-// Initialize Gemini model with streaming - require API key from env
-const googleApiKey = process.env.GEMINI_API_KEY || undefined;
+const googleApiKey = process.env.GEMINI_API_KEY || '';
 
 if (!googleApiKey) {
   console.warn('Google Generative AI API key not set');
@@ -30,6 +29,10 @@ const geminiModel = googleApiKey
 
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const { content, title } = await request.json();
 
     if (!content || !title) {

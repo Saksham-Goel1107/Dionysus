@@ -134,6 +134,7 @@
     "langchain": "^0.3.31",
     "livekit-client": "^2.15.6",
     "livekit-server-sdk": "^2.13.3",
+    "logrocket": "^10.1.0",
     "lucide-react": "^0.471.2",
     "motion": "^12.23.12",
     "next": "^15.5.2",
