@@ -120,12 +120,12 @@ export default function BlogPostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <div className="bg-white shadow-sm dark:bg-gray-800">
+      <div className="bg-white/80 shadow-sm backdrop-blur-sm dark:bg-gray-800/80">
         <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
           <Link href="/blogs">
-            <Button variant="ghost" className="mb-6">
+            <Button variant="ghost" className="mb-6 hover:bg-blue-50 dark:hover:bg-blue-900/20">
               <ArrowLeft size={16} className="mr-2" />
               Back to Blog
             </Button>
@@ -133,7 +133,7 @@ export default function BlogPostPage() {
 
           {/* Cover Image */}
           {blog.coverImage && (
-            <div className="relative mb-8 aspect-video overflow-hidden rounded-lg">
+            <div className="relative mb-8 aspect-video overflow-hidden rounded-xl shadow-lg">
               <SafeImage
                 src={blog.coverImage}
                 alt={blog.title}
@@ -141,6 +141,7 @@ export default function BlogPostPage() {
                 width={1000}
                 height={1000}
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
             </div>
           )}
 
@@ -148,21 +149,27 @@ export default function BlogPostPage() {
           <div className="mb-8">
             <div className="mb-4 flex flex-wrap gap-2">
               {blog.tags.map((tag) => (
-                <Badge key={tag.id} variant="secondary">
+                <Badge
+                  key={tag.id}
+                  variant="secondary"
+                  className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                >
                   {tag.name}
                 </Badge>
               ))}
             </div>
 
-            <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-white md:text-4xl lg:text-5xl">
+            <h1 className="mb-6 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-3xl font-bold text-transparent dark:from-white dark:to-gray-300 md:text-4xl lg:text-5xl">
               {blog.title}
             </h1>
 
             {blog.excerpt && (
-              <p className="mb-6 text-xl text-gray-600 dark:text-gray-300">{blog.excerpt}</p>
+              <p className="mb-6 text-xl leading-relaxed text-gray-600 dark:text-gray-300">
+                {blog.excerpt}
+              </p>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4 dark:bg-gray-800/50">
               <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                 <div className="flex items-center gap-2">
                   <Calendar size={16} />
@@ -178,7 +185,7 @@ export default function BlogPostPage() {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
               >
                 <Share2 size={16} />
                 Share
@@ -190,8 +197,8 @@ export default function BlogPostPage() {
 
       {/* Content */}
       <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-        <Card>
-          <CardContent className="p-8">
+        <Card className="shadow-xl">
+          <CardContent className="p-8 md:p-12">
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <ReactMarkdown
                 components={{
@@ -270,7 +277,10 @@ export default function BlogPostPage() {
         {/* Back to Blog */}
         <div className="mt-12 text-center">
           <Link href="/blogs">
-            <Button size="lg">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+            >
               <ArrowLeft size={16} className="mr-2" />
               Back to All Posts
             </Button>

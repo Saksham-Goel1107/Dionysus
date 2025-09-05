@@ -1,4 +1,4 @@
-import { auth,currentUser } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 // POST - Upload image to Cloudinary via server

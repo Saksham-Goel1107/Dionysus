@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Eye, Image as ImageIcon, Save } from 'lucide-react';
+import { ArrowLeft, Eye, Image as ImageIcon, Loader2, Save } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -38,6 +38,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
     slug: '',
@@ -140,7 +141,12 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     }
 
     try {
-      setIsSaving(true);
+      if (shouldPublish) {
+        setIsPublishing(true);
+      } else {
+        setIsSaving(true);
+      }
+
       const url = isEdit ? `/api/admin/blogs/${blogId}` : '/api/admin/blogs';
       const method = isEdit ? 'PATCH' : 'POST';
 
@@ -161,9 +167,17 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         throw new Error(error.error || 'Failed to save blog');
       }
 
+      const actionText = shouldPublish
+        ? isEdit
+          ? 'Blog updated and published!'
+          : 'Blog created and published!'
+        : isEdit
+          ? 'Blog updated successfully!'
+          : 'Blog draft saved successfully!';
+
       toast({
         title: 'Success',
-        description: isEdit ? 'Blog updated successfully!' : 'Blog created successfully!',
+        description: actionText,
       });
 
       router.push('/admin/blogs');
@@ -175,6 +189,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
       });
     } finally {
       setIsSaving(false);
+      setIsPublishing(false);
     }
   };
 
@@ -205,13 +220,17 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => handleSave(false)} disabled={isSaving}>
+          <Button
+            variant="outline"
+            onClick={() => handleSave(false)}
+            disabled={isSaving || isPublishing}
+          >
             <Save size={16} className="mr-2" />
-            Save Draft
+            {isSaving ? 'Saving...' : 'Save Draft'}
           </Button>
-          <Button onClick={() => handleSave(true)} disabled={isSaving}>
+          <Button onClick={() => handleSave(true)} disabled={isSaving || isPublishing}>
             <Eye size={16} className="mr-2" />
-            {isSaving ? 'Publishing...' : 'Publish'}
+            {isPublishing ? 'Publishing...' : 'Publish'}
           </Button>
         </div>
       </div>
@@ -302,6 +321,39 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
                   }
                 />
                 <Label htmlFor="published">Published</Label>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <Button
+                  onClick={() => handleSave(false)}
+                  disabled={isSaving || isPublishing}
+                  className="w-full"
+                  variant="outline"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Saving Draft...
+                    </>
+                  ) : (
+                    'Save Draft'
+                  )}
+                </Button>
+
+                <Button
+                  onClick={() => handleSave(true)}
+                  disabled={isSaving || isPublishing}
+                  className="w-full"
+                >
+                  {isPublishing ? (
+                    <>
+                      <Loader2 size={16} className="mr-2 animate-spin" />
+                      Publishing...
+                    </>
+                  ) : (
+                    'Publish Blog'
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>

@@ -107,6 +107,7 @@
     "caniuse-lite": "^1.0.30001739",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "configcat-node": "^11.4.0",

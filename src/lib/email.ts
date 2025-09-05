@@ -204,7 +204,12 @@ export async function sendNewAccountWelcomeEmail({ to, name }: { to: string; nam
   const subject = '🎉 Welcome to Dionysus!';
   let coupon = '';
   try {
-    const couponResult = await generateCouponCode(25, 10080, 1, process.env.BYPASS_COUPON_SECRET as string | undefined);
+    const couponResult = await generateCouponCode(
+      25,
+      10080,
+      1,
+      process.env.BYPASS_COUPON_SECRET as string | undefined,
+    );
     coupon = typeof couponResult === 'string' ? couponResult : '';
   } catch {
     coupon = '';

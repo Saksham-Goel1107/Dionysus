@@ -76,6 +76,9 @@ export function Navbar() {
           <Link href="/about" className="nav-link">
             About
           </Link>
+          <Link href="/blogs" className="nav-link">
+            Blogs
+          </Link>
           <Link href="/status" className="nav-link">
             Status
           </Link>

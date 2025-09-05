@@ -306,49 +306,48 @@ const BillingPage = () => {
     loadExchangeRates();
   }, []);
 
-const handlePaymentSuccess = () => {
-  setIsPaymentOpen(false);
-  void utils.project.getMyTransactions.invalidate();
-  void utils.project.getMyCredits.invalidate();
+  const handlePaymentSuccess = () => {
+    setIsPaymentOpen(false);
+    void utils.project.getMyTransactions.invalidate();
+    void utils.project.getMyCredits.invalidate();
 
-  const title = '🎉 Credits Purchased!';
-  const body = `You have successfully purchased ${creditsToBuyAmount} credits for ${formattedPrice}. Thank you for your purchase!`;
-  const icon = `${window.location.origin}/logo.png`;
+    const title = '🎉 Credits Purchased!';
+    const body = `You have successfully purchased ${creditsToBuyAmount} credits for ${formattedPrice}. Thank you for your purchase!`;
+    const icon = `${window.location.origin}/logo.png`;
 
-  const redirectToDashboard = () => {
-    window.location.href = '/dashboard';
-  };
+    const redirectToDashboard = () => {
+      window.location.href = '/dashboard';
+    };
 
-  const showNotification = () => {
-    try {
-      const notification = new Notification(title, { body, icon });
-      notification.onclick = redirectToDashboard;
-    } catch {
-      if (window?.toast) {
-        window.toast.success(body);
-      }
-    }
-  };
-
-  if ('Notification' in window) {
-    if (Notification.permission === 'granted') {
-      showNotification();
-    } else if (Notification.permission !== 'denied') {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          showNotification();
-        } else if (typeof window !== 'undefined' && 'toast' in window && window.toast) {
+    const showNotification = () => {
+      try {
+        const notification = new Notification(title, { body, icon });
+        notification.onclick = redirectToDashboard;
+      } catch {
+        if (window?.toast) {
           window.toast.success(body);
         }
-      });
+      }
+    };
+
+    if ('Notification' in window) {
+      if (Notification.permission === 'granted') {
+        showNotification();
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            showNotification();
+          } else if (typeof window !== 'undefined' && 'toast' in window && window.toast) {
+            window.toast.success(body);
+          }
+        });
+      } else if ((window as any)?.toast) {
+        (window as any).toast.success(body);
+      }
     } else if ((window as any)?.toast) {
       (window as any).toast.success(body);
     }
-  } else if ((window as any)?.toast) {
-    (window as any).toast.success(body);
-  }
-};
-
+  };
 
   useEffect(() => {
     if (clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled) {

@@ -104,7 +104,11 @@ export default function AnnouncementBell() {
             const validAnnouncements = parsed.filter(isValidAnnouncement);
 
             if (validAnnouncements.length > 0) {
-              setAnnouncements(validAnnouncements);
+              // Sort announcements by timestamp (newest first)
+              const sortedAnnouncements = validAnnouncements.sort(
+                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+              );
+              setAnnouncements(sortedAnnouncements);
               return;
             } else {
               console.warn('No valid announcements found in config');

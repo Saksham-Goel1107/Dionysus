@@ -6,20 +6,57 @@ import { Input } from '@/components/ui/input';
 import SafeImage from '@/components/ui/SafeImage';
 import { useToast } from '@/hooks/use-toast';
 import { uploadFile } from '@/lib/cloudinary';
-import { Copy, ExternalLink, Loader2, Upload } from 'lucide-react';
-import { useState } from 'react';
+import { Check, Copy, ExternalLink, Loader2, RefreshCw, Upload } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UploadedImage {
   url: string;
   filename: string;
   size: string;
+  width?: number;
+  height?: number;
+  created_at?: string;
+}
+
+interface CloudinaryImage {
+  public_id: string;
+  url: string;
+  filename: string;
+  size: number;
+  width: number;
+  height: number;
+  created_at: string;
+  format: string;
 }
 
 export function ImageUrlGenerator() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
+  const [previousImages, setPreviousImages] = useState<CloudinaryImage[]>([]);
+  const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
   const { toast } = useToast();
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const copyTimeout = useRef<number | null>(null);
+
+  useEffect(() => {
+    fetchPreviousImages();
+  }, []);
+
+  const fetchPreviousImages = async () => {
+    try {
+      setIsLoadingPrevious(true);
+      const response = await fetch('/api/admin/images');
+      if (response.ok) {
+        const data = await response.json();
+        setPreviousImages(data.images || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch previous images:', error);
+    } finally {
+      setIsLoadingPrevious(false);
+    }
+  };
 
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -59,13 +96,19 @@ export function ImageUrlGenerator() {
 
       setUploadedImages((prev) => [newImage, ...prev]);
 
+      // Refresh previous images to include the new upload
+      await fetchPreviousImages();
+
       toast({
         title: 'Success',
         description: 'Image uploaded successfully! URL copied to clipboard.',
       });
 
-      // Auto-copy to clipboard
+      // Auto-copy to clipboard and show tick
       await navigator.clipboard.writeText(imageUrl);
+      setCopiedUrl(imageUrl);
+      if (copyTimeout.current) window.clearTimeout(copyTimeout.current);
+      copyTimeout.current = window.setTimeout(() => setCopiedUrl(null), 1000);
     } catch (error) {
       console.error('Upload failed:', error);
       toast({
@@ -104,6 +147,10 @@ export function ImageUrlGenerator() {
         title: 'Copied!',
         description: 'Image URL copied to clipboard.',
       });
+      // show temporary tick
+      setCopiedUrl(url);
+      if (copyTimeout.current) window.clearTimeout(copyTimeout.current);
+      copyTimeout.current = window.setTimeout(() => setCopiedUrl(null), 1000);
     } catch {
       toast({
         title: 'Failed to copy',
@@ -119,6 +166,14 @@ export function ImageUrlGenerator() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   return (
@@ -195,8 +250,8 @@ export function ImageUrlGenerator() {
       {uploadedImages.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Uploaded Images</CardTitle>
-            <CardDescription>Click on any URL to copy it to your clipboard.</CardDescription>
+            <CardTitle>Recently Uploaded</CardTitle>
+            <CardDescription>Images uploaded in this session.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -223,7 +278,7 @@ export function ImageUrlGenerator() {
                       onClick={() => copyToClipboard(image.url)}
                       title="Copy URL"
                     >
-                      <Copy size={14} />
+                      {copiedUrl === image.url ? <Check size={14} /> : <Copy size={14} />}
                     </Button>
                     <Button
                       variant="ghost"
@@ -240,6 +295,94 @@ export function ImageUrlGenerator() {
           </CardContent>
         </Card>
       )}
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Previous Images</CardTitle>
+            <CardDescription>
+              Browse and reuse previously uploaded images. Click to copy URL.
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchPreviousImages}
+            disabled={isLoadingPrevious}
+          >
+            <RefreshCw size={16} className={`mr-2 ${isLoadingPrevious ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoadingPrevious ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2">Loading previous images...</span>
+            </div>
+          ) : previousImages.length > 0 ? (
+            <div className="max-h-96 overflow-y-auto">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {previousImages.map((image) => (
+                  <div
+                    key={image.public_id}
+                    className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border bg-gray-50 transition-all hover:shadow-md dark:bg-gray-800"
+                    onClick={() => copyToClipboard(image.url)}
+                    title={`${image.filename} - Click to copy URL`}
+                  >
+                    <SafeImage
+                      src={image.url}
+                      alt={image.filename}
+                      width={200}
+                      height={200}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/0 transition-all group-hover:bg-black/20" />
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <p className="truncate text-xs text-white">{image.filename}</p>
+                      <p className="text-xs text-gray-300">
+                        {formatFileSize(image.size)} • {formatDate(image.created_at)}
+                      </p>
+                    </div>
+                    <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="flex gap-1">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(image.url);
+                          }}
+                          title="Copy URL"
+                        >
+                          {copiedUrl === image.url ? <Check size={12} /> : <Copy size={12} />}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(image.url, '_blank');
+                          }}
+                          title="Open in new tab"
+                        >
+                          <ExternalLink size={12} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-8 text-gray-500">
+              <p>No previous images found</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

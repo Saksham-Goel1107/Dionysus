@@ -47,6 +47,9 @@ export function Footer() {
           <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
             About
           </Link>
+          <Link href="/blogs" className="text-sm font-medium transition-colors hover:text-primary">
+            Blogs
+          </Link>
           <Link
             href="/status"
             className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary"

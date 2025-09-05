@@ -14,6 +14,7 @@ import {
 import { AvatarStack } from '@/components/ui/kibo-ui/avatar-stack';
 import { UserButton, useUser } from '@clerk/nextjs';
 import { Loader2, X } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -443,6 +444,18 @@ export default function UserAvatarMenu() {
               {hasPassword === false ? 'Lock Your Account' : 'Unlock Your Account'}
             </Button>
           )}
+          <Button
+            className="w-full justify-start rounded-lg py-3 text-base font-semibold text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
+            variant="ghost"
+            asChild
+          >
+            <Link href="/blogs">
+              <span role="img" aria-label="Blog" className="mr-2">
+                📝
+              </span>
+              Our Blogs
+            </Link>
+          </Button>
           <Button
             className="w-full justify-start rounded-lg py-3 text-base font-semibold text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:bg-blue-900"
             variant="ghost"

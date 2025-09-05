@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const tag = searchParams.get('tag');
     const search = searchParams.get('search');
+    const sort = searchParams.get('sort') || 'newest';
 
     const skip = (page - 1) * limit;
 
@@ -44,15 +45,31 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    // Handle sorting
+    let orderBy: any = { publishedAt: 'desc' }; // default
+    switch (sort) {
+      case 'oldest':
+        orderBy = { publishedAt: 'asc' };
+        break;
+      case 'title_asc':
+        orderBy = { title: 'asc' };
+        break;
+      case 'title_desc':
+        orderBy = { title: 'desc' };
+        break;
+      case 'newest':
+      default:
+        orderBy = { publishedAt: 'desc' };
+        break;
+    }
+
     const [blogs, total] = await Promise.all([
       prisma.blog.findMany({
         where,
         include: {
           tags: true,
         },
-        orderBy: {
-          publishedAt: 'desc',
-        },
+        orderBy,
         skip,
         take: limit,
       }),

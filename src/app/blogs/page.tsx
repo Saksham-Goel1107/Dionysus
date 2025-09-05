@@ -5,9 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import SafeImage from '@/components/ui/SafeImage';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Calendar, Clock, Search, Tag } from 'lucide-react';
+import { Calendar, Clock, Search, SortAsc, Tag, X } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -35,12 +42,13 @@ export default function BlogsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState('newest');
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [allTags, setAllTags] = useState<string[]>([]);
   const { toast } = useToast();
 
   const fetchBlogs = useCallback(
-    async (page = 1, search = '', tag = '') => {
+    async (page = 1, search = '', tag = '', sort = 'newest') => {
       try {
         setIsLoading(true);
         const params = new URLSearchParams();
@@ -48,6 +56,7 @@ export default function BlogsPage() {
         params.append('limit', '9');
         if (search) params.append('search', search);
         if (tag) params.append('tag', tag);
+        if (sort) params.append('sort', sort);
 
         const response = await fetch(`/api/blogs?${params.toString()}`);
 
@@ -83,17 +92,22 @@ export default function BlogsPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchBlogs(1, searchTerm, selectedTag || '');
+    fetchBlogs(1, searchTerm, selectedTag || '', sortBy);
   };
 
   const handleTagClick = (tag: string) => {
     const newTag = selectedTag === tag ? null : tag;
     setSelectedTag(newTag);
-    fetchBlogs(1, searchTerm, newTag || '');
+    fetchBlogs(1, searchTerm, newTag || '', sortBy);
+  };
+
+  const handleSortChange = (newSort: string) => {
+    setSortBy(newSort);
+    fetchBlogs(1, searchTerm, selectedTag || '', newSort);
   };
 
   const handlePageChange = (newPage: number) => {
-    fetchBlogs(newPage, searchTerm, selectedTag || '');
+    fetchBlogs(newPage, searchTerm, selectedTag || '', sortBy);
   };
 
   const readingTime = (content: string) => {
@@ -124,21 +138,39 @@ export default function BlogsPage() {
         <div className="mb-12">
           <Card>
             <CardContent className="p-6">
-              <form onSubmit={handleSearch} className="mb-6 flex flex-col gap-4 sm:flex-row">
-                <div className="relative flex-1">
-                  <Search
-                    className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400"
-                    size={20}
-                  />
-                  <Input
-                    placeholder="Search articles..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+              <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+                <form onSubmit={handleSearch} className="flex flex-1 gap-4">
+                  <div className="relative flex-1">
+                    <Search
+                      className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-400"
+                      size={20}
+                    />
+                    <Input
+                      placeholder="Search articles..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button type="submit">Search</Button>
+                </form>
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2">
+                  <SortAsc size={16} className="text-gray-400" />
+                  <Select value={sortBy} onValueChange={handleSortChange}>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="title_asc">Title A-Z</SelectItem>
+                      <SelectItem value="title_desc">Title Z-A</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <Button type="submit">Search</Button>
-              </form>
+              </div>
 
               {/* Tags */}
               {allTags.length > 0 && (
@@ -158,14 +190,19 @@ export default function BlogsPage() {
                         {tag}
                       </Badge>
                     ))}
-                    {selectedTag && (
+                    {(selectedTag || searchTerm) && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleTagClick(selectedTag)}
-                        className="text-xs"
+                        onClick={() => {
+                          setSelectedTag(null);
+                          setSearchTerm('');
+                          fetchBlogs(1, '', '', sortBy);
+                        }}
+                        className="flex items-center gap-1 text-xs"
                       >
-                        Clear filters
+                        <X size={14} />
+                        Clear all filters
                       </Button>
                     )}
                   </div>
@@ -195,55 +232,57 @@ export default function BlogsPage() {
           <>
             <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {blogs.map((blog) => (
-                <Card
-                  key={blog.id}
-                  className="group transition-shadow duration-300 hover:shadow-lg"
-                >
-                  <div className="relative aspect-video overflow-hidden rounded-t-lg">
-                    {blog.coverImage ? (
-                      <SafeImage
-                        src={blog.coverImage}
-                        alt={blog.title}
-                        width={500}
-                        height={300}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-                        <span className="text-2xl font-bold text-white">
-                          {blog.title.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader>
-                    <div className="mb-2 flex flex-wrap gap-1">
-                      {blog.tags.map((tag) => (
-                        <Badge key={tag.id} variant="secondary" className="text-xs">
-                          {tag.name}
-                        </Badge>
-                      ))}
+                <Link key={blog.id} href={`/blogs/${blog.slug}`} className="block">
+                  <Card className="group h-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div className="relative aspect-video overflow-hidden rounded-t-lg">
+                      {blog.coverImage ? (
+                        <SafeImage
+                          src={blog.coverImage}
+                          alt={blog.title}
+                          width={500}
+                          height={300}
+                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+                          <span className="text-2xl font-bold text-white">
+                            {blog.title.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
                     </div>
-                    <CardTitle className="line-clamp-2 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                      <Link href={`/blogs/${blog.slug}`}>{blog.title}</Link>
-                    </CardTitle>
-                    {blog.excerpt && (
-                      <CardDescription className="line-clamp-3">{blog.excerpt}</CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={16} />
-                        {format(new Date(blog.publishedAt), 'MMM d, yyyy')}
+                    <CardHeader className="pb-3">
+                      <div className="mb-3 flex flex-wrap gap-1">
+                        {blog.tags.map((tag) => (
+                          <Badge key={tag.id} variant="secondary" className="text-xs">
+                            {tag.name}
+                          </Badge>
+                        ))}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Clock size={16} />
-                        {readingTime(blog.excerpt || '')} min read
+                      <CardTitle className="line-clamp-2 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                        {blog.title}
+                      </CardTitle>
+                      {blog.excerpt && (
+                        <CardDescription className="line-clamp-3 text-sm leading-relaxed">
+                          {blog.excerpt}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar size={16} />
+                          {format(new Date(blog.publishedAt), 'MMM d, yyyy')}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} />
+                          {readingTime(blog.excerpt || '')} min read
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
 

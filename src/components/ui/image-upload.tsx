@@ -7,8 +7,8 @@ import { Label } from '@/components/ui/label';
 import SafeImage from '@/components/ui/SafeImage';
 import { useToast } from '@/hooks/use-toast';
 import { uploadFile } from '@/lib/cloudinary';
-import { Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { Check, Copy, ExternalLink, Image as ImageIcon, Loader2, Upload, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ImageUploadProps {
   value?: string;
@@ -33,6 +33,14 @@ export function ImageUpload({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
   const { toast } = useToast();
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
+  const copyTimeout = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimeout.current) window.clearTimeout(copyTimeout.current);
+    };
+  }, []);
 
   const handleFileUpload = useCallback(
     async (file: File) => {
@@ -219,7 +227,41 @@ export function ImageUpload({
                   className="h-48 w-full max-w-md rounded-lg border object-cover"
                 />
               </div>
-              <p className="break-all text-xs text-gray-500">{value}</p>
+              <div className="flex items-start gap-2">
+                <p className="flex-1 break-all text-xs text-gray-500">{value}</p>
+                <div className="flex flex-shrink-0 items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(value);
+                        toast({ title: 'Copied!', description: 'Image URL copied to clipboard.' });
+                        setCopiedUrl(value);
+                        if (copyTimeout.current) window.clearTimeout(copyTimeout.current);
+                        copyTimeout.current = window.setTimeout(() => setCopiedUrl(null), 1000);
+                      } catch {
+                        toast({
+                          title: 'Failed to copy',
+                          description: 'Please copy the URL manually.',
+                          variant: 'destructive',
+                        });
+                      }
+                    }}
+                    title="Copy URL"
+                  >
+                    {copiedUrl === value ? <Check size={14} /> : <Copy size={14} />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => window.open(value, '_blank')}
+                    title="Open in new tab"
+                  >
+                    <ExternalLink size={14} />
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
