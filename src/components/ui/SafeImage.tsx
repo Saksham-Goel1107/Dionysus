@@ -17,19 +17,38 @@ function isValidImageSrc(src: string | null | undefined): boolean {
   
   // Only allow http, https, or *image* data URIs, and safe relative image paths
   if (lowerSrc.startsWith('data:image/')) {
-    return true;
+    // Block SVG images in data URIs (XSS vector!)
+    if (/^data:image\/svg\+xml/i.test(lowerSrc)) {
+      return false;
+    }
+    // Only allow known-safe image mimetypes: png, jpeg, gif, webp
+    if (
+      /^data:image\/(png|jpg|jpeg|gif|webp);/i.test(lowerSrc)
+    ) {
+      return true;
+    }
+    // Otherwise disallow
+    return false;
   }
   // Optionally require relative paths to look like images (ending with common img extensions)
-  const imageExtRegex = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
+  const imageExtRegex = /\.(jpg|jpeg|png|gif|webp)$/i; // Do NOT allow svg extension
   try {
     const url = new URL(src, window.location.origin);
     if (url.protocol === 'http:' || url.protocol === 'https:') {
       // Optionally check pathname for image extension
+      // Do NOT allow loading SVGs even with http(s) URLs
+      if (/\.svg$/i.test(url.pathname)) {
+        return false;
+      }
       return imageExtRegex.test(url.pathname);
     }
     return false;
   } catch {
     // If it's a relative path (not absolute), check for image extension
+    // Also disallow SVG in local file paths
+    if (/\.svg$/i.test(src)) {
+      return false;
+    }
     return typeof src === 'string' && src.startsWith('/') && imageExtRegex.test(src);
   }
 }
