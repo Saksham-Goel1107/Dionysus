@@ -5,16 +5,32 @@ import ImageNext from 'next/image';
 
 function isValidImageSrc(src: string | null | undefined): boolean {
   if (!src) return false;
-  try {
-    // Allow http, https, and data:image only
-    if (src.startsWith('data:image/')) {
-      return true;
+  
+  // Explicitly block potential XSS schemes
+  const forbiddenSchemes = ['javascript:', 'vbscript:', 'file:'];
+  const lowerSrc = src.toLowerCase().trim();
+  for (const scheme of forbiddenSchemes) {
+    if (lowerSrc.startsWith(scheme)) {
+      return false;
     }
+  }
+  
+  // Only allow http, https, or *image* data URIs, and safe relative image paths
+  if (lowerSrc.startsWith('data:image/')) {
+    return true;
+  }
+  // Optionally require relative paths to look like images (ending with common img extensions)
+  const imageExtRegex = /\.(jpg|jpeg|png|gif|webp|svg)$/i;
+  try {
     const url = new URL(src, window.location.origin);
-    return url.protocol === 'http:' || url.protocol === 'https:';
+    if (url.protocol === 'http:' || url.protocol === 'https:') {
+      // Optionally check pathname for image extension
+      return imageExtRegex.test(url.pathname);
+    }
+    return false;
   } catch {
-    // If it's a relative path, it will parse as http(s) with window.location.origin
-    return typeof src === 'string' && src.startsWith('/');
+    // If it's a relative path (not absolute), check for image extension
+    return typeof src === 'string' && src.startsWith('/') && imageExtRegex.test(src);
   }
 }
 
