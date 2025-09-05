@@ -43,8 +43,7 @@ export function HowItWorks() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button variant="ghost" className="w-full" disabled>
-              </Button>
+              <Button variant="ghost" className="w-full" disabled></Button>
             </CardFooter>
           </Card>
           <Card>
@@ -64,8 +63,7 @@ export function HowItWorks() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button variant="ghost" className="w-full" disabled>
-              </Button>
+              <Button variant="ghost" className="w-full" disabled></Button>
             </CardFooter>
           </Card>
           <Card>
@@ -85,8 +83,7 @@ export function HowItWorks() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button variant="ghost" className="w-full" disabled>
-              </Button>
+              <Button variant="ghost" className="w-full" disabled></Button>
             </CardFooter>
           </Card>
         </div>

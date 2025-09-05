@@ -2,7 +2,6 @@
 
 import ImageNext from 'next/image';
 
-
 // Accept only strictly safe image sources to mitigate XSS
 function isValidImageSrc(src: string | null | undefined): boolean {
   if (!src) return false;
@@ -43,15 +42,18 @@ function isValidImageSrc(src: string | null | undefined): boolean {
     return false;
   } catch {
     // Only safe relative paths (/images/example.jpg), not protocol-relative
-    if (typeof src === 'string' && src.startsWith('/') && imageExtRegex.test(src) && !/\.svg$/i.test(src)) {
+    if (
+      typeof src === 'string' &&
+      src.startsWith('/') &&
+      imageExtRegex.test(src) &&
+      !/\.svg$/i.test(src)
+    ) {
       return true;
     }
     return false;
   }
-  // At this point, src passes tight validation. Now opt for next/image for all (if possible),
-  // falling back to img only for http(s) URLs, never for data: or relative.
-  let isHttp = false;
 }
+let isHttp = false;
 
 type SafeImageProps = Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'> & {
   src: string | null | undefined;
@@ -97,16 +99,16 @@ export default function SafeImage({
         }}
       />
     );
-  // Otherwise, use next/image for all else (including /relative and data: URIs, but only strictly safe types).
-  return (
-    <ImageNext
-      src={src as string}
-      alt={alt}
-      width={width || 300}
-      height={height || 200}
-      className={className}
-      {...(rest as any)}
-    />
-  );
+    // Otherwise, use next/image for all else (including /relative and data: URIs, but only strictly safe types).
+    return (
+      <ImageNext
+        src={src as string}
+        alt={alt}
+        width={width || 300}
+        height={height || 200}
+        className={className}
+        {...(rest as any)}
+      />
+    );
   }
 }

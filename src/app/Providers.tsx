@@ -17,7 +17,6 @@ if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_LOGROCKET_K
   LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_KEY);
 }
 
-
 declare global {
   interface Window {
     __translateReady?: boolean;
@@ -244,11 +243,8 @@ function Providers({ children }: { children: React.ReactNode }) {
 
           <div id="google_translate_element" style={translateWidgetStyle}></div>
 
-          <Script
-            id="google-translate-init"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
+          <Script id="google-translate-init" strategy="afterInteractive">
+            {`
                 function googleTranslateElementInit() {
                   new google.translate.TranslateElement({
                     pageLanguage: 'en',
@@ -260,9 +256,8 @@ function Providers({ children }: { children: React.ReactNode }) {
                 if (typeof google !== 'undefined' && google.translate) {
                   googleTranslateElementInit();
                 }
-              `,
-            }}
-          />
+              `}
+          </Script>
           <Script
             src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
             strategy="afterInteractive"
@@ -284,26 +279,22 @@ function Providers({ children }: { children: React.ReactNode }) {
         <RecaptchaGate>
           {children}
           {process.env.NODE_ENV === 'production' && isClient && userData && userId && (
-            <Script
-              id="userback"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
+            <Script id="userback" strategy="afterInteractive">{`
       window.Userback = window.Userback || {};
-      Userback.access_token = "${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN}";
+      Userback.access_token = "${process.env.NEXT_PUBLIC_USERBACK_ACCESS_TOKEN?.replace(/["'<>&]/g, '')}";
       (async function() {
         try {
           Userback.user_data = {
-            id: "${userId}",
+            id: "${userId?.replace(/["'<>&]/g, '')}",
             info: {
-              name: "${userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User'}",
-              email: "${userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com'}"
+              name: "${(userData.firstName || userData.lastName || userData?.emailAddresses?.[0]?.emailAddress || 'User').replace(/["'<>&]/g, '')}",
+              email: "${(userData?.emailAddresses?.[0]?.emailAddress || 'user@example.com').replace(/["'<>&]/g, '')}"
             },
             abTester: ${isAbTester ? 'true' : 'false'}
           };
         } catch (e) {
           Userback.user_data = {
-            id: "${userId}",
+            id: "${userId?.replace(/["'<>&]/g, '')}",
             info: {
               name: 'User',
               email: 'user@example.com'
@@ -315,9 +306,7 @@ function Providers({ children }: { children: React.ReactNode }) {
       (function(d) {
         var s = d.createElement('script');s.async = true;s.src = 'https://static.userback.io/widget/v1.js';(d.head || d.body).appendChild(s);
       })(document);
-                `,
-              }}
-            />
+            `}</Script>
           )}
 
           <AiToolkitButton
