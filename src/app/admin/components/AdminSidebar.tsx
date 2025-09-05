@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   ChartLine,
+  Edit,
+  ImageIcon,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { UserButton, useUser } from '@clerk/nextjs';
@@ -83,6 +85,8 @@ export default function AdminSidebar() {
     { href: '/admin/finances', label: 'Finances', icon: CreditCard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/admin/coupons', label: 'Coupons', icon: Tag },
+    { href: '/admin/blogs', label: 'Blogs', icon: Edit },
+    { href: '/admin/image-upload', label: 'Image Upload', icon: ImageIcon },
     { href: '/admin/surveys', label: 'Surveys', icon: ChartLine },
   ];
 

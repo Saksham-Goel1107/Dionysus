@@ -188,7 +188,7 @@ function createBlockedOverlay(
   <script async crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"></script>
 <script>
   window.Clerk ||= {};
-  
+
   async function initClerk() {
     try {
       if (window.Clerk && typeof window.Clerk.load === 'function') {
@@ -198,30 +198,30 @@ function createBlockedOverlay(
       console.error('Failed to load Clerk:', error);
     }
   }
-  
+
   async function signOutUser() {
     try {
       if (window.Clerk && typeof window.Clerk.signOut === 'function') {
         await window.Clerk.signOut({ redirectUrl: '/' });
       } else {
         // Fallback: clear cookies and redirect
-        document.cookie.split(";").forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        document.cookie.split(";").forEach(function(c) {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
         });
         window.location.href = '/';
       }
     } catch (error) {
       console.error('Sign out failed:', error);
       // Fallback: clear cookies and redirect
-      document.cookie.split(";").forEach(function(c) { 
-        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      document.cookie.split(";").forEach(function(c) {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
       window.location.href = '/';
     }
   }
-  
+
   window.addEventListener("load", initClerk);
-  
+
   // Retry loading Clerk if it fails initially
   setTimeout(() => {
     if (!window.Clerk || typeof window.Clerk.load !== 'function') {
@@ -478,6 +478,8 @@ const isPublicRoute = createRouteMatcher([
   '/cookie-policy(.*)',
   '/client-version.json',
   '/waitlist(.*)',
+  '/blogs(.*)',
+  '/api/blogs(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);

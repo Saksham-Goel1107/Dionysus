@@ -1,6 +1,6 @@
+import prisma from '@/lib/prisma';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
 
 // GET - List all global plans
 export async function GET() {
@@ -23,7 +23,7 @@ export async function GET() {
     if (
       user?.emailAddresses?.[0]?.emailAddress !== process.env.ADMIN_EMAIL ||
       userId !== process.env.ADMIN_USER_ID ||
-      sessionClaims?.metadata?.role !== `${process.env.ADMIN_SECRET}`
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }

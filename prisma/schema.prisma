@@ -211,3 +211,24 @@ model GlobalPlanUsage {
 
   @@unique([globalPlanId, userId]) // Prevent same user from using same plan multiple times
 }
+
+model Blog {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  content     String    // Markdown content
+  excerpt     String?   // Short description
+  coverImage  String?   // Cover image URL
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+  authorId    String    // Admin who created it
+  tags        BlogTag[]
+}
+
+model BlogTag {
+  id     String @id @default(cuid())
+  name   String @unique
+  blogs  Blog[]
+}
