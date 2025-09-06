@@ -968,7 +968,6 @@ Directory structure:
   <img src="Demo/image24.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/image25.png" alt="Dionysus Platform" width="400" />
   <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
-  <img src="Demo/NewsLetter-n8n-Implementation.png" alt="n8n Newsletter Integration Demo" width="480" />
   <img src="Demo/n8n-important-information-alert-system.png" alt="n8n Newsletter Integration Demo" width="480" />
 
   <p style="font-size: 0.95em; color: #888;">
