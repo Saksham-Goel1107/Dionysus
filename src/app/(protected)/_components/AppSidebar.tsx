@@ -26,6 +26,7 @@ import {
   CircleDollarSign,
   Cog,
   CreditCard,
+  FileInput,
   LayoutDashboard,
   Loader2,
   Plus,
@@ -63,6 +64,11 @@ const items: SidebarItem[] = [
     title: 'Meetings',
     url: '/meetings',
     icon: Presentation,
+  },
+  {
+    title: 'Forms',
+    url: '/forms',
+    icon: FileInput,
   },
   {
     title: 'Advanced',

@@ -27,6 +27,7 @@ model User {
   stripeTransactions  StripeTransaction[]
   survey              Survey?
   userToProjects      UserToProject[]
+  formProjects        FormProject[]
 }
 
 model Project {
@@ -231,4 +232,34 @@ model BlogTag {
   id     String @id @default(cuid())
   name   String @unique
   blogs  Blog[]
+}
+
+model FormProject {
+  id          String    @id @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  name        String
+  description String?
+  domain      String?   // Allowed domain for CORS
+  isActive    Boolean   @default(true)
+  userId      String    // Owner of the project
+  apiKeys     FormApiKey[]
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FormApiKey {
+  id            String      @id @default(cuid())
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  keyId         String      @unique // Public key identifier (first 8 chars)
+  keyHash       String      @unique // Hashed API key for security
+  name          String      // User-friendly name for the key
+  isActive      Boolean     @default(true)
+  lastUsedAt    DateTime?
+  requestCount  Int         @default(0)
+  projectId     String
+  project       FormProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([keyHash])
+  @@index([keyId])
 }
