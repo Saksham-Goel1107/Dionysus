@@ -27,16 +27,17 @@ function checkRateLimit(ip: string, limit: number = 60, windowMs: number = 60000
 
 export async function POST(request: NextRequest) {
   try {
-    // Get client IP
+    // Get client IP for rate limiting
     const headersList = await headers();
     const ip = headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown';
 
-    // Rate limit check
+    // Rate limiting check
     if (!checkRateLimit(ip, 60)) {
+      // 60 requests per minute per IP
       return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
     }
 
-    // Get API key
+    // Get API key from header or query param
     const apiKey =
       headersList.get('x-api-key') ||
       headersList.get('authorization')?.replace('Bearer ', '') ||
@@ -46,60 +47,78 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or missing API key' }, { status: 401 });
     }
 
-    // Extract keyId for lookup
+    // Extract key ID for database lookup
     const keyId = apiKey.replace('fk_', '').slice(0, 8);
 
-    // Find API key in DB
+    // Find and verify API key
     const apiKeyRecord = await prisma.formApiKey.findUnique({
       where: { keyId },
-      include: { project: true },
+      include: {
+        project: true,
+      },
     });
 
     if (!apiKeyRecord || !apiKeyRecord.isActive || !apiKeyRecord.project.isActive) {
       return NextResponse.json({ error: 'Invalid API key or inactive project' }, { status: 401 });
     }
 
-    // Verify key hash
+    // Verify the hashed API key
     const isValidKey = await verifyApiKey(apiKey, apiKeyRecord.keyHash);
     if (!isValidKey) {
       return NextResponse.json({ error: 'Invalid API key' }, { status: 401 });
     }
 
-    // CORS domain check
+    // Check CORS if domain is specified
     const origin = headersList.get('origin');
     if (apiKeyRecord.project.domain && origin) {
-      const allowedDomains = apiKeyRecord.project.domain.split(',').map((d: string) => d.trim());
+      const allowedDomains: string[] = apiKeyRecord.project.domain
+        .split(',')
+        .map((d: string) => d.trim());
+      interface AllowedDomainCheckOptions {
+        allowedDomains: string[];
+        origin: string;
+      }
 
-      const isAllowed = allowedDomains.some((domain) => {
-        if (domain === 'localhost' || domain.startsWith('localhost:')) {
-          return origin.includes('localhost');
-        }
-        return origin.includes(domain);
-      });
+      const isAllowed = (({ allowedDomains, origin }: AllowedDomainCheckOptions): boolean => {
+        return allowedDomains.some((domain: string) => {
+          if (domain === 'localhost' || domain.startsWith('localhost:')) {
+            return origin.includes('localhost');
+          }
+          return origin.includes(domain);
+        });
+      })({ allowedDomains, origin });
 
       if (!isAllowed) {
         return NextResponse.json({ error: 'Domain not allowed' }, { status: 403 });
       }
     }
 
-    // Accept only JSON
+    // Parse form data
+    let formData: Record<string, any> = {};
     const contentType = headersList.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      return NextResponse.json({ error: 'Only application/json is supported' }, { status: 400 });
+
+    if (contentType.includes('application/x-www-form-urlencoded')) {
+      const text = await request.text();
+      const params = new URLSearchParams(text);
+      formData = Object.fromEntries(params.entries());
+    } else {
+      try {
+        const form = await request.formData();
+        formData = Object.fromEntries(form.entries());
+      } catch {
+        return NextResponse.json({ error: 'Unsupported content type' }, { status: 400 });
+      }
     }
 
-    // Parse JSON body
-    const body = await request.json();
-
-    // Sanitize
+    // Sanitize and validate form data
     const sanitizedData = Object.fromEntries(
-      Object.entries(body).map(([key, value]) => [
-        key.replace(/[<>]/g, ''),
-        typeof value === 'string' ? value.slice(0, 1000) : value,
+      Object.entries(formData).map(([key, value]) => [
+        key.replace(/[<>]/g, ''), // Basic XSS prevention
+        typeof value === 'string' ? value.slice(0, 1000) : value, // Limit string length
       ]),
     );
 
-    // Save submission
+    // Save to Firebase
     const submissionId = await saveFormSubmission({
       projectId: apiKeyRecord.projectId,
       keyId: apiKeyRecord.keyId,
@@ -112,7 +131,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update stats
+    // Update API key usage stats
     await prisma.formApiKey.update({
       where: { id: apiKeyRecord.id },
       data: {
@@ -121,7 +140,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return success
+    // Return success response
     const response = NextResponse.json(
       {
         success: true,
@@ -135,7 +154,10 @@ export async function POST(request: NextRequest) {
     if (origin && apiKeyRecord.project.domain) {
       response.headers.set('Access-Control-Allow-Origin', origin);
       response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      response.headers.set('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization');
+      response.headers.set(
+        'Access-Control-Allow-Headers',
+        'Content-Type, X-API-Key, Authorization',
+      );
     }
 
     return response;
@@ -145,7 +167,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle CORS preflight
+// Handle CORS preflight requests
 export async function OPTIONS() {
   const headersList = await headers();
   const origin = headersList.get('origin');

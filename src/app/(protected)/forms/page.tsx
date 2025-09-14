@@ -1,15 +1,5 @@
 'use client';
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,12 +28,10 @@ import {
   Key,
   Plus,
   RefreshCw,
-  RotateCw,
-  Settings,
   Trash2,
   X,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 interface FormProject {
   id: string;
@@ -86,12 +74,6 @@ export default function FormsPage() {
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
   const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [regenerateKeyId, setRegenerateKeyId] = useState<string | null>(null);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-  const [editingDomains, setEditingDomains] = useState<string[]>([]);
-  const [isEditingDomains, setIsEditingDomains] = useState(false);
   const { toast } = useToast();
 
   const [newProject, setNewProject] = useState({
@@ -251,7 +233,6 @@ export default function FormsPage() {
   };
 
   const deleteProject = async (projectId: string) => {
-    setIsDeleting(true);
     try {
       const response = await fetch(`/api/forms/projects/${projectId}`, {
         method: 'DELETE',
@@ -260,7 +241,6 @@ export default function FormsPage() {
       if (!response.ok) throw new Error('Failed to delete project');
 
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
-      setDeleteProjectId(null);
 
       toast({
         title: 'Success',
@@ -273,106 +253,7 @@ export default function FormsPage() {
         description: 'Failed to delete project',
         variant: 'destructive',
       });
-    } finally {
-      setIsDeleting(false);
     }
-  };
-
-  const regenerateApiKey = async (keyId: string) => {
-    setIsRegenerating(true);
-    try {
-      const response = await fetch(`/api/forms/keys/${keyId}/regenerate`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) throw new Error('Failed to regenerate API key');
-
-      const data = await response.json();
-      setNewApiKey(data.apiKey);
-      setRegenerateKeyId(null);
-
-      // Refresh the selected project to get updated key info
-      if (selectedProject) {
-        const projectResponse = await fetch(`/api/forms/projects/${selectedProject.id}`);
-        if (projectResponse.ok) {
-          const projectData = await projectResponse.json();
-          setSelectedProject(projectData.project);
-
-          // Update projects list too
-          setProjects((prev) =>
-            prev.map((p) => (p.id === selectedProject.id ? projectData.project : p)),
-          );
-        }
-      }
-
-      toast({
-        title: 'Success',
-        description: 'API key regenerated successfully',
-      });
-    } catch (error) {
-      console.error('Error regenerating API key:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to regenerate API key',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const startEditingDomains = () => {
-    const currentDomains = selectedProject?.domain
-      ? selectedProject.domain.split(',').map((d) => d.trim())
-      : [''];
-    setEditingDomains(currentDomains.length > 0 ? currentDomains : ['']);
-    setIsEditingDomains(true);
-  };
-
-  const saveDomains = async () => {
-    if (!selectedProject) return;
-
-    try {
-      const validDomains = editingDomains.filter((d) => d.trim().length > 0);
-      const domainString = validDomains.length > 0 ? validDomains.join(',') : null;
-
-      const response = await fetch(`/api/forms/projects/${selectedProject.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: domainString }),
-      });
-
-      if (!response.ok) throw new Error('Failed to update domains');
-
-      const data = await response.json();
-      setSelectedProject(data.project);
-      setProjects((prev) => prev.map((p) => (p.id === selectedProject.id ? data.project : p)));
-      setIsEditingDomains(false);
-
-      toast({
-        title: 'Success',
-        description: 'Domains updated successfully',
-      });
-    } catch (error) {
-      console.error('Error updating domains:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update domains',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const addEditingDomain = () => {
-    setEditingDomains((prev) => [...prev, '']);
-  };
-
-  const removeEditingDomain = (index: number) => {
-    setEditingDomains((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const updateEditingDomain = (index: number, value: string) => {
-    setEditingDomains((prev) => prev.map((d, i) => (i === index ? value : d)));
   };
 
   const addDomainField = () => {
@@ -727,6 +608,19 @@ export default function FormsPage() {
                               </div>
 
                               <div>
+                                <h3 className="mb-3 text-lg font-semibold">HTML Example</h3>
+                                <pre className="overflow-x-auto rounded bg-gray-100 p-4 text-sm dark:bg-gray-800">
+                                  {`<form action="${getEndpointUrl()}" method="POST">
+  <input type="hidden" name="api_key" value="YOUR_API_KEY" />
+  <input type="text" name="name" placeholder="Name" required />
+  <input type="email" name="email" placeholder="Email" required />
+  <textarea name="message" placeholder="Message"></textarea>
+  <button type="submit">Submit</button>
+</form>`}
+                                </pre>
+                              </div>
+
+                              <div>
                                 <h3 className="mb-3 text-lg font-semibold">JavaScript Example</h3>
                                 <pre className="overflow-x-auto rounded bg-gray-100 p-4 text-sm dark:bg-gray-800">
                                   {`fetch('${getEndpointUrl()}', {
@@ -746,17 +640,6 @@ export default function FormsPage() {
                           </TabsContent>
 
                           <TabsContent value="submissions" className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <h3 className="text-lg font-semibold">Form Submissions</h3>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => fetchSubmissions(selectedProject.id)}
-                              >
-                                <RefreshCw className="mr-1 h-3 w-3" />
-                                Refresh
-                              </Button>
-                            </div>
                             <div className="space-y-4">
                               {submissions.length === 0 ? (
                                 <div className="py-8 text-center text-gray-500">
@@ -818,139 +701,18 @@ export default function FormsPage() {
                                   </div>
 
                                   <div>
-                                    <div className="mb-2 flex items-center justify-between">
-                                      <Label>Allowed Domains</Label>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={startEditingDomains}
-                                        disabled={isEditingDomains}
-                                      >
-                                        <Settings className="mr-1 h-3 w-3" />
-                                        Edit
-                                      </Button>
-                                    </div>
-
-                                    {isEditingDomains ? (
-                                      <div className="space-y-2">
-                                        {editingDomains.map((domain, index) => (
-                                          <div key={index} className="flex items-center gap-2">
-                                            <Input
-                                              value={domain}
-                                              onChange={(e) =>
-                                                updateEditingDomain(index, e.target.value)
-                                              }
-                                              placeholder="localhost:3000, example.com"
-                                            />
-                                            {editingDomains.length > 1 && (
-                                              <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => removeEditingDomain(index)}
-                                              >
-                                                <X className="h-4 w-4" />
-                                              </Button>
-                                            )}
-                                          </div>
-                                        ))}
-                                        <div className="flex items-center gap-2">
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={addEditingDomain}
-                                          >
-                                            <Plus className="mr-1 h-3 w-3" />
-                                            Add Domain
-                                          </Button>
-                                          <Button size="sm" onClick={saveDomains}>
-                                            Save
-                                          </Button>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setIsEditingDomains(false)}
-                                          >
-                                            Cancel
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div>
-                                        <Input
-                                          value={selectedProject.domain || 'All domains allowed'}
-                                          placeholder="localhost:3000, example.com"
-                                          className="mt-1"
-                                          readOnly
-                                        />
-                                        <p className="mt-1 text-sm text-gray-500">
-                                          Comma-separated list of domains that can submit forms.
-                                          Leave empty to allow all domains.
-                                        </p>
-                                      </div>
-                                    )}
+                                    <Label>Allowed Domains</Label>
+                                    <Input
+                                      value={selectedProject.domain || ''}
+                                      placeholder="localhost:3000, example.com"
+                                      className="mt-1"
+                                      readOnly
+                                    />
+                                    <p className="mt-1 text-sm text-gray-500">
+                                      Comma-separated list of domains that can submit forms. Leave
+                                      empty to allow all domains.
+                                    </p>
                                   </div>
-                                </div>
-                              </div>
-
-                              <div>
-                                <h3 className="mb-3 text-lg font-semibold">API Keys</h3>
-                                <div className="space-y-3">
-                                  {selectedProject.apiKeys.map((key) => (
-                                    <div
-                                      key={key.id}
-                                      className="flex items-center justify-between rounded border p-3"
-                                    >
-                                      <div>
-                                        <div className="font-medium">{key.name}</div>
-                                        <div className="text-sm text-gray-600">
-                                          Key ID: {key.keyId} • {key.requestCount} requests
-                                        </div>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Badge variant={key.isActive ? 'default' : 'secondary'}>
-                                          {key.isActive ? 'Active' : 'Inactive'}
-                                        </Badge>
-                                        <AlertDialog
-                                          open={regenerateKeyId === key.keyId}
-                                          onOpenChange={(open) =>
-                                            setRegenerateKeyId(open ? key.keyId : null)
-                                          }
-                                        >
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => setRegenerateKeyId(key.keyId)}
-                                          >
-                                            <RotateCw className="mr-1 h-3 w-3" />
-                                            Regenerate
-                                          </Button>
-                                          <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                              <AlertDialogTitle>
-                                                Regenerate API Key
-                                              </AlertDialogTitle>
-                                              <AlertDialogDescription>
-                                                This will generate a new API key and invalidate the
-                                                current one. Make sure to update your applications
-                                                with the new key. This action cannot be undone.
-                                              </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                              <AlertDialogAction
-                                                onClick={() => regenerateApiKey(key.keyId)}
-                                                disabled={isRegenerating}
-                                              >
-                                                {isRegenerating
-                                                  ? 'Regenerating...'
-                                                  : 'Regenerate Key'}
-                                              </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                          </AlertDialogContent>
-                                        </AlertDialog>
-                                      </div>
-                                    </div>
-                                  ))}
                                 </div>
                               </div>
 
@@ -964,41 +726,21 @@ export default function FormsPage() {
                                       Permanently delete this project and all its data
                                     </p>
                                   </div>
-                                  <AlertDialog
-                                    open={deleteProjectId === selectedProject.id}
-                                    onOpenChange={(open) =>
-                                      setDeleteProjectId(open ? selectedProject.id : null)
-                                    }
+                                  <Button
+                                    variant="destructive"
+                                    onClick={() => {
+                                      if (
+                                        confirm(
+                                          'Are you sure you want to delete this project? This action cannot be undone.',
+                                        )
+                                      ) {
+                                        deleteProject(selectedProject.id);
+                                      }
+                                    }}
                                   >
-                                    <Button
-                                      variant="destructive"
-                                      onClick={() => setDeleteProjectId(selectedProject.id)}
-                                    >
-                                      <Trash2 className="mr-2 h-4 w-4" />
-                                      Delete Project
-                                    </Button>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Are you sure you want to delete &quot;
-                                          {selectedProject.name}&quot;? This will permanently delete
-                                          the project, all API keys, and all form submissions. This
-                                          action cannot be undone.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => deleteProject(selectedProject.id)}
-                                          disabled={isDeleting}
-                                          className="bg-red-600 hover:bg-red-700"
-                                        >
-                                          {isDeleting ? 'Deleting...' : 'Delete Project'}
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete Project
+                                  </Button>
                                 </div>
                               </div>
                             </div>
