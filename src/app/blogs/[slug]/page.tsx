@@ -1,71 +1,42 @@
 'use client';
 
 import { Navbar } from '@/app/components/navbar';
+import { CommentsList, LikeButton } from '@/components/blog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import SafeImage from '@/components/ui/SafeImage';
 import { useToast } from '@/hooks/use-toast';
+import { api } from '@/trpc/react';
+import { useUser } from '@clerk/nextjs';
 import { format } from 'date-fns';
 import { ArrowLeft, Calendar, Clock, Share2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { useUser } from '@clerk/nextjs';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  content: string;
-  excerpt: string | null;
-  coverImage: string | null;
-  publishedAt: string;
-  tags: { id: string; name: string }[];
-}
 
 export default function BlogPostPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const [blog, setBlog] = useState<BlogPost | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [summary, setSummary] = useState<string>('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const { toast } = useToast();
   const user = useUser();
 
-  const fetchBlog = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`/api/blogs/${slug}`);
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Blog post not found');
-        }
-        throw new Error('Failed to fetch blog post');
-      }
-
-      const data = await response.json();
-      setBlog(data.blog);
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to fetch blog post.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [slug, toast]);
-
-  useEffect(() => {
-    if (slug) {
-      fetchBlog();
-    }
-  }, [fetchBlog, slug]);
+  // Fetch blog data using tRPC
+  const {
+    data: blog,
+    isLoading,
+    error,
+  } = api.blog.getBySlug.useQuery(
+    { slug },
+    {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  );
 
   const readingTime = (content: string) => {
     const wordsPerMinute = 200;
@@ -171,28 +142,41 @@ export default function BlogPostPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-gray-500">Loading blog post...</div>
-      </div>
+      <>
+        <Navbar />
+        <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            <div className="text-gray-500 dark:text-gray-400">Loading blog post...</div>
+          </div>
+        </div>
+      </>
     );
   }
 
-  if (!blog) {
+  if (error || !blog) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
-        <h1 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
-          Blog Post Not Found
-        </h1>
-        <p className="mb-8 text-gray-600 dark:text-gray-400">
-          The blog post you&apos;re looking for doesn&apos;t exist or has been removed.
-        </p>
-        <Link href="/blogs">
-          <Button>
-            <ArrowLeft size={16} className="mr-2" />
-            Back to Blog
-          </Button>
-        </Link>
-      </div>
+      <>
+        <Navbar />
+        <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+          <h1 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">
+            {error?.message === 'Blog post not found'
+              ? 'Blog Post Not Found'
+              : 'Error Loading Blog Post'}
+          </h1>
+          <p className="mb-8 text-gray-600 dark:text-gray-400">
+            {error?.message === 'Blog post not found'
+              ? "The blog post you're looking for doesn't exist or has been removed."
+              : 'There was an error loading the blog post. Please try again.'}
+          </p>
+          <Link href="/blogs">
+            <Button>
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Blog
+            </Button>
+          </Link>
+        </div>
+      </>
     );
   }
 
@@ -382,6 +366,36 @@ export default function BlogPostPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Blog Actions - Like/Dislike */}
+          <div className="mt-8 flex justify-center">
+            <Card className="shadow-md">
+              <CardContent className="flex items-center justify-center p-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    What did you think of this post?
+                  </span>
+                  <LikeButton
+                    itemId={blog.id}
+                    itemType="blog"
+                    likeCount={blog.likeCount}
+                    dislikeCount={blog.dislikeCount}
+                    userLike={blog.userLike}
+                    size="lg"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Comments Section */}
+          <div className="mt-12">
+            <Card className="shadow-xl">
+              <CardContent className="p-8 md:p-12">
+                <CommentsList blogId={blog.id} initialCommentCount={blog.commentCount} />
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Back to Blog */}
           <div className="mt-12 text-center">

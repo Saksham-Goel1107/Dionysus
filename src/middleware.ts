@@ -480,6 +480,7 @@ const isPublicRoute = createRouteMatcher([
   '/waitlist(.*)',
   '/blogs(.*)',
   '/api/blogs(.*)',
+  '/api/trpc(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);

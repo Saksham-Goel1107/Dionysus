@@ -26,8 +26,11 @@ import { auth } from '@clerk/nextjs/server';
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+  const { userId } = await auth();
+
   return {
     db,
+    userId,
     ...opts,
   };
 };
@@ -81,8 +84,8 @@ export const createTRPCRouter = t.router;
  */
 
 const isAuthenticated = t.middleware(async ({ next, ctx }) => {
-  const user = await auth();
-  if (!user) {
+  const { userId } = await auth();
+  if (!userId) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'You must be logged in to perform this action',
@@ -92,7 +95,7 @@ const isAuthenticated = t.middleware(async ({ next, ctx }) => {
   return next({
     ctx: {
       ...ctx,
-      user,
+      userId,
     },
   });
 });

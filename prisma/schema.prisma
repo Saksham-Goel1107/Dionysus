@@ -27,6 +27,9 @@ model User {
   stripeTransactions  StripeTransaction[]
   survey              Survey?
   userToProjects      UserToProject[]
+  comments            Comment[]
+  commentLikes        CommentLike[]
+  blogLikes           BlogLike[]
 }
 
 model Project {
@@ -213,22 +216,76 @@ model GlobalPlanUsage {
 }
 
 model Blog {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
-  slug        String    @unique
-  content     String    // Markdown content
-  excerpt     String?   // Short description
-  coverImage  String?   // Cover image URL
-  isPublished Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  slug        String      @unique
+  content     String      // Markdown content
+  excerpt     String?     // Short description
+  coverImage  String?     // Cover image URL
+  isPublished Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   publishedAt DateTime?
-  authorId    String    // Admin who created it
+  authorId    String      // Admin who created it
   tags        BlogTag[]
+  comments    Comment[]
+  likes       BlogLike[]
 }
 
 model BlogTag {
   id     String @id @default(cuid())
   name   String @unique
   blogs  Blog[]
+}
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  editedAt  DateTime?     // Track if comment was edited
+  userId    String
+  blogId    String
+  parentId  String?       // For nested comments/replies
+
+  // Relations
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog      Blog          @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  likes     CommentLike[]
+
+  @@index([blogId])
+  @@index([userId])
+  @@index([parentId])
+}
+
+model CommentLike {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  isLike    Boolean  // true for like, false for dislike
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+}
+
+model BlogLike {
+  id        String   @id @default(cuid())
+  userId    String
+  blogId    String
+  isLike    Boolean  // true for like, false for dislike
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, blogId])
+  @@index([blogId])
 }
