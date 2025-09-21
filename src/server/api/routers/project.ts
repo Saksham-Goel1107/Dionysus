@@ -30,7 +30,7 @@ export const projectRouter = createTRPCRouter({
       if (!project) {
         return false;
       }
-      return project.creatorId === ctx.user.userId;
+      return project.creatorId === ctx.userId;
     }),
   removeProjectMember: protectedProcedure
     .input(z.object({ projectId: z.string(), userId: z.string() }))
@@ -46,7 +46,7 @@ export const projectRouter = createTRPCRouter({
 
       const projectWithCreator = project as unknown as ProjectWithCreatorId;
 
-      if (projectWithCreator.creatorId !== ctx.user.userId) {
+      if (projectWithCreator.creatorId !== ctx.userId) {
         throw new Error('Only the project creator can remove members');
       }
 
@@ -75,14 +75,14 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // Backend project limit validation
       const user = await readReplicaDb2.user.findUnique({
-        where: { id: ctx.user.userId! },
+        where: { id: ctx.userId! },
         select: { credits: true, emailAddress: true, firstName: true, isPro: true },
       });
       if (!user) {
         throw new Error('User not found');
       }
       const userProjectsCount = await readReplicaDb2.userToProject.count({
-        where: { userId: ctx.user.userId! },
+        where: { userId: ctx.userId! },
       });
       if (!user.isPro && userProjectsCount >= 5) {
         throw new Error(
@@ -106,7 +106,7 @@ export const projectRouter = createTRPCRouter({
       const result = await ctx.db.$transaction(async (prisma) => {
         // Deduct credits first
         const updatedUser = await prisma.user.update({
-          where: { id: ctx.user.userId! },
+          where: { id: ctx.userId! },
           data: { credits: { decrement: fileCount } },
         });
 
@@ -114,18 +114,18 @@ export const projectRouter = createTRPCRouter({
           data: {
             githubUrl: input.githubUrl,
             name: input.name,
-            creatorId: ctx.user.userId!,
+            creatorId: ctx.userId!,
             inviteToken: crypto.randomBytes(16).toString('hex'),
             userToProjects: {
               create: {
-                userId: ctx.user.userId!,
+                userId: ctx.userId!,
               },
             },
           },
         });
 
         // Set the creatorId field with a raw SQL query
-        await prisma.$executeRaw`UPDATE "Project" SET "creatorId" = ${ctx.user.userId!} WHERE id = ${project.id}`;
+        await prisma.$executeRaw`UPDATE "Project" SET "creatorId" = ${ctx.userId!} WHERE id = ${project.id}`;
 
         // Refetch the project to get the updated data
         const updatedProject = await prisma.project.findUnique({
@@ -137,7 +137,7 @@ export const projectRouter = createTRPCRouter({
 
       // Send low credits alert if needed (outside transaction)
       await handleUserCreditsChange({
-        userId: ctx.user.userId!,
+        userId: ctx.userId!,
         userEmail: user.emailAddress,
         userName: user.firstName ?? undefined,
         credits: result.updatedUser.credits,
@@ -162,7 +162,7 @@ export const projectRouter = createTRPCRouter({
       const userToProject = await readReplicaDb2.userToProject.findFirst({
         where: {
           projectId: input.projectId,
-          userId: ctx.user.userId!,
+          userId: ctx.userId!,
         },
       });
 
@@ -174,7 +174,7 @@ export const projectRouter = createTRPCRouter({
       SELECT p.id, p."createdAt", p."updatedAt", p.name, p."githubUrl", p."creatorId", p."deletedAt"
       FROM "Project" p
       JOIN "UserToProject" up ON p.id = up."projectId"
-      WHERE up."userId" = ${ctx.user.userId}
+      WHERE up."userId" = ${ctx.userId}
       AND p."deletedAt" IS NULL
     `;
 
@@ -254,7 +254,7 @@ export const projectRouter = createTRPCRouter({
           filesReferences: input.filesReferences,
           projectId: input.projectId,
           question: input.question,
-          userId: ctx.user.userId!,
+          userId: ctx.userId!,
         },
       });
     }),
@@ -299,7 +299,7 @@ export const projectRouter = createTRPCRouter({
 
       const project = projects[0];
 
-      if (!project || project.creatorId !== ctx.user.userId) {
+      if (!project || project.creatorId !== ctx.userId) {
         throw new Error('Only the project creator can delete questions');
       }
 
@@ -354,7 +354,7 @@ export const projectRouter = createTRPCRouter({
           project: {
             userToProjects: {
               some: {
-                userId: ctx.user.userId!,
+                userId: ctx.userId!,
               },
             },
           },
@@ -468,7 +468,7 @@ export const projectRouter = createTRPCRouter({
       // Use type assertion to access creatorId
       const projectWithCreator = project as unknown as ProjectWithCreatorId;
 
-      if (projectWithCreator.creatorId !== ctx.user.userId) {
+      if (projectWithCreator.creatorId !== ctx.userId) {
         throw new Error('Only the project creator can delete meetings');
       }
 
@@ -527,7 +527,7 @@ export const projectRouter = createTRPCRouter({
       // Use type assertion to access creatorId
       const projectWithCreator = project as unknown as ProjectWithCreatorId;
 
-      if (projectWithCreator.creatorId !== ctx.user.userId) {
+      if (projectWithCreator.creatorId !== ctx.userId) {
         throw new Error('Only the project creator can archive this project');
       }
 
@@ -562,13 +562,13 @@ export const projectRouter = createTRPCRouter({
     }),
   getMyCredits: protectedProcedure.query(async ({ ctx }) => {
     const user = await readReplicaDb2.user.findUnique({
-      where: { id: ctx.user.userId! },
+      where: { id: ctx.userId! },
     });
     return user;
   }),
   getMyTransactions: protectedProcedure.query(async ({ ctx }) => {
     const transactions = await readReplicaDb2.stripeTransaction.findMany({
-      where: { userId: ctx.user.userId! },
+      where: { userId: ctx.userId! },
       orderBy: { createdAt: 'desc' },
     });
     return transactions;
@@ -579,7 +579,7 @@ export const projectRouter = createTRPCRouter({
       try {
         const fileCount = await checkCredits(input.githubUrl, input.githubToken);
         const userCredits = await readReplicaDb2.user.findUnique({
-          where: { id: ctx.user.userId! },
+          where: { id: ctx.userId! },
           select: { credits: true },
         });
 
@@ -612,7 +612,7 @@ export const projectRouter = createTRPCRouter({
 
       const project = projects[0];
 
-      if (!project || project.creatorId !== ctx.user.userId) {
+      if (!project || project.creatorId !== ctx.userId) {
         throw new Error('Only the project creator can regenerate invite links');
       }
 
@@ -640,7 +640,7 @@ export const projectRouter = createTRPCRouter({
       // Check if the user has access to this project
       const membership = await ctx.db.userToProject.findFirst({
         where: {
-          userId: ctx.user.userId!,
+          userId: ctx.userId!,
           projectId: input.projectId,
         },
       });
@@ -669,7 +669,7 @@ export const projectRouter = createTRPCRouter({
       const userToProject = await ctx.db.userToProject.findFirst({
         where: {
           projectId: input.projectId,
-          userId: ctx.user.userId!,
+          userId: ctx.userId!,
         },
       });
 
@@ -695,7 +695,7 @@ export const projectRouter = createTRPCRouter({
       await ctx.db.userToProject.deleteMany({
         where: {
           projectId: input.projectId,
-          userId: ctx.user.userId!,
+          userId: ctx.userId!,
         },
       });
       return { success: true };

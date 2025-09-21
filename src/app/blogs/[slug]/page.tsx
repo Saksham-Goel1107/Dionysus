@@ -236,7 +236,9 @@ export default function BlogPostPage() {
                 <div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <Calendar size={16} />
-                    {format(new Date(blog.publishedAt), 'MMMM d, yyyy')}
+                    {blog.publishedAt
+                      ? format(new Date(blog.publishedAt), 'MMMM d, yyyy')
+                      : 'Unpublished'}
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock size={16} />
