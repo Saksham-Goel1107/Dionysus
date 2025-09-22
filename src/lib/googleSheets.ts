@@ -247,3 +247,106 @@ export async function removeStatusAlertSubscriber(email: string) {
     return { success: false, error };
   }
 }
+
+// Blog subscription functions
+export async function addBlogSubscriber(email: string, name: string) {
+  try {
+    const sheets = await getGoogleSheetsClient();
+    const spreadsheetId = process.env.GOOGLE_SHEETS_NEWSLETTER_ID; // Same document as newsletter
+
+    if (!spreadsheetId) {
+      throw new Error('Google Sheets ID not configured');
+    }
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: 'BlogSubscribers!A:C', // BlogSubscribers sheet
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [[name, email, new Date().toISOString()]], // name, email, timestamp
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding blog subscriber to Google Sheets:', error);
+    return { success: false, error };
+  }
+}
+
+export async function isBlogSubscribed(email: string) {
+  try {
+    const sheets = await getGoogleSheetsClient();
+    const spreadsheetId = process.env.GOOGLE_SHEETS_NEWSLETTER_ID;
+
+    if (!spreadsheetId) {
+      throw new Error('Google Sheets ID not configured');
+    }
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'BlogSubscribers!B:B', // Email column
+    });
+
+    const rows = response.data.values;
+    if (!rows) {
+      return { isSubscribed: false };
+    }
+
+    const isSubscribed = rows.some((row: string[]) => row[0] === email);
+    return { isSubscribed };
+  } catch (error) {
+    console.error('Error checking blog subscription status:', error);
+    return { isSubscribed: false, error };
+  }
+}
+
+export async function removeBlogSubscriber(email: string) {
+  try {
+    const sheets = await getGoogleSheetsClient();
+    const spreadsheetId = process.env.GOOGLE_SHEETS_NEWSLETTER_ID;
+
+    if (!spreadsheetId) {
+      throw new Error('Google Sheets ID not configured');
+    }
+
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range: 'BlogSubscribers!A:C', // Get all columns to find the row
+    });
+
+    const rows = response.data.values;
+    if (!rows) {
+      return { success: false, message: 'No blog subscribers found' };
+    }
+
+    let rowIndex = -1;
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (Array.isArray(row) && row.length > 1 && row[1] === email) {
+        // Email is in column B
+        rowIndex = i;
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
+      return { success: false, message: 'Email not found in blog subscribers' };
+    }
+
+    // Clear the row (Google Sheets doesn't have a direct delete, so we clear it)
+    await sheets.spreadsheets.values.update({
+      spreadsheetId,
+      range: `BlogSubscribers!A${rowIndex + 1}:C${rowIndex + 1}`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [['', '', '']], // Clear the row
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error removing blog subscriber from Google Sheets:', error);
+    return { success: false, error };
+  }
+}

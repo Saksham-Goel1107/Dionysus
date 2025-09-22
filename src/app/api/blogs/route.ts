@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag');
     const search = searchParams.get('search');
     const sort = searchParams.get('sort') || 'newest';
-
     const skip = (page - 1) * limit;
 
     const where: any = {
@@ -63,23 +62,57 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const [blogs, total] = await Promise.all([
-      prisma.blog.findMany({
-        where,
-        include: {
-          tags: true,
+    // First get blogs with basic data and comment counts
+    const blogs = await prisma.blog.findMany({
+      where,
+      include: {
+        tags: true,
+        _count: {
+          select: {
+            comments: true,
+          },
         },
-        orderBy,
-        skip,
-        take: limit,
+      },
+      orderBy,
+      skip,
+      take: limit,
+    });
+
+    const total = await prisma.blog.count({ where });
+
+    // Then calculate like/dislike counts for each blog
+    const blogsWithCounts = await Promise.all(
+      blogs.map(async (blog) => {
+        const [likeCount, dislikeCount] = await Promise.all([
+          prisma.blogLike.count({
+            where: {
+              blogId: blog.id,
+              isLike: true,
+            },
+          }),
+          prisma.blogLike.count({
+            where: {
+              blogId: blog.id,
+              isLike: false,
+            },
+          }),
+        ]);
+
+        return {
+          ...blog,
+          _count: {
+            likes: likeCount,
+            dislikes: dislikeCount,
+            comments: blog._count.comments,
+          },
+        };
       }),
-      prisma.blog.count({ where }),
-    ]);
+    );
 
     const totalPages = Math.ceil(total / limit);
 
     return NextResponse.json({
-      blogs,
+      blogs: blogsWithCounts,
       pagination: {
         page,
         limit,

@@ -23,11 +23,23 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Calendar, LayoutGrid, LayoutList, Search, SortAsc, Tag, X } from 'lucide-react';
+import {
+  Calendar,
+  Heart,
+  LayoutGrid,
+  LayoutList,
+  MessageCircle,
+  Search,
+  SortAsc,
+  Tag,
+  ThumbsDown,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { Navbar } from '../components/navbar';
+import BlogSubscriptionBell from './components/BlogSubscriptionBell';
 
 interface BlogPost {
   id: string;
@@ -37,6 +49,11 @@ interface BlogPost {
   coverImage: string | null;
   publishedAt: string;
   tags: { id: string; name: string }[];
+  _count: {
+    likes: number;
+    dislikes: number;
+    comments: number;
+  };
 }
 
 interface PaginationInfo {
@@ -138,6 +155,9 @@ export default function BlogsPage() {
                 Discover insights, tutorials, and updates from our team. Stay up to date with the
                 latest trends and best practices.
               </p>
+              <div className="mt-8 flex justify-center">
+                <BlogSubscriptionBell />
+              </div>
             </div>
           </div>
         </div>
@@ -337,6 +357,20 @@ export default function BlogsPage() {
                               <Calendar size={16} />
                               {format(new Date(blog.publishedAt), 'MMM d, yyyy')}
                             </div>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1">
+                                <Heart size={14} className="text-red-500" />
+                                <span>{blog._count.likes}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <ThumbsDown size={14} className="text-gray-500" />
+                                <span>{blog._count.dislikes}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageCircle size={14} className="text-blue-500" />
+                                <span>{blog._count.comments}</span>
+                              </div>
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
@@ -351,6 +385,9 @@ export default function BlogsPage() {
                         <TableRow className="border-b">
                           <TableHead className="text-sm text-muted-foreground">Post</TableHead>
                           <TableHead className="text-sm text-muted-foreground">Tags</TableHead>
+                          <TableHead className="text-sm text-muted-foreground">
+                            Engagement
+                          </TableHead>
                           <TableHead className="text-right text-sm text-muted-foreground">
                             Date
                           </TableHead>
@@ -417,6 +454,23 @@ export default function BlogsPage() {
                                     {tag.name}
                                   </Badge>
                                 ))}
+                              </div>
+                            </TableCell>
+
+                            <TableCell className="py-4 align-top">
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-1 text-sm">
+                                  <Heart size={14} className="text-red-500" />
+                                  <span>{blog._count.likes}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm">
+                                  <ThumbsDown size={14} className="text-gray-500" />
+                                  <span>{blog._count.dislikes}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-sm">
+                                  <MessageCircle size={14} className="text-blue-500" />
+                                  <span>{blog._count.comments}</span>
+                                </div>
                               </div>
                             </TableCell>
 

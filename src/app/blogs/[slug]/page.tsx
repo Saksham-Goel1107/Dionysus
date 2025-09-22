@@ -10,10 +10,10 @@ import { useToast } from '@/hooks/use-toast';
 import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import { format } from 'date-fns';
-import { ArrowLeft, Calendar, Clock, Share2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MessageCircle, Share2, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 
 export default function BlogPostPage() {
@@ -22,8 +22,32 @@ export default function BlogPostPage() {
   const [summary, setSummary] = useState<string>('');
   const [isSummarizing, setIsSummarizing] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [showCommentsButton, setShowCommentsButton] = useState(false);
   const { toast } = useToast();
   const user = useUser();
+
+  // Handle scroll to show/hide comments button
+  useEffect(() => {
+    const handleScroll = () => {
+      const commentsSection = document.getElementById('comments');
+      if (!commentsSection) return;
+
+      const rect = commentsSection.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+
+      // Show button when scrolled past header and hide when near comments
+      const scrollY = window.scrollY;
+      const headerHeight = 400; // Approximate header height
+      const commentsTop = rect.top + scrollY;
+
+      setShowCommentsButton(scrollY > headerHeight && scrollY < commentsTop - windowHeight);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check initial state
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Fetch blog data using tRPC
   const {
@@ -140,6 +164,13 @@ export default function BlogPostPage() {
     }
   };
 
+  const scrollToComments = () => {
+    const commentsSection = document.getElementById('comments');
+    if (commentsSection) {
+      commentsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   if (isLoading) {
     return (
       <>
@@ -190,7 +221,7 @@ export default function BlogPostPage() {
             <Link href="/blogs">
               <Button variant="ghost" className="mb-6 hover:bg-blue-50 dark:hover:bg-blue-900/20">
                 <ArrowLeft size={16} className="mr-2" />
-                Back to Blog
+                Back to Blogs
               </Button>
             </Link>
 
@@ -391,7 +422,7 @@ export default function BlogPostPage() {
           </div>
 
           {/* Comments Section */}
-          <div className="mt-12">
+          <div id="comments" className="mt-12">
             <Card className="shadow-xl">
               <CardContent className="p-8 md:p-12">
                 <CommentsList blogId={blog.id} initialCommentCount={blog.commentCount} />
@@ -412,6 +443,18 @@ export default function BlogPostPage() {
             </Link>
           </div>
         </div>
+
+        {/* Sticky Comments Button */}
+        {showCommentsButton && (
+          <Button
+            onClick={scrollToComments}
+            className="fixed right-6 top-1/2 z-50 -translate-y-1/2 transform rounded-full bg-blue-600 p-3 text-white shadow-lg transition-all duration-300 hover:bg-blue-700 hover:shadow-xl"
+            size="sm"
+          >
+            <MessageCircle size={20} />
+            <span className="ml-2 hidden sm:inline">View Comments</span>
+          </Button>
+        )}
       </div>
     </>
   );
