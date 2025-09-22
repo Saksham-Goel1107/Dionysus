@@ -395,6 +395,13 @@ Directory structure:
     │   │   │   │   └── route.ts
     │   │   │   ├── audio-transcription/
     │   │   │   │   └── route.ts
+    │   │   │   ├── blog-subscription/
+    │   │   │   │   ├── status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── subscribe/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── unsubscribe/
+    │   │   │   │       └── route.ts
     │   │   │   ├── blog-summary/
     │   │   │   │   └── route.ts
     │   │   │   ├── blogs/
@@ -524,8 +531,10 @@ Directory structure:
     │   │   │       └── route.ts
     │   │   ├── blogs/
     │   │   │   ├── page.tsx
-    │   │   │   └── [slug]/
-    │   │   │       └── page.tsx
+    │   │   │   ├── [slug]/
+    │   │   │   │   └── page.tsx
+    │   │   │   └── components/
+    │   │   │       └── BlogSubscriptionBell.tsx
     │   │   ├── components/
     │   │   │   ├── AiButton.tsx
     │   │   │   ├── AiChatSidebar.tsx
@@ -1022,6 +1031,12 @@ Directory structure:
   <p style="font-size: 0.95em; color: #888;">
     <em>
       This image demonstrates the workflow that automatically reviews the new pull requests and leave a comment over their analysing the security as well as the code quality and the changes significace so that the reviewer has just to read the conclusion and will have a better understanding of the context.
+ </em>
+  </p>
+  <img src="Demo/BlogUpdates-n8n-Implementation.png" alt="n8n Blog Updates" width="480" />
+  <p style="font-size: 0.95em; color: #888;">
+    <em>
+      This image demonstrates the workflow that automatically sends blogs updates to the subscribers of the blogs updates whenever any new blog is posted.
  </em>
   </p>
 
