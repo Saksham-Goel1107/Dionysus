@@ -115,9 +115,9 @@ These files and folders are required for best-in-class AI, Copilot, and team dev
 - **Admin Analytics Dashboard**: Advanced user management, audit logging, and compliance tools for enterprise governance
 
 ```
-
 Directory structure:
 └── saksham-goel1107-dionysus/
+    ├── README.md
     ├── ANNOUNCEMENT_CONFIGURATION.md
     ├── back-of-envelope.md
     ├── CODE_OF_CONDUCT.md
@@ -212,6 +212,7 @@ Directory structure:
     │   │   │   │   ├── license.tsx
     │   │   │   │   ├── markdown-templates.ts
     │   │   │   │   ├── MarkdownGenModal.tsx
+    │   │   │   │   ├── MediaOptimizer.tsx
     │   │   │   │   ├── MetaDataGenerator.tsx
     │   │   │   │   ├── page.tsx
     │   │   │   │   ├── PlagiarismChecker.tsx
@@ -393,6 +394,8 @@ Directory structure:
     │   │   │   ├── alpha-support/
     │   │   │   │   └── route.ts
     │   │   │   ├── audio-transcription/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── blog-summary/
     │   │   │   │   └── route.ts
     │   │   │   ├── blogs/
     │   │   │   │   ├── route.ts
@@ -590,6 +593,7 @@ Directory structure:
     │   │   ├── BlockInspectAndContext.tsx
     │   │   ├── ContactForm.tsx
     │   │   ├── FullscreenPrompt.tsx
+    │   │   ├── GlobalAIAssistant.tsx
     │   │   ├── GlobalSearch.tsx
     │   │   ├── media-room.tsx
     │   │   ├── OnboardingChecklist.tsx
@@ -598,6 +602,13 @@ Directory structure:
     │   │   ├── ReleaseNoteModal.tsx
     │   │   ├── Slide-Button.tsx
     │   │   ├── useNetworkStatus.ts
+    │   │   ├── blog/
+    │   │   │   ├── CommentForm.tsx
+    │   │   │   ├── CommentItem.tsx
+    │   │   │   ├── CommentsList.tsx
+    │   │   │   ├── index.ts
+    │   │   │   ├── LikeButton.tsx
+    │   │   │   └── SignInModal.tsx
     │   │   ├── feedback/
     │   │   │   ├── FeedbackForm.tsx
     │   │   │   └── StarRating.tsx
@@ -729,6 +740,8 @@ Directory structure:
     │   │       ├── root.ts
     │   │       ├── trpc.ts
     │   │       └── routers/
+    │   │           ├── blog.ts
+    │   │           ├── comment.ts
     │   │           ├── project.ts
     │   │           └── user.ts
     │   ├── styles/
@@ -781,7 +794,6 @@ Directory structure:
         ├── commit-msg
         ├── pre-commit
         └── pre-push
-
 ```
 
 ---
