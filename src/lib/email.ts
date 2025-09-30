@@ -465,3 +465,229 @@ export async function sendN8nRegistrationEmail({ to, name }: { to: string; name?
     html,
   });
 }
+
+export async function sendWarningEmail({
+  to,
+  userName,
+  subject,
+  message,
+  reason,
+}: {
+  to: string;
+  userName: string;
+  subject: string;
+  message: string;
+  reason?: string;
+}) {
+  const html = `
+    <div style="font-family: 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; color: #202124; line-height: 1.6;">
+
+  <!-- Header -->
+  <h2 style="color: #d93025; text-align: center; margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">
+    Warning from Dionysus Admin
+  </h2>
+  <p style="text-align: center; color: #5f6368; margin: 0 0 24px 0; font-size: 15px;">
+    Hi ${userName},
+  </p>
+
+  <!-- Subject & Message -->
+  <div style="border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; margin-bottom: 20px; background: #fafafa;">
+    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 500; color: #202124;">
+      Subject: ${subject}
+    </h3>
+    <p style="margin: 0; font-size: 14px; color: #3c4043; white-space: pre-wrap;">
+      ${message}
+    </p>
+  </div>
+
+  <!-- Reason for Warning (optional) -->
+  ${
+    reason
+      ? `
+  <div style="border: 1px solid #f1d2d2; padding: 14px; border-radius: 6px; margin-bottom: 20px; background: #fef2f2;">
+    <strong style="color: #b3261e; display: block; margin-bottom: 6px; font-size: 14px;">Reason for Warning:</strong>
+    <p style="color: #3c4043; margin: 0; font-size: 14px;">${reason}</p>
+  </div>
+  `
+      : ''
+  }
+
+  <!-- Guidelines Reminder -->
+  <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 20px;">
+    <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 500; color: #202124;">
+      Community Guidelines Reminder
+    </h4>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #3c4043;">
+      <li>Respect all community members</li>
+      <li>Keep discussions constructive and on-topic</li>
+      <li>Avoid spam, harassment, or inappropriate content</li>
+      <li>Follow our terms of service</li>
+    </ul>
+  </div>
+
+  <!-- Footer -->
+  <p style="font-size: 13px; color: #5f6368; margin: 24px 0 12px 0;">
+    If you believe this warning was sent in error or have questions, please contact our support team.
+  </p>
+
+  <p style="font-size: 12px; color: #9aa0a6; margin: 20px 0 0 0; text-align: center;">
+    &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+  </p>
+</div>
+
+  `;
+
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'admin@dionysus.com',
+    to,
+    subject: `Warning: ${subject}`,
+    html,
+  });
+}
+
+export async function sendBanEmail({
+  to,
+  userName,
+  reason,
+  banDuration,
+}: {
+  to: string;
+  userName: string;
+  reason: string;
+  banDuration?: string;
+}) {
+  const html = `
+    <div style="font-family: 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; color: #202124; line-height: 1.6;">
+
+  <!-- Header -->
+  <h2 style="color: #d93025; text-align: center; margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">
+    Account Suspension Notice
+  </h2>
+  <p style="text-align: center; color: #5f6368; margin: 0 0 24px 0; font-size: 15px;">
+    Hi ${userName},
+  </p>
+
+  <!-- Ban Notice -->
+  <div style="border: 1px solid #f1d2d2; padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #fef2f2;">
+    <p style="margin: 0 0 12px 0; font-size: 15px; color: #3c4043;">
+      We regret to inform you that your account has been suspended from Dionysus.
+    </p>
+    <p style="margin: 0 0 12px 0; font-size: 15px; color: #3c4043;">
+      <strong>Reason for suspension:</strong> ${reason}
+    </p>
+    ${
+      banDuration
+        ? `<p style="margin: 0; font-size: 15px; color: #3c4043;">
+            <strong>Duration:</strong> ${banDuration}
+          </p>`
+        : `<p style="margin: 0; font-size: 15px; color: #3c4043;">
+            <strong>Duration:</strong> Permanent
+          </p>`
+    }
+  </div>
+
+  <!-- What This Means -->
+  <div style="border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; margin-bottom: 20px; background: #fafafa;">
+    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 500; color: #202124;">
+      What This Means
+    </h3>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #3c4043;">
+      <li>You will not be able to access your account or post content</li>
+      <li>Your existing comments and posts remain visible to others</li>
+      <li>You can appeal this decision by contacting support</li>
+    </ul>
+  </div>
+
+  <!-- Appeal Process -->
+  <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 20px;">
+    <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 500; color: #202124;">
+      Appeal Process
+    </h4>
+    <p style="margin: 0 0 12px 0; font-size: 14px; color: #3c4043;">
+      If you believe this suspension was issued in error, you may appeal by contacting our support team with your account details and an explanation of the situation.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <p style="font-size: 13px; color: #5f6368; margin: 24px 0 12px 0;">
+    We take community safety seriously and appreciate your understanding.
+  </p>
+
+  <p style="font-size: 12px; color: #9aa0a6; margin: 20px 0 0 0; text-align: center;">
+    &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+  </p>
+</div>
+
+  `;
+
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'admin@dionysus.com',
+    to,
+    subject: 'Account Suspension Notice',
+    html,
+  });
+}
+
+export async function sendUnbanEmail({ to, userName }: { to: string; userName: string }) {
+  const html = `
+    <div style="font-family: 'Segoe UI', Roboto, Arial, sans-serif; max-width: 600px; margin: auto; padding: 32px; border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; color: #202124; line-height: 1.6;">
+
+  <!-- Header -->
+  <h2 style="color: #188038; text-align: center; margin: 0 0 12px 0; font-size: 20px; font-weight: 600;">
+    Account Reinstated
+  </h2>
+  <p style="text-align: center; color: #5f6368; margin: 0 0 24px 0; font-size: 15px;">
+    Hi ${userName},
+  </p>
+
+  <!-- Good News -->
+  <div style="border: 1px solid #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #d1ecf1;">
+    <p style="margin: 0 0 12px 0; font-size: 15px; color: #3c4043;">
+      Great news! Your account has been reinstated and you now have full access to Dionysus.
+    </p>
+    <p style="margin: 0; font-size: 15px; color: #3c4043;">
+      We appreciate your patience during the review process.
+    </p>
+  </div>
+
+  <!-- What This Means -->
+  <div style="border: 1px solid #e5e7eb; padding: 16px; border-radius: 8px; margin-bottom: 20px; background: #fafafa;">
+    <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 500; color: #202124;">
+      What This Means
+    </h3>
+    <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #3c4043;">
+      <li>You can now log in and access all features</li>
+      <li>You can post comments and interact with content</li>
+      <li>All platform features are available to you</li>
+    </ul>
+  </div>
+
+  <!-- Community Guidelines Reminder -->
+  <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; margin-top: 20px;">
+    <h4 style="margin: 0 0 8px 0; font-size: 15px; font-weight: 500; color: #202124;">
+      Community Guidelines
+    </h4>
+    <p style="margin: 0 0 12px 0; font-size: 14px; color: #3c4043;">
+      Please continue to follow our community guidelines to maintain a positive environment for all users.
+    </p>
+  </div>
+
+  <!-- Footer -->
+  <p style="font-size: 13px; color: #5f6368; margin: 24px 0 12px 0;">
+    Welcome back! We're glad to have you as part of our community.
+  </p>
+
+  <p style="font-size: 12px; color: #9aa0a6; margin: 20px 0 0 0; text-align: center;">
+    &copy; ${new Date().getFullYear()} Dionysus. All rights reserved.
+  </p>
+</div>
+
+  `;
+
+  return transporter.sendMail({
+    from: process.env.SMTP_FROM || 'admin@dionysus.com',
+    to,
+    subject: 'Account Reinstated - Welcome Back!',
+    html,
+  });
+}

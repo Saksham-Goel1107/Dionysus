@@ -31,13 +31,31 @@ export async function GET() {
     const blogs = await prisma.blog.findMany({
       include: {
         tags: true,
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+        likes: {
+          select: {
+            isLike: true,
+          },
+        },
       },
       orderBy: {
         updatedAt: 'desc',
       },
     });
 
-    return NextResponse.json({ blogs });
+    // Transform the data to include computed fields
+    const transformedBlogs = blogs.map((blog) => ({
+      ...blog,
+      commentCount: blog._count.comments,
+      likeCount: blog.likes.filter((like) => like.isLike).length,
+      dislikeCount: blog.likes.filter((like) => !like.isLike).length,
+    }));
+
+    return NextResponse.json({ blogs: transformedBlogs });
   } catch (error) {
     console.error('Error fetching blogs:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

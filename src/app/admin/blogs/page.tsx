@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminCommentsPanel } from '@/components/AdminCommentsPanel';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,7 +25,16 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { Edit, Eye, FileText, Plus, Trash2, TrendingUp } from 'lucide-react';
+import {
+  Edit,
+  ExternalLink,
+  Eye,
+  FileText,
+  MessageCircle,
+  Plus,
+  Trash2,
+  TrendingUp,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -40,6 +50,9 @@ interface BlogPost {
   publishedAt: string | null;
   authorId: string;
   tags: { id: string; name: string }[];
+  commentCount: number;
+  likeCount: number;
+  dislikeCount: number;
 }
 
 export default function AdminBlogsPage() {
@@ -147,7 +160,7 @@ export default function AdminBlogsPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
@@ -170,12 +183,26 @@ export default function AdminBlogsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Drafts</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Comments</CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {blogs.reduce((sum, blog) => sum + blog.commentCount, 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Across all posts</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{blogs.filter((b) => !b.isPublished).length}</div>
-            <p className="text-xs text-muted-foreground">Ready for review</p>
+            <div className="text-2xl font-bold">
+              {blogs.reduce((sum, blog) => sum + blog.likeCount + blog.dislikeCount, 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Likes & dislikes</p>
           </CardContent>
         </Card>
       </div>
@@ -213,11 +240,12 @@ export default function AdminBlogsPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b">
-                    <TableHead className="w-[40%]">Post</TableHead>
-                    <TableHead className="w-[15%]">Status</TableHead>
-                    <TableHead className="w-[20%]">Tags</TableHead>
+                    <TableHead className="w-[30%]">Post</TableHead>
+                    <TableHead className="w-[10%]">Status</TableHead>
+                    <TableHead className="w-[15%]">Tags</TableHead>
+                    <TableHead className="w-[15%]">Engagement</TableHead>
                     <TableHead className="w-[15%]">Last Updated</TableHead>
-                    <TableHead className="w-[10%] text-right">Actions</TableHead>
+                    <TableHead className="w-[15%] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -225,7 +253,21 @@ export default function AdminBlogsPage() {
                     <TableRow key={blog.id} className="hover:bg-muted/50">
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-medium leading-tight">{blog.title}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 font-medium leading-tight">{blog.title}</div>
+                            {blog.isPublished && (
+                              <Link
+                                href={`/blogs/${blog.slug}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="View blog post"
+                              >
+                                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                  <ExternalLink className="h-3 w-3" />
+                                </Button>
+                              </Link>
+                            )}
+                          </div>
                           {blog.excerpt && (
                             <div className="line-clamp-2 text-sm text-muted-foreground">
                               {blog.excerpt}
@@ -253,6 +295,18 @@ export default function AdminBlogsPage() {
                               +{blog.tags.length - 2}
                             </Badge>
                           )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex items-center gap-2">
+                            <MessageCircle className="h-3 w-3" />
+                            <span>{blog.commentCount} comments</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <span>{blog.likeCount} likes</span>
+                            <span>{blog.dislikeCount} dislikes</span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -321,6 +375,11 @@ export default function AdminBlogsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Comments Management Section */}
+      <div className="mt-8">
+        <AdminCommentsPanel />
+      </div>
     </div>
   );
 }

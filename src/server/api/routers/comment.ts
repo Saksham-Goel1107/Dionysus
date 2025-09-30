@@ -1,4 +1,5 @@
 import { createTRPCRouter, protectedProcedure, publicProcedure } from '@/server/api/trpc';
+import { clerkClient } from '@clerk/nextjs/server';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -457,5 +458,259 @@ export const commentRouter = createTRPCRouter({
         });
         return { success: true, action: 'created' };
       }
+    }),
+  // Admin procedures
+  // Get all comments for admin management
+  getAllForAdmin: protectedProcedure
+    .input(
+      z.object({
+        blogId: z.string().optional(),
+        userId: z.string().optional(),
+        search: z.string().optional(),
+        limit: z.number().min(1).max(100).default(50),
+        cursor: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Check if user is admin
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.userId },
+        select: { emailAddress: true },
+      });
+
+      if (user?.emailAddress !== process.env.ADMIN_EMAIL) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        });
+      }
+
+      const where: any = {};
+      if (input.blogId) where.blogId = input.blogId;
+      if (input.userId) where.userId = input.userId;
+      if (input.search) {
+        where.OR = [
+          { content: { contains: input.search, mode: 'insensitive' } },
+          {
+            blog: {
+              title: { contains: input.search, mode: 'insensitive' },
+            },
+          },
+          {
+            user: {
+              OR: [
+                { firstName: { contains: input.search, mode: 'insensitive' } },
+                { lastName: { contains: input.search, mode: 'insensitive' } },
+                { emailAddress: { contains: input.search, mode: 'insensitive' } },
+              ],
+            },
+          },
+        ];
+      }
+
+      const comments = await ctx.db.comment.findMany({
+        where,
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              emailAddress: true,
+              imageUrl: true,
+            },
+          },
+          blog: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
+          likes: {
+            select: {
+              id: true,
+              userId: true,
+              isLike: true,
+            },
+          },
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: input.limit + 1,
+        cursor: input.cursor ? { id: input.cursor } : undefined,
+      });
+
+      let nextCursor: typeof input.cursor | undefined = undefined;
+      if (comments.length > input.limit) {
+        const nextItem = comments.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      // Get user blocked status from Clerk for all unique users
+      const uniqueUserIds = [...new Set(comments.map((comment) => comment.user.id))];
+      const clerk = await clerkClient();
+      const userBlockedStatus: Record<string, boolean> = {};
+
+      try {
+        await Promise.all(
+          uniqueUserIds.map(async (userId) => {
+            try {
+              const clerkUser = await clerk.users.getUser(userId);
+              userBlockedStatus[userId] = clerkUser.publicMetadata?.isBlocked === true;
+            } catch (error) {
+              console.error(`Failed to get blocked status for user ${userId}:`, error);
+              userBlockedStatus[userId] = false;
+            }
+          }),
+        );
+      } catch (error) {
+        console.error('Failed to fetch user blocked statuses:', error);
+        // Set all users as not blocked if we can't fetch the data
+        uniqueUserIds.forEach((userId) => {
+          userBlockedStatus[userId] = false;
+        });
+      }
+
+      return {
+        comments: comments.map((comment) => ({
+          ...comment,
+          likeCount: comment.likes.filter((like) => like.isLike).length,
+          dislikeCount: comment.likes.filter((like) => !like.isLike).length,
+          user: {
+            ...comment.user,
+            isBlocked: userBlockedStatus[comment.user.id] || false,
+          },
+        })),
+        nextCursor,
+      };
+    }),
+
+  // Admin delete comment
+  adminDelete: protectedProcedure
+    .input(
+      z.object({
+        commentId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.userId },
+        select: { emailAddress: true },
+      });
+
+      if (user?.emailAddress !== process.env.ADMIN_EMAIL) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        });
+      }
+
+      const existingComment = await ctx.db.comment.findUnique({
+        where: { id: input.commentId },
+      });
+
+      if (!existingComment) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Comment not found',
+        });
+      }
+
+      // Delete the comment and all its replies (cascade delete)
+      await ctx.db.comment.delete({
+        where: { id: input.commentId },
+      });
+
+      return { success: true };
+    }),
+
+  // Admin edit comment
+  adminEdit: protectedProcedure
+    .input(
+      z.object({
+        commentId: z.string(),
+        content: z
+          .string()
+          .min(1, 'Comment cannot be empty')
+          .max(2000, 'Comment cannot exceed 2000 characters')
+          .transform((content) => content.trim()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin
+      const user = await ctx.db.user.findUnique({
+        where: { id: ctx.userId },
+        select: { emailAddress: true },
+      });
+
+      if (user?.emailAddress !== process.env.ADMIN_EMAIL) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        });
+      }
+
+      const existingComment = await ctx.db.comment.findUnique({
+        where: { id: input.commentId },
+      });
+
+      if (!existingComment) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Comment not found',
+        });
+      }
+
+      const updatedComment = await ctx.db.comment.update({
+        where: { id: input.commentId },
+        data: {
+          content: input.content,
+          editedAt: new Date(),
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              emailAddress: true,
+              imageUrl: true,
+            },
+          },
+          blog: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
+          likes: {
+            select: {
+              id: true,
+              userId: true,
+              isLike: true,
+            },
+          },
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
+        },
+      });
+
+      return {
+        ...updatedComment,
+        likeCount: updatedComment.likes.filter((like) => like.isLike).length,
+        dislikeCount: updatedComment.likes.filter((like) => !like.isLike).length,
+      };
     }),
 });

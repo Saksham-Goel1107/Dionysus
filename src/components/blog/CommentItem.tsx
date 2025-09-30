@@ -119,6 +119,7 @@ export function CommentItem({ comment, blogId, depth = 0, onReplySuccess }: Comm
 
   return (
     <div
+      id={`comment-${comment.id}`}
       className={`group ${depth > 0 ? 'ml-8 border-l border-gray-200 pl-4 dark:border-gray-700' : ''}`}
     >
       <div className="flex gap-3">

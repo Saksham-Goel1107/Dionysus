@@ -134,78 +134,81 @@ export default function BlogSubscriptionBell() {
   }
 
   return (
-
     <div className="flex items-center">
-        {isSubscribed ? (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" disabled={isLoading} className="flex items-center gap-2 px-4 py-2">
-                {isLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <BellOff className="h-4 w-4 text-orange-500" />
-                )}
-                <span>Subscribed</span>
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirm Unsubscribe</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to unsubscribe from blog updates? You will no longer receive
-                  notifications about new blog posts.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleUnsubscribe} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Unsubscribing...
-                    </>
-                  ) : (
-                    'Unsubscribe'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        ) : (
-          <>
+      {isSubscribed ? (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
             <Button
-              onClick={handleSubscribe}
+              variant="outline"
               disabled={isLoading}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+              className="flex items-center gap-2 px-4 py-2"
             >
-              <Bell className="h-4 w-4" />
-              <span>Subscribe to Updates</span>
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <BellOff className="h-4 w-4 text-orange-500" />
+              )}
+              <span>Subscribed</span>
             </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Unsubscribe</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to unsubscribe from blog updates? You will no longer receive
+                notifications about new blog posts.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleUnsubscribe} disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Unsubscribing...
+                  </>
+                ) : (
+                  'Unsubscribe'
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      ) : (
+        <>
+          <Button
+            onClick={handleSubscribe}
+            disabled={isLoading}
+            className="flex items-center gap-2 bg-blue-600 px-6 py-2 font-medium text-white hover:bg-blue-700"
+          >
+            <Bell className="h-4 w-4" />
+            <span>Subscribe to Updates</span>
+          </Button>
 
-            {/* Authentication Required Modal */}
-            <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Authentication Required</DialogTitle>
-                  <DialogDescription>
-                    You need to sign in to subscribe to blog updates. This helps us send you
-                    relevant updates about new blog posts.
-                  </DialogDescription>
-                </DialogHeader>
+          {/* Authentication Required Modal */}
+          <Dialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Authentication Required</DialogTitle>
+                <DialogDescription>
+                  You need to sign in to subscribe to blog updates. This helps us send you relevant
+                  updates about new blog posts.
+                </DialogDescription>
+              </DialogHeader>
 
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setIsAuthModalOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={() => router.push('/sign-in')}>
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Sign In
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
-      </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsAuthModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => router.push('/sign-in')}>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Sign In
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
+    </div>
   );
 }

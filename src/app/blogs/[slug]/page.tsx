@@ -62,6 +62,20 @@ export default function BlogPostPage() {
     },
   );
 
+  // Handle anchor scrolling when page loads
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      // Small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+  }, [blog]); // Depend on blog to ensure comments are loaded
+
   const readingTime = (content: string) => {
     const wordsPerMinute = 200;
     const words = content.split(' ').length;
