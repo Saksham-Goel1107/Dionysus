@@ -481,6 +481,7 @@ const isPublicRoute = createRouteMatcher([
   '/blogs(.*)',
   '/api/blogs(.*)',
   '/api/trpc(.*)',
+  '/pricing(.*)',
 ]);
 
 const isOnboardingRoute = createRouteMatcher(['/onboarding(.*)']);

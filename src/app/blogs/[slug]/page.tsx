@@ -185,6 +185,15 @@ export default function BlogPostPage() {
     }
   };
 
+  const handleOpenInChatGPT = () => {
+    if (!blog) return;
+
+    const content = `${blog.title}\n\n${blog.content}`;
+    const encodedContent = encodeURIComponent(content);
+
+    window.open(`https://chat.openai.com/?q=${encodedContent}`, '_blank');
+  };
+
   if (isLoading) {
     return (
       <>
@@ -467,6 +476,19 @@ export default function BlogPostPage() {
           >
             <MessageCircle size={20} />
             <span className="ml-2 hidden sm:inline">View Comments</span>
+          </Button>
+        )}
+
+        {/* Open in ChatGPT Button */}
+        {blog && (
+          <Button
+            onClick={handleOpenInChatGPT}
+            className="fixed left-6 top-1/2 z-50 -translate-y-1/2 transform rounded-full bg-green-600 p-3 text-white shadow-lg transition-all duration-300 hover:bg-green-700 hover:shadow-xl"
+            size="sm"
+            title="Open in ChatGPT"
+          >
+            <Sparkles size={20} />
+            <span className="ml-2 hidden sm:inline">Open in ChatGPT</span>
           </Button>
         )}
       </div>

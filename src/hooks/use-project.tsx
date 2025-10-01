@@ -1,8 +1,8 @@
 import { api } from '@/trpc/react';
-import { useLocalStorage } from 'usehooks-ts';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
-import { usePathname, useRouter } from 'next/navigation';
+import { useLocalStorage } from 'usehooks-ts';
 
 const useProject = () => {
   const { data: projectsRaw, isLoading } = api.project.getProjects.useQuery();

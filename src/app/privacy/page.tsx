@@ -1,592 +1,762 @@
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { ArrowLeft, Shield } from 'lucide-react';
+'use client';
 
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Navbar } from '../components/navbar';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+  BookOpen,
+  ChevronRight,
+  Clock,
+  Database,
+  HelpCircle,
+  MessageSquare,
+  Shield,
+  Users,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | Dionysus',
-  description: 'Privacy policy and data protection information for Dionysus',
-};
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Navbar } from '../components/navbar';
 
 export default function PrivacyPage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeSection, setActiveSection] = useState('overview');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  const sections = [
+    {
+      id: 'overview',
+      title: 'Overview',
+      description: 'How we protect your privacy and data',
+      icon: Shield,
+      content: 'Privacy principles, data collection, processing, security',
+    },
+    {
+      id: 'data',
+      title: 'Data Collection',
+      description: 'What information we collect and why',
+      icon: Database,
+      content: 'Personal data, meeting content, usage analytics, technical information',
+    },
+    {
+      id: 'rights',
+      title: 'Your Rights',
+      description: 'Control over your personal information',
+      icon: Users,
+      content: 'Access, correction, deletion, portability, objection rights',
+    },
+    {
+      id: 'security',
+      title: 'Security',
+      description: 'How we protect your information',
+      icon: BookOpen,
+      content: 'Encryption, access controls, monitoring, compliance',
+    },
+  ];
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query.trim() === '') {
+      setSearchResults([]);
+      return;
+    }
+    const filtered = sections.filter(
+      (section) =>
+        section.title.toLowerCase().includes(query.toLowerCase()) ||
+        section.description.toLowerCase().includes(query.toLowerCase()) ||
+        section.content.toLowerCase().includes(query.toLowerCase()),
+    );
+    setSearchResults(filtered);
+  };
+
   return (
-    <div className="overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 duration-1000 animate-in fade-in dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <Navbar />
-      <div className="container max-w-5xl pb-12 md:py-16">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <Link href="/">
-              <Button variant="ghost" className="flex items-center gap-2 px-0">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
-              <h1 className="text-3xl font-bold tracking-tight">Privacy Policy</h1>
+      <div className="container max-w-7xl pb-12 pt-8 md:py-16">
+        {/* Hero Section */}
+        <div className="mb-12 text-center delay-200 duration-1000 animate-in slide-in-from-bottom-4">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg delay-300 duration-1000 animate-in zoom-in-50">
+            <Shield className="h-8 w-8 text-white" />
+          </div>
+          <h1 className="delay-400 mb-4 bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-4xl font-bold text-transparent duration-1000 animate-in slide-in-from-bottom-4 dark:from-slate-100 dark:to-slate-400 md:text-5xl">
+            Privacy Policy
+          </h1>
+          <p className="mx-auto mb-8 max-w-2xl text-lg text-slate-600 delay-500 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
+            Your privacy is our priority. Learn how we protect and handle your information with transparency and care.
+          </p>
+
+          {/* Search Bar */}
+          <div className="delay-600 mx-auto mb-8 max-w-md duration-1000 animate-in slide-in-from-bottom-4">
+            <div className="relative">
+              <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                type="search"
+                placeholder="Search privacy topics..."
+                className="pl-10 pr-10 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                aria-label="Search privacy policy"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => handleSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label="Clear search"
+                >
+                </button>
+              )}
             </div>
-            <p className="text-lg text-muted-foreground">Last Updated: June 20, 2025</p>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="delay-700 mb-8 flex flex-wrap justify-center gap-4 duration-1000 animate-in slide-in-from-bottom-4">
+            <Button asChild size="lg" className="transition-transform hover:scale-105">
+              <Link href="/terms">
+                <BookOpen className="mr-2 h-4 w-4" />
+                Terms of Service
+              </Link>
+            </Button>
+            <Button variant="outline" asChild size="lg" className="transition-transform hover:scale-105">
+              <Link href="/support">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Get Help
+              </Link>
+            </Button>
+          </div>
+
+          {/* Quick Stats */}
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500 delay-800 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span>Last updated: January 1, 2025</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <HelpCircle className="h-4 w-4" />
+              <span>
+                Questions?{' '}
+                <Link href="/support" className="text-blue-600 transition-colors hover:underline">
+                  Contact Support
+                </Link>
+              </span>
+            </div>
           </div>
         </div>
-        <Separator className="my-6" />
 
-        <Tabs defaultValue="privacy-policy" className="space-y-8">
-          <TabsList className="flex flex-wrap gap-2">
-            <TabsTrigger value="privacy-policy">Privacy Policy</TabsTrigger>
-            <TabsTrigger value="data-processing">Data Processing</TabsTrigger>
-            <TabsTrigger value="cookies">Cookies & Tracking</TabsTrigger>
-            <TabsTrigger value="rights">Your Rights</TabsTrigger>
-          </TabsList>
+        <Separator className="delay-800 mb-8 duration-1000 animate-in slide-in-from-bottom-4" />
 
-          <TabsContent value="privacy-policy" className="space-y-6">
-            <div className="prose dark:prose-invert max-w-none">
-              <h2>Introduction</h2>
-              <p>
-                At Dionysus, we take your privacy seriously. This Privacy Policy explains how we
-                collect, use, disclose, and safeguard your information when you use our AI-powered
-                meeting assistant service. Please read this policy carefully. If you do not agree
-                with the terms of this privacy policy, please do not access the application.
-              </p>
-              <p>
-                We reserve the right to make changes to this Privacy Policy at any time and for any
-                reason. We will alert you about any changes by updating the &quot;Last Updated&quot;
-                date of this privacy policy. You are encouraged to periodically review this privacy
-                policy to stay informed of updates.
-              </p>
+        {/* Breadcrumb */}
+        <nav className="delay-900 mb-6 flex items-center space-x-2 text-sm text-slate-600 duration-1000 animate-in slide-in-from-left-4 dark:text-slate-400">
+          <Link
+            href="/"
+            className="transition-colors hover:text-slate-900 dark:hover:text-slate-100"
+          >
+            Home
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-slate-900 dark:text-slate-100">Privacy Policy</span>
+        </nav>
 
-              <h2>Information We Collect</h2>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+          {/* Table of Contents - Desktop Sidebar */}
+          <div className="hidden lg:block">
+            <div className="sticky top-24 space-y-4">
+              <div className="rounded-lg border border-slate-200 bg-white/50 p-4 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/50">
+                <h3 className="mb-3 font-semibold text-slate-900 dark:text-slate-100">
+                  Table of Contents
+                </h3>
+                <nav className="space-y-2">
+                  {sections.map(({ id, title, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => {
+                        setActiveSection(id);
+                        setSearchResults([]);
+                        setSearchQuery('');
+                      }}
+                      className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                        activeSection === id
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                          : 'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {title}
+                    </button>
+                  ))}
+                </nav>
+              </div>
 
-              <h3>Personal Information</h3>
-              <p>
-                We may collect personal information that you voluntarily provide to us when you:
-              </p>
-              <ul>
-                <li>Register for an account</li>
-                <li>
-                  Express an interest in obtaining information about us or our products and services
-                </li>
-                <li>Participate in activities on the application</li>
-                <li>Contact customer support</li>
-              </ul>
-              <p>The personal information we collect may include:</p>
-              <ul>
-                <li>Name</li>
-                <li>Email address</li>
-                <li>Phone number</li>
-                <li>Job title and company</li>
-                <li>Billing information</li>
-                <li>Preferences and settings</li>
-                <li>Profile information</li>
-              </ul>
-
-              <h3>Meeting Data</h3>
-              <p>When you use our services, we collect data from your meetings, including:</p>
-              <ul>
-                <li>Audio recordings (when permitted by you)</li>
-                <li>Transcripts of meetings</li>
-                <li>Meeting metadata (date, time, duration, participants)</li>
-                <li>Chat messages sent during meetings</li>
-                <li>Notes and action items created during meetings</li>
-              </ul>
-              <p>
-                We consider meeting content to be sensitive information and handle it with the
-                utmost care. Meeting content is processed according to your instructions and used
-                solely to provide you with the services you request.
-              </p>
-
-              <h3>Technical Information</h3>
-              <p>
-                We automatically collect certain information when you visit, use, or navigate our
-                platform. This information does not reveal your specific identity but may include:
-              </p>
-              <ul>
-                <li>Device and usage information</li>
-                <li>IP address</li>
-                <li>Browser and device characteristics</li>
-                <li>Operating system</li>
-                <li>Language preferences</li>
-                <li>Referring URLs</li>
-                <li>Device name</li>
-                <li>Country</li>
-                <li>Location</li>
-                <li>Information about how and when you use our application</li>
-              </ul>
-              <p>
-                This information is primarily needed to maintain the security and operation of our
-                platform, and for our internal analytics and reporting purposes.
-              </p>
-
-              <h2>How We Use Your Information</h2>
-              <p>We may use the information we collect for various purposes, including to:</p>
-              <ul>
-                <li>Provide, operate, and maintain our services</li>
-                <li>Improve, personalize, and expand our services</li>
-                <li>Understand and analyze how you use our services</li>
-                <li>Develop new products, services, features, and functionality</li>
-                <li>
-                  Process transactions and send related information including confirmations and
-                  invoices
-                </li>
-                <li>
-                  Send administrative information to you, such as changes to our terms, conditions,
-                  and policies
-                </li>
-                <li>Respond to your comments, questions, and requests</li>
-                <li>
-                  Send you technical notices, updates, security alerts, and support and
-                  administrative messages
-                </li>
-                <li>Provide customer service and support</li>
-                <li>
-                  Monitor and analyze trends, usage, and activities in connection with our services
-                </li>
-                <li>Detect, prevent and address technical issues</li>
-                <li>Comply with legal obligations</li>
-              </ul>
-
-              <h3>AI Processing</h3>
-              <p>
-                Dionysus uses artificial intelligence and machine learning technologies to power its
-                core features. This includes:
-              </p>
-              <ul>
-                <li>Speech recognition for real-time transcription</li>
-                <li>Natural language processing for meeting summarization</li>
-                <li>Machine learning for action item detection</li>
-                <li>AI-based analysis for generating insights</li>
-              </ul>
-              <p>
-                Your data is processed algorithmically to provide these services. We do not use your
-                meeting content to train our general AI models without your explicit consent.
-              </p>
-
-              <h2>Data Retention</h2>
-              <p>
-                We will only keep your personal information and meeting data for as long as it is
-                necessary for the purposes set out in this privacy policy, unless a longer retention
-                period is required or permitted by law.
-              </p>
-              <p>
-                No purpose in this policy will require us keeping your personal information for
-                longer than the period of time in which you have an account with us. When you delete
-                your account, we will delete or anonymize your information consistent with our data
-                retention policies.
-              </p>
-              <p>
-                Meeting recordings and transcripts are retained based on your subscription level:
-              </p>
-              <ul>
-                <li>Free tier: 7 days</li>
-                <li>Pro tier: 90 days</li>
-                <li>Enterprise tier: Up to 1 year, or as specified in your contract</li>
-              </ul>
+              {/* Quick Actions */}
+              <div className="rounded-lg border border-slate-200 bg-white/50 p-4 backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/50">
+                <h3 className="mb-3 font-semibold text-slate-900 dark:text-slate-100">
+                  Related Links
+                </h3>
+                <div className="space-y-2">
+                  <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                    <Link href="/terms">
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Terms of Service
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                    <Link href="/support">
+                      <HelpCircle className="mr-2 h-4 w-4" />
+                      Get Help
+                    </Link>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild className="w-full justify-start">
+                    <a href="mailto:sakshamgoel1107@gmail.com">
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Contact Support
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </div>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="data-processing" className="space-y-6">
-            <div className="prose dark:prose-invert max-w-none">
-              <h2>Data Processing</h2>
-              <p>
-                This section provides detailed information about how we process your data, including
-                the legal bases for processing, data transfers, and our security measures.
-              </p>
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {searchResults.length > 0 ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                    Search Results for &quot;{searchQuery}&quot;
+                  </h2>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSearchResults([]);
+                    }}
+                  >
+                    Clear Search
+                  </Button>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {searchResults.map((section) => {
+                    const Icon = section.icon;
+                    return (
+                      <Card
+                        key={section.id}
+                        className="group cursor-pointer border-0 bg-gradient-to-br from-blue-50 to-indigo-50 transition-all duration-300 hover:shadow-lg dark:from-blue-950/50 dark:to-indigo-950/50"
+                        onClick={() => {
+                          setActiveSection(section.id);
+                          setSearchResults([]);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <CardHeader>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                              <Icon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-lg">{section.title}</CardTitle>
+                            </div>
+                          </div>
+                          <CardDescription>{section.description}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-slate-600 dark:text-slate-400">
+                            {section.content}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <Tabs
+                defaultValue="overview"
+                value={activeSection}
+                onValueChange={setActiveSection}
+                className="space-y-8"
+              >
+                <div className="sticky top-16 z-10 -mx-4 border-b border-slate-200 bg-white/80 px-4 py-4 backdrop-blur-md supports-[backdrop-filter]:bg-white/60 dark:border-slate-700 dark:bg-slate-900/80 dark:supports-[backdrop-filter]:bg-slate-900/60 lg:hidden">
+                  <TabsList className="flex h-auto flex-wrap gap-2 rounded-lg bg-slate-100 p-1 dark:bg-slate-800">
+                    <TabsTrigger
+                      value="overview"
+                      className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700"
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span className="hidden sm:inline">Overview</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="data"
+                      className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700"
+                    >
+                      <Database className="h-4 w-4" />
+                      <span className="hidden sm:inline">Data</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="rights"
+                      className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700"
+                    >
+                      <Users className="h-4 w-4" />
+                      <span className="hidden sm:inline">Rights</span>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="security"
+                      className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-slate-700"
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      Security
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-              <h3>Legal Basis for Processing</h3>
-              <p>
-                We process your personal information for the purposes described in this Privacy
-                Policy based on the following legal grounds:
-              </p>
-              <ul>
-                <li>
-                  <strong>Performance of a Contract:</strong> Processing your information to fulfill
-                  our obligations under our Terms of Service or other agreements with you.
-                </li>
-                <li>
-                  <strong>Legitimate Interests:</strong> Processing your information for our
-                  legitimate business interests, such as improving our services and providing
-                  security.
-                </li>
-                <li>
-                  <strong>Consent:</strong> Processing your information with your explicit consent
-                  for specific purposes.
-                </li>
-                <li>
-                  <strong>Legal Obligations:</strong> Processing your information to comply with
-                  applicable laws and regulations.
-                </li>
-              </ul>
+                <TabsContent value="overview" className="space-y-8">
+                  {/* Overview Cards */}
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="group border-0 bg-gradient-to-br from-blue-50 to-indigo-50 transition-all duration-300 hover:shadow-lg dark:from-blue-950/50 dark:to-indigo-950/50">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                            <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Privacy First</CardTitle>
+                          </div>
+                        </div>
+                        <CardDescription className="text-sm">
+                          Your privacy is fundamental to everything we do
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          We collect only what&apos;s necessary, protect it with industry-leading security, and give you full control over your data.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-              <h3>Data Transfers</h3>
-              <p>
-                Dionysus is a global service. Your information may be transferred to, and processed
-                in, countries other than the country in which you are resident. These countries may
-                have data protection laws that are different from the laws of your country.
-              </p>
-              <p>
-                Specifically, our servers are located in the United States, and our third-party
-                service providers and partners operate globally. This means that when we collect
-                your information, we may process it in any of these countries.
-              </p>
-              <p>
-                When we transfer your information to other countries, we will protect that
-                information as described in this Privacy Policy and in accordance with applicable
-                law. We take steps to ensure that adequate safeguards are in place to protect your
-                information when it is transferred internationally, including:
-              </p>
-              <ul>
-                <li>Using EU-approved Standard Contractual Clauses</li>
-                <li>
-                  Ensuring our partners have certified under the EU-U.S. and Swiss-U.S. Privacy
-                  Shield frameworks
-                </li>
-                <li>Implementing appropriate technical and organizational measures</li>
-              </ul>
+                    <Card className="group border-0 bg-gradient-to-br from-green-50 to-emerald-50 transition-all duration-300 hover:shadow-lg dark:from-green-950/50 dark:to-emerald-950/50">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/50">
+                            <Database className="h-5 w-5 text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Transparent Data Use</CardTitle>
+                          </div>
+                        </div>
+                        <CardDescription className="text-sm">
+                          Clear information about what we collect and why
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          We&apos;re transparent about our data practices and never use your information for purposes you haven&apos;t agreed to.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-              <h3>Security Measures</h3>
-              <p>
-                We have implemented appropriate technical and organizational security measures
-                designed to protect the security of any personal information we process. However,
-                despite our safeguards and efforts to secure your information, no electronic
-                transmission over the Internet or information storage technology can be guaranteed
-                to be 100% secure, so we cannot promise or guarantee that hackers, cybercriminals,
-                or other unauthorized third parties will not be able to defeat our security and
-                improperly collect, access, steal, or modify your information.
-              </p>
-              <p>Our security measures include:</p>
-              <ul>
-                <li>Encryption of data in transit and at rest</li>
-                <li>Regular security assessments and penetration testing</li>
-                <li>Access controls and authentication requirements</li>
-                <li>Regular security training for employees</li>
-                <li>Physical security measures for our data centers</li>
-                <li>Monitoring systems for detecting and addressing security incidents</li>
-                <li>Business continuity and disaster recovery plans</li>
-              </ul>
+                    <Card className="group border-0 bg-gradient-to-br from-purple-50 to-pink-50 transition-all duration-300 hover:shadow-lg dark:from-purple-950/50 dark:to-pink-950/50">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/50">
+                            <Users className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">Your Control</CardTitle>
+                          </div>
+                        </div>
+                        <CardDescription className="text-sm">
+                          Full control over your personal information and privacy settings
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Access, correct, delete, or export your data anytime. Your privacy rights are always respected.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-              <h3>Third-Party Service Providers</h3>
-              <p>
-                We may share your information with third-party service providers to assist us in
-                providing you with our services. These third parties have access to your personal
-                information only to perform these tasks on our behalf and are obligated not to
-                disclose or use it for any other purpose.
-              </p>
-              <p>We use the following categories of third-party service providers:</p>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Purpose</TableHead>
-                    <TableHead>Data Shared</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Cloud Infrastructure</TableCell>
-                    <TableCell>Hosting our services</TableCell>
-                    <TableCell>All data stored in our platform</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Authentication</TableCell>
-                    <TableCell>User login and identity verification</TableCell>
-                    <TableCell>Email, name, login information</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Payment Processing</TableCell>
-                    <TableCell>Processing subscription payments</TableCell>
-                    <TableCell>Billing information, transaction history</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Analytics</TableCell>
-                    <TableCell>Understanding service usage</TableCell>
-                    <TableCell>Usage data, device information</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Customer Support</TableCell>
-                    <TableCell>Providing technical assistance</TableCell>
-                    <TableCell>Contact information, support tickets</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Email Delivery</TableCell>
-                    <TableCell>Sending notifications</TableCell>
-                    <TableCell>Email, name, notification preferences</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-              <p>
-                We ensure that all third-party service providers agree to strict data protection
-                terms that are consistent with this Privacy Policy.
-              </p>
-            </div>
-          </TabsContent>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <h2>Our Privacy Commitment</h2>
+                    <p>
+                      At Dionysus, privacy isn&apos;t an afterthought—it&apos;s built into everything we do. We believe you should have complete transparency and control over your personal information and meeting data.
+                    </p>
 
-          <TabsContent value="cookies" className="space-y-6">
-            <div className="prose dark:prose-invert max-w-none">
-              <h2>Cookies & Tracking Technologies</h2>
-              <p>
-                We use cookies and similar tracking technologies to collect and use information
-                about you. Cookies are small data files stored on your device that allow us to
-                recognize your browser and remember certain information.
-              </p>
+                    <h3>What This Policy Covers</h3>
+                    <p>
+                      This Privacy Policy explains how Dionysus collects, uses, shares, and protects your information when you use our AI-powered meeting intelligence platform. It applies to all our services, including our web application, mobile apps, and any integrations.
+                    </p>
 
-              <h3>Types of Cookies We Use</h3>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Purpose</TableHead>
-                    <TableHead>Duration</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Essential</TableCell>
-                    <TableCell>
-                      Necessary for the website to function properly. These enable basic functions
-                      like page navigation and access to secure areas.
-                    </TableCell>
-                    <TableCell>Session / Persistent</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Analytics</TableCell>
-                    <TableCell>
-                      Help us understand how visitors interact with our website by collecting and
-                      reporting information anonymously.
-                    </TableCell>
-                    <TableCell>Persistent (up to 2 years)</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Functional</TableCell>
-                    <TableCell>
-                      Enable enhanced functionality and personalization, such as remembering your
-                      preferences.
-                    </TableCell>
-                    <TableCell>Persistent (up to 1 year)</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Targeting</TableCell>
-                    <TableCell>
-                      Used to deliver relevant advertisements based on your interests and track the
-                      effectiveness of marketing campaigns.
-                    </TableCell>
-                    <TableCell>Persistent (up to 1 year)</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+                    <h3>Our Privacy Principles</h3>
+                    <ul>
+                      <li><strong>Minimal Collection:</strong> We only collect data that&apos;s necessary to provide and improve our services</li>
+                      <li><strong>Purpose Limitation:</strong> We use your data only for the purposes you&apos;ve agreed to</li>
+                      <li><strong>Transparency:</strong> We&apos;re clear about what we collect, how we use it, and who we share it with</li>
+                      <li><strong>Security:</strong> We protect your data with industry-leading security measures</li>
+                      <li><strong>Control:</strong> You have full control over your data and privacy settings</li>
+                      <li><strong>Accountability:</strong> We&apos;re responsible for protecting your privacy and will be held accountable</li>
+                    </ul>
 
-              <h3>How to Manage Cookies</h3>
-              <p>
-                Most web browsers allow you to control cookies through their settings preferences.
-                To find out more about cookies, including how to see what cookies have been set,
-                visit{' '}
-                <a href="https://www.aboutcookies.org" target="_blank" rel="noopener noreferrer">
-                  www.aboutcookies.org
-                </a>
-                .
-              </p>
+                    <h3>Key Information</h3>
+                    <p>
+                      <strong>Data Controller:</strong> Dionysus is the data controller for the personal information we collect and process.
+                    </p>
+                    <p>
+                      <strong>Legal Basis:</strong> We process your data based on your consent, our legitimate interests, and to fulfill our contractual obligations.
+                    </p>
+                    <p>
+                      <strong>International Transfers:</strong> We may transfer your data internationally, always with appropriate safeguards in place.
+                    </p>
 
-              <p>
-                You can manage browser cookies through your browser settings. Here&apos;s how to
-                remove cookies from popular browsers:
-              </p>
+                    <h3>Updates to This Policy</h3>
+                    <p>
+                      We may update this Privacy Policy from time to time to reflect changes in our practices or applicable laws. We&apos;ll notify you of any material changes and give you the opportunity to review the updated policy before it takes effect.
+                    </p>
+                  </div>
+                </TabsContent>
 
-              <ul>
-                <li>
-                  <strong>Chrome:</strong> Settings → Privacy and Security → Cookies and other site
-                  data
-                </li>
-                <li>
-                  <strong>Firefox:</strong> Options → Privacy & Security → Cookies and Site Data
-                </li>
-                <li>
-                  <strong>Safari:</strong> Preferences → Privacy → Manage Website Data
-                </li>
-                <li>
-                  <strong>Edge:</strong> Settings → Site permissions → Cookies and site data
-                </li>
-              </ul>
+                <TabsContent value="data" className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <Card className="border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Users className="h-5 w-5 text-blue-600" />
+                          Account Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Basic information like name, email, and organization details needed to create and manage your account.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-              <p>
-                Please note that restricting cookies may impact the functionality of our website.
-                Essential cookies cannot be disabled as they are necessary for the website to
-                function.
-              </p>
+                    <Card className="border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/50 dark:to-emerald-950/50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <MessageSquare className="h-5 w-5 text-green-600" />
+                          Meeting Content
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Audio recordings, transcripts, and meeting metadata processed to provide AI-powered insights and summaries.
+                        </p>
+                      </CardContent>
+                    </Card>
 
-              <h3>Do Not Track</h3>
-              <p>
-                We respect your choice if you enable the &quot;Do Not Track&quot; setting in your
-                browser. When DNT is enabled, we do not use analytics or advertising cookies.
-              </p>
+                    <Card className="border-0 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50">
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Database className="h-5 w-5 text-purple-600" />
+                          Usage Analytics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">
+                          Anonymized usage patterns and performance metrics to improve our services and user experience.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
 
-              <h3>Other Tracking Technologies</h3>
-              <p>
-                In addition to cookies, we may use web beacons, pixel tags, and other tracking
-                technologies to improve your browsing experience, analyze website traffic, and
-                gather demographic information about our user base as a whole.
-              </p>
-              <p>
-                These technologies help us understand how users engage with our website and allow us
-                to analyze the effectiveness of our marketing campaigns.
-              </p>
+                  <div className="prose dark:prose-invert max-w-none">
+                    <h2>Information We Collect</h2>
+                    <p>
+                      We collect different types of information to provide you with the best possible experience while respecting your privacy. Here&apos;s what we collect and why:
+                    </p>
 
-              <h3>Third-Party Analytics</h3>
-              <p>
-                We use third-party analytics services to help understand user behavior on our
-                website. These services may collect information about your use of our website, which
-                is transmitted to the service provider. We use this information to improve our
-                website and services.
-              </p>
-              <p>Our primary analytics providers include:</p>
-              <ul>
-                <li>Google Analytics</li>
-                <li>Mixpanel</li>
-                <li>Hotjar</li>
-              </ul>
-              <p>
-                You can opt out of Google Analytics by installing the{' '}
-                <a
-                  href="https://tools.google.com/dlpage/gaoptout"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Google Analytics Opt-out Browser Add-on
-                </a>
-                .
-              </p>
-            </div>
-          </TabsContent>
+                    <h3>Personal Information</h3>
+                    <p>When you create an account or use our services, we collect:</p>
+                    <ul>
+                      <li><strong>Identity Information:</strong> Name, email address, profile picture</li>
+                      <li><strong>Contact Information:</strong> Email address, phone number (optional)</li>
+                      <li><strong>Organization Details:</strong> Company name, job title, team information</li>
+                      <li><strong>Account Preferences:</strong> Language, timezone, notification settings</li>
+                      <li><strong>Billing Information:</strong> Payment details, billing address (processed securely by our payment providers)</li>
+                    </ul>
 
-          <TabsContent value="rights" className="space-y-6">
-            <div className="prose dark:prose-invert max-w-none">
-              <h2>Your Data Protection Rights</h2>
-              <p>
-                Depending on your location and applicable laws, you may have certain rights
-                regarding your personal information. These may include:
-              </p>
+                    <h3>Meeting Data</h3>
+                    <p>To provide our core AI-powered features, we process:</p>
+                    <ul>
+                      <li><strong>Audio Content:</strong> Meeting recordings (only when you choose to record)</li>
+                      <li><strong>Transcripts:</strong> Real-time and processed transcriptions of your meetings</li>
+                      <li><strong>Meeting Metadata:</strong> Date, time, duration, participant list, meeting titles</li>
+                      <li><strong>Generated Content:</strong> AI summaries, action items, insights, and notes</li>
+                      <li><strong>Participant Information:</strong> Names and roles of meeting attendees</li>
+                    </ul>
 
-              <h3>For All Users</h3>
-              <ul>
-                <li>
-                  <strong>Access:</strong> You can request copies of your personal information that
-                  we hold.
-                </li>
-                <li>
-                  <strong>Correction:</strong> You can ask us to correct inaccurate personal
-                  information.
-                </li>
-                <li>
-                  <strong>Deletion:</strong> You can ask us to delete your personal information in
-                  certain circumstances.
-                </li>
-                <li>
-                  <strong>Restriction:</strong> You can ask us to restrict the processing of your
-                  personal information.
-                </li>
-                <li>
-                  <strong>Object:</strong> You can object to our processing of your personal
-                  information.
-                </li>
-                <li>
-                  <strong>Data Portability:</strong> You can ask that we transfer your personal
-                  information to another organization.
-                </li>
-              </ul>
+                    <h3>Technical Information</h3>
+                    <p>We automatically collect certain technical information to ensure service quality:</p>
+                    <ul>
+                      <li><strong>Device Information:</strong> Browser type, operating system, device model</li>
+                      <li><strong>Usage Data:</strong> Features used, session duration, interaction patterns</li>
+                      <li><strong>Performance Data:</strong> Load times, error rates, system performance metrics</li>
+                      <li><strong>Network Information:</strong> IP address, connection quality, geographic location (country/region level)</li>
+                    </ul>
 
-              <h3>Additional Rights for EU/EEA, UK, and California Residents</h3>
-              <p>
-                If you are located in the European Economic Area (EEA), United Kingdom, or
-                Switzerland, you have additional rights under the General Data Protection Regulation
-                (GDPR) and UK GDPR. If you are a California resident, you have rights under the
-                California Consumer Privacy Act (CCPA).
-              </p>
+                    <h3>How We Use Your Information</h3>
+                    <p>We use the information we collect to:</p>
+                    <ul>
+                      <li>Provide and improve our AI-powered meeting intelligence services</li>
+                      <li>Process and analyze meeting content to generate insights and summaries</li>
+                      <li>Personalize your experience and provide relevant recommendations</li>
+                      <li>Communicate with you about your account and our services</li>
+                      <li>Ensure the security and integrity of our platform</li>
+                      <li>Comply with legal obligations and resolve disputes</li>
+                      <li>Develop new features and improve existing functionality</li>
+                    </ul>
 
-              <h4>For EU/EEA and UK Residents (GDPR)</h4>
-              <p>Under GDPR, you have the right to:</p>
-              <ul>
-                <li>
-                  Withdraw consent at any time if we are processing your information based on
-                  consent
-                </li>
-                <li>Lodge a complaint with your local data protection authority</li>
-              </ul>
+                    <h3>Data Retention</h3>
+                    <p>We retain your information only as long as necessary:</p>
+                    <ul>
+                      <li><strong>Account Information:</strong> Until you delete your account</li>
+                      <li><strong>Meeting Content:</strong> Based on your subscription plan (7-365 days)</li>
+                      <li><strong>Usage Analytics:</strong> Up to 2 years in anonymized form</li>
+                      <li><strong>Legal Requirements:</strong> As required by applicable laws</li>
+                    </ul>
+                  </div>
+                </TabsContent>
 
-              <h4>For California Residents (CCPA)</h4>
-              <p>Under the CCPA, California residents have the right to:</p>
-              <ul>
-                <li>Know what personal information is being collected about them</li>
-                <li>Know whether their personal information is sold or disclosed and to whom</li>
-                <li>Say no to the sale of personal information</li>
-                <li>Access their personal information</li>
-                <li>Request deletion of their personal information</li>
-                <li>Not be discriminated against for exercising their privacy rights</li>
-              </ul>
-              <p>
-                We do not sell personal information as defined by the CCPA. We have not sold any
-                personal information in the preceding 12 months.
-              </p>
+                <TabsContent value="rights" className="space-y-6">
+                  <div className="prose dark:prose-invert max-w-none">
+                    <h2>Your Privacy Rights</h2>
+                    <p>
+                      You have comprehensive rights over your personal information. We&apos;re committed to making these rights easy to exercise and will respond to your requests promptly.
+                    </p>
 
-              <h3>How to Exercise Your Rights</h3>
-              <p>To exercise any of these rights, please contact us at:</p>
-              <p>
-                <strong>Email:</strong>{' '}
-                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
-              </p>
-              <p>
-                We will respond to your request within 30 days. We may need to verify your identity
-                before processing your request.
-              </p>
+                    <h3>Right to Access</h3>
+                    <p>
+                      You can request a copy of all personal information we hold about you. This includes:
+                    </p>
+                    <ul>
+                      <li>Account information and profile data</li>
+                      <li>Meeting transcripts and generated content</li>
+                      <li>Usage history and preferences</li>
+                      <li>Information about how your data has been processed</li>
+                    </ul>
 
-              <h3>Children&apos;s Privacy</h3>
-              <p>
-                Our services are not intended for use by children under the age of 13, and we do not
-                knowingly collect personal information from children under 13. If we discover that a
-                child under 13 has provided us with personal information, we will promptly delete
-                such information from our systems.
-              </p>
-              <p>
-                If you are a parent or guardian and you are aware that your child has provided us
-                with personal information, please contact us so that we can take necessary actions.
-              </p>
+                    <h3>Right to Correction</h3>
+                    <p>
+                      If any of your personal information is inaccurate or incomplete, you can:
+                    </p>
+                    <ul>
+                      <li>Update your profile information directly in your account settings</li>
+                      <li>Request corrections to meeting transcripts or generated content</li>
+                      <li>Contact us to correct information you cannot change yourself</li>
+                    </ul>
 
-              <h3>Changes to This Privacy Policy</h3>
-              <p>
-                We may update our Privacy Policy from time to time. We will notify you of any
-                changes by posting the new Privacy Policy on this page and updating the &quot;Last
-                Updated&quot; date at the top of this page. You are advised to review this Privacy
-                Policy periodically for any changes.
-              </p>
-              <p>
-                Changes to this Privacy Policy are effective when they are posted on this page. If
-                we make material changes to this policy, we will notify you through a notice on our
-                website or by email.
-              </p>
+                    <h3>Right to Deletion</h3>
+                    <p>
+                      You can request deletion of your personal information when:
+                    </p>
+                    <ul>
+                      <li>The information is no longer necessary for the original purpose</li>
+                      <li>You withdraw consent and there&apos;s no other legal basis for processing</li>
+                      <li>Your information has been unlawfully processed</li>
+                      <li>You want to delete your account entirely</li>
+                    </ul>
 
-              <h3>Contact Us</h3>
-              <p>If you have any questions about this Privacy Policy, please contact us:</p>
-              <p>
-                <strong>Email:</strong>{' '}
-                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
-                <br />
-                <strong>Phone:</strong> +91 8882534712
-              </p>
-              <p>
-                For data subjects in the EU, our EU representative can be contacted at:
-                <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
+                    <h3>Right to Data Portability</h3>
+                    <p>
+                      You can export your data in a structured, commonly used format:
+                    </p>
+                    <ul>
+                      <li>Meeting transcripts and summaries</li>
+                      <li>Account information and preferences</li>
+                      <li>Generated insights and action items</li>
+                      <li>Usage history and analytics (where applicable)</li>
+                    </ul>
+
+                    <h3>Right to Object</h3>
+                    <p>
+                      You can object to certain types of data processing:
+                    </p>
+                    <ul>
+                      <li>Marketing communications (opt-out anytime)</li>
+                      <li>Analytics and performance monitoring (with service limitations)</li>
+                      <li>Automated decision-making processes</li>
+                    </ul>
+
+                    <h3>Right to Restrict Processing</h3>
+                    <p>
+                      You can request that we limit how we process your information when:
+                    </p>
+                    <ul>
+                      <li>You&apos;re disputing the accuracy of your personal information</li>
+                      <li>Processing is unlawful but you don&apos;t want deletion</li>
+                      <li>We no longer need the information but you need it for legal claims</li>
+                    </ul>
+
+                    <h3>How to Exercise Your Rights</h3>
+                    <p>
+                      To exercise any of these rights:
+                    </p>
+                    <ul>
+                      <li>Use the privacy controls in your account settings</li>
+                      <li>Contact our support team at sakshamgoel1107@gmail.com</li>
+                      <li>Submit a request through our privacy portal</li>
+                    </ul>
+                    <p>
+                      We&apos;ll respond to your request within 30 days and may ask for additional information to verify your identity.
+                    </p>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="security" className="space-y-6">
+                  <div className="max-w-4xl">
+                    <div className="mb-8">
+                      <h2 className="mb-4 text-3xl font-bold text-slate-900 dark:text-slate-100">
+                        Security & Protection
+                      </h2>
+                      <p className="text-lg text-slate-600 dark:text-slate-400">
+                        How we protect your information with industry-leading security measures
+                      </p>
+                    </div>
+
+                    <Accordion type="single" collapsible className="space-y-4">
+                      <AccordionItem
+                        value="encryption"
+                        className="rounded-lg border border-slate-200 px-6 dark:border-slate-700"
+                      >
+                        <AccordionTrigger className="py-6 text-left hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <Shield className="h-5 w-5 text-blue-600" />
+                            <span className="text-lg font-semibold">Encryption & Data Protection</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6">
+                          <div className="space-y-4">
+                            <p className="text-slate-600 dark:text-slate-400">
+                              All data is encrypted both in transit and at rest using industry-standard AES-256 encryption. We use TLS 1.3 for all communications and implement perfect forward secrecy to protect your information.
+                            </p>
+                            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400">
+                              <li>End-to-end encryption for sensitive meeting content</li>
+                              <li>Encrypted database storage with regular key rotation</li>
+                              <li>Secure API communications with certificate pinning</li>
+                              <li>Zero-knowledge architecture for maximum privacy</li>
+                            </ul>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem
+                        value="access"
+                        className="rounded-lg border border-slate-200 px-6 dark:border-slate-700"
+                      >
+                        <AccordionTrigger className="py-6 text-left hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <Users className="h-5 w-5 text-green-600" />
+                            <span className="text-lg font-semibold">Access Controls & Authentication</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6">
+                          <div className="space-y-4">
+                            <p className="text-slate-600 dark:text-slate-400">
+                              We implement strict access controls and multi-factor authentication to ensure only authorized users can access your data.
+                            </p>
+                            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400">
+                              <li>Multi-factor authentication (MFA) for all accounts</li>
+                              <li>Role-based access control (RBAC) for team permissions</li>
+                              <li>Regular access reviews and automated deprovisioning</li>
+                              <li>Single sign-on (SSO) integration for enterprise security</li>
+                            </ul>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem
+                        value="monitoring"
+                        className="rounded-lg border border-slate-200 px-6 dark:border-slate-700"
+                      >
+                        <AccordionTrigger className="py-6 text-left hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <Database className="h-5 w-5 text-purple-600" />
+                            <span className="text-lg font-semibold">Monitoring & Incident Response</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6">
+                          <div className="space-y-4">
+                            <p className="text-slate-600 dark:text-slate-400">
+                              We continuously monitor our systems for security threats and have comprehensive incident response procedures in place.
+                            </p>
+                            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400">
+                              <li>24/7 security monitoring and threat detection</li>
+                              <li>Automated anomaly detection and alerting</li>
+                              <li>Rapid incident response and containment procedures</li>
+                              <li>Regular security audits and penetration testing</li>
+                            </ul>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+
+                      <AccordionItem
+                        value="compliance"
+                        className="rounded-lg border border-slate-200 px-6 dark:border-slate-700"
+                      >
+                        <AccordionTrigger className="py-6 text-left hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <BookOpen className="h-5 w-5 text-orange-600" />
+                            <span className="text-lg font-semibold">Compliance & Certifications</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pb-6">
+                          <div className="space-y-4">
+                            <p className="text-slate-600 dark:text-slate-400">
+                              We maintain compliance with major security and privacy frameworks to ensure the highest standards of data protection.
+                            </p>
+                            <ul className="list-disc pl-6 text-slate-600 dark:text-slate-400">
+                              <li>SOC 2 Type II compliance for security controls</li>
+                              <li>GDPR compliance for European data protection</li>
+                              <li>CCPA compliance for California privacy rights</li>
+                              <li>ISO 27001 security management standards</li>
+                            </ul>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+
+                    <div className="mt-12 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 p-8 text-center dark:from-blue-950/30 dark:to-indigo-950/30">
+                      <Shield className="mx-auto mb-4 h-12 w-12 text-blue-600" />
+                      <h3 className="mb-2 text-xl font-semibold text-slate-900 dark:text-slate-100">
+                        Questions about privacy or security?
+                      </h3>
+                      <p className="mb-6 text-slate-600 dark:text-slate-400">
+                        Our privacy and security teams are here to help with any questions or concerns.
+                      </p>
+                      <div className="flex flex-col justify-center gap-4 sm:flex-row">
+                        <Button asChild>
+                          <a href="mailto:sakshamgoel1107@gmail.com">
+                            <MessageSquare className="mr-2 h-4 w-4" />
+                            Email Support
+                          </a>
+                        </Button>
+                        <Button variant="outline" asChild>
+                          <Link href="/support">
+                            <HelpCircle className="mr-2 h-4 w-4" />
+                            Visit Support Center
+                          </Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
