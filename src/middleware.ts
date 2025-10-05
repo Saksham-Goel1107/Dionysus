@@ -530,6 +530,7 @@ export default clerkMiddleware(async (auth, request) => {
   const userAgent = request.headers.get('user-agent') || '';
   if (process.env.NODE_ENV === 'production') {
     console.log('User IP:', ip);
+    console.log('Requested Path:', pathname);
 
     if (isAutomatedUserAgent(userAgent)) {
       return new NextResponse(

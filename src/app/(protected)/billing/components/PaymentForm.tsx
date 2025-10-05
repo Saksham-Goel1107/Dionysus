@@ -5,11 +5,10 @@ import { useToast } from '@/hooks/use-toast';
 import { api } from '@/trpc/react';
 import { CardElement, Elements, useElements, useStripe } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { AlertCircle, CreditCard, Loader2 } from 'lucide-react';
+import { AlertCircle, CreditCard, HelpCircle, Loader2, Lock, Shield } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import { createPaymentIntent } from '../actions';
-import './payment-form.css';
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder',
@@ -293,6 +292,82 @@ const CheckoutForm: React.FC<PaymentFormProps> = ({
                 }
               }}
             />
+          </div>
+        </div>
+
+        {/* Accepted Cards Section */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">We accept</span>
+            <div className="flex items-center gap-2">
+              {/* Visa */}
+              <div className="flex h-8 w-12 items-center justify-center rounded border bg-blue-600 text-xs font-bold text-white">
+                VISA
+              </div>
+              {/* Mastercard */}
+              <div className="flex h-8 w-12 items-center justify-center rounded border bg-red-500 text-xs font-bold text-white">
+                MC
+              </div>
+              {/* American Express */}
+              <div className="flex h-8 w-12 items-center justify-center rounded border bg-blue-400 text-xs font-bold text-white">
+                AMEX
+              </div>
+              {/* Discover */}
+              <div className="flex h-8 w-12 items-center justify-center rounded border bg-orange-500 text-xs font-bold text-white">
+                DISC
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Security & Support Section */}
+        <div className="space-y-4 rounded-lg border bg-green-50/50 p-4 dark:bg-green-950/20">
+          <div className="flex items-start gap-3">
+            <Shield className="mt-0.5 h-5 w-5 text-green-600" />
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-green-800 dark:text-green-200">
+                Secure Payment Processing
+              </h4>
+              <div className="space-y-1 text-xs text-green-700 dark:text-green-300">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-3 w-3" />
+                  <span>256-bit SSL encryption</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-3 w-3" />
+                  <span>PCI DSS compliant</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-3 w-3" />
+                  <span>Processed by Stripe</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 border-t border-green-200 pt-3 dark:border-green-800">
+            <HelpCircle className="mt-0.5 h-5 w-5 text-blue-600" />
+            <div className="flex-1 space-y-1">
+              <h4 className="text-sm font-semibold text-blue-800 dark:text-blue-200">Need Help?</h4>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Having trouble with your payment?{' '}
+                <a
+                  href="/supportAuth"
+                  className="font-medium underline hover:no-underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Contact our support team
+                </a>{' '}
+                or email us at{' '}
+                <a
+                  href="mailto:sakshamgoel1107@gmail.com"
+                  className="font-medium underline hover:no-underline"
+                >
+                  sakshamgoel1107@gmail.com
+                </a>
+              </p>
+            </div>
           </div>
         </div>
 

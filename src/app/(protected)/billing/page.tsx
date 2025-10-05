@@ -20,7 +20,7 @@ import {
   type Currency,
 } from '@/lib/currencyConverter';
 import { api } from '@/trpc/react';
-import { InfoIcon, Loader2 } from 'lucide-react';
+import { HelpCircle, InfoIcon, Loader2, Shield } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import React, { useEffect, useMemo } from 'react';
 
@@ -685,6 +685,16 @@ const BillingPage = () => {
                 Enter your card details to purchase {creditsToBuyAmount} credits.
               </DialogDescription>
             </DialogHeader>
+            <div className="mb-4 rounded-lg border bg-blue-50 p-3 dark:bg-blue-950/20">
+              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
+                <Shield className="h-4 w-4" />
+                <span className="text-sm font-medium">Secure & Protected</span>
+              </div>
+              <p className="mt-1 text-xs text-blue-700 dark:text-blue-300">
+                Your payment information is encrypted and processed securely through Stripe. We
+                accept Visa, Mastercard, American Express, and Discover cards.
+              </p>
+            </div>
             <div className="px-4 pb-4 pt-2">
               <PaymentForm
                 creditsToBuy={creditsToBuyAmount}
@@ -706,6 +716,87 @@ const BillingPage = () => {
             </div>
           </DialogContent>
         </Dialog>
+      </div>
+
+      {/* Payment Security & Support Info */}
+      <div className="rounded-lg border bg-card p-4 sm:p-6">
+        <h3 className="mb-4 text-lg font-semibold">Payment Information</h3>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Accepted Cards */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">We Accept All Major Cards</h4>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex h-10 w-16 items-center justify-center rounded border bg-blue-600 text-sm font-bold text-white shadow-sm">
+                VISA
+              </div>
+              <div className="w-30 flex h-10 items-center justify-center rounded border bg-red-500 text-sm font-bold text-white shadow-sm">
+                MASTERCARD
+              </div>
+              <div className="flex h-10 w-16 items-center justify-center rounded border bg-blue-400 text-sm font-bold text-white shadow-sm">
+                AMEX
+              </div>
+              <div className="w-25 flex h-10 items-center justify-center rounded border bg-orange-500 text-sm font-bold text-white shadow-sm">
+                DISCOVER
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              All major credit and debit cards accepted worldwide
+            </p>
+          </div>
+
+          {/* Security Features */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-muted-foreground">Security & Protection</h4>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-green-600" />
+                <span>256-bit SSL encryption</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-green-600" />
+                <span>PCI DSS compliant</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Shield className="h-4 w-4 text-green-600" />
+                <span>Processed securely by Stripe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Support Section */}
+        <div className="mt-6 rounded-lg border bg-blue-50 p-4 dark:bg-blue-950/20">
+          <div className="flex items-start gap-3">
+            <HelpCircle className="mt-0.5 h-5 w-5 text-blue-600" />
+            <div className="flex-1">
+              <h4 className="mb-1 text-sm font-semibold text-blue-800 dark:text-blue-200">
+                Need Help with Your Payment?
+              </h4>
+              <p className="mb-2 text-sm text-blue-700 dark:text-blue-300">
+                Our support team is here to help you with any payment issues or questions.
+              </p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/supportAuth', '_blank')}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                >
+                  Visit Support Center
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => (window.location.href = 'mailto:sakshamgoel1107@gmail.com')}
+                  className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-700 dark:text-blue-300 dark:hover:bg-blue-900/20"
+                >
+                  Email Support
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="h-8"></div>
