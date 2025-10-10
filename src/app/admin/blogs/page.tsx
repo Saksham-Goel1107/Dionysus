@@ -45,6 +45,7 @@ interface BlogPost {
   excerpt: string | null;
   coverImage: string | null;
   isPublished: boolean;
+  isSponsored: boolean;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
@@ -276,12 +277,22 @@ export default function AdminBlogsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={blog.isPublished ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {blog.isPublished ? 'Published' : 'Draft'}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={blog.isPublished ? 'default' : 'secondary'}
+                            className="text-xs"
+                          >
+                            {blog.isPublished ? 'Published' : 'Draft'}
+                          </Badge>
+                          {blog.isSponsored && (
+                            <Badge
+                              variant="outline"
+                              className="border-amber-500 bg-amber-50 text-xs text-amber-700 dark:border-amber-400 dark:bg-amber-950 dark:text-amber-300"
+                            >
+                              Sponsored
+                            </Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">

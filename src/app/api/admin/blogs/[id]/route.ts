@@ -67,8 +67,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { action, title, slug, content, excerpt, coverImage, isPublished, tags, publishedAt } =
-      await request.json();
+    const {
+      action,
+      title,
+      slug,
+      content,
+      excerpt,
+      coverImage,
+      isPublished,
+      isSponsored,
+      tags,
+      publishedAt,
+    } = await request.json();
     const awaitedParams = await params;
     const blogId = awaitedParams.id;
 
@@ -155,6 +165,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           excerpt: excerpt || null,
           coverImage: coverImage || null,
           isPublished,
+          isSponsored: isSponsored !== undefined ? isSponsored : blog.isSponsored,
           publishedAt: publishedAtDate,
           tags: {
             connect: tagConnections,

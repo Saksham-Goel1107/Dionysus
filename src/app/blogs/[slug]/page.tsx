@@ -259,6 +259,12 @@ export default function BlogPostPage() {
                   height={1000}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                {blog.isSponsored && (
+                  <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-2 text-sm font-semibold text-white shadow-lg">
+                    <Sparkles size={14} className="animate-pulse" />
+                    Sponsored
+                  </div>
+                )}
               </div>
             )}
 
@@ -298,6 +304,12 @@ export default function BlogPostPage() {
                     <Clock size={16} />
                     {readingTime(blog.content)} min read
                   </div>
+                  {blog.isSponsored && (
+                    <div className="flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                      <Sparkles size={12} />
+                      Sponsored
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">

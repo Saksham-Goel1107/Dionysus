@@ -88,8 +88,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    const { title, slug, content, excerpt, coverImage, isPublished, tags, publishedAt } =
-      await request.json();
+    const {
+      title,
+      slug,
+      content,
+      excerpt,
+      coverImage,
+      isPublished,
+      isSponsored,
+      tags,
+      publishedAt,
+    } = await request.json();
 
     if (!title?.trim() || !content?.trim()) {
       return NextResponse.json({ error: 'Title and content are required' }, { status: 400 });
@@ -128,6 +137,7 @@ export async function POST(request: NextRequest) {
         excerpt: excerpt || null,
         coverImage: coverImage || null,
         isPublished,
+        isSponsored: isSponsored || false,
         publishedAt: publishedAtDate,
         authorId: userId,
         tags: {

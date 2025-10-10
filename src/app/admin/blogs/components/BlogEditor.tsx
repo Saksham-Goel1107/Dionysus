@@ -3,6 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { ImageInsertDialog } from '@/components/ui/image-insert-dialog';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
@@ -10,13 +18,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Eye, Image as ImageIcon, Save } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Save } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-
-// Dynamic import to avoid SSR issues with the markdown editor
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false });
 
 interface BlogEditorProps {
@@ -31,6 +36,7 @@ interface BlogFormData {
   content: string;
   coverImage: string;
   isPublished: boolean;
+  isSponsored: boolean;
   publishedAt?: string | null;
   tags: string[];
 }
@@ -40,7 +46,10 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [initialFormData, setInitialFormData] = useState<BlogFormData | null>(null);
+  const [showUnsavedChangesModal, setShowUnsavedChangesModal] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
     slug: '',
@@ -48,6 +57,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     content: '',
     coverImage: '',
     isPublished: false,
+    isSponsored: false,
     publishedAt: isEdit ? null : new Date().toISOString(),
     tags: [],
   });
@@ -74,6 +84,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         content: blog.content,
         coverImage: blog.coverImage || '',
         isPublished: blog.isPublished,
+        isSponsored: blog.isSponsored || false,
         publishedAt: blog.publishedAt || null,
         tags: blog.tags.map((tag: any) => tag.name),
       });
@@ -91,6 +102,74 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
   useEffect(() => {
     fetchBlog();
   }, [fetchBlog]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    if (initialFormData) {
+      const hasChanges = JSON.stringify(formData) !== JSON.stringify(initialFormData);
+      setHasUnsavedChanges(hasChanges);
+    }
+  }, [formData, initialFormData]);
+
+  // Set initial form data after loading
+  useEffect(() => {
+    if (!isLoading && !initialFormData && formData.title) {
+      setInitialFormData({ ...formData });
+    }
+  }, [isLoading, formData, initialFormData]);
+
+  // Prevent navigation with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return 'You have unsaved changes. Are you sure you want to leave?';
+      }
+    };
+
+    if (hasUnsavedChanges) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges]);
+
+  // Handle navigation with unsaved changes
+  const handleNavigationAttempt = (navigationAction: () => void) => {
+    if (hasUnsavedChanges) {
+      setPendingNavigation(() => navigationAction);
+      setShowUnsavedChangesModal(true);
+    } else {
+      navigationAction();
+    }
+  };
+
+  // Handle modal actions
+  const handleSaveAndContinue = async () => {
+    setShowUnsavedChangesModal(false);
+    await handleSave(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleDiscardAndContinue = () => {
+    setShowUnsavedChangesModal(false);
+    setHasUnsavedChanges(false);
+    if (pendingNavigation) {
+      pendingNavigation();
+      setPendingNavigation(null);
+    }
+  };
+
+  const handleCancelNavigation = () => {
+    setShowUnsavedChangesModal(false);
+    setPendingNavigation(null);
+  };
 
   const generateSlug = (title: string) => {
     return title
@@ -134,7 +213,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     }));
   };
 
-  const handleSave = async (shouldPublish?: boolean) => {
+  const handleSave = async (shouldExit = false) => {
     if (!formData.title.trim() || !formData.content.trim()) {
       toast({
         title: 'Error',
@@ -145,18 +224,13 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     }
 
     try {
-      if (shouldPublish) {
-        setIsPublishing(true);
-      } else {
-        setIsSaving(true);
-      }
+      setIsSaving(true);
 
       const url = isEdit ? `/api/admin/blogs/${blogId}` : '/api/admin/blogs';
       const method = isEdit ? 'PATCH' : 'POST';
 
       const payload = {
         ...formData,
-        isPublished: shouldPublish !== undefined ? shouldPublish : formData.isPublished,
         ...(formData.publishedAt ? { publishedAt: formData.publishedAt } : {}),
         ...(isEdit && { action: 'update' }),
       };
@@ -172,7 +246,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         throw new Error(error.error || 'Failed to save blog');
       }
 
-      const actionText = shouldPublish
+      const actionText = formData.isPublished
         ? isEdit
           ? 'Blog updated and published!'
           : 'Blog created and published!'
@@ -185,7 +259,13 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         description: actionText,
       });
 
-      router.push('/admin/blogs');
+      // Update initial form data to reflect saved state
+      setInitialFormData({ ...formData });
+      setHasUnsavedChanges(false);
+
+      if (shouldExit) {
+        router.push('/admin/blogs');
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -194,7 +274,6 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
       });
     } finally {
       setIsSaving(false);
-      setIsPublishing(false);
     }
   };
 
@@ -210,14 +289,21 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     <div className="mx-auto min-h-screen max-w-6xl overflow-hidden p-6">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/admin/blogs">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft size={16} />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleNavigationAttempt(() => router.push('/admin/blogs'))}
+          >
+            <ArrowLeft size={16} />
+          </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
               {isEdit ? 'Edit Blog Post' : 'Create Blog Post'}
+              {hasUnsavedChanges && (
+                <span className="ml-2 inline-flex items-center rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800 dark:bg-amber-900/30 dark:text-amber-200">
+                  • Unsaved changes
+                </span>
+              )}
             </h1>
             <p className="text-gray-500 dark:text-gray-400">
               {isEdit ? 'Update your blog post' : 'Create a new blog post for your platform'}
@@ -225,17 +311,13 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => handleSave(false)}
-            disabled={isSaving || isPublishing}
-          >
+          <Button variant="outline" onClick={() => handleSave(false)} disabled={isSaving}>
             <Save size={16} className="mr-2" />
-            {isSaving ? 'Saving...' : 'Save Draft'}
+            {isSaving ? 'Saving...' : 'Save'}
           </Button>
-          <Button onClick={() => handleSave(true)} disabled={isSaving || isPublishing}>
-            <Eye size={16} className="mr-2" />
-            {isPublishing ? 'Publishing...' : 'Publish'}
+          <Button onClick={() => handleSave(true)} disabled={isSaving}>
+            <Save size={16} className="mr-2" />
+            {isSaving ? 'Saving...' : 'Save and Exit'}
           </Button>
         </div>
       </div>
@@ -328,6 +410,17 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
                 <Label htmlFor="published">Published</Label>
               </div>
 
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="sponsored"
+                  checked={formData.isSponsored}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isSponsored: checked }))
+                  }
+                />
+                <Label htmlFor="sponsored">Sponsored</Label>
+              </div>
+
               <div className="space-y-2">
                 <Label>Publish Date</Label>
                 <div className="w-full">
@@ -406,6 +499,29 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
           </Card>
         </div>
       </div>
+
+      {/* Unsaved Changes Modal */}
+      <Dialog open={showUnsavedChangesModal} onOpenChange={setShowUnsavedChangesModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes. What would you like to do?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={handleCancelNavigation}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDiscardAndContinue}>
+              Discard Changes
+            </Button>
+            <Button onClick={handleSaveAndContinue} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

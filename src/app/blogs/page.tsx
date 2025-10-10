@@ -31,6 +31,7 @@ import {
   MessageCircle,
   Search,
   SortAsc,
+  Sparkles,
   Tag,
   ThumbsDown,
   X,
@@ -48,6 +49,7 @@ interface BlogPost {
   excerpt: string | null;
   coverImage: string | null;
   publishedAt: string;
+  isSponsored: boolean;
   tags: { id: string; name: string }[];
   _count: {
     likes: number;
@@ -155,8 +157,17 @@ export default function BlogsPage() {
                 Discover insights, tutorials, and updates from our team. Stay up to date with the
                 latest trends and best practices.
               </p>
-              <div className="mt-8 flex justify-center">
+              <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
                 <BlogSubscriptionBell />
+                <Link href="/#ContactForm">
+                  <Button
+                    variant="outline"
+                    className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  >
+                    <Sparkles size={16} />
+                    Get your own blog here
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -333,6 +344,12 @@ export default function BlogsPage() {
                             </div>
                           )}
                           <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+                          {blog.isSponsored && (
+                            <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2 py-1 text-xs font-semibold text-white shadow-lg">
+                              <Sparkles size={12} className="animate-pulse" />
+                              Sponsored
+                            </div>
+                          )}
                         </div>
                         <CardHeader className="pb-3">
                           <div className="mb-3 flex flex-wrap gap-1">
@@ -344,6 +361,12 @@ export default function BlogsPage() {
                           </div>
                           <CardTitle className="line-clamp-2 transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-400">
                             {blog.title}
+                            {blog.isSponsored && (
+                              <span className="ml-2 inline-flex items-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-xs font-medium text-white">
+                                <Sparkles size={10} className="mr-1 animate-pulse" />
+                                Sponsored
+                              </span>
+                            )}
                           </CardTitle>
                           {blog.excerpt && (
                             <CardDescription className="line-clamp-3 text-sm leading-relaxed">
@@ -409,8 +432,8 @@ export default function BlogsPage() {
                           >
                             <TableCell className="py-4 align-top">
                               <div className="flex items-start gap-4">
-                                {blog.coverImage ? (
-                                  <div className="h-20 w-28 flex-shrink-0 overflow-hidden rounded-md bg-gray-800">
+                                <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-md bg-gray-800">
+                                  {blog.coverImage ? (
                                     <SafeImage
                                       src={blog.coverImage}
                                       alt={blog.title}
@@ -418,14 +441,19 @@ export default function BlogsPage() {
                                       height={80}
                                       className="h-full w-full object-cover"
                                     />
-                                  </div>
-                                ) : (
-                                  <div className="flex h-20 w-28 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                                    <span className="font-bold">
-                                      {blog.title.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                )}
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                                      <span className="font-bold">
+                                        {blog.title.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {blog.isSponsored && (
+                                    <div className="absolute right-1 top-1 flex items-center gap-1 rounded bg-gradient-to-r from-amber-500 to-orange-500 px-1 py-0.5 text-xs font-semibold text-white">
+                                      <Sparkles size={8} className="animate-pulse" />
+                                    </div>
+                                  )}
+                                </div>
 
                                 <div className="min-w-0">
                                   <Link
@@ -433,6 +461,12 @@ export default function BlogsPage() {
                                     className="block text-lg font-semibold leading-tight text-gray-900 hover:underline dark:text-gray-100"
                                   >
                                     {blog.title}
+                                    {blog.isSponsored && (
+                                      <span className="ml-2 inline-flex items-center rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2 py-0.5 text-xs font-medium text-white">
+                                        <Sparkles size={10} className="mr-1 animate-pulse" />
+                                        Sponsored
+                                      </span>
+                                    )}
                                   </Link>
                                   {blog.excerpt && (
                                     <div className="mt-1 line-clamp-2 text-sm text-gray-600 dark:text-gray-400">

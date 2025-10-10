@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function MobileInfoPrompt() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (window.innerWidth < 768 && !sessionStorage.getItem('mobileInfoPromptDismissed')) {
+    if (window.innerWidth < 768 && !localStorage.getItem('mobileInfoPromptDismissed')) {
       setShow(true);
     }
   }, []);
@@ -21,7 +21,7 @@ export default function MobileInfoPrompt() {
           aria-label="Dismiss info prompt"
           onClick={() => {
             setShow(false);
-            sessionStorage.setItem('mobileInfoPromptDismissed', 'true');
+            localStorage.setItem('mobileInfoPromptDismissed', 'true');
           }}
         >
           ×
@@ -66,7 +66,7 @@ export default function MobileInfoPrompt() {
         <button
           onClick={() => {
             setShow(false);
-            sessionStorage.setItem('mobileInfoPromptDismissed', 'true');
+            localStorage.setItem('mobileInfoPromptDismissed', 'true');
           }}
           className="mt-6 rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white shadow-md transition-colors duration-200 hover:bg-blue-700"
         >

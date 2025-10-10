@@ -415,7 +415,7 @@ export function AdminCommentsPanel({
                                     <AlertDialogTrigger asChild>
                                       <DropdownMenuItem
                                         onSelect={(e) => e.preventDefault()}
-                                        className="text-destructive"
+                                        className="text-orange-600"
                                         onClick={() => setCommentToDelete(comment.id)}
                                       >
                                         <Trash2 className="mr-2 h-4 w-4" />

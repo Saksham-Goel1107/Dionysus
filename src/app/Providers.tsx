@@ -185,18 +185,12 @@ function Providers({ children }: { children: React.ReactNode }) {
           }}
           className="flex items-center gap-2"
         >
-          <span
-            className="cursor-default rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm"
-            style={{ letterSpacing: '0.08em', lineHeight: 1 }}
-          >
-            A/B Tester
-          </span>
           <button
             onClick={() => router.push('/alpha-help')}
             className="cursor-pointer rounded border border-white/10 bg-purple-700/90 px-2 py-0.5 text-[11px] font-medium text-white shadow-sm transition-colors hover:bg-purple-600"
             style={{ letterSpacing: '0.08em', lineHeight: 1 }}
           >
-            A/B Support
+            A/B Tester
           </button>
         </div>
       )}
