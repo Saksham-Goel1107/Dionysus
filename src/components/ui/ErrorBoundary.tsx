@@ -5,11 +5,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { error: Error | null }
+  { error: Error | null; copied: boolean }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
-    this.state = { error: null };
+    this.state = { error: null, copied: false };
   }
 
   static getDerivedStateFromError(error: Error) {
@@ -18,6 +18,32 @@ export class ErrorBoundary extends React.Component<
 
   handleDashboard = () => {
     window.location.replace('/dashboard');
+  };
+
+  copyError = async () => {
+    if (!this.state.error) return;
+
+    const errorText = `Error: ${this.state.error.message}\n\nStack Trace:\n${this.state.error.stack || 'No stack trace available'}`;
+
+    try {
+      await navigator.clipboard.writeText(errorText);
+      this.setState({ copied: true });
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    } catch (err) {
+      console.error('Failed to copy error:', err);
+    }
+  };
+
+  reportOnGitHub = () => {
+    if (!this.state.error) return;
+
+    const title = encodeURIComponent(`Bug Report: ${this.state.error.message}`);
+    const body = encodeURIComponent(
+      `## Bug Report\n\n**Error Message:**\n${this.state.error.message}\n\n**Stack Trace:**\n\`\`\`\n${this.state.error.stack || 'No stack trace available'}\n\`\`\`\n\n**Browser:** ${navigator.userAgent}\n**URL:** ${window.location.href}\n**Timestamp:** ${new Date().toISOString()}\n\n**Steps to Reproduce:**\n1. \n2. \n3. \n\n**Expected Behavior:**\n\n\n**Actual Behavior:**\n\n`,
+    );
+
+    const url = `https://github.com/saksham-goel1107/dionysus/issues/new?title=${title}&body=${body}&labels=bug`;
+    window.open(url, '_blank');
   };
 
   render() {
@@ -86,22 +112,7 @@ export class ErrorBoundary extends React.Component<
               <p style={{ marginBottom: 8 }}>
                 <strong>Oops!</strong> Something went wrong and the app cannot continue.
               </p>
-              <p>
-                Please{' '}
-                <a
-                  href="https://github.com/Saksham-Goel1107/dionysus/issues"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: '#2563eb',
-                    textDecoration: 'underline',
-                    fontWeight: 600,
-                  }}
-                >
-                  report this on GitHub
-                </a>{' '}
-                with details.
-              </p>
+              <p>Please report this issue to help us improve the application.</p>
               <div
                 style={{
                   background: 'linear-gradient(90deg, #fef3c7 0%, #fee2e2 100%)',
@@ -131,7 +142,45 @@ export class ErrorBoundary extends React.Component<
                 )}
               </div>
             </div>
-            <DialogFooter style={{ justifyContent: 'center', marginTop: 24, width: '100%' }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, width: '100%' }}>
+              <button
+                onClick={this.copyError}
+                style={{
+                  background: this.state.copied
+                    ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
+                    : 'linear-gradient(90deg, #6b7280 0%, #4b5563 100%)',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  flex: 1,
+                }}
+              >
+                {this.state.copied ? '✓ Copied!' : 'Copy Error'}
+              </button>
+              <button
+                onClick={this.reportOnGitHub}
+                style={{
+                  background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  fontSize: 14,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s',
+                  flex: 1,
+                }}
+              >
+                Report on GitHub
+              </button>
+            </div>
+            <DialogFooter style={{ justifyContent: 'center', marginTop: 16, width: '100%' }}>
               <button
                 onClick={this.handleDashboard}
                 style={{
@@ -146,10 +195,8 @@ export class ErrorBoundary extends React.Component<
                   cursor: 'pointer',
                   transition: 'background 0.2s',
                   width: '100%',
-                  maxWidth: 320,
-                  minWidth: 120,
-                  margin: '0 auto',
-                  display: 'block',
+                  maxWidth: 200,
+                  margin: '0 8px',
                 }}
               >
                 Go to Dashboard
@@ -168,12 +215,9 @@ export class ErrorBoundary extends React.Component<
                   cursor: 'pointer',
                   transition: 'background 0.2s',
                   width: '100%',
-                  maxWidth: 320,
-                  minWidth: 120,
-                  margin: '0 auto',
-                  display: 'block',
+                  maxWidth: 200,
+                  margin: '0 8px',
                   outline: 'none',
-                  marginLeft: 12,
                 }}
                 aria-label="Refresh the page"
                 title="Refresh the page"

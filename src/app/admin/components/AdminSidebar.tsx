@@ -15,6 +15,7 @@ import {
   ChartLine,
   Edit,
   ImageIcon,
+  MemoryStick,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { UserButton, useUser } from '@clerk/nextjs';
@@ -81,6 +82,7 @@ export default function AdminSidebar() {
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/stats', label: 'System Stats', icon: MemoryStick },
     { href: '/admin/users', label: 'Users', icon: Users },
     { href: '/admin/finances', label: 'Finances', icon: CreditCard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },

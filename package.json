@@ -163,6 +163,7 @@
     "stream-chat-react": "^13.7.0",
     "stripe": "^17.7.0",
     "superjson": "^2.2.2",
+    "systeminformation": "^5.27.11",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "typhonjs-escomplex": "^0.1.0",

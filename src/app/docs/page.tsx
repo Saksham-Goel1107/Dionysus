@@ -45,23 +45,26 @@ export default function DocsPage() {
     {
       id: 'getting-started',
       title: 'Getting Started',
-      description: 'Master the fundamentals and unlock Dionysus\'s full potential',
+      description: "Master the fundamentals and unlock Dionysus's full potential",
       icon: BookOpen,
-      content: 'Onboarding Journey, Account Configuration, Team Setup, Integration Guide, Best Practices',
+      content:
+        'Onboarding Journey, Account Configuration, Team Setup, Integration Guide, Best Practices',
     },
     {
       id: 'meetings',
       title: 'Meetings',
       description: 'Transform your meetings with intelligent scheduling and management',
       icon: Video,
-      content: 'Smart Scheduling, Virtual Rooms, Participant Management, Recording Controls, Post-Meeting Analytics',
+      content:
+        'Smart Scheduling, Virtual Rooms, Participant Management, Recording Controls, Post-Meeting Analytics',
     },
     {
       id: 'ai-features',
       title: 'AI Features',
       description: 'Harness cutting-edge AI to revolutionize your meeting experience',
       icon: MessageSquare,
-      content: 'Neural Transcription, Contextual Summaries, Sentiment Intelligence, Action Extraction, Predictive Insights',
+      content:
+        'Neural Transcription, Contextual Summaries, Sentiment Intelligence, Action Extraction, Predictive Insights',
     },
     {
       id: 'faq',
@@ -104,47 +107,52 @@ export default function DocsPage() {
           </p>
 
           {/* Search Bar */}
-            <div className="delay-600 mx-auto mb-8 max-w-md duration-1000 animate-in slide-in-from-bottom-4">
+          <div className="delay-600 mx-auto mb-8 max-w-md duration-1000 animate-in slide-in-from-bottom-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
-              type="search"
-              placeholder="Search documentation..."
-              className="pl-10 pr-10 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              aria-label="Search documentation"
+                type="search"
+                placeholder="Search documentation..."
+                className="pl-10 pr-10 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                aria-label="Search documentation"
               />
               {searchQuery && (
-              <button
-                onClick={() => handleSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-                aria-label="Clear search"
-              >
-                <X className="h-4 w-4" />
-              </button>
+                <button
+                  onClick={() => handleSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               )}
             </div>
-            </div>
+          </div>
 
           {/* Quick Actions */}
-          <div className="delay-700 mb-8 flex flex-wrap justify-center gap-4 duration-1000 animate-in slide-in-from-bottom-4">
+          <div className="mb-8 flex flex-wrap justify-center gap-4 delay-700 duration-1000 animate-in slide-in-from-bottom-4">
             <Button asChild size="lg" className="transition-transform hover:scale-105">
               <Link href="/sign-up">
-          <BookOpen className="mr-2 h-4 w-4" />
-          Get Started
+                <BookOpen className="mr-2 h-4 w-4" />
+                Get Started
               </Link>
             </Button>
-            <Button variant="outline" asChild size="lg" className="transition-transform hover:scale-105">
+            <Button
+              variant="outline"
+              asChild
+              size="lg"
+              className="transition-transform hover:scale-105"
+            >
               <Link href="/support">
-          <HelpCircle className="mr-2 h-4 w-4" />
-          Get Help
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Get Help
               </Link>
             </Button>
           </div>
 
           {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500 delay-800 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
+          <div className="delay-800 flex flex-wrap justify-center gap-6 text-sm text-slate-500 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>Last updated: 01-10-2025 (Wednesday) </span>
@@ -152,10 +160,10 @@ export default function DocsPage() {
             <div className="flex items-center gap-2">
               <HelpCircle className="h-4 w-4" />
               <span>
-          Need help?{' '}
-          <Link href="/support" className="text-blue-600 transition-colors hover:underline">
-            Contact Support
-          </Link>
+                Need help?{' '}
+                <Link href="/support" className="text-blue-600 transition-colors hover:underline">
+                  Contact Support
+                </Link>
               </span>
             </div>
           </div>
@@ -515,32 +523,66 @@ export default function DocsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Welcome to Dionysus: Your AI Meeting Intelligence Platform</h2>
                     <p>
-                      Dionysus represents the next evolution in meeting productivity, combining advanced artificial intelligence with intuitive design to transform how teams communicate, collaborate, and achieve their goals. Whether you&apos;re leading strategic initiatives, conducting client presentations, or facilitating team brainstorming sessions, Dionysus ensures no insight is lost and every voice is heard.
+                      Dionysus represents the next evolution in meeting productivity, combining
+                      advanced artificial intelligence with intuitive design to transform how teams
+                      communicate, collaborate, and achieve their goals. Whether you&apos;re leading
+                      strategic initiatives, conducting client presentations, or facilitating team
+                      brainstorming sessions, Dionysus ensures no insight is lost and every voice is
+                      heard.
                     </p>
 
                     <h3>Your Onboarding Journey: From Setup to Mastery</h3>
                     <p>
-                      Getting started with Dionysus is designed to be seamless and rewarding. Our intelligent onboarding system adapts to your role and experience level, providing personalized guidance that evolves as you become more proficient with the platform. From your first login to advanced feature utilization, we ensure you&apos;re equipped with the knowledge and tools to maximize meeting effectiveness.
+                      Getting started with Dionysus is designed to be seamless and rewarding. Our
+                      intelligent onboarding system adapts to your role and experience level,
+                      providing personalized guidance that evolves as you become more proficient
+                      with the platform. From your first login to advanced feature utilization, we
+                      ensure you&apos;re equipped with the knowledge and tools to maximize meeting
+                      effectiveness.
                     </p>
 
                     <h3>Account Configuration: Tailoring Dionysus to Your Workflow</h3>
                     <p>
-                      Beyond basic profile setup, Dionysus offers sophisticated configuration options that adapt the platform to your unique communication style and organizational needs. Set up custom notification preferences, define meeting templates for recurring sessions, configure integration endpoints, and establish team hierarchies that reflect your organizational structure. Our smart defaults get you started quickly, while granular controls allow for deep customization as your usage grows.
+                      Beyond basic profile setup, Dionysus offers sophisticated configuration
+                      options that adapt the platform to your unique communication style and
+                      organizational needs. Set up custom notification preferences, define meeting
+                      templates for recurring sessions, configure integration endpoints, and
+                      establish team hierarchies that reflect your organizational structure. Our
+                      smart defaults get you started quickly, while granular controls allow for deep
+                      customization as your usage grows.
                     </p>
 
                     <h3>Team Setup and Collaboration Frameworks</h3>
                     <p>
-                      Dionysus excels in team environments, providing robust tools for collaborative meeting management. Create dedicated team spaces with shared templates, establish approval workflows for meeting scheduling, set up cross-functional notification channels, and implement governance policies that ensure consistent meeting standards across your organization. Whether you&apos;re a small startup or a global enterprise, Dionysus scales to meet your collaboration requirements.
+                      Dionysus excels in team environments, providing robust tools for collaborative
+                      meeting management. Create dedicated team spaces with shared templates,
+                      establish approval workflows for meeting scheduling, set up cross-functional
+                      notification channels, and implement governance policies that ensure
+                      consistent meeting standards across your organization. Whether you&apos;re a
+                      small startup or a global enterprise, Dionysus scales to meet your
+                      collaboration requirements.
                     </p>
 
                     <h3>Integration Ecosystem: Connecting Your Digital Workspace</h3>
                     <p>
-                      Dionysus seamlessly integrates with your existing productivity ecosystem, creating a unified workflow that eliminates tool switching and data silos. Connect with calendar systems for automatic meeting scheduling, link to project management platforms for context-aware meetings, integrate with communication tools for enhanced collaboration, and sync with CRM systems for customer-centric discussions. Our extensive API and webhook system ensures Dionysus becomes an invisible yet indispensable part of your daily workflow.
+                      Dionysus seamlessly integrates with your existing productivity ecosystem,
+                      creating a unified workflow that eliminates tool switching and data silos.
+                      Connect with calendar systems for automatic meeting scheduling, link to
+                      project management platforms for context-aware meetings, integrate with
+                      communication tools for enhanced collaboration, and sync with CRM systems for
+                      customer-centric discussions. Our extensive API and webhook system ensures
+                      Dionysus becomes an invisible yet indispensable part of your daily workflow.
                     </p>
 
                     <h3>Best Practices and Optimization Strategies</h3>
                     <p>
-                      Maximize the value you derive from Dionysus by following proven strategies developed through extensive user research and AI-driven insights. Learn to craft effective meeting agendas that leverage AI capabilities, master the art of facilitating AI-assisted discussions, develop skills in interpreting AI-generated insights, and establish feedback loops that continuously improve your meeting culture. Our platform learns from your usage patterns, providing increasingly relevant suggestions and optimizations over time.
+                      Maximize the value you derive from Dionysus by following proven strategies
+                      developed through extensive user research and AI-driven insights. Learn to
+                      craft effective meeting agendas that leverage AI capabilities, master the art
+                      of facilitating AI-assisted discussions, develop skills in interpreting
+                      AI-generated insights, and establish feedback loops that continuously improve
+                      your meeting culture. Our platform learns from your usage patterns, providing
+                      increasingly relevant suggestions and optimizations over time.
                     </p>
                   </div>
                 </TabsContent>
@@ -550,11 +592,15 @@ export default function DocsPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle>Smart Scheduling</CardTitle>
-                        <CardDescription>AI-optimized meeting planning and coordination</CardDescription>
+                        <CardDescription>
+                          AI-optimized meeting planning and coordination
+                        </CardDescription>
                       </CardHeader>
                       <CardContent>
                         <p>
-                          Experience intelligent scheduling that considers participant preferences, optimal timing, and historical meeting success rates to maximize productivity.
+                          Experience intelligent scheduling that considers participant preferences,
+                          optimal timing, and historical meeting success rates to maximize
+                          productivity.
                         </p>
                       </CardContent>
                       <CardFooter>
@@ -573,7 +619,8 @@ export default function DocsPage() {
                       </CardHeader>
                       <CardContent>
                         <p>
-                          Advanced virtual spaces that adapt to meeting needs, featuring intelligent layouts, breakout management, and enhanced engagement tools.
+                          Advanced virtual spaces that adapt to meeting needs, featuring intelligent
+                          layouts, breakout management, and enhanced engagement tools.
                         </p>
                       </CardContent>
                       <CardFooter>
@@ -592,7 +639,8 @@ export default function DocsPage() {
                       </CardHeader>
                       <CardContent>
                         <p>
-                          Comprehensive analytics that transform meeting data into strategic insights, trend analysis, and predictive recommendations.
+                          Comprehensive analytics that transform meeting data into strategic
+                          insights, trend analysis, and predictive recommendations.
                         </p>
                       </CardContent>
                       <CardFooter>
@@ -606,37 +654,79 @@ export default function DocsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Intelligent Meeting Management: Beyond Traditional Conferencing</h2>
                     <p>
-                      Dionysus redefines meeting management by infusing intelligence into every aspect of the meeting lifecycle. From initial scheduling through post-meeting analysis, our platform ensures that every meeting delivers maximum value while minimizing time waste. Experience meetings that are not just productive, but truly transformative for your team&apos;s collaboration and decision-making processes.
+                      Dionysus redefines meeting management by infusing intelligence into every
+                      aspect of the meeting lifecycle. From initial scheduling through post-meeting
+                      analysis, our platform ensures that every meeting delivers maximum value while
+                      minimizing time waste. Experience meetings that are not just productive, but
+                      truly transformative for your team&apos;s collaboration and decision-making
+                      processes.
                     </p>
 
                     <h3>Smart Scheduling: AI-Powered Meeting Optimization</h3>
                     <p>
-                      Our intelligent scheduling system goes beyond simple calendar management, analyzing participant availability, meeting history, optimal timing preferences, and even external factors like time zones and energy levels. The system suggests ideal meeting durations based on agenda complexity, recommends the best participants for specific topics, and automatically adjusts schedules when conflicts arise. With predictive analytics, Dionysus can forecast meeting outcomes and suggest agenda modifications for better results.
+                      Our intelligent scheduling system goes beyond simple calendar management,
+                      analyzing participant availability, meeting history, optimal timing
+                      preferences, and even external factors like time zones and energy levels. The
+                      system suggests ideal meeting durations based on agenda complexity, recommends
+                      the best participants for specific topics, and automatically adjusts schedules
+                      when conflicts arise. With predictive analytics, Dionysus can forecast meeting
+                      outcomes and suggest agenda modifications for better results.
                     </p>
 
                     <h3>Virtual Rooms: Immersive Collaboration Environments</h3>
                     <p>
-                      Dionysus virtual rooms are designed for maximum engagement and productivity. Advanced spatial audio ensures natural conversation flow, while AI-driven layout optimization adapts the interface based on meeting type and participant roles. Breakout room management becomes intelligent, with automatic participant grouping based on discussion topics and relationship analysis. Screen sharing is enhanced with AI-powered content recognition, automatically highlighting important elements and suggesting relevant discussion points.
+                      Dionysus virtual rooms are designed for maximum engagement and productivity.
+                      Advanced spatial audio ensures natural conversation flow, while AI-driven
+                      layout optimization adapts the interface based on meeting type and participant
+                      roles. Breakout room management becomes intelligent, with automatic
+                      participant grouping based on discussion topics and relationship analysis.
+                      Screen sharing is enhanced with AI-powered content recognition, automatically
+                      highlighting important elements and suggesting relevant discussion points.
                     </p>
 
                     <h3>Participant Management: Inclusive and Efficient</h3>
                     <p>
-                      Managing meeting participants has never been more sophisticated. Dionysus automatically detects participant engagement levels, suggests interventions for disengaged attendees, and facilitates smooth handoff protocols. Guest management includes instant verification systems, while role-based permissions ensure appropriate access levels. Our AI monitors participation patterns, providing organizers with real-time insights about team dynamics and suggesting facilitation strategies to maximize contribution from all attendees.
+                      Managing meeting participants has never been more sophisticated. Dionysus
+                      automatically detects participant engagement levels, suggests interventions
+                      for disengaged attendees, and facilitates smooth handoff protocols. Guest
+                      management includes instant verification systems, while role-based permissions
+                      ensure appropriate access levels. Our AI monitors participation patterns,
+                      providing organizers with real-time insights about team dynamics and
+                      suggesting facilitation strategies to maximize contribution from all
+                      attendees.
                     </p>
 
                     <h3>Recording Controls: Comprehensive Documentation</h3>
                     <p>
-                      Recording capabilities extend far beyond simple video capture. Multi-track recording captures audio, video, screen sharing, and participant reactions simultaneously. AI-powered editing suggests highlight reels, automatically identifies key moments, and creates shareable clips. Privacy controls allow participants to opt-out of recordings, while intelligent redaction protects sensitive information. Post-processing includes automatic chapter generation, searchable transcripts, and export options for various platforms and compliance requirements.
+                      Recording capabilities extend far beyond simple video capture. Multi-track
+                      recording captures audio, video, screen sharing, and participant reactions
+                      simultaneously. AI-powered editing suggests highlight reels, automatically
+                      identifies key moments, and creates shareable clips. Privacy controls allow
+                      participants to opt-out of recordings, while intelligent redaction protects
+                      sensitive information. Post-processing includes automatic chapter generation,
+                      searchable transcripts, and export options for various platforms and
+                      compliance requirements.
                     </p>
 
                     <h3>Post-Meeting Analytics: Turning Conversations into Action</h3>
                     <p>
-                      The real power of Dionysus emerges after meetings conclude. Advanced analytics provide deep insights into meeting effectiveness, participant engagement, decision quality, and action item completion rates. Trend analysis across multiple meetings reveals patterns in team performance, while predictive modeling suggests improvements for future sessions. Integration with project management tools ensures action items are automatically tracked and followed up, creating a seamless workflow from discussion to execution.
+                      The real power of Dionysus emerges after meetings conclude. Advanced analytics
+                      provide deep insights into meeting effectiveness, participant engagement,
+                      decision quality, and action item completion rates. Trend analysis across
+                      multiple meetings reveals patterns in team performance, while predictive
+                      modeling suggests improvements for future sessions. Integration with project
+                      management tools ensures action items are automatically tracked and followed
+                      up, creating a seamless workflow from discussion to execution.
                     </p>
 
                     <h3>Meeting Templates and Workflows</h3>
                     <p>
-                      Streamline recurring meetings with intelligent templates that adapt based on historical performance. One-on-one check-ins, sprint planning sessions, client presentations, and strategic reviews each have optimized workflows. Templates include agenda frameworks, participant roles, timing guidelines, and success metrics. The system learns from each meeting type, continuously refining templates to maximize effectiveness and reduce preparation time.
+                      Streamline recurring meetings with intelligent templates that adapt based on
+                      historical performance. One-on-one check-ins, sprint planning sessions, client
+                      presentations, and strategic reviews each have optimized workflows. Templates
+                      include agenda frameworks, participant roles, timing guidelines, and success
+                      metrics. The system learns from each meeting type, continuously refining
+                      templates to maximize effectiveness and reduce preparation time.
                     </p>
                   </div>
                 </TabsContent>
@@ -645,42 +735,92 @@ export default function DocsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Neural Intelligence: Advanced AI Capabilities for Meeting Excellence</h2>
                     <p>
-                      Dionysus harnesses the latest advances in artificial intelligence to transform meetings from simple conversations into strategic assets. Our multi-layered AI system combines natural language processing, machine learning, and predictive analytics to provide unprecedented insights, automation, and intelligence throughout the meeting lifecycle. Experience the future of collaborative intelligence with features that understand context, anticipate needs, and drive meaningful outcomes.
+                      Dionysus harnesses the latest advances in artificial intelligence to transform
+                      meetings from simple conversations into strategic assets. Our multi-layered AI
+                      system combines natural language processing, machine learning, and predictive
+                      analytics to provide unprecedented insights, automation, and intelligence
+                      throughout the meeting lifecycle. Experience the future of collaborative
+                      intelligence with features that understand context, anticipate needs, and
+                      drive meaningful outcomes.
                     </p>
 
                     <h3>Neural Transcription: Perfect Capture with Contextual Understanding</h3>
                     <p>
-                      Our advanced neural transcription engine goes beyond simple speech-to-text conversion, employing deep learning models trained on millions of hours of meeting data. The system not only achieves industry-leading accuracy rates but also understands meeting context, speaker relationships, and domain-specific terminology. Automatic speaker diarization works seamlessly across languages and accents, while real-time formatting creates professional transcripts with proper punctuation, capitalization, and structure.
+                      Our advanced neural transcription engine goes beyond simple speech-to-text
+                      conversion, employing deep learning models trained on millions of hours of
+                      meeting data. The system not only achieves industry-leading accuracy rates but
+                      also understands meeting context, speaker relationships, and domain-specific
+                      terminology. Automatic speaker diarization works seamlessly across languages
+                      and accents, while real-time formatting creates professional transcripts with
+                      proper punctuation, capitalization, and structure.
                     </p>
 
                     <h3>Contextual Summaries: Intelligent Meeting Distillation</h3>
                     <p>
-                      Dionysus generates summaries that capture not just what was said, but what matters most. Our AI analyzes conversation flow, identifies key themes and subtopics, recognizes decision points, and extracts critical information with human-like understanding. Multi-format summaries adapt to different audiences and purposes – executive overviews for leadership, detailed technical summaries for specialists, and action-oriented recaps for team members. The system continuously learns from user feedback to improve summary quality and relevance.
+                      Dionysus generates summaries that capture not just what was said, but what
+                      matters most. Our AI analyzes conversation flow, identifies key themes and
+                      subtopics, recognizes decision points, and extracts critical information with
+                      human-like understanding. Multi-format summaries adapt to different audiences
+                      and purposes – executive overviews for leadership, detailed technical
+                      summaries for specialists, and action-oriented recaps for team members. The
+                      system continuously learns from user feedback to improve summary quality and
+                      relevance.
                     </p>
 
                     <h3>Sentiment Intelligence: Emotional Context and Engagement Analysis</h3>
                     <p>
-                      Understanding the emotional dynamics of meetings is crucial for effective communication. Dionysus employs sophisticated sentiment analysis that goes beyond simple positive/negative classification, detecting nuanced emotions, engagement levels, and interpersonal dynamics. Real-time sentiment tracking helps facilitators gauge meeting energy, while post-meeting analysis reveals participation patterns and potential concerns. This emotional intelligence enables more empathetic leadership and better team cohesion.
+                      Understanding the emotional dynamics of meetings is crucial for effective
+                      communication. Dionysus employs sophisticated sentiment analysis that goes
+                      beyond simple positive/negative classification, detecting nuanced emotions,
+                      engagement levels, and interpersonal dynamics. Real-time sentiment tracking
+                      helps facilitators gauge meeting energy, while post-meeting analysis reveals
+                      participation patterns and potential concerns. This emotional intelligence
+                      enables more empathetic leadership and better team cohesion.
                     </p>
 
                     <h3>Action Extraction: Automated Follow-up and Accountability</h3>
                     <p>
-                      Never lose track of commitments again. Our AI automatically identifies action items, assigns ownership based on context and role analysis, and sets intelligent deadlines. The system understands implicit commitments, recognizes conditional actions, and creates comprehensive task lists with dependencies and priorities. Integration with project management tools ensures seamless workflow continuation, while smart reminders and progress tracking maintain accountability throughout execution.
+                      Never lose track of commitments again. Our AI automatically identifies action
+                      items, assigns ownership based on context and role analysis, and sets
+                      intelligent deadlines. The system understands implicit commitments, recognizes
+                      conditional actions, and creates comprehensive task lists with dependencies
+                      and priorities. Integration with project management tools ensures seamless
+                      workflow continuation, while smart reminders and progress tracking maintain
+                      accountability throughout execution.
                     </p>
 
                     <h3>Predictive Insights: Anticipating Meeting Needs and Outcomes</h3>
                     <p>
-                      Dionysus doesn&apos;t just react to meetings – it anticipates them. Predictive analytics suggest agenda optimizations, identify potential discussion bottlenecks, and recommend facilitation strategies. The system learns from historical meeting data to predict outcomes, suggest optimal participant combinations, and identify topics that may require additional preparation. Risk assessment features flag potential conflicts or misunderstandings before they occur, enabling proactive meeting management.
+                      Dionysus doesn&apos;t just react to meetings – it anticipates them. Predictive
+                      analytics suggest agenda optimizations, identify potential discussion
+                      bottlenecks, and recommend facilitation strategies. The system learns from
+                      historical meeting data to predict outcomes, suggest optimal participant
+                      combinations, and identify topics that may require additional preparation.
+                      Risk assessment features flag potential conflicts or misunderstandings before
+                      they occur, enabling proactive meeting management.
                     </p>
 
                     <h3>Conversational AI Assistant: Your Intelligent Meeting Companion</h3>
                     <p>
-                      Interact naturally with your meeting data through our advanced conversational AI. Ask complex questions about meeting content, request specific information extraction, or seek recommendations based on historical patterns. The assistant understands context, remembers previous interactions, and can cross-reference information across multiple meetings. Whether you need a quick fact check during a meeting or comprehensive analysis afterward, the AI assistant provides instant, accurate responses with full traceability to source material.
+                      Interact naturally with your meeting data through our advanced conversational
+                      AI. Ask complex questions about meeting content, request specific information
+                      extraction, or seek recommendations based on historical patterns. The
+                      assistant understands context, remembers previous interactions, and can
+                      cross-reference information across multiple meetings. Whether you need a quick
+                      fact check during a meeting or comprehensive analysis afterward, the AI
+                      assistant provides instant, accurate responses with full traceability to
+                      source material.
                     </p>
 
                     <h3>Continuous Learning and Personalization</h3>
                     <p>
-                      Every interaction with Dionysus contributes to a personalized AI experience. The system learns your preferences, communication style, and decision-making patterns to provide increasingly relevant insights and suggestions. Team-wide learning creates organizational intelligence, while privacy-preserving techniques ensure individual data remains secure. As your usage grows, Dionysus becomes not just a tool, but an intelligent partner that understands your unique meeting dynamics and organizational culture.
+                      Every interaction with Dionysus contributes to a personalized AI experience.
+                      The system learns your preferences, communication style, and decision-making
+                      patterns to provide increasingly relevant insights and suggestions. Team-wide
+                      learning creates organizational intelligence, while privacy-preserving
+                      techniques ensure individual data remains secure. As your usage grows,
+                      Dionysus becomes not just a tool, but an intelligent partner that understands
+                      your unique meeting dynamics and organizational culture.
                     </p>
                   </div>
                 </TabsContent>

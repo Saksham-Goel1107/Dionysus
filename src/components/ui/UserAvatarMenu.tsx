@@ -639,6 +639,10 @@ export default function UserAvatarMenu() {
                     <li>Experience cutting-edge improvements and optimizations</li>
                     <li>Contribute to making the platform better for everyone</li>
                     <li>Access to exclusive beta testing channels and discussions</li>
+                    <li>
+                      <strong>Dedicated support from our development team</strong>
+                    </li>
+                    <li>Priority access to bug fixes and feature requests</li>
                   </ul>
                 </div>
 
@@ -677,6 +681,10 @@ export default function UserAvatarMenu() {
                       <li>Exclusive beta testing experiences and previews</li>
                       <li>Direct feedback channels with our development team</li>
                       <li>Being part of the innovation process</li>
+                      <li>
+                        <strong>Dedicated support access will be lost</strong>
+                      </li>
+                      <li>Priority handling of your bug reports and feature requests</li>
                     </ul>
                   </div>
                 )}
@@ -692,6 +700,19 @@ export default function UserAvatarMenu() {
               </div>
 
               <div className="flex justify-center space-x-4">
+                {isAbTestingOptedIn && (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => {
+                      setShowAbTestingPopup(false);
+                      router.push('/alpha-support');
+                    }}
+                    className="border-green-500 px-8 text-green-700 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950"
+                  >
+                    🎧 Get Support
+                  </Button>
+                )}
                 <Button
                   variant={isAbTestingOptedIn ? 'destructive' : 'default'}
                   size="lg"

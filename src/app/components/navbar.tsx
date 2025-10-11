@@ -158,7 +158,11 @@ export function Navbar() {
               <Link href="/docs" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
                 Docs
               </Link>
-              <Link href="/pricing" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/pricing"
+                className="mobile-link"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Pricing
               </Link>
               <div className="mt-3 flex flex-wrap items-center gap-3">

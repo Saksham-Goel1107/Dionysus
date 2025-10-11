@@ -22,13 +22,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -116,7 +110,7 @@ export default function TermsPage() {
               {searchQuery && (
                 <button
                   onClick={() => handleSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors hover:text-slate-600"
                   aria-label="Clear search"
                 >
                   <X className="h-4 w-4" />
@@ -126,14 +120,19 @@ export default function TermsPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="delay-700 mb-8 flex flex-wrap justify-center gap-4 duration-1000 animate-in slide-in-from-bottom-4">
+          <div className="mb-8 flex flex-wrap justify-center gap-4 delay-700 duration-1000 animate-in slide-in-from-bottom-4">
             <Button asChild size="lg" className="transition-transform hover:scale-105">
               <Link href="/privacy">
                 <Shield className="mr-2 h-4 w-4" />
                 Privacy Policy
               </Link>
             </Button>
-            <Button variant="outline" asChild size="lg" className="transition-transform hover:scale-105">
+            <Button
+              variant="outline"
+              asChild
+              size="lg"
+              className="transition-transform hover:scale-105"
+            >
               <Link href="/support">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 Get Help
@@ -142,7 +141,7 @@ export default function TermsPage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500 delay-800 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
+          <div className="delay-800 flex flex-wrap justify-center gap-6 text-sm text-slate-500 duration-1000 animate-in slide-in-from-bottom-4 dark:text-slate-400">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>Last updated: January 1, 2025</span>
@@ -343,7 +342,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          These terms govern your use of Dionysus, including all features, services, and integrations. By using our platform, you agree to these terms.
+                          These terms govern your use of Dionysus, including all features, services,
+                          and integrations. By using our platform, you agree to these terms.
                         </p>
                       </CardContent>
                     </Card>
@@ -364,7 +364,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          You have the right to use our services, export your data, and receive support. We respect your privacy and intellectual property.
+                          You have the right to use our services, export your data, and receive
+                          support. We respect your privacy and intellectual property.
                         </p>
                       </CardContent>
                     </Card>
@@ -385,7 +386,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent className="pt-0">
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          We commit to providing reliable service, protecting your privacy, and continuously improving our platform based on your feedback.
+                          We commit to providing reliable service, protecting your privacy, and
+                          continuously improving our platform based on your feedback.
                         </p>
                       </CardContent>
                     </Card>
@@ -394,17 +396,24 @@ export default function TermsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Welcome to Dionysus Terms of Service</h2>
                     <p>
-                      These Terms of Service (&quot;Terms&quot;) govern your access to and use of Dionysus, our AI-powered meeting intelligence platform. By creating an account or using our services, you agree to be bound by these Terms and our Privacy Policy.
+                      These Terms of Service (&quot;Terms&quot;) govern your access to and use of
+                      Dionysus, our AI-powered meeting intelligence platform. By creating an account
+                      or using our services, you agree to be bound by these Terms and our Privacy
+                      Policy.
                     </p>
 
                     <h3>1. Agreement and Acceptance</h3>
                     <p>
-                      By accessing or using Dionysus, you confirm that you are at least 18 years old and have the legal capacity to enter into this agreement. If you are using Dionysus on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.
+                      By accessing or using Dionysus, you confirm that you are at least 18 years old
+                      and have the legal capacity to enter into this agreement. If you are using
+                      Dionysus on behalf of an organization, you represent that you have the
+                      authority to bind that organization to these Terms.
                     </p>
 
                     <h3>2. Service Description</h3>
                     <p>
-                      Dionysus provides AI-powered meeting intelligence services, including but not limited to:
+                      Dionysus provides AI-powered meeting intelligence services, including but not
+                      limited to:
                     </p>
                     <ul>
                       <li>Real-time meeting transcription and recording</li>
@@ -416,12 +425,16 @@ export default function TermsPage() {
 
                     <h3>3. Account Registration and Security</h3>
                     <p>
-                      You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You must immediately notify us of any unauthorized use of your account or any other breach of security.
+                      You are responsible for maintaining the confidentiality of your account
+                      credentials and for all activities that occur under your account. You must
+                      immediately notify us of any unauthorized use of your account or any other
+                      breach of security.
                     </p>
 
                     <h3>4. Acceptable Use</h3>
                     <p>
-                      You agree to use Dionysus only for lawful purposes and in accordance with these Terms. You may not:
+                      You agree to use Dionysus only for lawful purposes and in accordance with
+                      these Terms. You may not:
                     </p>
                     <ul>
                       <li>Use the service for any illegal or unauthorized purpose</li>
@@ -433,7 +446,10 @@ export default function TermsPage() {
 
                     <h3>5. Modifications to Terms</h3>
                     <p>
-                      We may update these Terms from time to time. We will notify you of any material changes by posting the new Terms on our website and updating the &quot;Last Updated&quot; date. Your continued use of Dionysus after such changes constitutes acceptance of the new Terms.
+                      We may update these Terms from time to time. We will notify you of any
+                      material changes by posting the new Terms on our website and updating the
+                      &quot;Last Updated&quot; date. Your continued use of Dionysus after such
+                      changes constitutes acceptance of the new Terms.
                     </p>
                   </div>
                 </TabsContent>
@@ -449,7 +465,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          We strive to maintain 99.9% uptime but may need to perform maintenance or updates that temporarily affect service availability.
+                          We strive to maintain 99.9% uptime but may need to perform maintenance or
+                          updates that temporarily affect service availability.
                         </p>
                       </CardContent>
                     </Card>
@@ -463,7 +480,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Our AI processes your meeting data to provide transcription, summaries, and insights while maintaining strict privacy and security standards.
+                          Our AI processes your meeting data to provide transcription, summaries,
+                          and insights while maintaining strict privacy and security standards.
                         </p>
                       </CardContent>
                     </Card>
@@ -477,7 +495,8 @@ export default function TermsPage() {
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          We provide customer support through multiple channels and maintain comprehensive documentation to help you succeed.
+                          We provide customer support through multiple channels and maintain
+                          comprehensive documentation to help you succeed.
                         </p>
                       </CardContent>
                     </Card>
@@ -486,32 +505,53 @@ export default function TermsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Service Terms and Conditions</h2>
                     <p>
-                      Dionysus provides a comprehensive suite of AI-powered meeting intelligence services designed to enhance your team&apos;s productivity and collaboration. Our services are delivered through a secure, cloud-based platform with enterprise-grade reliability and performance.
+                      Dionysus provides a comprehensive suite of AI-powered meeting intelligence
+                      services designed to enhance your team&apos;s productivity and collaboration.
+                      Our services are delivered through a secure, cloud-based platform with
+                      enterprise-grade reliability and performance.
                     </p>
 
                     <h3>Service Features and Functionality</h3>
                     <p>
-                      Our platform includes advanced features such as real-time transcription with speaker identification, AI-generated meeting summaries, automatic action item extraction, sentiment analysis, and comprehensive analytics. We continuously enhance our services with new features and improvements based on user feedback and technological advances.
+                      Our platform includes advanced features such as real-time transcription with
+                      speaker identification, AI-generated meeting summaries, automatic action item
+                      extraction, sentiment analysis, and comprehensive analytics. We continuously
+                      enhance our services with new features and improvements based on user feedback
+                      and technological advances.
                     </p>
 
                     <h3>Service Availability and Performance</h3>
                     <p>
-                      We maintain our services with industry-leading uptime targets and performance standards. While we strive for continuous availability, we may occasionally need to perform maintenance, updates, or emergency repairs that could temporarily affect service access. We will provide advance notice of planned maintenance whenever possible.
+                      We maintain our services with industry-leading uptime targets and performance
+                      standards. While we strive for continuous availability, we may occasionally
+                      need to perform maintenance, updates, or emergency repairs that could
+                      temporarily affect service access. We will provide advance notice of planned
+                      maintenance whenever possible.
                     </p>
 
                     <h3>AI Processing and Accuracy</h3>
                     <p>
-                      Our AI systems are designed to provide high-quality transcription and analysis, but accuracy may vary based on factors such as audio quality, speaker accents, background noise, and technical terminology. We continuously improve our AI models but cannot guarantee 100% accuracy in all situations.
+                      Our AI systems are designed to provide high-quality transcription and
+                      analysis, but accuracy may vary based on factors such as audio quality,
+                      speaker accents, background noise, and technical terminology. We continuously
+                      improve our AI models but cannot guarantee 100% accuracy in all situations.
                     </p>
 
                     <h3>Integration and Third-Party Services</h3>
                     <p>
-                      Dionysus integrates with various third-party services and platforms to enhance functionality. While we maintain these integrations to the best of our ability, we are not responsible for the availability, performance, or changes to third-party services that may affect our integrations.
+                      Dionysus integrates with various third-party services and platforms to enhance
+                      functionality. While we maintain these integrations to the best of our
+                      ability, we are not responsible for the availability, performance, or changes
+                      to third-party services that may affect our integrations.
                     </p>
 
                     <h3>Service Modifications and Updates</h3>
                     <p>
-                      We reserve the right to modify, update, or discontinue any aspect of our services at any time. We will provide reasonable notice of significant changes that may affect your use of the platform. In the event of service discontinuation, we will provide data export options where technically feasible.
+                      We reserve the right to modify, update, or discontinue any aspect of our
+                      services at any time. We will provide reasonable notice of significant changes
+                      that may affect your use of the platform. In the event of service
+                      discontinuation, we will provide data export options where technically
+                      feasible.
                     </p>
                   </div>
                 </TabsContent>
@@ -520,12 +560,15 @@ export default function TermsPage() {
                   <div className="prose dark:prose-invert max-w-none">
                     <h2>Privacy and Data Protection</h2>
                     <p>
-                      Your privacy is fundamental to how we operate Dionysus. We are committed to protecting your personal information and meeting data through industry-leading security practices and transparent data handling policies.
+                      Your privacy is fundamental to how we operate Dionysus. We are committed to
+                      protecting your personal information and meeting data through industry-leading
+                      security practices and transparent data handling policies.
                     </p>
 
                     <h3>Data Collection and Use</h3>
                     <p>
-                      We collect only the information necessary to provide and improve our services. This includes:
+                      We collect only the information necessary to provide and improve our services.
+                      This includes:
                     </p>
                     <ul>
                       <li>Account information (name, email, organization details)</li>
@@ -535,9 +578,7 @@ export default function TermsPage() {
                     </ul>
 
                     <h3>Data Security and Protection</h3>
-                    <p>
-                      We implement comprehensive security measures including:
-                    </p>
+                    <p>We implement comprehensive security measures including:</p>
                     <ul>
                       <li>End-to-end encryption for data in transit and at rest</li>
                       <li>Multi-factor authentication and access controls</li>
@@ -548,13 +589,14 @@ export default function TermsPage() {
 
                     <h3>Data Retention and Deletion</h3>
                     <p>
-                      We retain your data only as long as necessary to provide services and comply with legal obligations. You can request data deletion at any time, and we will process such requests in accordance with applicable privacy laws and our data retention policies.
+                      We retain your data only as long as necessary to provide services and comply
+                      with legal obligations. You can request data deletion at any time, and we will
+                      process such requests in accordance with applicable privacy laws and our data
+                      retention policies.
                     </p>
 
                     <h3>Your Privacy Rights</h3>
-                    <p>
-                      Depending on your location, you may have rights including:
-                    </p>
+                    <p>Depending on your location, you may have rights including:</p>
                     <ul>
                       <li>Access to your personal data and processing activities</li>
                       <li>Correction of inaccurate or incomplete information</li>
@@ -565,12 +607,17 @@ export default function TermsPage() {
 
                     <h3>International Data Transfers</h3>
                     <p>
-                      We may transfer your data internationally to provide our services. All such transfers are protected by appropriate safeguards, including standard contractual clauses and adequacy decisions where applicable.
+                      We may transfer your data internationally to provide our services. All such
+                      transfers are protected by appropriate safeguards, including standard
+                      contractual clauses and adequacy decisions where applicable.
                     </p>
 
                     <h3>Third-Party Data Sharing</h3>
                     <p>
-                      We do not sell your personal data. We may share data with trusted service providers who help us deliver our services, but only under strict contractual obligations that protect your privacy and limit data use to specified purposes.
+                      We do not sell your personal data. We may share data with trusted service
+                      providers who help us deliver our services, but only under strict contractual
+                      obligations that protect your privacy and limit data use to specified
+                      purposes.
                     </p>
                   </div>
                 </TabsContent>
@@ -582,7 +629,8 @@ export default function TermsPage() {
                         Legal Terms and Conditions
                       </h2>
                       <p className="text-lg text-slate-600 dark:text-slate-400">
-                        Important legal information about liability, warranties, and dispute resolution
+                        Important legal information about liability, warranties, and dispute
+                        resolution
                       </p>
                     </div>
 
@@ -600,10 +648,15 @@ export default function TermsPage() {
                         <AccordionContent className="pb-6">
                           <div className="space-y-4">
                             <p className="text-slate-600 dark:text-slate-400">
-                              To the maximum extent permitted by law, Dionysus shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses.
+                              To the maximum extent permitted by law, Dionysus shall not be liable
+                              for any indirect, incidental, special, consequential, or punitive
+                              damages, including but not limited to loss of profits, data, use,
+                              goodwill, or other intangible losses.
                             </p>
                             <p className="text-slate-600 dark:text-slate-400">
-                              Our total liability for any claims arising from or related to these Terms or your use of our services shall not exceed the amount you paid to us in the twelve months preceding the claim.
+                              Our total liability for any claims arising from or related to these
+                              Terms or your use of our services shall not exceed the amount you paid
+                              to us in the twelve months preceding the claim.
                             </p>
                           </div>
                         </AccordionContent>
@@ -616,16 +669,23 @@ export default function TermsPage() {
                         <AccordionTrigger className="py-6 text-left hover:no-underline">
                           <div className="flex items-center gap-3">
                             <Shield className="h-5 w-5 text-green-600" />
-                            <span className="text-lg font-semibold">Warranties and Disclaimers</span>
+                            <span className="text-lg font-semibold">
+                              Warranties and Disclaimers
+                            </span>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent className="pb-6">
                           <div className="space-y-4">
                             <p className="text-slate-600 dark:text-slate-400">
-                              We provide our services &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either express or implied. We disclaim all warranties, including but not limited to merchantability, fitness for a particular purpose, and non-infringement.
+                              We provide our services &quot;as is&quot; and &quot;as available&quot;
+                              without warranties of any kind, either express or implied. We disclaim
+                              all warranties, including but not limited to merchantability, fitness
+                              for a particular purpose, and non-infringement.
                             </p>
                             <p className="text-slate-600 dark:text-slate-400">
-                              While we strive to provide accurate and reliable services, we do not warrant that our services will be uninterrupted, error-free, or completely secure.
+                              While we strive to provide accurate and reliable services, we do not
+                              warrant that our services will be uninterrupted, error-free, or
+                              completely secure.
                             </p>
                           </div>
                         </AccordionContent>
@@ -644,10 +704,15 @@ export default function TermsPage() {
                         <AccordionContent className="pb-6">
                           <div className="space-y-4">
                             <p className="text-slate-600 dark:text-slate-400">
-                              You agree to indemnify, defend, and hold harmless Dionysus and its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from your use of our services or violation of these Terms.
+                              You agree to indemnify, defend, and hold harmless Dionysus and its
+                              officers, directors, employees, and agents from any claims, damages,
+                              losses, or expenses arising from your use of our services or violation
+                              of these Terms.
                             </p>
                             <p className="text-slate-600 dark:text-slate-400">
-                              This includes but is not limited to claims related to your content, your violation of any rights of another party, or your breach of these Terms.
+                              This includes but is not limited to claims related to your content,
+                              your violation of any rights of another party, or your breach of these
+                              Terms.
                             </p>
                           </div>
                         </AccordionContent>
@@ -666,10 +731,14 @@ export default function TermsPage() {
                         <AccordionContent className="pb-6">
                           <div className="space-y-4">
                             <p className="text-slate-600 dark:text-slate-400">
-                              We encourage resolving disputes through direct communication. If a dispute cannot be resolved informally, it will be resolved through binding arbitration in accordance with the rules of the American Arbitration Association.
+                              We encourage resolving disputes through direct communication. If a
+                              dispute cannot be resolved informally, it will be resolved through
+                              binding arbitration in accordance with the rules of the American
+                              Arbitration Association.
                             </p>
                             <p className="text-slate-600 dark:text-slate-400">
-                              These Terms are governed by the laws of the State of California, without regard to conflict of law principles.
+                              These Terms are governed by the laws of the State of California,
+                              without regard to conflict of law principles.
                             </p>
                           </div>
                         </AccordionContent>
@@ -682,7 +751,8 @@ export default function TermsPage() {
                         Questions about these terms?
                       </h3>
                       <p className="mb-6 text-slate-600 dark:text-slate-400">
-                        If you have any questions about these Terms of Service, please don&apos;t hesitate to contact us.
+                        If you have any questions about these Terms of Service, please don&apos;t
+                        hesitate to contact us.
                       </p>
                       <div className="flex flex-col justify-center gap-4 sm:flex-row">
                         <Button asChild>
