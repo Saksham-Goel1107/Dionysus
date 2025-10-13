@@ -12,6 +12,9 @@ export const env = createEnv({
     GEMINI_API_KEY: z.string().min(1),
     FIRECRAWL_API_KEY: z.string().min(1).optional(),
     LANGCHAIN_API_KEY: z.string().min(1).optional(),
+    SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+    SENTRY_ORG_SLUG: z.string().min(1).optional(),
+    SENTRY_PROJECT_SLUG: z.string().min(1).optional(),
   },
 
   /**
@@ -34,6 +37,9 @@ export const env = createEnv({
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
     LANGCHAIN_API_KEY: process.env.LANGCHAIN_API_KEY,
+    SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
+    SENTRY_ORG_SLUG: process.env.SENTRY_ORG_SLUG,
+    SENTRY_PROJECT_SLUG: process.env.SENTRY_PROJECT_SLUG,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

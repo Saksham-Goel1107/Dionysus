@@ -1,24 +1,25 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { UserButton, useUser } from '@clerk/nextjs';
 import {
-  LayoutDashboard,
-  Users,
-  CreditCard,
+  AlertCircle,
   BarChart3,
-  Tag,
+  ChartLine,
   ChevronLeft,
   ChevronRight,
-  ChartLine,
+  CreditCard,
   Edit,
   ImageIcon,
+  LayoutDashboard,
   MemoryStick,
+  Tag,
+  Users,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { UserButton, useUser } from '@clerk/nextjs';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 function ThemeToggle({ collapsed }: { collapsed: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -90,6 +91,7 @@ export default function AdminSidebar() {
     { href: '/admin/blogs', label: 'Blogs', icon: Edit },
     { href: '/admin/image-upload', label: 'Image Upload', icon: ImageIcon },
     { href: '/admin/surveys', label: 'Surveys', icon: ChartLine },
+    { href: '/admin/error-tracking', label: 'Error Tracking', icon: AlertCircle },
   ];
 
   return (
