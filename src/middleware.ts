@@ -462,6 +462,186 @@ function createRateLimitOverlay() {
   `;
 }
 
+// Function to create MFA required overlay HTML
+function createMFARequiredOverlay() {
+  return `
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MFA Required - Dionysus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 999999;
+      animation: fadeIn 0.4s ease-out forwards;
+      overflow-y: auto;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(22px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      margin: auto;
+      min-height: fit-content;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.45s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0;}
+      to { transform: translateY(0); opacity: 1;}
+    }
+    .icon {
+      font-size: 3.1rem;
+      margin-bottom: 1.1rem;
+      color: #f59e0b;
+      text-shadow: 0 0 12px rgba(245,158,11,0.45);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    .title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.7rem;
+      background: linear-gradient(45deg, #f59e0b, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .message {
+      font-size: 1.08rem;
+      margin-bottom: 1.7rem;
+      opacity: 0.93;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+    .instructions {
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin: 1.4rem 0;
+      text-align: left;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+    .instructions h3 {
+      color: #fbbf24;
+      margin-bottom: 0.8rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .instructions ol {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .instructions li {
+      margin-bottom: 0.5rem;
+      color: #e2e8f0;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1.8rem;
+      flex-wrap: wrap;
+    }
+    .ok-btn {
+      border: none;
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      background: linear-gradient(45deg, #f59e0b, #f97316);
+      box-shadow: 0 6px 18px rgba(245,158,11,0.35);
+    }
+    .ok-btn:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 10px 24px rgba(245,158,11,0.45);
+    }
+    .support {
+      margin-top: 1.7rem;
+      font-size: 0.97rem;
+      background: rgba(37,99,235,0.13);
+      border-radius: 10px;
+      padding: 1rem;
+      border: 1px solid rgba(37,99,235,0.18);
+    }
+    .support a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .support a:hover { text-decoration: underline; }
+    @media (max-width: 600px) {
+      .card { padding: 1.5rem 1rem; }
+      .title { font-size: 1.6rem;}
+      .message { font-size: 0.97rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <div class="icon">🔐</div>
+      <h1 class="title">Multi-Factor Authentication Required</h1>
+      <p class="message">Admin access requires enhanced security. Please enable MFA before proceeding.</p>
+      <div class="instructions">
+        <h3>To enable MFA:</h3>
+        <ol>
+          <li>Go to your account settings</li>
+          <li>Navigate to the Security tab</li>
+          <li>Enable Two-Factor Authentication or TOTP</li>
+          <li>Follow the setup instructions</li>
+        </ol>
+      </div>
+      <div class="actions">
+        <button class="ok-btn" onclick="window.location.href='/'">OK - Go to Homepage</button>
+      </div>
+      <div class="support">
+        <strong>Need Help?</strong>
+        <br>
+        Contact support: <a href="mailto:sakshamgoel1107@gmail.com">sakshamgoel1107@gmail.com</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
 const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
@@ -627,6 +807,40 @@ export default clerkMiddleware(async (auth, request) => {
       sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET
     ) {
       return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    // Check MFA for admin users
+    try {
+      const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+      if (!CLERK_SECRET_KEY) {
+        throw new Error('Missing Clerk secret key');
+      }
+
+      const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${CLERK_SECRET_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch Clerk user: ${await res.text()}`);
+      }
+
+      const clerkUser = await res.json();
+      const hasMFA = clerkUser.totpEnabled || clerkUser.twoFactorEnabled;
+
+      if (!hasMFA) {
+        return new NextResponse(createMFARequiredOverlay(), {
+          status: 403,
+          headers: {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error checking MFA for admin:', error);
     }
   }
 

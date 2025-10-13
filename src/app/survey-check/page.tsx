@@ -175,6 +175,15 @@ export default function SurveyPage() {
       if (!response.ok) {
         throw new Error('Failed to skip survey');
       }
+      try {
+        fetch('/api/send-password-change-warning', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'new account' }),
+        });
+      } catch (err) {
+        console.error('Error Sending welcome email:', err);
+      }
 
       router.push('/dashboard');
     } catch (error) {
