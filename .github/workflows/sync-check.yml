@@ -28,6 +28,8 @@ jobs:
           echo "GEMINI_API_KEY=dummy" >> .env
           echo "FIRECRAWL_API_KEY=dummy" >> .env
           echo "LANGCHAIN_API_KEY=dummy" >> .env
+          echo "VERCEL_ACCESS_TOKEN=dummy" >> .env
+          echo "VERCEL_PROJECT_ID=dummy" >> .env
 
       - name: Clear .next build and types cache
         run: rm -rf .next

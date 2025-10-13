@@ -13,6 +13,7 @@ import {
   ImageIcon,
   LayoutDashboard,
   MemoryStick,
+  Rocket,
   Tag,
   Users,
 } from 'lucide-react';
@@ -85,6 +86,7 @@ export default function AdminSidebar() {
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/stats', label: 'System Stats', icon: MemoryStick },
     { href: '/admin/users', label: 'Users', icon: Users },
+    { href: '/admin/deployments', label: 'Deployments', icon: Rocket },
     { href: '/admin/finances', label: 'Finances', icon: CreditCard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/admin/coupons', label: 'Coupons', icon: Tag },

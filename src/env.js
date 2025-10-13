@@ -15,6 +15,9 @@ export const env = createEnv({
     SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
     SENTRY_ORG_SLUG: z.string().min(1).optional(),
     SENTRY_PROJECT_SLUG: z.string().min(1).optional(),
+    VERCEL_ACCESS_TOKEN: z.string().min(1),
+    VERCEL_TEAM_ID: z.string().min(1).optional(),
+    VERCEL_PROJECT_ID: z.string().min(1),
   },
 
   /**
@@ -40,6 +43,9 @@ export const env = createEnv({
     SENTRY_AUTH_TOKEN: process.env.SENTRY_AUTH_TOKEN,
     SENTRY_ORG_SLUG: process.env.SENTRY_ORG_SLUG,
     SENTRY_PROJECT_SLUG: process.env.SENTRY_PROJECT_SLUG,
+    VERCEL_ACCESS_TOKEN: process.env.VERCEL_ACCESS_TOKEN,
+    VERCEL_TEAM_ID: process.env.VERCEL_TEAM_ID,
+    VERCEL_PROJECT_ID: process.env.VERCEL_PROJECT_ID,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
