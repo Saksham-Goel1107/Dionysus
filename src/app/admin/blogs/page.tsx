@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { env } from '@/env';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
@@ -142,6 +143,58 @@ export default function AdminBlogsPage() {
     }
   };
 
+  const handleSendAnnouncement = async () => {
+    try {
+      if (!env.NEXT_PUBLIC_N8N_WEBHOOK_URL) {
+        throw new Error('N8N webhook URL not configured');
+      }
+
+      const publishedBlogs = blogs.filter((blog) => blog.isPublished);
+      const latestBlog = publishedBlogs.sort(
+        (a, b) =>
+          new Date(b.publishedAt || b.createdAt).getTime() -
+          new Date(a.publishedAt || a.createdAt).getTime(),
+      )[0];
+
+      if (!latestBlog) {
+        throw new Error('No published blog posts found');
+      }
+
+      const response = await fetch(env.NEXT_PUBLIC_N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'new_blog_post',
+          blog: {
+            id: latestBlog.id,
+            title: latestBlog.title,
+            slug: latestBlog.slug,
+            excerpt: latestBlog.excerpt,
+            coverImage: latestBlog.coverImage,
+            publishedAt: latestBlog.publishedAt,
+            tags: latestBlog.tags.map((tag) => tag.name),
+            url: `${env.NEXT_PUBLIC_BASE_URL}/blogs/${latestBlog.slug}`,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send announcement');
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Announcement sent successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to send announcement.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -152,14 +205,38 @@ export default function AdminBlogsPage() {
             Create, edit, and manage your blog content
           </p>
         </div>
-        <Link href="/admin/blogs/create">
-          <Button className="w-full md:w-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            New Post
-          </Button>
-        </Link>
-      </div>
-
+        <div className="flex gap-2">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" className="w-full md:w-auto">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Send Announcement
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Send New Blog Post Announcement</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will send an announcement about the latest published blog post to your
+                  configured n8n webhook. Are you sure you want to proceed?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleSendAnnouncement}>
+                  Send Announcement
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Link href="/admin/blogs/create">
+            <Button className="w-full md:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              New Post
+            </Button>
+          </Link>
+        </div>
+      </div>{' '}
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -207,7 +284,6 @@ export default function AdminBlogsPage() {
           </CardContent>
         </Card>
       </div>
-
       {/* Blog Posts Table */}
       <Card>
         <CardHeader>
@@ -386,7 +462,6 @@ export default function AdminBlogsPage() {
           )}
         </CardContent>
       </Card>
-
       {/* Comments Management Section */}
       <div className="mt-8">
         <AdminCommentsPanel />

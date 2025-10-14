@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogClose,
@@ -47,6 +48,7 @@ export default function SurveyPage() {
   const [showDontSubscribeDialog, setShowDontSubscribeDialog] = useState(false);
   const [canSkipSurvey, setCanSkipSurvey] = useState(false);
   const [showSkipDialog, setShowSkipDialog] = useState(false);
+  const [skipSubscribe, setSkipSubscribe] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
   const { theme, setTheme } = useTheme();
 
@@ -183,6 +185,27 @@ export default function SurveyPage() {
         });
       } catch (err) {
         console.error('Error Sending welcome email:', err);
+      }
+
+      // Newsletter logic for skip
+      if (skipSubscribe && user?.emailAddresses?.[0]?.emailAddress) {
+        try {
+          const newsletterResponse = await fetch('/api/newsletter/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: user.emailAddresses[0].emailAddress,
+              name: user.firstName || '',
+            }),
+          });
+
+          if (!newsletterResponse.ok) {
+            const errorData = await newsletterResponse.json().catch(() => ({}));
+            console.error('Newsletter subscription failed:', errorData);
+          }
+        } catch (err) {
+          console.error('Error subscribing to newsletter:', err);
+        }
       }
 
       router.push('/dashboard');
@@ -653,7 +676,10 @@ export default function SurveyPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => setShowSkipDialog(true)}
+                      onClick={() => {
+                        setSkipSubscribe(true);
+                        setShowSkipDialog(true);
+                      }}
                       disabled={isSubmitting}
                       className={
                         theme === 'dark'
@@ -720,6 +746,19 @@ export default function SurveyPage() {
             <DialogDescription>
               Are you sure you want to skip the survey? This helps us understand your needs and
               improve our platform. You can not fill this out later.
+              <div className="mt-4 flex items-center space-x-2">
+                <Checkbox
+                  id="skip-newsletter"
+                  checked={skipSubscribe}
+                  onCheckedChange={(checked) => setSkipSubscribe(checked === true)}
+                />
+                <label
+                  htmlFor="skip-newsletter"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Subscribe to our newsletter for updates and tips
+                </label>
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
