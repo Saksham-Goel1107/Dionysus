@@ -37,6 +37,7 @@ interface BlogFormData {
   coverImage: string;
   isPublished: boolean;
   isSponsored: boolean;
+  isCommentsEnabled: boolean;
   publishedAt?: string | null;
   tags: string[];
 }
@@ -58,6 +59,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
     coverImage: '',
     isPublished: false,
     isSponsored: false,
+    isCommentsEnabled: true,
     publishedAt: isEdit ? null : new Date().toISOString(),
     tags: [],
   });
@@ -85,6 +87,7 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
         coverImage: blog.coverImage || '',
         isPublished: blog.isPublished,
         isSponsored: blog.isSponsored || false,
+        isCommentsEnabled: blog.isCommentsEnabled ?? true,
         publishedAt: blog.publishedAt || null,
         tags: blog.tags.map((tag: any) => tag.name),
       });
@@ -419,6 +422,22 @@ export default function BlogEditor({ blogId, isEdit = false }: BlogEditorProps) 
                   }
                 />
                 <Label htmlFor="sponsored">Sponsored</Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="comments-enabled"
+                  checked={formData.isCommentsEnabled}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, isCommentsEnabled: checked }))
+                  }
+                />
+                <Label htmlFor="comments-enabled" className="flex items-center gap-2">
+                  <span>Comments Enabled</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    ({formData.isCommentsEnabled ? 'On' : 'Off'})
+                  </span>
+                </Label>
               </div>
 
               <div className="space-y-2">

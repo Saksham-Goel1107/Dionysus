@@ -50,6 +50,7 @@ interface BlogPost {
   coverImage: string | null;
   publishedAt: string;
   isSponsored: boolean;
+  isCommentsEnabled: boolean;
   tags: { id: string; name: string }[];
   _count: {
     likes: number;
@@ -390,8 +391,14 @@ export default function BlogsPage() {
                                 <span>{blog._count.dislikes}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <MessageCircle size={14} className="text-blue-500" />
-                                <span>{blog._count.comments}</span>
+                                {blog.isCommentsEnabled ? (
+                                  <>
+                                    <MessageCircle size={14} className="text-blue-500" />
+                                    <span>{blog._count.comments}</span>
+                                  </>
+                                ) : (
+                                  <span className="text-lg text-amber-500">⚠️</span>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -502,8 +509,14 @@ export default function BlogsPage() {
                                   <span>{blog._count.dislikes}</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-sm">
-                                  <MessageCircle size={14} className="text-blue-500" />
-                                  <span>{blog._count.comments}</span>
+                                  {blog.isCommentsEnabled ? (
+                                    <>
+                                      <MessageCircle size={14} className="text-blue-500" />
+                                      <span>{blog._count.comments}</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-lg text-amber-500">⚠️</span>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>

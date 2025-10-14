@@ -223,6 +223,7 @@ model Blog {
   excerpt     String?     // Short description
   coverImage  String?     // Cover image URL
   isPublished Boolean     @default(false)
+  isCommentsEnabled Boolean     @default(true)
   isSponsored Boolean     @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

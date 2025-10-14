@@ -198,6 +198,7 @@ export const blogRouter = createTRPCRouter({
       dislikeCount: blog.likes.filter((like) => !like.isLike).length,
       userLike: ctx.userId ? blog.likes.find((like) => like.userId === ctx.userId) : null,
       commentCount: blog._count.comments,
+      isCommentsEnabled: blog.isCommentsEnabled,
     };
   }),
 });

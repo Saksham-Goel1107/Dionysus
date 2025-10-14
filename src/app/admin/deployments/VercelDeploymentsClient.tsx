@@ -694,9 +694,7 @@ export default function VercelDeploymentsClient() {
                               : 'text-gray-300'
                         }`}
                       >
-                        <span className="text-gray-500">
-                          [{formatTimestamp(log.timestamp)}]
-                        </span>{' '}
+                        <span className="text-gray-500">[{formatTimestamp(log.timestamp)}]</span>{' '}
                         <span className="text-blue-400">[{log.type}]</span> {log.message}
                       </div>
                     ))}

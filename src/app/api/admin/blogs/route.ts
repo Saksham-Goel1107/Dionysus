@@ -29,7 +29,19 @@ export async function GET() {
     }
 
     const blogs = await prisma.blog.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        coverImage: true,
+        isPublished: true,
+        isSponsored: true,
+        isCommentsEnabled: true,
+        createdAt: true,
+        updatedAt: true,
+        publishedAt: true,
+        authorId: true,
         tags: true,
         _count: {
           select: {
@@ -96,6 +108,7 @@ export async function POST(request: NextRequest) {
       coverImage,
       isPublished,
       isSponsored,
+      isCommentsEnabled,
       tags,
       publishedAt,
     } = await request.json();
@@ -138,6 +151,7 @@ export async function POST(request: NextRequest) {
         coverImage: coverImage || null,
         isPublished,
         isSponsored: isSponsored || false,
+        isCommentsEnabled: isCommentsEnabled !== undefined ? isCommentsEnabled : true,
         publishedAt: publishedAtDate,
         authorId: userId,
         tags: {

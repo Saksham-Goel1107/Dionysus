@@ -76,6 +76,7 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       coverImage,
       isPublished,
       isSponsored,
+      isCommentsEnabled,
       tags,
       publishedAt,
     } = await request.json();
@@ -166,6 +167,8 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
           coverImage: coverImage || null,
           isPublished,
           isSponsored: isSponsored !== undefined ? isSponsored : blog.isSponsored,
+          isCommentsEnabled:
+            isCommentsEnabled !== undefined ? isCommentsEnabled : blog.isCommentsEnabled,
           publishedAt: publishedAtDate,
           tags: {
             connect: tagConnections,

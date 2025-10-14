@@ -194,13 +194,13 @@ class VercelClient {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Helper function to extract message from event
         const extractMessage = (event: any): string => {
           // Try different message fields
           if (typeof event.text === 'string') return event.text;
           if (typeof event.message === 'string') return event.message;
-          
+
           // Handle payload object
           if (event.payload) {
             if (typeof event.payload === 'string') return event.payload;
@@ -213,7 +213,7 @@ class VercelClient {
               return String(event.payload);
             }
           }
-          
+
           // Last resort: stringify the entire event
           try {
             return JSON.stringify(event);
@@ -221,25 +221,27 @@ class VercelClient {
             return 'Unable to parse log entry';
           }
         };
-        
+
         // Handle different response formats
-        const events = Array.isArray(data) ? data : (data.events || []);
-        
+        const events = Array.isArray(data) ? data : data.events || [];
+
         if (events.length > 0) {
           return events
-            .map((event: any, index: number): VercelBuildLog => ({
-              id: event.id || `log-${index}`,
-              message: extractMessage(event),
-              timestamp: event.created || event.timestamp || Date.now(),
-              type: (event.type === 'stderr'
-                ? 'stderr'
-                : event.type === 'command'
-                  ? 'command'
-                  : 'stdout') as 'stdout' | 'stderr' | 'command',
-              source: event.source || 'build',
-              deploymentId: deploymentId,
-              entrypoint: event.entrypoint || 'build',
-            }))
+            .map(
+              (event: any, index: number): VercelBuildLog => ({
+                id: event.id || `log-${index}`,
+                message: extractMessage(event),
+                timestamp: event.created || event.timestamp || Date.now(),
+                type: (event.type === 'stderr'
+                  ? 'stderr'
+                  : event.type === 'command'
+                    ? 'command'
+                    : 'stdout') as 'stdout' | 'stderr' | 'command',
+                source: event.source || 'build',
+                deploymentId: deploymentId,
+                entrypoint: event.entrypoint || 'build',
+              }),
+            )
             .filter((log: VercelBuildLog) => log.message && log.message.trim().length > 0);
         }
       }

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const awaitedParams = await params
+    const awaitedParams = await params;
     const deploymentId = awaitedParams.id;
     const logs = await vercelClient.getBuildLogs(deploymentId);
 

@@ -65,7 +65,15 @@ export async function GET(request: NextRequest) {
     // First get blogs with basic data and comment counts
     const blogs = await prisma.blog.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        coverImage: true,
+        publishedAt: true,
+        isSponsored: true,
+        isCommentsEnabled: true,
         tags: true,
         _count: {
           select: {

@@ -47,6 +47,7 @@ interface BlogPost {
   coverImage: string | null;
   isPublished: boolean;
   isSponsored: boolean;
+  isCommentsEnabled: boolean;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
@@ -387,8 +388,19 @@ export default function AdminBlogsPage() {
                       <TableCell>
                         <div className="space-y-1 text-sm">
                           <div className="flex items-center gap-2">
-                            <MessageCircle className="h-3 w-3" />
-                            <span>{blog.commentCount} comments</span>
+                            {blog.isCommentsEnabled ? (
+                              <>
+                                <MessageCircle className="h-3 w-3" />
+                                <span>{blog.commentCount} comments</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-amber-500">⚠️</span>
+                                <span className="text-amber-600 dark:text-amber-400">
+                                  Comments disabled
+                                </span>
+                              </>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <span>{blog.likeCount} likes</span>

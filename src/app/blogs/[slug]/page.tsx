@@ -460,7 +460,27 @@ export default function BlogPostPage() {
           <div id="comments" className="mt-12">
             <Card className="shadow-xl">
               <CardContent className="p-8 md:p-12">
-                <CommentsList blogId={blog.id} initialCommentCount={blog.commentCount} />
+                {blog.isCommentsEnabled ? (
+                  <CommentsList blogId={blog.id} initialCommentCount={blog.commentCount} />
+                ) : (
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="h-5 w-5 text-gray-400" />
+                      <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400">
+                        Comments Disabled
+                      </h3>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
+                      <MessageCircle className="mx-auto mb-3 h-12 w-12 text-gray-400" />
+                      <h4 className="mb-1 font-medium text-gray-900 dark:text-gray-100">
+                        Comments are disabled for this post
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        The admin has disabled comments for this blog post.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

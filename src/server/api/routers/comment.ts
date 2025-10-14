@@ -197,12 +197,24 @@ export const commentRouter = createTRPCRouter({
           id: input.blogId,
           isPublished: true,
         },
+        select: {
+          id: true,
+          isCommentsEnabled: true,
+        },
       });
 
       if (!blog) {
         throw new TRPCError({
           code: 'NOT_FOUND',
           message: 'Blog post not found or not published',
+        });
+      }
+
+      // Check if comments are enabled for this blog post
+      if (!blog.isCommentsEnabled) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Comments are disabled for this blog post',
         });
       }
 
