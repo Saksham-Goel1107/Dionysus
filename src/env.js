@@ -19,6 +19,7 @@ export const env = createEnv({
     VERCEL_TEAM_ID: z.string().min(1).optional(),
     VERCEL_PROJECT_ID: z.string().min(1),
     CONFIGCAT_MANAGEMENT_AUTH_HEADER: z.string().min(1).optional(),
+    DOPPLER_TOKEN: z.string().min(1).optional(),
   },
 
   /**
@@ -49,6 +50,7 @@ export const env = createEnv({
     VERCEL_TEAM_ID: process.env.VERCEL_TEAM_ID,
     VERCEL_PROJECT_ID: process.env.VERCEL_PROJECT_ID,
     CONFIGCAT_MANAGEMENT_AUTH_HEADER: process.env.CONFIGCAT_MANAGEMENT_AUTH_HEADER,
+    DOPPLER_TOKEN: process.env.DOPPLER_TOKEN,
     NEXT_PUBLIC_N8N_WEBHOOK_URL: process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },

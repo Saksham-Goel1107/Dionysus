@@ -41,6 +41,7 @@ model Project {
   deletedAt            DateTime?
   creatorId            String?               @db.VarChar(256)
   inviteToken          String?
+  invitationEnabled    Boolean               @default(false)
   commits              Commit[]
   meetings             Meeting[]
   savedQuestions       Question[]

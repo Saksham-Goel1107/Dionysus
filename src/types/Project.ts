@@ -4,6 +4,7 @@ export interface Project {
   githubUrl: string;
   creatorId: string;
   inviteToken?: string;
+  invitationEnabled: boolean;
   deletedAt?: Date | null;
   createdAt?: Date | string;
   updatedAt?: Date | string;

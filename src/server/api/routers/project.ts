@@ -3,6 +3,7 @@ import { checkCredits, indexGithubRepo } from '@/lib/github-loader';
 import { handleUserCreditsChange } from '@/lib/handleUserCreditsChange';
 import { readReplicaDb2 } from '@/server/read-replica-2-db';
 import type { Project } from '@/types/Project';
+import { TRPCError } from '@trpc/server';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
@@ -634,6 +635,44 @@ export const projectRouter = createTRPCRouter({
 
       return { inviteToken: newToken };
     }),
+  toggleInvitationEnabled: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if the current user is the project creator
+      const projects = await readReplicaDb2.$queryRaw<
+        Array<{ id: string; creatorId: string; invitationEnabled: boolean }>
+      >`
+        SELECT id, "creatorId", "invitationEnabled" FROM "Project" WHERE id = ${input.projectId}
+      `;
+
+      if (!projects || !projects.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found',
+        });
+      }
+
+      const project = projects[0];
+
+      if (!project || project.creatorId !== ctx.userId) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Only the project creator can toggle invitations.',
+        });
+      }
+
+      // Toggle the invitationEnabled value
+      const newStatus = !project.invitationEnabled;
+
+      // Update the project using raw SQL to avoid schema validation issues
+      await ctx.db.$executeRaw`
+        UPDATE "Project"
+        SET "invitationEnabled" = ${newStatus}
+        WHERE id = ${input.projectId}
+      `;
+
+      return { invitationEnabled: newStatus };
+    }),
   hasProjectAccess: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -679,7 +718,7 @@ export const projectRouter = createTRPCRouter({
 
       // Get project with inviteToken using raw query
       const projects = await readReplicaDb2.$queryRaw<Project[]>`
-        SELECT id, name, "githubUrl", "creatorId", "deletedAt", "createdAt", "updatedAt", "inviteToken" FROM "Project" WHERE id = ${input.projectId}
+        SELECT id, name, "githubUrl", "creatorId", "deletedAt", "createdAt", "updatedAt", "inviteToken", "invitationEnabled" FROM "Project" WHERE id = ${input.projectId}
       `;
 
       if (!projects || !projects.length) {

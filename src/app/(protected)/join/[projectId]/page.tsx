@@ -46,14 +46,15 @@ const JoinHandler = async (props: Props) => {
       id: true,
       name: true,
       inviteToken: true,
+      invitationEnabled: true,
     },
   });
 
   if (!project) return redirect('/dashboard?error=Project+not+found');
 
-  if (!inviteToken || project.inviteToken !== inviteToken) {
+  if (!inviteToken || project.inviteToken !== inviteToken || !project.invitationEnabled) {
     return redirect(
-      '/dashboard?error=Invalid+or+missing+invite+token.+The+link+may+have+been+regenerated+by+the+project+creator.',
+      '/dashboard?error=Invalid+or+missing+invite+token.+The+link+may+have+been+regenerated+by+the+project+creator+pr+The+invitation+feature+may+have+been+disabled+by+the+project+creator.',
     );
   }
 
