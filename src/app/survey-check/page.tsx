@@ -146,7 +146,7 @@ export default function SurveyPage() {
           console.error(err);
         }
       }
-      router.push('/dashboard');
+      router.push('/dashboard#survey-completed');
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : 'An unknown error occurred');
     } finally {
@@ -208,7 +208,7 @@ export default function SurveyPage() {
         }
       }
 
-      router.push('/dashboard');
+      router.push('/dashboard#survey-completed');
     } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : 'An error occurred while skipping survey',

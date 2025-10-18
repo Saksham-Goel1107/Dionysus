@@ -711,6 +711,8 @@ export default clerkMiddleware(async (auth, request) => {
   if (process.env.NODE_ENV === 'production') {
     console.log('User IP:', ip);
     console.log('Requested Path:', pathname);
+    console.log('User-Agent:', userAgent);
+    console.log('Country:', country);
 
     if (isAutomatedUserAgent(userAgent)) {
       return new NextResponse(

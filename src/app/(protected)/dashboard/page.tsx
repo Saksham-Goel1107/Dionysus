@@ -1,7 +1,7 @@
 'use client';
 import useProject from '@/hooks/use-project';
 import { api } from '@/trpc/react';
-import { ExternalLink, Github, MessageCirclePlus, Loader2 } from 'lucide-react';
+import { ExternalLink, Github, Loader2, MessageCirclePlus } from 'lucide-react';
 import Link from 'next/link';
 import ArchiveButton from './_components/ArchiveButton';
 import AskQuestionCard from './_components/AskQuestionCard';
@@ -10,9 +10,18 @@ import MeetingCard from './_components/MeetingCard';
 const InviteButton = dynamic(() => import('./_components/InviteButton'), { ssr: false });
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { PricingTable } from '@clerk/nextjs';
 import { useFeatureFlag } from 'configcat-react';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import RepoMetricsCard from './_components/RepoMetricsCard';
 import TeamMembers from './_components/TeamMembers';
@@ -24,6 +33,7 @@ const Page = ({}: Props) => {
   const { isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLeavingLoading, setisLeavingLoading] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const utils = api.useContext();
 
   const { value: maintenanceScheduled } = useFeatureFlag('maintenancescheduled', false);
@@ -64,6 +74,19 @@ const Page = ({}: Props) => {
 
   const cancelLeaveProject = () => {
     setShowConfirm(false);
+  };
+
+  useEffect(() => {
+    // Check if the URL has #survey-completed hash
+    if (typeof window !== 'undefined' && window.location.hash === '#survey-completed') {
+      setShowPricingModal(true);
+      // Clear the hash from the URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  const handleClosePricingModal = () => {
+    setShowPricingModal(false);
   };
 
   if (isProjectsLoading) {
@@ -209,6 +232,29 @@ const Page = ({}: Props) => {
 
         <CommitTabs />
       </div>
+
+      {/* Pricing Modal for Survey Completion */}
+      <Dialog open={showPricingModal} onOpenChange={handleClosePricingModal}>
+        <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-center text-2xl font-bold">
+              Welcome to Dionysus! 🎉
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Thank you for completing the survey. Choose a plan to get started with advanced
+              features.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-4">
+            <PricingTable />
+          </div>
+
+          <DialogFooter className="flex justify-between">
+            <Button onClick={handleClosePricingModal}>Continue to Dashboard</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
