@@ -1,103 +1,106 @@
-import { db } from '@/server/db';
-import { auth, clerkClient } from '@clerk/nextjs/server';
-import { readReplicaDb2 } from '@/server/read-replica-2-db';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { CheckCircle, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 type Props = {
   params: { projectId: string };
   searchParams?: { inviteToken?: string };
 };
 
-const JoinHandler = async (props: Props) => {
-  const { projectId } = props.params;
-  const inviteToken = props.searchParams?.inviteToken;
-  const { userId } = await auth();
-  if (!userId) return redirect('/sign-in');
-  const dbUser = await db.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
+const JoinHandler = ({ params, searchParams }: Props) => {
+  const { projectId } = params;
+  const router = useRouter();
+  const inviteToken = searchParams?.inviteToken;
+  const [isLoading, setIsLoading] = useState(true);
+  const handleClose = () => {
+    router.push('/dashboard');
+  };
+  const [result, setResult] = useState<{
+    success: boolean;
+    message?: string;
+    error?: string;
+  } | null>(null);
 
-  const client = await clerkClient();
-  const user = await client.users.getUser(userId);
+  useEffect(() => {
+    const joinProject = async () => {
+      try {
+        const response = await fetch('/api/join', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectId,
+            inviteToken,
+          }),
+        });
 
-  const existingUserByEmail = await readReplicaDb2.user.findUnique({
-    where: { emailAddress: user.emailAddresses[0]!.emailAddress },
-  });
+        const data = await response.json();
 
-  if (!dbUser && !existingUserByEmail) {
-    await db.user.create({
-      data: {
-        id: userId,
-        emailAddress: user.emailAddresses[0]!.emailAddress,
-        imageUrl: user.imageUrl,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-    });
-  }
+        if (response.ok) {
+          setResult({ success: true, message: data.message });
+        } else {
+          setResult({ success: false, error: data.error });
+        }
+      } catch (error) {
+        console.error('Error calling join API:', error);
+        setResult({ success: false, error: 'Failed to process join request' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const project = await readReplicaDb2.project.findUnique({
-    where: {
-      id: projectId,
-    },
-    select: {
-      id: true,
-      name: true,
-      inviteToken: true,
-      invitationEnabled: true,
-    },
-  });
+    if (projectId && inviteToken) {
+      joinProject();
+    } else {
+      setResult({ success: false, error: 'Missing project ID or invite token' });
+      setIsLoading(false);
+    }
+  }, [projectId, inviteToken]);
 
-  if (!project) return redirect('/dashboard?error=Project+not+found');
-
-  if (!inviteToken || project.inviteToken !== inviteToken || !project.invitationEnabled) {
-    return redirect(
-      '/dashboard?error=Invalid+or+missing+invite+token.+The+link+may+have+been+regenerated+by+the+project+creator+pr+The+invitation+feature+may+have+been+disabled+by+the+project+creator.',
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-primary"></div>
+      </div>
     );
   }
 
-  try {
-    const existingUserProject = await db.userToProject.findFirst({
-      where: {
-        userId,
-        projectId,
-      },
-    });
-
-    if (existingUserProject) {
-      return redirect('/dashboard');
-    }
-  } catch (findError) {
-    console.error('Error checking existing membership:', findError);
-  }
-
-  try {
-    await db.userToProject.create({
-      data: {
-        userId,
-        projectId,
-      },
-    });
-
-    return redirect('/dashboard?success=Joined+project+successfully');
-  } catch (error) {
-    console.error('Error adding user to project:', error);
-
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error details:', errorMessage);
-
-    if (
-      errorMessage.includes('Unique constraint') ||
-      errorMessage.includes('duplicate key') ||
-      errorMessage.includes('already exists')
-    ) {
-      return redirect('/dashboard?info=Already+a+member+of+this+project');
-    }
-
-    return redirect('/dashboard?error=Failed+to+join+project');
-  }
+  return (
+    <Dialog open={true} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <div className="flex items-center gap-3">
+            {result?.success ? (
+              <CheckCircle className="h-6 w-6 text-green-500" />
+            ) : (
+              <XCircle className="h-6 w-6 text-red-500" />
+            )}
+            <DialogTitle>{result?.success ? 'Success!' : 'Error'}</DialogTitle>
+          </div>
+          <DialogDescription className="text-base">
+            {result?.success ? result.message : result?.error}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button onClick={handleClose} className="w-full">
+            Go to Dashboard
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 };
 
 export default JoinHandler;

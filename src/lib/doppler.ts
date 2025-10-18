@@ -40,11 +40,8 @@ interface DopplerConfigItem {
 }
 
 interface DopplerSecret {
-  name: string;
-  value: {
-    raw: string;
-    computed: string;
-  };
+  raw: string;
+  computed: string;
 }
 
 interface DopplerSecretUpdate {
@@ -289,7 +286,17 @@ class DopplerClient {
       params.append('secrets', 'names');
     }
 
-    return this.request<Record<string, DopplerSecret>>(`/configs/config/secrets?${params}`);
+    const result = await this.request<{ secrets: Record<string, DopplerSecret> }>(`/configs/config/secrets?${params}`);
+    if (result.success && result.data) {
+      return {
+        success: true,
+        data: result.data.secrets,
+      };
+    }
+    return {
+      success: false,
+      error: result.error,
+    };
   }
 
   async getSecret(

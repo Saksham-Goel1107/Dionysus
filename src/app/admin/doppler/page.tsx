@@ -75,11 +75,8 @@ interface DopplerConfig {
 }
 
 interface DopplerSecret {
-  name: string;
-  value: {
-    raw: string;
-    computed: string;
-  };
+  raw: string;
+  computed: string;
 }
 
 export default function DopplerManagementPage() {
@@ -412,8 +409,8 @@ export default function DopplerManagementPage() {
   };
 
   const maskValue = (value: string): string => {
-    if (value.length <= 8) {
-      return '•'.repeat(value.length);
+    if (!value || value.length <= 8) {
+      return '•'.repeat(value.length || 1);
     }
     return value.substring(0, 4) + '•'.repeat(value.length - 8) + value.substring(value.length - 4);
   };
@@ -561,8 +558,8 @@ export default function DopplerManagementPage() {
                               <TableCell>
                                 <code className="rounded bg-muted px-2 py-1 font-mono text-sm">
                                   {maskedSecrets.has(name)
-                                    ? maskValue(secret.value.computed)
-                                    : secret.value.computed}
+                                    ? maskValue(secret.computed || 'N/A')
+                                    : (secret.computed || 'N/A')}
                                 </code>
                               </TableCell>
                               <TableCell className="text-right">
@@ -582,7 +579,7 @@ export default function DopplerManagementPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => copyToClipboard(secret.value.computed)}
+                                    onClick={() => copyToClipboard(secret.computed || '')}
                                     title="Copy value"
                                   >
                                     <Copy className="h-4 w-4" />
@@ -591,7 +588,7 @@ export default function DopplerManagementPage() {
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => {
-                                      setEditingSecret({ name, value: secret.value.computed });
+                                      setEditingSecret({ name, value: secret.computed || '' });
                                       setShowSecretDialog(true);
                                     }}
                                     title="Edit secret"
