@@ -286,7 +286,9 @@ class DopplerClient {
       params.append('secrets', 'names');
     }
 
-    const result = await this.request<{ secrets: Record<string, DopplerSecret> }>(`/configs/config/secrets?${params}`);
+    const result = await this.request<{ secrets: Record<string, DopplerSecret> }>(
+      `/configs/config/secrets?${params}`,
+    );
     if (result.success && result.data) {
       return {
         success: true,

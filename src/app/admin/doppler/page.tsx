@@ -559,7 +559,7 @@ export default function DopplerManagementPage() {
                                 <code className="rounded bg-muted px-2 py-1 font-mono text-sm">
                                   {maskedSecrets.has(name)
                                     ? maskValue(secret.computed || 'N/A')
-                                    : (secret.computed || 'N/A')}
+                                    : secret.computed || 'N/A'}
                                 </code>
                               </TableCell>
                               <TableCell className="text-right">

@@ -84,6 +84,22 @@ const GlobalAIAssistant: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [hasProPlan, sethasProPlan] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/user/pro-status');
+        if (!res.ok) throw new Error('Failed to fetch pro status');
+        const data = await res.json();
+        sethasProPlan(data.pro);
+      } catch {
+        sethasProPlan(false);
+      }
+    })();
+  }, []);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -93,6 +109,46 @@ const GlobalAIAssistant: React.FC = () => {
   const router = useRouter();
   const { theme } = useTheme();
   const { isLoaded, isSignedIn, user } = useUser();
+
+  // AI Model options
+  const AI_MODELS = [
+    {
+      id: 'gemini-2.5-flash',
+      name: 'Gemini 2.5 Flash',
+      provider: 'Google',
+      description: 'Fast and efficient for most tasks',
+      icon: '✨',
+      speed: 'Fast',
+      quality: 'High',
+    },
+    {
+      id: 'groq-llama-3.3-70b',
+      name: 'Llama 3.3 70B',
+      provider: 'Groq',
+      description: 'Powerful open-source model with fast inference',
+      icon: '🦙',
+      speed: 'Very Fast',
+      quality: 'Very High',
+    },
+    {
+      id: 'openai/gpt-oss-120b',
+      name: 'GPT OSS 120B',
+      provider: 'OpenAI',
+      description: 'Heavy open-source model with excellent capabilities',
+      icon: '🤖',
+      speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
+      id: 'perplexity-sonar-pro',
+      name: 'Sonar Pro',
+      provider: 'Perplexity',
+      description: 'Real-time web search and analysis',
+      icon: '🔍',
+      speed: 'Medium',
+      quality: 'Excellent',
+    },
+  ];
 
   // Security and validation constants
   const MAX_QUESTIONS_PER_HOUR = 50;
@@ -128,6 +184,28 @@ const GlobalAIAssistant: React.FC = () => {
       }
     };
   }, [abortController]);
+
+  // Close model selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showModelSelector) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.model-selector-container')) {
+          setShowModelSelector(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showModelSelector]);
+
+  // Auto-switch from Perplexity to Gemini if user loses pro access
+  useEffect(() => {
+    if (!hasProPlan && selectedModel === 'perplexity-sonar-pro') {
+      setSelectedModel('gemini-2.5-flash');
+    }
+  }, [hasProPlan, selectedModel]);
 
   // Security function to sanitize input
   const sanitizeInput = (input: string): string => {
@@ -918,9 +996,9 @@ const GlobalAIAssistant: React.FC = () => {
             content: sanitizeInput(msg.content),
           })), // Send last 10 messages for better context
           platform: 'dionysus', // Platform identifier
-          userId: 'authenticated', // Don't send actual user ID for privacy
           userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
+          model: selectedModel, // Pass selected AI model
         }),
         signal: controller.signal, // Add abort signal
       });
@@ -1083,6 +1161,214 @@ const GlobalAIAssistant: React.FC = () => {
     }
 
     setShowClearDialog(false);
+  };
+
+  // Handle regenerating an assistant response
+  const handleRegenerate = async (assistantMessageId: string) => {
+    if (isLoading) return;
+
+    // Find the assistant message and its corresponding user message
+    const assistantMessageIndex = messages.findIndex((msg) => msg.id === assistantMessageId);
+    if (assistantMessageIndex === -1) return;
+
+    // Find the user message that prompted this response (should be right before the assistant message)
+    let userMessageIndex = -1;
+    for (let i = assistantMessageIndex - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg?.role === 'user') {
+        userMessageIndex = i;
+        break;
+      }
+    }
+
+    if (userMessageIndex === -1) return;
+
+    const userMessage = messages[userMessageIndex];
+    if (!userMessage) {
+      // Safety: if userMessage is unexpectedly undefined, abort regeneration
+      return;
+    }
+
+    // Remove the current assistant message
+    setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
+
+    // Set loading state
+    setIsLoading(true);
+    setIsGenerating(true);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    // Create new assistant message with streaming content
+    const newAssistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      id: newAssistantMessageId,
+      sources: [],
+    };
+
+    // Add the new assistant message
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    try {
+      // Prepare user information for personalization
+      const userInfo = user
+        ? {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            fullName: user.fullName || '',
+            email: user.primaryEmailAddress?.emailAddress || '',
+            username: user.username || '',
+            hasImage: !!user.imageUrl,
+          }
+        : null;
+
+      const response = await fetch('/api/ai-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-Origin': window.location.origin,
+        },
+        body: JSON.stringify({
+          question: userMessage.content, // Use the original user question
+          context: currentContext,
+          conversationHistory: messages.slice(-10).map((msg) => ({
+            ...msg,
+            content: sanitizeInput(msg.content),
+          })), // Send conversation history for better context
+          platform: 'dionysus',
+          userId: 'authenticated',
+          userInfo: userInfo,
+          attachments: userMessage.attachments, // Include original attachments
+          model: selectedModel,
+          isRegeneration: true, // Flag to indicate this is a regeneration
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      // Handle streaming response (same as handleSubmit)
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+
+                if (data === '[DONE]') {
+                  setIsLoading(false);
+                  setIsGenerating(false);
+                  setAbortController(null);
+                  break;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+
+                  if (parsed.type === 'chunk') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, content: msg.content + parsed.content }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'sources') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, sources: parsed.sources }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'complete') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? {
+                              ...msg,
+                              content: sanitizeInput(parsed.fullResponse),
+                              sources: parsed.sources || [],
+                            }
+                          : msg,
+                      ),
+                    );
+                    setIsLoading(false);
+                    setIsGenerating(false);
+                    setAbortController(null);
+                  } else if (parsed.type === 'error') {
+                    throw new Error(parsed.error || 'Streaming error');
+                  }
+                } catch (parseError) {
+                  console.error('Error parsing streaming data:', parseError);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Fallback for non-streaming response
+        const data = await response.json();
+
+        if (!data.answer || typeof data.answer !== 'string') {
+          throw new Error('Invalid response format');
+        }
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === newAssistantMessageId
+              ? {
+                  ...msg,
+                  content: sanitizeInput(data.answer),
+                  sources: data.sources || [],
+                }
+              : msg,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error regenerating AI response:', error);
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newAssistantMessageId
+            ? {
+                ...msg,
+                content:
+                  'I apologize, but I encountered an error while regenerating the response. Please try again.',
+              }
+            : msg,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+      setIsGenerating(false);
+      setAbortController(null);
+    }
   };
 
   // Copy message content to clipboard
@@ -1505,12 +1791,97 @@ const GlobalAIAssistant: React.FC = () => {
             </div>
             <div>
               <span className="text-sm font-semibold text-foreground">AI Page Assistant</span>
-              <Badge
-                variant="secondary"
-                className="ml-2 bg-violet-100 text-xs text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
-              >
-                Powered by Gemini
-              </Badge>
+              <div className="model-selector-container relative inline-block">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowModelSelector(!showModelSelector)}
+                  className="ml-2 h-6 gap-1 px-2 text-xs hover:bg-violet-100 dark:hover:bg-violet-900/50"
+                >
+                  {AI_MODELS.find((m) => m.id === selectedModel)?.icon}{' '}
+                  {AI_MODELS.find((m) => m.id === selectedModel)?.name}
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+                {showModelSelector && (
+                  <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-background shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                    <div className="p-2">
+                      <div className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+                        Select AI Model
+                      </div>
+                      {AI_MODELS.map((model) => {
+                        const isProOnly =
+                          model.id === 'perplexity-sonar-pro' || model.id === 'openai/gpt-oss-120b';
+                        const isDisabled = isProOnly && !hasProPlan;
+
+                        return (
+                          <button
+                            key={model.id}
+                            onClick={() => {
+                              if (!isDisabled) {
+                                setSelectedModel(model.id);
+                                setShowModelSelector(false);
+                              }
+                            }}
+                            disabled={isDisabled}
+                            className={`w-full rounded-md p-2 text-left transition-colors ${
+                              isDisabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted'
+                            } ${
+                              selectedModel === model.id ? 'bg-violet-50 dark:bg-violet-900/20' : ''
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className="text-lg">{model.icon}</span>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`text-sm font-medium ${
+                                      isDisabled ? 'text-muted-foreground' : 'text-foreground'
+                                    }`}
+                                  >
+                                    {model.name}
+                                  </span>
+                                  {isProOnly && (
+                                    <Badge
+                                      variant="outline"
+                                      className="border-orange-200 text-xs text-orange-700 dark:border-orange-800 dark:text-orange-300"
+                                    >
+                                      Pro
+                                    </Badge>
+                                  )}
+                                  {selectedModel === model.id && !isDisabled && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="bg-violet-100 text-xs text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
+                                    >
+                                      Active
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {model.description}
+                                </div>
+                                <div className="mt-1 flex gap-2 text-xs">
+                                  <span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                    {model.speed}
+                                  </span>
+                                  <span className="rounded bg-green-50 px-1.5 py-0.5 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                    {model.quality}
+                                  </span>
+                                </div>
+                                {isDisabled && (
+                                  <div className="mt-1 text-xs text-orange-600 dark:text-orange-400">
+                                    Upgrade to Premium plan to unlock this model
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -1688,6 +2059,18 @@ const GlobalAIAssistant: React.FC = () => {
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
+                          {message.role === 'assistant' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRegenerate(message.id)}
+                              disabled={isLoading}
+                              className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                              title="Regenerate response"
+                            >
+                              <Sparkles className="h-3 w-3" />
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"

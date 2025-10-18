@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatOpenAI } from '@langchain/openai';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { LangChainTracer } from 'langchain/callbacks';
 import { NextRequest, NextResponse } from 'next/server';
@@ -133,6 +134,129 @@ const validateFileAttachments = (
   }
 
   return { isValid: true };
+};
+
+// AI Model Configuration
+type AIModelId =
+  | 'gemini-2.5-flash'
+  | 'groq-llama-3.3-70b'
+  | 'perplexity-sonar-pro'
+  | 'openai/gpt-oss-120b';
+
+interface AIModelConfig {
+  provider: string;
+  modelName: string;
+  temperature: number;
+  maxTokens: number;
+  apiKeyEnv: string;
+}
+
+const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
+  'gemini-2.5-flash': {
+    provider: 'google',
+    modelName: 'gemini-2.5-flash',
+    temperature: 0.7,
+    maxTokens: 1500,
+    apiKeyEnv: 'GEMINI_API_KEY',
+  },
+  'groq-llama-3.3-70b': {
+    provider: 'groq',
+    modelName: 'llama-3.3-70b-versatile',
+    temperature: 0.7,
+    maxTokens: 8000,
+    apiKeyEnv: 'GROQ_API_KEY',
+  },
+  'perplexity-sonar-pro': {
+    provider: 'openai-compatible',
+    modelName: 'sonar-pro',
+    temperature: 0.7,
+    maxTokens: 4000,
+    apiKeyEnv: 'PERPLEXITY_API_KEY',
+  },
+  'openai/gpt-oss-120b': {
+    provider: 'groq',
+    modelName: 'openai/gpt-oss-120b',
+    temperature: 0.7,
+    maxTokens: 8000,
+    apiKeyEnv: 'GROQ_API_KEY',
+  },
+};
+
+// Initialize AI model based on selection
+const initializeAIModel = (
+  modelId: AIModelId = 'gemini-2.5-flash',
+  isRegeneration: boolean = false,
+) => {
+  // Resolve model config and API key for the selected model
+  const config = AI_MODEL_CONFIGS[modelId] || AI_MODEL_CONFIGS['gemini-2.5-flash'];
+  const apiKey = process.env[config.apiKeyEnv];
+
+  // Adjust temperature for regeneration to encourage more variety
+  const adjustedTemperature = isRegeneration
+    ? Math.min(config.temperature + 0.2, 1.0)
+    : config.temperature;
+
+  if (!apiKey) {
+    console.warn(`API key for ${modelId} not found, falling back to Gemini`);
+    // Fallback to Gemini if the selected model's API key is not available
+    return new ChatGoogleGenerativeAI({
+      apiKey: process.env.GEMINI_API_KEY!,
+      model: 'gemini-2.5-flash',
+      temperature: isRegeneration ? 0.7 : 0.5,
+      topP: 0.8,
+      topK: 40,
+      maxOutputTokens: 1500,
+    });
+  }
+
+  switch (config.provider) {
+    case 'google':
+      return new ChatGoogleGenerativeAI({
+        apiKey: apiKey,
+        model: config.modelName,
+        temperature: adjustedTemperature,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: config.maxTokens,
+      });
+
+    case 'groq':
+      return new ChatOpenAI({
+        apiKey: apiKey,
+        modelName: config.modelName,
+        temperature: adjustedTemperature,
+        maxTokens: config.maxTokens,
+        configuration: {
+          baseURL: 'https://api.groq.com/openai/v1',
+        },
+      });
+
+    case 'openai-compatible':
+      const baseURLs: Record<string, string> = {
+        'perplexity-sonar-pro': 'https://api.perplexity.ai',
+      };
+
+      return new ChatOpenAI({
+        apiKey: apiKey,
+        modelName: config.modelName,
+        temperature: adjustedTemperature,
+        maxTokens: config.maxTokens,
+        configuration: {
+          baseURL: baseURLs[modelId] || 'https://api.openai.com/v1',
+        },
+      });
+
+    default:
+      // Fallback to Gemini
+      return new ChatGoogleGenerativeAI({
+        apiKey: process.env.GEMINI_API_KEY!,
+        model: 'gemini-2.5-flash',
+        temperature: isRegeneration ? 0.9 : 0.7,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 1500,
+      });
+  }
 };
 
 // Process file attachments for AI context
@@ -449,9 +573,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid request origin' }, { status: 403 });
     }
 
-    const { question, context, conversationHistory, platform, attachments, userInfo } =
-      await request.json();
-    const { userId } = await auth();
+    const {
+      question,
+      context,
+      conversationHistory,
+      platform,
+      attachments,
+      userInfo,
+      model: selectedModel,
+      isRegeneration,
+    } = await request.json();
+    const { userId, has } = await auth();
 
     // Authentication check
     if (!userId) {
@@ -459,6 +591,22 @@ export async function POST(request: NextRequest) {
         { error: 'Authentication required. Please sign in to use the AI assistant.' },
         { status: 401 },
       );
+    }
+
+    // Check if user is trying to use Perplexity (Pro-only feature)
+    if (selectedModel === 'perplexity-sonar-pro' || selectedModel === 'openai/gpt-oss-120b') {
+      const hasProPlan =
+        has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
+
+      if (!hasProPlan) {
+        return NextResponse.json(
+          {
+            error:
+              'Perplexity AI model is available for Premium users only. Please upgrade to access this feature.',
+          },
+          { status: 403 },
+        );
+      }
     }
 
     // Rate limiting (general API and file uploads)
@@ -534,15 +682,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize LangChain model
-    const model = new ChatGoogleGenerativeAI({
-      apiKey: process.env.GEMINI_API_KEY!,
-      model: 'gemini-2.5-flash',
-      temperature: 0.7,
-      topP: 0.8,
-      topK: 40,
-      maxOutputTokens: 1500,
-    });
+    // Initialize LangChain model based on user selection
+    const modelId = (selectedModel as AIModelId) || 'gemini-2.5-flash';
+    const model = initializeAIModel(modelId, isRegeneration || false);
 
     // Check if web search is needed
     const needsWebSearch = requiresWebSearch(sanitizedQuestion);
@@ -592,6 +734,8 @@ export async function POST(request: NextRequest) {
     }
 
     const systemPrompt = `You are an intelligent AI assistant for the Dionysus platform - an enterprise GitHub analytics and collaboration SaaS platform built with Next.js, TypeScript, tRPC, Prisma, and PostgreSQL. You provide AI-powered code analysis, meeting transcription, team collaboration, and comprehensive repository insights.
+
+${isRegeneration ? `REGENERATION MODE: This is a regenerated response. The user was not satisfied with the previous answer. Provide a significantly improved, more comprehensive, and alternative response. Consider different approaches, additional details, examples, or perspectives that weren't covered in the previous response. Be more thorough and helpful than usual.` : ''}
 
 IMPORTANT CAPABILITIES:
 - You have access to real-time web search through Firecrawl
@@ -658,7 +802,7 @@ Provide a helpful response about the Dionysus platform or development topics bas
           attachment.content.startsWith('data:'),
       ) ?? [];
 
-    let userMessage;
+    let userMessage: HumanMessage;
 
     if (imageAttachments && imageAttachments.length > 0) {
       // For multimodal input, create content array with text and images
