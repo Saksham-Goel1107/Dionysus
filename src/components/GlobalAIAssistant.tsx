@@ -24,6 +24,7 @@ import {
   FileImage,
   FileText,
   Flag,
+  Folder,
   Heart,
   History,
   Lightbulb,
@@ -41,6 +42,7 @@ import {
   Smartphone,
   Sparkles,
   Square,
+  Star,
   ThumbsDown,
   ThumbsUp,
   Trash2,
@@ -53,6 +55,16 @@ import { useTheme } from 'next-themes';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react';
 import sanitizeHtml from 'sanitize-html';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './ui/alert-dialog';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -137,11 +149,36 @@ const GlobalAIAssistant: React.FC = () => {
   const [reportDescription, setReportDescription] = useState('');
   const [messageFeedback, setMessageFeedback] = useState<Record<string, boolean>>({});
 
+  // Delete confirmation state
+  const [showDeleteSessionDialog, setShowDeleteSessionDialog] = useState(false);
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const [deleteSessionTitle, setDeleteSessionTitle] = useState('');
+
+  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
+  const [deleteGroupName, setDeleteGroupName] = useState('');
+
+  // Group management state
+  const [showCreateGroup, setShowCreateGroup] = useState(false);
+  const [showEditGroup, setShowEditGroup] = useState(false);
+  const [editGroupId, setEditGroupId] = useState<string | null>(null);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupDescription, setNewGroupDescription] = useState('');
+  const [newGroupIcon, setNewGroupIcon] = useState('📁');
+  const [newGroupColor, setNewGroupColor] = useState('#8b5cf6');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Move to group state
+  const [showMoveToGroupDialog, setShowMoveToGroupDialog] = useState(false);
+  const [moveSessionId, setMoveSessionId] = useState<string | null>(null);
+  const [moveSessionTitle, setMoveSessionTitle] = useState('');
+
   // tRPC hooks
   const utils = api.useUtils();
   const { data: sessions, isLoading: sessionsLoading } = api.chat.getSessions.useQuery({
     limit: 50,
   });
+  const { data: groups, isLoading: groupsLoading } = api.chat.getGroups.useQuery();
   const { data: currentSession, refetch: refetchSession } = api.chat.getSession.useQuery(
     { sessionId: currentSessionId! },
     { enabled: !!currentSessionId },
@@ -156,10 +193,82 @@ const GlobalAIAssistant: React.FC = () => {
     },
   });
 
-  const addMessageMutation = api.chat.addMessage.useMutation({
+  const createGroupMutation = api.chat.createGroup.useMutation({
     onSuccess: () => {
+      utils.chat.getGroups.invalidate();
+      toast.success('Group created');
+      setShowCreateGroup(false);
+      setNewGroupName('');
+      setNewGroupDescription('');
+      setNewGroupIcon('📁');
+      setNewGroupColor('#8b5cf6');
+    },
+  });
+
+  const updateGroupMutation = api.chat.updateGroup.useMutation({
+    onSuccess: () => {
+      utils.chat.getGroups.invalidate();
+      toast.success('Group updated');
+      setShowEditGroup(false);
+      setEditGroupId(null);
+      setNewGroupName('');
+      setNewGroupDescription('');
+      setNewGroupIcon('📁');
+      setNewGroupColor('#8b5cf6');
+    },
+  });
+
+  const deleteGroupMutation = api.chat.deleteGroup.useMutation({
+    onSuccess: () => {
+      utils.chat.getGroups.invalidate();
+      utils.chat.getSessions.invalidate();
+      toast.success('Group deleted');
+      setShowDeleteGroupDialog(false);
+      setDeleteGroupId(null);
+      setDeleteGroupName('');
+    },
+  });
+
+  const moveSessionToGroupMutation = api.chat.moveSessionToGroup.useMutation({
+    onSuccess: () => {
+      utils.chat.getSessions.invalidate();
+      utils.chat.getGroups.invalidate();
+      toast.success('Chat moved');
+      setShowMoveToGroupDialog(false);
+      setMoveSessionId(null);
+      setMoveSessionTitle('');
+    },
+  });
+
+  const generateMessageEmbeddingMutation = api.chat.generateMessageEmbedding.useMutation();
+
+  const toggleSessionFavoriteMutation = api.chat.toggleSessionFavorite.useMutation({
+    onSuccess: () => {
+      utils.chat.getSessions.invalidate();
+      utils.chat.getGroups.invalidate();
+      toast.success('Updated favorites');
+    },
+  });
+
+  const toggleGroupFavoriteMutation = api.chat.toggleGroupFavorite.useMutation({
+    onSuccess: () => {
+      utils.chat.getGroups.invalidate();
+      toast.success('Updated favorites');
+    },
+  });
+
+  const addMessageMutation = api.chat.addMessage.useMutation({
+    onSuccess: (message) => {
       if (currentSessionId) {
         refetchSession();
+      }
+      // Trigger embedding generation in background
+      try {
+        if (message && (message as any).id) {
+          generateMessageEmbeddingMutation.mutate({ messageId: (message as any).id });
+        }
+      } catch (e) {
+        console.log('Error', e);
       }
     },
   });
@@ -315,6 +424,15 @@ const GlobalAIAssistant: React.FC = () => {
       description: 'Heavy model with superb capabilities',
       icon: '🛡️',
       speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
+      id: 'z-ai/glm-4.5-air:free',
+      name: 'Z-AI GLM 4.5 Air',
+      provider: 'Z-AI',
+      description: 'Lightweight model with good capabilities',
+      icon: '🪂',
+      speed: 'Fast',
       quality: 'Excellent',
     },
     {
@@ -1810,9 +1928,18 @@ const GlobalAIAssistant: React.FC = () => {
     });
   };
 
-  const handleDeleteSession = (sessionId: string) => {
-    if (confirm('Are you sure you want to delete this chat?')) {
-      deleteSessionMutation.mutate({ sessionId });
+  const handleDeleteSession = (sessionId: string, title: string) => {
+    setDeleteSessionId(sessionId);
+    setDeleteSessionTitle(title);
+    setShowDeleteSessionDialog(true);
+  };
+
+  const confirmDeleteSession = () => {
+    if (deleteSessionId) {
+      deleteSessionMutation.mutate({ sessionId: deleteSessionId });
+      setShowDeleteSessionDialog(false);
+      setDeleteSessionId(null);
+      setDeleteSessionTitle('');
     }
   };
 
@@ -1872,6 +1999,98 @@ const GlobalAIAssistant: React.FC = () => {
       reason: reportReason as any,
       description: reportDescription || undefined,
     });
+  };
+
+  // Group management functions
+  const handleCreateGroup = () => {
+    if (!newGroupName.trim()) {
+      toast.error('Please enter a group name');
+      return;
+    }
+
+    createGroupMutation.mutate({
+      name: newGroupName.trim(),
+      description: newGroupDescription.trim() || undefined,
+      icon: newGroupIcon,
+      color: newGroupColor,
+    });
+  };
+
+  const handleEditGroup = (
+    groupId: string,
+    currentName: string,
+    currentDescription: string,
+    currentIcon: string,
+    currentColor: string,
+  ) => {
+    setEditGroupId(groupId);
+    setNewGroupName(currentName);
+    setNewGroupDescription(currentDescription || '');
+    setNewGroupIcon(currentIcon || '📁');
+    setNewGroupColor(currentColor || '#8b5cf6');
+    setShowEditGroup(true);
+  };
+
+  const confirmEditGroup = () => {
+    if (!editGroupId || !newGroupName.trim()) {
+      toast.error('Please enter a group name');
+      return;
+    }
+
+    updateGroupMutation.mutate({
+      groupId: editGroupId,
+      name: newGroupName.trim(),
+      description: newGroupDescription.trim() || undefined,
+      icon: newGroupIcon,
+      color: newGroupColor,
+    });
+  };
+
+  const handleDeleteGroup = (groupId: string, groupName: string) => {
+    setDeleteGroupId(groupId);
+    setDeleteGroupName(groupName);
+    setShowDeleteGroupDialog(true);
+  };
+
+  const confirmDeleteGroup = () => {
+    if (!deleteGroupId) return;
+
+    deleteGroupMutation.mutate({ groupId: deleteGroupId });
+  };
+
+  const handleMoveSessionToGroup = (sessionId: string, sessionTitle: string) => {
+    setMoveSessionId(sessionId);
+    setMoveSessionTitle(sessionTitle);
+    setShowMoveToGroupDialog(true);
+  };
+
+  const confirmMoveToGroup = (groupId: string | null) => {
+    if (!moveSessionId) return;
+
+    moveSessionToGroupMutation.mutate({
+      sessionId: moveSessionId,
+      groupId,
+    });
+  };
+
+  const toggleGroupExpansion = (groupId: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) {
+        next.delete(groupId);
+      } else {
+        next.add(groupId);
+      }
+      return next;
+    });
+  };
+
+  const handleToggleSessionFavorite = (sessionId: string) => {
+    toggleSessionFavoriteMutation.mutate({ sessionId });
+  };
+
+  const handleToggleGroupFavorite = (groupId: string) => {
+    toggleGroupFavoriteMutation.mutate({ groupId });
   };
 
   // Edit message functions
@@ -2869,7 +3088,7 @@ const GlobalAIAssistant: React.FC = () => {
       `}</style>
 
       <div
-        className="relative mx-4 flex h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl dark:border-gray-700 dark:shadow-black/50"
+        className="relative mx-4 flex h-[94vh] w-full max-w-7xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-2xl dark:border-gray-700 dark:shadow-black/50"
         style={{
           animation: isOpen ? 'slideUp 0.3s ease-out' : undefined,
         }}
@@ -3072,18 +3291,30 @@ const GlobalAIAssistant: React.FC = () => {
 
         {/* Chat History Sidebar */}
         {showHistorySidebar && (
-          <div className="absolute left-0 top-0 z-50 h-full w-80 border-r border-border bg-background shadow-lg">
+          <div className="absolute left-0 top-0 z-50 h-full w-[5xl] border-r border-border bg-background shadow-lg">
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-border p-4">
                 <h3 className="font-semibold">Chat History</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowHistorySidebar(false)}
-                  className="h-6 w-6 p-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowCreateGroup(true)}
+                    className="h-8 gap-1 px-2 text-xs"
+                    title="Create Group"
+                  >
+                    <Plus className="h-3 w-3" />
+                    Group
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowHistorySidebar(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="border-b border-border p-3">
                 <div className="relative">
@@ -3097,79 +3328,334 @@ const GlobalAIAssistant: React.FC = () => {
                 </div>
               </div>
               <ScrollArea className="flex-1">
-                <div className="space-y-1 p-2">
-                  {sessionsLoading ? (
+                <div className="space-y-2 p-2">
+                  {sessionsLoading || groupsLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <div className="text-sm text-muted-foreground">Loading chats...</div>
                     </div>
-                  ) : sessions && sessions.sessions.length > 0 ? (
-                    sessions.sessions
-                      .filter((session) =>
-                        session.title.toLowerCase().includes(sessionSearchQuery.toLowerCase()),
-                      )
-                      .map((session) => (
-                        <div
-                          key={session.id}
-                          className={`group relative rounded-lg border p-3 transition-colors ${
-                            currentSessionId === session.id
-                              ? 'border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30'
-                              : 'border-transparent hover:border-border hover:bg-muted'
-                          }`}
-                        >
-                          <button
-                            onClick={() => handleLoadSession(session.id)}
-                            className="w-full text-left"
-                          >
-                            <div className="mb-1 flex items-start gap-2">
-                              <h4
-                                className="min-w-0 flex-1 truncate text-sm font-medium"
-                                title={session.title}
+                  ) : (
+                    <>
+                      {/* Render Groups */}
+                      {groups &&
+                        groups.length > 0 &&
+                        groups.map((group) => (
+                          <div key={group.id} className="mb-3">
+                            {/* Group Header */}
+                            <div className="mb-1 flex items-center justify-between rounded-lg bg-muted/50 px-2 py-1.5">
+                              <button
+                                onClick={() => toggleGroupExpansion(group.id)}
+                                className="flex min-w-0 flex-1 items-center gap-2"
                               >
-                                {session.title}
-                              </h4>
+                                <ChevronDown
+                                  className={`h-4 w-4 flex-shrink-0 transition-transform ${
+                                    expandedGroups.has(group.id) ? 'rotate-0' : '-rotate-90'
+                                  }`}
+                                />
+                                <span className="text-lg">{group.icon || '📁'}</span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-medium">
+                                  {group.name}
+                                </span>
+                                {(group as any).isFavorite && (
+                                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                )}
+                              </button>
                               <div className="flex flex-shrink-0 gap-1">
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleRenameSession(session.id, session.title);
+                                    handleToggleGroupFavorite(group.id);
                                   }}
                                   className="h-6 w-6 p-0"
-                                  title={`Rename ${session.title}`}
+                                  title={
+                                    (group as any).isFavorite
+                                      ? 'Remove from favorites'
+                                      : 'Add to favorites'
+                                  }
                                 >
-                                  <Edit2 className="h-3 w-3" />
+                                  <Star
+                                    className={`h-3 w-3 ${(group as any).isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                                  />
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteSession(session.id);
+                                    createSessionMutation.mutate({
+                                      title: 'New Chat',
+                                      groupId: group.id,
+                                    });
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="New chat in group"
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditGroup(
+                                      group.id,
+                                      group.name,
+                                      (group as any).description || '',
+                                      group.icon || '📁',
+                                      (group as any).color || '#8b5cf6',
+                                    );
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title="Edit group"
+                                >
+                                  <Settings className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteGroup(group.id, group.name);
                                   }}
                                   className="h-6 w-6 p-0 hover:text-red-600"
-                                  title={`Delete ${session.title}`}
+                                  title="Delete group"
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              {new Date(
-                                session.lastMessageAt || session.createdAt,
-                              ).toLocaleDateString()}
-                              <span>•</span>
-                              <MessageSquare className="h-3 w-3" />
-                              {session._count.messages} messages
-                            </div>
-                          </button>
+
+                            {/* Group Sessions */}
+                            {expandedGroups.has(group.id) &&
+                              group.sessions &&
+                              group.sessions.length > 0 && (
+                                <div className="ml-6 mt-1 space-y-1">
+                                  {group.sessions
+                                    .filter((session) =>
+                                      session.title
+                                        .toLowerCase()
+                                        .includes(sessionSearchQuery.toLowerCase()),
+                                    )
+                                    .map((session) => (
+                                      <div
+                                        key={session.id}
+                                        className={`group relative rounded-lg border p-2.5 transition-colors ${
+                                          currentSessionId === session.id
+                                            ? 'border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30'
+                                            : 'border-transparent hover:border-border hover:bg-muted'
+                                        }`}
+                                      >
+                                        <button
+                                          onClick={() => handleLoadSession(session.id)}
+                                          className="w-full text-left"
+                                        >
+                                          <div className="mb-1 flex items-start gap-2">
+                                            <h4
+                                              className="min-w-0 flex-1 truncate text-sm font-medium"
+                                              title={session.title}
+                                            >
+                                              {session.title}
+                                            </h4>
+                                            {(session as any).isFavorite && (
+                                              <Star className="h-3 w-3 flex-shrink-0 fill-yellow-400 text-yellow-400" />
+                                            )}
+                                            <div className="flex flex-shrink-0 gap-1">
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleToggleSessionFavorite(session.id);
+                                                }}
+                                                className="h-6 w-6 p-0"
+                                                title={
+                                                  (session as any).isFavorite
+                                                    ? 'Remove from favorites'
+                                                    : 'Add to favorites'
+                                                }
+                                              >
+                                                <Star
+                                                  className={`h-3 w-3 ${(session as any).isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                                                />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMoveSessionToGroup(
+                                                    session.id,
+                                                    session.title,
+                                                  );
+                                                }}
+                                                className="h-6 w-6 p-0"
+                                                title="Move to group"
+                                              >
+                                                <Folder className="h-3 w-3" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleRenameSession(session.id, session.title);
+                                                }}
+                                                className="h-6 w-6 p-0"
+                                                title="Rename"
+                                              >
+                                                <Edit2 className="h-3 w-3" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteSession(session.id, session.title);
+                                                }}
+                                                className="h-6 w-6 p-0 hover:text-red-600"
+                                                title="Delete"
+                                              >
+                                                <Trash2 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                            <Clock className="h-3 w-3" />
+                                            {new Date(
+                                              session.lastMessageAt || session.createdAt,
+                                            ).toLocaleDateString()}
+                                            <span>•</span>
+                                            <MessageSquare className="h-3 w-3" />
+                                            {session._count.messages} messages
+                                          </div>
+                                        </button>
+                                      </div>
+                                    ))}
+                                </div>
+                              )}
+                          </div>
+                        ))}
+
+                      {/* Ungrouped Sessions */}
+                      {sessions && sessions.sessions.length > 0 && (
+                        <div>
+                          <div className="mb-1 px-2 text-xs font-medium text-muted-foreground">
+                            Ungrouped Chats
+                          </div>
+                          <div className="space-y-1">
+                            {sessions.sessions
+                              .filter(
+                                (session) =>
+                                  !(session as any).groupId &&
+                                  session.title
+                                    .toLowerCase()
+                                    .includes(sessionSearchQuery.toLowerCase()),
+                              )
+                              .map((session) => (
+                                <div
+                                  key={session.id}
+                                  className={`group relative rounded-lg border p-2.5 transition-colors ${
+                                    currentSessionId === session.id
+                                      ? 'border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30'
+                                      : 'border-transparent hover:border-border hover:bg-muted'
+                                  }`}
+                                >
+                                  <button
+                                    onClick={() => handleLoadSession(session.id)}
+                                    className="w-full text-left"
+                                  >
+                                    <div className="mb-1 flex items-start gap-2">
+                                      <h4
+                                        className="min-w-0 flex-1 truncate text-sm font-medium"
+                                        title={session.title}
+                                      >
+                                        {session.title}
+                                      </h4>
+                                      {(session as any).isFavorite && (
+                                        <Star className="h-3 w-3 flex-shrink-0 fill-yellow-400 text-yellow-400" />
+                                      )}
+                                      <div className="flex flex-shrink-0 gap-1">
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleSessionFavorite(session.id);
+                                          }}
+                                          className="h-6 w-6 p-0"
+                                          title={
+                                            (session as any).isFavorite
+                                              ? 'Remove from favorites'
+                                              : 'Add to favorites'
+                                          }
+                                        >
+                                          <Star
+                                            className={`h-3 w-3 ${(session as any).isFavorite ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                                          />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleMoveSessionToGroup(session.id, session.title);
+                                          }}
+                                          className="h-6 w-6 p-0"
+                                          title="Move to group"
+                                        >
+                                          <Folder className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRenameSession(session.id, session.title);
+                                          }}
+                                          className="h-6 w-6 p-0"
+                                          title="Rename"
+                                        >
+                                          <Edit2 className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteSession(session.id, session.title);
+                                          }}
+                                          className="h-6 w-6 p-0 hover:text-red-600"
+                                          title="Delete"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <Clock className="h-3 w-3" />
+                                      {new Date(
+                                        session.lastMessageAt || session.createdAt,
+                                      ).toLocaleDateString()}
+                                      <span>•</span>
+                                      <MessageSquare className="h-3 w-3" />
+                                      {session._count.messages} messages
+                                    </div>
+                                  </button>
+                                </div>
+                              ))}
+                          </div>
                         </div>
-                      ))
-                  ) : (
-                    <div className="py-8 text-center text-sm text-muted-foreground">
-                      No chats yet. Start a new conversation!
-                    </div>
+                      )}
+
+                      {/* Empty State */}
+                      {(!sessions || sessions.sessions.length === 0) &&
+                        (!groups || groups.length === 0) && (
+                          <div className="py-8 text-center text-sm text-muted-foreground">
+                            No chats yet. Start a new conversation!
+                          </div>
+                        )}
+                    </>
                   )}
                 </div>
               </ScrollArea>
@@ -4143,6 +4629,236 @@ const GlobalAIAssistant: React.FC = () => {
         </div>
       )}
 
+      {/* Create Group Dialog */}
+      {showCreateGroup && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowCreateGroup(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Create Group</h3>
+              <p className="text-sm text-muted-foreground">
+                Organize your chats into groups for better management.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Group Name</label>
+                <Input
+                  placeholder="e.g., Work, Personal, Projects..."
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  maxLength={50}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Description (Optional)</label>
+                <Input
+                  placeholder="Brief description of this group..."
+                  value={newGroupDescription}
+                  onChange={(e) => setNewGroupDescription(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Icon</label>
+                  <Input
+                    placeholder="📁"
+                    value={newGroupIcon}
+                    onChange={(e) => setNewGroupIcon(e.target.value)}
+                    maxLength={2}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Color</label>
+                  <Input
+                    type="color"
+                    value={newGroupColor}
+                    onChange={(e) => setNewGroupColor(e.target.value)}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowCreateGroup(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateGroup}
+                disabled={!newGroupName.trim() || createGroupMutation.isPending}
+              >
+                {createGroupMutation.isPending ? 'Creating...' : 'Create Group'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Group Dialog */}
+      {showEditGroup && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowEditGroup(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Edit Group</h3>
+              <p className="text-sm text-muted-foreground">
+                Update your group settings and appearance.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Group Name</label>
+                <Input
+                  placeholder="e.g., Work, Personal, Projects..."
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  maxLength={50}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Description (Optional)</label>
+                <Input
+                  placeholder="Brief description of this group..."
+                  value={newGroupDescription}
+                  onChange={(e) => setNewGroupDescription(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Icon</label>
+                  <Input
+                    placeholder="📁"
+                    value={newGroupIcon}
+                    onChange={(e) => setNewGroupIcon(e.target.value)}
+                    maxLength={2}
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">Color</label>
+                  <Input
+                    type="color"
+                    value={newGroupColor}
+                    onChange={(e) => setNewGroupColor(e.target.value)}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditGroup(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmEditGroup}
+                disabled={!newGroupName.trim() || updateGroupMutation.isPending}
+              >
+                {updateGroupMutation.isPending ? 'Updating...' : 'Update Group'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Group Dialog */}
+      {showDeleteGroupDialog && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDeleteGroupDialog(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4 flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+                <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground">Delete Group</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Are you sure you want to delete <strong>{deleteGroupName}</strong>? All chats in
+                  this group will become ungrouped. This action cannot be undone.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowDeleteGroupDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteGroup}
+                disabled={deleteGroupMutation.isPending}
+              >
+                {deleteGroupMutation.isPending ? 'Deleting...' : 'Delete Group'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Move to Group Dialog */}
+      {showMoveToGroupDialog && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMoveToGroupDialog(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Move Chat to Group</h3>
+              <p className="text-sm text-muted-foreground">
+                Move <strong>{moveSessionTitle}</strong> to a different group
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => confirmMoveToGroup(null)}
+                disabled={moveSessionToGroupMutation.isPending}
+              >
+                <Folder className="mr-2 h-4 w-4" />
+                📄 Ungrouped
+              </Button>
+              {groups?.map((group) => (
+                <Button
+                  key={group.id}
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => confirmMoveToGroup(group.id)}
+                  disabled={moveSessionToGroupMutation.isPending}
+                >
+                  <Folder className="mr-2 h-4 w-4" />
+                  {group.icon} {group.name}
+                </Button>
+              ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <Button variant="outline" onClick={() => setShowMoveToGroupDialog(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Report Message Dialog */}
       {showReportDialog && (
         <div
@@ -4331,6 +5047,28 @@ const GlobalAIAssistant: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Session Confirmation Dialog */}
+      <AlertDialog open={showDeleteSessionDialog} onOpenChange={setShowDeleteSessionDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Chat</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &apos;{deleteSessionTitle}&apos;? This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteSession}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

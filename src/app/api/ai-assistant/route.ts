@@ -214,45 +214,61 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   });
 }
 
-// Fetch user memories from database
+// Fetch user memories and survey data from database
 async function getUserMemoryContext(userId: string): Promise<string> {
   try {
-    const memories = await db.userMemory.findMany({
-      where: {
-        userId: userId,
-      },
-      orderBy: {
-        lastUsedAt: 'desc',
-      },
-      take: 20, // Get top 20 most recent memories
-    });
+    const [memories, survey] = await Promise.all([
+      db.userMemory.findMany({
+        where: { userId },
+        orderBy: { lastUsedAt: 'desc' },
+        take: 20,
+      }),
+      db.survey.findUnique({
+        where: { userId },
+      }),
+    ]);
 
-    if (memories.length === 0) {
-      return '';
+    let context = '';
+
+    // Add survey data if available
+    if (survey) {
+      context += '\n\nUSER PROFILE (From onboarding survey):';
+      if (survey.companyName) context += `\n- Company: ${survey.companyName}`;
+      if (survey.companySize) context += `\n- Company Size: ${survey.companySize}`;
+      if (survey.industry) context += `\n- Industry: ${survey.industry}`;
+      if (survey.role) context += `\n- Role: ${survey.role}`;
+      if (survey.usagePurpose) context += `\n- Usage Purpose: ${survey.usagePurpose}`;
+      if (survey.hearAboutUs) context += `\n- How they heard about us: ${survey.hearAboutUs}`;
+      if (survey.expectedFeatures?.length) context += `\n- Expected Features: ${survey.expectedFeatures.join(', ')}`;
+      if (survey.developmentExperience) context += `\n- Development Experience: ${survey.developmentExperience} years`;
+      if (survey.githubExperience) context += `\n- GitHub Experience: ${survey.githubExperience} years`;
+      if (survey.feedbackFrequency) context += `\n- Feedback Frequency: ${survey.feedbackFrequency}`;
+      if (survey.additionalFeedback) context += `\n- Additional Feedback: ${survey.additionalFeedback}`;
     }
 
-    let memoryContext = '\n\nUSER MEMORY (Information learned from previous conversations):';
+    // Add memories if available
+    if (memories.length > 0) {
+      context += '\n\nUSER MEMORY (Information learned from previous conversations):';
 
-    // Group memories by category
-    const categorized: Record<string, typeof memories> = {};
-    for (const memory of memories) {
-      if (!categorized[memory.category]) {
-        categorized[memory.category] = [];
+      const categorized: Record<string, typeof memories> = {};
+      for (const memory of memories) {
+        if (!categorized[memory.category]) {
+          categorized[memory.category] = [];
+        }
+        categorized[memory.category]!.push(memory);
       }
-      categorized[memory.category]!.push(memory);
-    }
 
-    // Build context from memories
-    for (const [category, items] of Object.entries(categorized)) {
-      memoryContext += `\n\n${category.toUpperCase()}:`;
-      for (const item of items) {
-        memoryContext += `\n- ${item.key}: ${item.value}`;
+      for (const [category, items] of Object.entries(categorized)) {
+        context += `\n\n${category.toUpperCase()}:`;
+        for (const item of items) {
+          context += `\n- ${item.key}: ${item.value}`;
+        }
       }
     }
 
-    return memoryContext;
+    return context;
   } catch (error) {
-    console.error('Error fetching user memories:', error);
+    console.error('Error fetching user context:', error);
     return '';
   }
 }
@@ -476,6 +492,7 @@ type AIModelId =
   | 'moonshotai/kimi-k2:free'
   | 'moonshotai/kimi-dev-72b:free'
   | 'alibaba/tongyi-deepresearch-30b-a3b:free'
+  | 'z-ai/glm-4.5-air:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -524,6 +541,12 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
   'microsoft/mai-ds-r1:free': {
     provider: 'openrouter',
     modelName: 'microsoft/mai-ds-r1:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'z-ai/glm-4.5-air:free': {
+    provider: 'openrouter',
+    modelName: 'z-ai/glm-4.5-air:free',
     temperature: 0.7,
     apiKeyEnv: 'OPENROUTER_API_KEY',
   },

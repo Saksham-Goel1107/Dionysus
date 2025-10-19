@@ -26,6 +26,7 @@ export const chatRouter = createTRPCRouter({
     .input(
       z.object({
         title: z.string().optional().default('New Chat'),
+        groupId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -33,6 +34,7 @@ export const chatRouter = createTRPCRouter({
         data: {
           userId: ctx.userId,
           title: input.title,
+          groupId: input.groupId,
           lastMessageAt: new Date(),
         },
       });
@@ -53,9 +55,10 @@ export const chatRouter = createTRPCRouter({
         where: {
           userId: ctx.userId,
         },
-        orderBy: {
-          lastMessageAt: 'desc',
-        },
+        orderBy: [
+          { isFavorite: 'desc' }, // Favorites first
+          { lastMessageAt: 'desc' }, // Then by most recent
+        ],
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         include: {
@@ -644,5 +647,480 @@ export const chatRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  // ==================== CHAT GROUPS ====================
+
+  // Create a new chat group
+  createGroup: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1).max(100),
+        description: z.string().optional(),
+        color: z.string().optional(),
+        icon: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.db.chatGroup.create({
+        data: {
+          userId: ctx.userId,
+          name: input.name,
+          description: input.description,
+          color: input.color,
+          icon: input.icon,
+        },
+      });
+
+      return group;
+    }),
+
+  // Get all groups for a user
+  getGroups: protectedProcedure.query(async ({ ctx }) => {
+    const groups = await ctx.db.chatGroup.findMany({
+      where: {
+        userId: ctx.userId,
+      },
+      orderBy: [
+        { isFavorite: 'desc' }, // Favorites first
+        { createdAt: 'desc' }, // Then by newest
+      ],
+      include: {
+        sessions: {
+          orderBy: [{ isFavorite: 'desc' }, { lastMessageAt: 'desc' }],
+          include: {
+            _count: {
+              select: { messages: true },
+            },
+          },
+        },
+      },
+    });
+
+    return groups;
+  }),
+
+  // Update group
+  updateGroup: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+        name: z.string().min(1).max(100).optional(),
+        description: z.string().optional(),
+        color: z.string().optional(),
+        icon: z.string().optional(),
+        isExpanded: z.boolean().optional(),
+        sortOrder: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.db.chatGroup.findFirst({
+        where: {
+          id: input.groupId,
+          userId: ctx.userId,
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group not found',
+        });
+      }
+
+      const updatedGroup = await ctx.db.chatGroup.update({
+        where: { id: input.groupId },
+        data: {
+          name: input.name,
+          description: input.description,
+          color: input.color,
+          icon: input.icon,
+          isExpanded: input.isExpanded,
+          sortOrder: input.sortOrder,
+        },
+      });
+
+      return updatedGroup;
+    }),
+
+  // Delete group (sessions will be moved to ungrouped)
+  deleteGroup: protectedProcedure
+    .input(
+      z.object({
+        groupId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.db.chatGroup.findFirst({
+        where: {
+          id: input.groupId,
+          userId: ctx.userId,
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group not found',
+        });
+      }
+
+      await ctx.db.chatGroup.delete({
+        where: { id: input.groupId },
+      });
+
+      return { success: true };
+    }),
+
+  // Move session to group
+  moveSessionToGroup: protectedProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+        groupId: z.string().nullable(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const session = await ctx.db.chatSession.findFirst({
+        where: {
+          id: input.sessionId,
+          userId: ctx.userId,
+        },
+      });
+
+      if (!session) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        });
+      }
+
+      // Verify group exists if groupId is provided
+      if (input.groupId) {
+        const group = await ctx.db.chatGroup.findFirst({
+          where: {
+            id: input.groupId,
+            userId: ctx.userId,
+          },
+        });
+
+        if (!group) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Group not found',
+          });
+        }
+      }
+
+      const updatedSession = await ctx.db.chatSession.update({
+        where: { id: input.sessionId },
+        data: {
+          groupId: input.groupId,
+        },
+      });
+
+      return updatedSession;
+    }),
+
+  // Toggle favorite status for a session
+  toggleSessionFavorite: protectedProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const session = await ctx.db.chatSession.findFirst({
+        where: {
+          id: input.sessionId,
+          userId: ctx.userId,
+        },
+      });
+
+      if (!session) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Session not found',
+        });
+      }
+
+      const updatedSession = await ctx.db.chatSession.update({
+        where: { id: input.sessionId },
+        data: {
+          isFavorite: !session.isFavorite,
+        },
+      });
+
+      return updatedSession;
+    }),
+
+  // Toggle favorite status for a group
+  toggleGroupFavorite: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const group = await ctx.db.chatGroup.findFirst({
+        where: {
+          id: input.groupId,
+          userId: ctx.userId,
+        },
+      });
+
+      if (!group) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Group not found',
+        });
+      }
+
+      const updatedGroup = await ctx.db.chatGroup.update({
+        where: { id: input.groupId },
+        data: {
+          isFavorite: !group.isFavorite,
+        },
+      });
+
+      return updatedGroup;
+    }),
+
+  // Generate embedding for a message (called after message is added)
+  generateMessageEmbedding: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const message = await ctx.db.chatMessage.findFirst({
+        where: {
+          id: input.messageId,
+          session: {
+            userId: ctx.userId,
+          },
+        },
+      });
+
+      if (!message) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Message not found',
+        });
+      }
+
+      // Generate embedding using OpenAI
+      try {
+        const response = await fetch('https://api.openai.com/v1/embeddings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: 'text-embedding-ada-002',
+            input: message.content,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate embedding');
+        }
+
+        const data = (await response.json()) as {
+          data: Array<{ embedding: number[] }>;
+        };
+        const embedding = data.data[0]?.embedding;
+
+        if (!embedding) {
+          throw new Error('No embedding returned');
+        }
+
+        // Update message with embedding
+        await ctx.db.$executeRaw`
+          UPDATE "ChatMessage"
+          SET embedding = ${JSON.stringify(embedding)}::vector
+          WHERE id = ${input.messageId}
+        `;
+
+        return { success: true };
+      } catch (error) {
+        console.error('Error generating embedding:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to generate embedding',
+        });
+      }
+    }),
+
+  // Search messages using vector similarity
+  searchMessages: protectedProcedure
+    .input(
+      z.object({
+        query: z.string(),
+        groupId: z.string().optional(),
+        limit: z.number().min(1).max(50).optional().default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        // Generate embedding for query
+        const response = await fetch('https://api.openai.com/v1/embeddings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: 'text-embedding-ada-002',
+            input: input.query,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate query embedding');
+        }
+
+        const data = (await response.json()) as {
+          data: Array<{ embedding: number[] }>;
+        };
+        const queryEmbedding = data.data[0]?.embedding;
+
+        if (!queryEmbedding) {
+          throw new Error('No embedding returned');
+        }
+
+        // Search using vector similarity
+        const groupFilter = input.groupId ? `AND s."groupId" = '${input.groupId}'` : '';
+
+        const results = await ctx.db.$queryRaw<
+          Array<{
+            id: string;
+            content: string;
+            role: string;
+            sessionId: string;
+            sessionTitle: string;
+            createdAt: Date;
+            similarity: number;
+          }>
+        >`
+          SELECT
+            m.id,
+            m.content,
+            m.role,
+            m."sessionId",
+            s.title as "sessionTitle",
+            m."createdAt",
+            1 - (m.embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
+          FROM "ChatMessage" m
+          JOIN "ChatSession" s ON m."sessionId" = s.id
+          WHERE s."userId" = ${ctx.userId}
+            AND m.embedding IS NOT NULL
+            ${groupFilter}
+          ORDER BY similarity DESC
+          LIMIT ${input.limit}
+        `;
+
+        return results;
+      } catch (error) {
+        console.error('Error searching messages:', error);
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to search messages',
+        });
+      }
+    }),
+
+  // Get relevant context for current chat (using embeddings)
+  getRelevantContext: protectedProcedure
+    .input(
+      z.object({
+        currentMessage: z.string(),
+        sessionId: z.string(),
+        limit: z.number().min(1).max(20).optional().default(5),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        // Get current session to check if it's in a group
+        const session = await ctx.db.chatSession.findFirst({
+          where: {
+            id: input.sessionId,
+            userId: ctx.userId,
+          },
+        });
+
+        if (!session) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Session not found',
+          });
+        }
+
+        // Generate embedding for current message
+        const response = await fetch('https://api.openai.com/v1/embeddings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: 'text-embedding-ada-002',
+            input: input.currentMessage,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate embedding');
+        }
+
+        const data = (await response.json()) as {
+          data: Array<{ embedding: number[] }>;
+        };
+        const embedding = data.data[0]?.embedding;
+
+        if (!embedding) {
+          throw new Error('No embedding returned');
+        }
+
+        // If in a group, search within group. Otherwise, search all user's messages
+        const groupFilter = session.groupId ? `AND s."groupId" = '${session.groupId}'` : '';
+
+        const results = await ctx.db.$queryRaw<
+          Array<{
+            id: string;
+            content: string;
+            role: string;
+            sessionId: string;
+            sessionTitle: string;
+            createdAt: Date;
+            similarity: number;
+          }>
+        >`
+          SELECT
+            m.id,
+            m.content,
+            m.role,
+            m."sessionId",
+            s.title as "sessionTitle",
+            m."createdAt",
+            1 - (m.embedding <=> ${JSON.stringify(embedding)}::vector) as similarity
+          FROM "ChatMessage" m
+          JOIN "ChatSession" s ON m."sessionId" = s.id
+          WHERE s."userId" = ${ctx.userId}
+            AND m."sessionId" != ${input.sessionId}
+            AND m.embedding IS NOT NULL
+            ${groupFilter}
+          ORDER BY similarity DESC
+          LIMIT ${input.limit}
+        `;
+
+        return {
+          context: results,
+          scope: session.groupId ? 'group' : 'all',
+          groupId: session.groupId,
+        };
+      } catch (error) {
+        console.error('Error getting relevant context:', error);
+        // Return empty context instead of failing
+        return {
+          context: [],
+          scope: 'all',
+          groupId: null,
+        };
+      }
     }),
 });
