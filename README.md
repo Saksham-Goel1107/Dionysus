@@ -347,11 +347,25 @@ Directory structure:
     │   │   │   │   └── UsersManagement.tsx
     │   │   │   ├── coupons/
     │   │   │   │   └── page.tsx
+    │   │   │   ├── deployments/
+    │   │   │   │   ├── DeploymentStats.tsx
+    │   │   │   │   ├── page.tsx
+    │   │   │   │   └── VercelDeploymentsClient.tsx
+    │   │   │   ├── doppler/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── error-tracking/
+    │   │   │   │   ├── ErrorTrackingDashboard.tsx
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── feature-flags/
+    │   │   │   │   ├── ConfigCatClient.tsx
+    │   │   │   │   └── page.tsx
     │   │   │   ├── finances/
     │   │   │   │   └── page.tsx
     │   │   │   ├── global-plans/
     │   │   │   │   └── page.tsx
     │   │   │   ├── image-upload/
+    │   │   │   │   └── page.tsx
+    │   │   │   ├── stats/
     │   │   │   │   └── page.tsx
     │   │   │   ├── surveys/
     │   │   │   │   ├── layout.tsx
@@ -373,9 +387,29 @@ Directory structure:
     │   │   │   │   │   ├── route.ts
     │   │   │   │   │   └── [id]/
     │   │   │   │   │       └── route.ts
+    │   │   │   │   ├── configcat/
+    │   │   │   │   │   ├── configs/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   ├── environments/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   ├── products/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   └── settings/
+    │   │   │   │   │       ├── route.ts
+    │   │   │   │   │       └── [id]/
+    │   │   │   │   │           └── route.ts
     │   │   │   │   ├── coupons/
     │   │   │   │   │   ├── route.ts
     │   │   │   │   │   └── [id]/
+    │   │   │   │   │       └── route.ts
+    │   │   │   │   ├── doppler/
+    │   │   │   │   │   ├── configs/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   ├── environments/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   ├── projects/
+    │   │   │   │   │   │   └── route.ts
+    │   │   │   │   │   └── secrets/
     │   │   │   │   │       └── route.ts
     │   │   │   │   ├── global-plans/
     │   │   │   │   │   ├── route.ts
@@ -383,10 +417,31 @@ Directory structure:
     │   │   │   │   │       └── route.ts
     │   │   │   │   ├── images/
     │   │   │   │   │   └── route.ts
+    │   │   │   │   ├── sentry/
+    │   │   │   │   │   └── route.ts
     │   │   │   │   ├── user-details/
     │   │   │   │   │   └── route.ts
-    │   │   │   │   └── user-status/
-    │   │   │   │       └── route.ts
+    │   │   │   │   ├── user-status/
+    │   │   │   │   │   └── route.ts
+    │   │   │   │   └── vercel/
+    │   │   │   │       ├── deployments/
+    │   │   │   │       │   ├── route.ts
+    │   │   │   │       │   └── [id]/
+    │   │   │   │       │       ├── route.ts
+    │   │   │   │       │       ├── builds/
+    │   │   │   │       │       │   └── route.ts
+    │   │   │   │       │       ├── cancel/
+    │   │   │   │       │       │   └── route.ts
+    │   │   │   │       │       ├── logs/
+    │   │   │   │       │       │   └── route.ts
+    │   │   │   │       │       ├── promote/
+    │   │   │   │       │       │   └── route.ts
+    │   │   │   │       │       └── redeploy/
+    │   │   │   │       │           └── route.ts
+    │   │   │   │       ├── domains/
+    │   │   │   │       │   └── route.ts
+    │   │   │   │       └── project/
+    │   │   │   │           └── route.ts
     │   │   │   ├── ai-assistant/
     │   │   │   │   └── route.ts
     │   │   │   ├── ai-chat/
@@ -444,6 +499,8 @@ Directory structure:
     │   │   │   ├── image-analysis/
     │   │   │   │   └── route.ts
     │   │   │   ├── image-genration/
+    │   │   │   │   └── route.ts
+    │   │   │   ├── join/
     │   │   │   │   └── route.ts
     │   │   │   ├── livekit-token/
     │   │   │   │   └── route.ts
@@ -564,6 +621,8 @@ Directory structure:
     │   │   │   ├── completeOnboardingAction.ts
     │   │   │   ├── layout.tsx
     │   │   │   └── page.tsx
+    │   │   ├── pricing/
+    │   │   │   └── page.tsx
     │   │   ├── privacy/
     │   │   │   └── page.tsx
     │   │   ├── sign-in/
@@ -599,6 +658,8 @@ Directory structure:
     │   │   └── waitlist/
     │   │       └── page.tsx
     │   ├── components/
+    │   │   ├── AdminCommentsPanel.tsx
+    │   │   ├── BanUserModal.tsx
     │   │   ├── BlockInspectAndContext.tsx
     │   │   ├── ContactForm.tsx
     │   │   ├── FullscreenPrompt.tsx
@@ -609,6 +670,7 @@ Directory structure:
     │   │   ├── PasswordGate.tsx
     │   │   ├── PasswordStrengthMeter.tsx
     │   │   ├── ReleaseNoteModal.tsx
+    │   │   ├── SendWarningModal.tsx
     │   │   ├── Slide-Button.tsx
     │   │   ├── useNetworkStatus.ts
     │   │   ├── blog/
@@ -712,7 +774,8 @@ Directory structure:
     │   │   ├── use-project-team-guard.tsx
     │   │   ├── use-project.tsx
     │   │   ├── use-refetch.ts
-    │   │   └── use-toast.ts
+    │   │   ├── use-toast.ts
+    │   │   └── use-vercel-deployments.ts
     │   ├── lib/
     │   │   ├── abTesting.ts
     │   │   ├── assembly.ts
@@ -720,9 +783,11 @@ Directory structure:
     │   │   ├── checkAndSyncProStatus.ts
     │   │   ├── clientVersionCheck.ts
     │   │   ├── cloudinary.ts
+    │   │   ├── configcat-management.ts
     │   │   ├── configcat.ts
     │   │   ├── creditsAlert.ts
     │   │   ├── currencyConverter.ts
+    │   │   ├── doppler.ts
     │   │   ├── email.ts
     │   │   ├── gemini.ts
     │   │   ├── github-loader.ts
@@ -739,7 +804,9 @@ Directory structure:
     │   │   ├── stripe.ts
     │   │   ├── survey.ts
     │   │   ├── user-cache.ts
-    │   │   └── utils.ts
+    │   │   ├── utils.ts
+    │   │   ├── vercel-client.ts
+    │   │   └── vercel-security.ts
     │   ├── server/
     │   │   ├── db.ts
     │   │   ├── keepalive.ts
@@ -752,6 +819,7 @@ Directory structure:
     │   │           ├── blog.ts
     │   │           ├── comment.ts
     │   │           ├── project.ts
+    │   │           ├── stats.ts
     │   │           └── user.ts
     │   ├── styles/
     │   │   └── globals.css
@@ -763,7 +831,8 @@ Directory structure:
     │       ├── FormInput.ts
     │       ├── global.d.ts
     │       ├── Project.ts
-    │       └── typhonjs-escomplex.d.ts
+    │       ├── typhonjs-escomplex.d.ts
+    │       └── vercel.ts
     ├── .cursor/
     │   ├── README.md
     │   ├── .cursorignore

@@ -148,6 +148,7 @@ type AIModelId =
   | 'deepseek/deepseek-r1-0528:free'
   | 'openai/gpt-oss-20b'
   | 'microsoft/mai-ds-r1:free'
+  | 'moonshotai/kimi-k2:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -184,6 +185,12 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
   'openai/gpt-oss-20b': {
     provider: 'openrouter',
     modelName: 'openai/gpt-oss-20b:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'moonshotai/kimi-k2:free': {
+    provider: 'openrouter',
+    modelName: 'moonshotai/kimi-k2:free',
     temperature: 0.7,
     apiKeyEnv: 'OPENROUTER_API_KEY',
   },

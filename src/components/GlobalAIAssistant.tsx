@@ -179,6 +179,15 @@ const GlobalAIAssistant: React.FC = () => {
       quality: 'High',
     },
     {
+      id: 'moonshotai/kimi-k2:free',
+      name: 'Kimi K2',
+      provider: 'Moonshot AI',
+      description: 'Efficient model with decent capabilities',
+      icon: '🌙',
+      speed: 'Fast',
+      quality: 'High',
+    },
+    {
       id: 'qwen-2.5-72b',
       name: 'Qwen 2.5 72B',
       provider: 'Hugging Face',
