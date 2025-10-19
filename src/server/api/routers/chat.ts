@@ -902,31 +902,21 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
-      // Generate embedding using OpenAI
+      // Check if Gemini API key is available
+      if (!process.env.GEMINI_API_KEY) {
+        console.warn('Gemini API key not configured, skipping embedding generation');
+        return { success: true, skipped: true };
+      }
+
+      // Generate embedding using Gemini
       try {
-        const response = await fetch('https://api.openai.com/v1/embeddings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'text-embedding-ada-002',
-            input: message.content,
-          }),
-        });
+        // Import the generateEmbedding function dynamically to avoid circular imports
+        const { generateEmbedding } = await import('@/lib/gemini');
 
-        if (!response.ok) {
-          throw new Error('Failed to generate embedding');
-        }
+        const embedding = await generateEmbedding(message.content);
 
-        const data = (await response.json()) as {
-          data: Array<{ embedding: number[] }>;
-        };
-        const embedding = data.data[0]?.embedding;
-
-        if (!embedding) {
-          throw new Error('No embedding returned');
+        if (!embedding || embedding.length === 0) {
+          throw new Error('No embedding returned from Gemini');
         }
 
         // Update message with embedding
@@ -939,10 +929,8 @@ export const chatRouter = createTRPCRouter({
         return { success: true };
       } catch (error) {
         console.error('Error generating embedding:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to generate embedding',
-        });
+        // Don't throw error, just log it and return success to avoid breaking the chat flow
+        return { success: true, error: error instanceof Error ? error.message : 'Unknown error' };
       }
     }),
 
@@ -957,30 +945,17 @@ export const chatRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       try {
-        // Generate embedding for query
-        const response = await fetch('https://api.openai.com/v1/embeddings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'text-embedding-ada-002',
-            input: input.query,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to generate query embedding');
+        // Check if Gemini API key is available
+        if (!process.env.GEMINI_API_KEY) {
+          throw new Error('Gemini API key not configured for embeddings');
         }
 
-        const data = (await response.json()) as {
-          data: Array<{ embedding: number[] }>;
-        };
-        const queryEmbedding = data.data[0]?.embedding;
+        // Generate embedding for query using Gemini
+        const { generateEmbedding } = await import('@/lib/gemini');
+        const queryEmbedding = await generateEmbedding(input.query);
 
-        if (!queryEmbedding) {
-          throw new Error('No embedding returned');
+        if (!queryEmbedding || queryEmbedding.length === 0) {
+          throw new Error('No embedding returned from Gemini');
         }
 
         // Search using vector similarity
@@ -1041,6 +1016,10 @@ export const chatRouter = createTRPCRouter({
             id: input.sessionId,
             userId: ctx.userId,
           },
+          select: {
+            id: true,
+            groupId: true,
+          },
         });
 
         if (!session) {
@@ -1050,30 +1029,17 @@ export const chatRouter = createTRPCRouter({
           });
         }
 
-        // Generate embedding for current message
-        const response = await fetch('https://api.openai.com/v1/embeddings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: 'text-embedding-ada-002',
-            input: input.currentMessage,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to generate embedding');
+        // Check if Gemini API key is available
+        if (!process.env.GEMINI_API_KEY) {
+          throw new Error('Gemini API key not configured for embeddings');
         }
 
-        const data = (await response.json()) as {
-          data: Array<{ embedding: number[] }>;
-        };
-        const embedding = data.data[0]?.embedding;
+        // Generate embedding for current message using Gemini
+        const { generateEmbedding } = await import('@/lib/gemini');
+        const embedding = await generateEmbedding(input.currentMessage);
 
-        if (!embedding) {
-          throw new Error('No embedding returned');
+        if (!embedding || embedding.length === 0) {
+          throw new Error('No embedding returned from Gemini');
         }
 
         // If in a group, search within group. Otherwise, search all user's messages

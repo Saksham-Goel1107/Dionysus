@@ -3689,397 +3689,424 @@ const GlobalAIAssistant: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {messages.map((message, index) => {
-                    // Check if this is the last user message
-                    const isLastUserMessage =
-                      message.role === 'user' &&
-                      messages.slice(index + 1).every((msg) => msg.role === 'assistant');
+                  {messages
+                    .filter((message) => {
+                      // Don't show empty assistant messages (they're temporary placeholders during streaming)
+                      if (
+                        message.role === 'assistant' &&
+                        (!message.content || message.content.trim() === '')
+                      ) {
+                        return false;
+                      }
+                      return true;
+                    })
+                    .map((message, index) => {
+                      // Check if this is the last user message
+                      const isLastUserMessage =
+                        message.role === 'user' &&
+                        messages.slice(index + 1).every((msg) => msg.role === 'assistant');
 
-                    return (
-                      <div
-                        key={message.id}
-                        className={`group flex gap-3 ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
-                      >
-                        {message.role === 'assistant' && (
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">
-                            <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                          </div>
-                        )}
-                        <div className="relative max-w-[85%]">
-                          <div
-                            className={`rounded-lg p-3 shadow-sm ${
-                              message.role === 'user'
-                                ? 'bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white'
-                                : 'border bg-card text-card-foreground dark:border-gray-700 dark:bg-gray-800'
-                            }`}
-                          >
-                            {message.role === 'assistant' ? (
-                              <div>
-                                <div
-                                  data-color-mode={theme === 'dark' ? 'dark' : 'light'}
-                                  className="prose prose-sm dark:prose-invert max-w-none"
-                                >
-                                  <MDEditor.Markdown
-                                    source={message.content}
-                                    style={{
-                                      backgroundColor: 'transparent',
-                                      color: 'inherit',
-                                    }}
-                                  />
-                                </div>
-                                {message.sources && message.sources.length > 0 && (
-                                  <div className="mt-3 border-t border-border pt-2 dark:border-gray-600">
-                                    <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                      <ExternalLink className="h-3 w-3" />
-                                      Sources:
-                                    </div>
-                                    <div className="space-y-1">
-                                      {message.sources.map((source, index) => (
-                                        <a
-                                          key={index}
-                                          href={source}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="block text-xs text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                        >
-                                          {index + 1}. {source}
-                                        </a>
-                                      ))}
-                                    </div>
+                      return (
+                        <div
+                          key={message.id}
+                          className={`group flex gap-3 ${
+                            message.role === 'user' ? 'justify-end' : 'justify-start'
+                          }`}
+                        >
+                          {message.role === 'assistant' && (
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">
+                              <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                            </div>
+                          )}
+                          <div className="relative max-w-[85%]">
+                            <div
+                              className={`rounded-lg p-3 shadow-sm ${
+                                message.role === 'user'
+                                  ? 'bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white'
+                                  : 'border bg-card text-card-foreground dark:border-gray-700 dark:bg-gray-800'
+                              }`}
+                            >
+                              {message.role === 'assistant' ? (
+                                <div>
+                                  <div
+                                    data-color-mode={theme === 'dark' ? 'dark' : 'light'}
+                                    className="prose prose-sm dark:prose-invert max-w-none"
+                                  >
+                                    <MDEditor.Markdown
+                                      source={message.content}
+                                      style={{
+                                        backgroundColor: 'transparent',
+                                        color: 'inherit',
+                                      }}
+                                    />
                                   </div>
-                                )}
-
-                                {/* Thinking Steps */}
-                                {message.thinkingSteps && message.thinkingSteps.length > 0 && (
-                                  <details className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                    <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
-                                      <div className="inline-flex items-center gap-2">
-                                        <svg
-                                          className="h-3 w-3"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                                          />
-                                        </svg>
-                                        Chain of Thought ({message.thinkingSteps.length} steps)
-                                        <ChevronDown className="h-3 w-3" />
+                                  {message.sources && message.sources.length > 0 && (
+                                    <div className="mt-3 border-t border-border pt-2 dark:border-gray-600">
+                                      <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                        <ExternalLink className="h-3 w-3" />
+                                        Sources:
                                       </div>
-                                    </summary>
-                                    <div className="mt-3 space-y-3">
-                                      {message.thinkingSteps.map((step, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="rounded-lg border border-border bg-muted/30 p-3 dark:border-gray-600 dark:bg-gray-700/30"
-                                        >
-                                          <div className="mb-2 flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                              <Badge
-                                                variant="outline"
-                                                className="bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                                              >
-                                                Step {step.step}
-                                              </Badge>
-                                              <span className="text-xs text-muted-foreground">
-                                                {step.model}
-                                              </span>
-                                            </div>
-                                            <span className="text-xs text-muted-foreground">
-                                              {step.duration.toFixed(1)}s
-                                            </span>
-                                          </div>
-                                          <p className="text-xs text-foreground/80">
-                                            {step.thought}
-                                          </p>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </details>
-                                )}
-
-                                {message.isThinking && (
-                                  <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-violet-500 border-t-transparent"></div>
-                                      <span>Deep thinking in progress...</span>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Generated Image */}
-                                {message.imageUrl && (
-                                  <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                    <div className="mb-2 flex items-center justify-between">
-                                      <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                        <svg
-                                          className="h-3 w-3"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                          />
-                                        </svg>
-                                        AI Generated Image
-                                      </div>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => downloadImage(message.imageUrl!, message.id)}
-                                        className="h-6 px-2 text-xs hover:bg-violet-500/10"
-                                        title="Download image"
-                                      >
-                                        <svg
-                                          className="h-3 w-3"
-                                          fill="none"
-                                          stroke="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                                          />
-                                        </svg>
-                                        <span className="ml-1">Download</span>
-                                      </Button>
-                                    </div>
-                                    <div className="relative overflow-hidden rounded-lg border border-border dark:border-gray-600">
-                                      {/* eslint-disable-next-line */}
-                                      <img
-                                        src={message.imageUrl}
-                                        alt="AI Generated Image"
-                                        className="w-full cursor-pointer object-contain transition-transform hover:scale-105"
-                                        onClick={() => {
-                                          // Open image in new tab for larger view
-                                          window.open(message.imageUrl, '_blank');
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Follow-up Questions */}
-                                {message.followUpQuestions &&
-                                  message.followUpQuestions.length > 0 && (
-                                    <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                      <div className="mb-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                        <Lightbulb className="h-3 w-3" />
-                                        Follow-up Questions:
-                                      </div>
-                                      <div className="flex flex-wrap gap-2">
-                                        {message.followUpQuestions.map((question, index) => (
-                                          <Button
+                                      <div className="space-y-1">
+                                        {message.sources.map((source, index) => (
+                                          <a
                                             key={index}
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleFollowUpQuestionClick(question)}
-                                            disabled={isLoading}
-                                            className="h-auto max-w-full cursor-pointer justify-start whitespace-normal rounded-lg border-border bg-muted/50 px-3 py-2 text-left text-xs hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-violet-700 dark:hover:bg-violet-900/20 dark:hover:text-violet-300"
-                                            title={`Click to ask: ${question}`}
+                                            href={source}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block text-xs text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                                           >
-                                            <span className="line-clamp-2">{question}</span>
-                                          </Button>
+                                            {index + 1}. {source}
+                                          </a>
                                         ))}
                                       </div>
                                     </div>
                                   )}
-                              </div>
-                            ) : (
-                              <div>
-                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
 
-                                {/* Display Selected Features for User Messages */}
-                                {message.features && message.features.length > 0 && (
-                                  <div className="mt-2 flex flex-wrap gap-1">
-                                    {message.features.map((featureId) => {
-                                      const feature = AI_FEATURES.find((f) => f.id === featureId);
-                                      if (!feature) return null;
-                                      return (
-                                        <Badge
-                                          key={featureId}
-                                          variant="secondary"
-                                          className="bg-primary-foreground/20 text-xs text-primary-foreground"
-                                        >
-                                          <span className="mr-1">{feature.icon}</span>
-                                          {feature.name}
-                                        </Badge>
-                                      );
-                                    })}
-                                  </div>
-                                )}
-
-                                {/* Display Attachments for User Messages */}
-                                {message.attachments && message.attachments.length > 0 && (
-                                  <div className="mt-3 border-t border-primary-foreground/20 pt-2">
-                                    <div className="mb-2 flex items-center gap-1 text-xs font-medium opacity-80">
-                                      <Paperclip className="h-3 w-3" />
-                                      Attachments:
-                                    </div>
-                                    <div className="space-y-2">
-                                      {message.attachments.map((attachment) => (
-                                        <div
-                                          key={attachment.id}
-                                          className="flex items-center gap-2 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-xs"
-                                        >
-                                          {getFileIcon(attachment.type)}
-                                          <span className="flex-1 truncate">{attachment.name}</span>
-                                          <span className="opacity-70">
-                                            {formatFileSize(attachment.size)}
-                                          </span>
-                                          {attachment.url &&
-                                            attachment.type.startsWith('image/') && (
-                                              // Just disabling the lint to prevent Image tag warnings
-                                              // eslint-disable-next-line
-                                              <img
-                                                src={attachment.url}
-                                                alt={attachment.name}
-                                                className="h-8 w-8 cursor-pointer rounded object-cover"
-                                                onError={(e) => {
-                                                  // Hide image if it fails to load
-                                                  e.currentTarget.style.display = 'none';
-                                                }}
-                                                onClick={() => {
-                                                  // Open image in new tab for larger view
-                                                  window.open(attachment.url, '_blank');
-                                                }}
-                                              />
-                                            )}
+                                  {/* Thinking Steps */}
+                                  {message.thinkingSteps && message.thinkingSteps.length > 0 && (
+                                    <details className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                      <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
+                                        <div className="inline-flex items-center gap-2">
+                                          <svg
+                                            className="h-3 w-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                            />
+                                          </svg>
+                                          Chain of Thought ({message.thinkingSteps.length} steps)
+                                          <ChevronDown className="h-3 w-3" />
                                         </div>
-                                      ))}
+                                      </summary>
+                                      <div className="mt-3 space-y-3">
+                                        {message.thinkingSteps.map((step, idx) => (
+                                          <div
+                                            key={idx}
+                                            className="rounded-lg border border-border bg-muted/30 p-3 dark:border-gray-600 dark:bg-gray-700/30"
+                                          >
+                                            <div className="mb-2 flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <Badge
+                                                  variant="outline"
+                                                  className="bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                                >
+                                                  Step {step.step}
+                                                </Badge>
+                                                <span className="text-xs text-muted-foreground">
+                                                  {step.model}
+                                                </span>
+                                              </div>
+                                              <span className="text-xs text-muted-foreground">
+                                                {step.duration.toFixed(1)}s
+                                              </span>
+                                            </div>
+                                            <p className="text-xs text-foreground/80">
+                                              {step.thought}
+                                            </p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </details>
+                                  )}
+
+                                  {message.isThinking && (
+                                    <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-violet-500 border-t-transparent"></div>
+                                        <span>Deep thinking in progress...</span>
+                                      </div>
                                     </div>
-                                  </div>
+                                  )}
+
+                                  {/* Generated Image */}
+                                  {message.imageUrl && (
+                                    <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                      <div className="mb-2 flex items-center justify-between">
+                                        <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                          <svg
+                                            className="h-3 w-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                          </svg>
+                                          AI Generated Image
+                                        </div>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() =>
+                                            downloadImage(message.imageUrl!, message.id)
+                                          }
+                                          className="h-6 px-2 text-xs hover:bg-violet-500/10"
+                                          title="Download image"
+                                        >
+                                          <svg
+                                            className="h-3 w-3"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                            />
+                                          </svg>
+                                          <span className="ml-1">Download</span>
+                                        </Button>
+                                      </div>
+                                      <div className="relative overflow-hidden rounded-lg border border-border dark:border-gray-600">
+                                        {/* eslint-disable-next-line */}
+                                        <img
+                                          src={message.imageUrl}
+                                          alt="AI Generated Image"
+                                          className="w-full cursor-pointer object-contain transition-transform hover:scale-105"
+                                          onClick={() => {
+                                            // Open image in new tab for larger view
+                                            window.open(message.imageUrl, '_blank');
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Follow-up Questions */}
+                                  {message.followUpQuestions &&
+                                    message.followUpQuestions.length > 0 && (
+                                      <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                        <div className="mb-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                          <Lightbulb className="h-3 w-3" />
+                                          Follow-up Questions:
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                          {message.followUpQuestions.map((question, index) => (
+                                            <Button
+                                              key={index}
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleFollowUpQuestionClick(question)}
+                                              disabled={isLoading}
+                                              className="h-auto max-w-full cursor-pointer justify-start whitespace-normal rounded-lg border-border/70 bg-gradient-to-r from-violet-50 to-purple-50 px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-all duration-200 hover:border-violet-300 hover:from-violet-100 hover:to-purple-100 hover:shadow-md dark:border-gray-600/70 dark:from-violet-950/30 dark:to-purple-950/30 dark:hover:border-violet-600 dark:hover:from-violet-900/50 dark:hover:to-purple-900/50 dark:hover:shadow-lg"
+                                              title={`Click to ask: ${question}`}
+                                            >
+                                              <span className="line-clamp-2 text-violet-900 dark:text-violet-100">
+                                                {question}
+                                              </span>
+                                            </Button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                </div>
+                              ) : (
+                                <div>
+                                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+
+                                  {/* Display Selected Features for User Messages */}
+                                  {message.features && message.features.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                      {message.features.map((featureId) => {
+                                        const feature = AI_FEATURES.find((f) => f.id === featureId);
+                                        if (!feature) return null;
+                                        return (
+                                          <Badge
+                                            key={featureId}
+                                            variant="secondary"
+                                            className="bg-primary-foreground/20 text-xs text-primary-foreground"
+                                          >
+                                            <span className="mr-1">{feature.icon}</span>
+                                            {feature.name}
+                                          </Badge>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+
+                                  {/* Display Attachments for User Messages */}
+                                  {message.attachments && message.attachments.length > 0 && (
+                                    <div className="mt-3 border-t border-primary-foreground/20 pt-2">
+                                      <div className="mb-2 flex items-center gap-1 text-xs font-medium opacity-80">
+                                        <Paperclip className="h-3 w-3" />
+                                        Attachments:
+                                      </div>
+                                      <div className="space-y-2">
+                                        {message.attachments.map((attachment) => (
+                                          <div
+                                            key={attachment.id}
+                                            className="flex items-center gap-2 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-xs"
+                                          >
+                                            {getFileIcon(attachment.type)}
+                                            <span className="flex-1 truncate">
+                                              {attachment.name}
+                                            </span>
+                                            <span className="opacity-70">
+                                              {formatFileSize(attachment.size)}
+                                            </span>
+                                            {attachment.url &&
+                                              attachment.type.startsWith('image/') && (
+                                                // Just disabling the lint to prevent Image tag warnings
+                                                // eslint-disable-next-line
+                                                <img
+                                                  src={attachment.url}
+                                                  alt={attachment.name}
+                                                  className="h-8 w-8 cursor-pointer rounded object-cover"
+                                                  onError={(e) => {
+                                                    // Hide image if it fails to load
+                                                    e.currentTarget.style.display = 'none';
+                                                  }}
+                                                  onClick={() => {
+                                                    // Open image in new tab for larger view
+                                                    window.open(attachment.url, '_blank');
+                                                  }}
+                                                />
+                                              )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              {message.content && (
+                                <div className="mt-1 text-xs opacity-70">
+                                  {message.timestamp.toLocaleTimeString()}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Message Action Buttons - Visible on Hover */}
+                            <div className="absolute -bottom-3 right-2 flex gap-1.5 transition-opacity duration-200">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(message.content)}
+                                className="h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg"
+                                title="Copy message"
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                              {message.role === 'assistant' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRegenerate(message.id)}
+                                  disabled={isLoading}
+                                  className="h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg"
+                                  title="Regenerate response"
+                                >
+                                  <Sparkles className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              {message.role === 'assistant' && (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleLikeMessage(message.id)}
+                                    className={`h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg ${
+                                      messageFeedback[message.id] === true
+                                        ? 'border-green-200 bg-green-100 text-green-700 dark:border-green-700 dark:bg-green-900/50 dark:text-green-400'
+                                        : ''
+                                    }`}
+                                    title="Like response"
+                                  >
+                                    <ThumbsUp className="h-3.5 w-3.5" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDislikeMessage(message.id)}
+                                    className={`h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg ${
+                                      messageFeedback[message.id] === false
+                                        ? 'border-red-200 bg-red-100 text-red-700 dark:border-red-700 dark:bg-red-900/50 dark:text-red-400'
+                                        : ''
+                                    }`}
+                                    title="Dislike response"
+                                  >
+                                    <ThumbsDown className="h-3.5 w-3.5" />
+                                  </Button>
+
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleReportMessage(message.id)}
+                                    className="h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg"
+                                    title="Report response"
+                                  >
+                                    <Flag className="h-3.5 w-3.5" />
+                                  </Button>
+                                </>
+                              )}
+                              {message.role === 'user' && isLastUserMessage && !isEditing && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => startEditingMessage(message.id, message.content)}
+                                  disabled={isLoading}
+                                  className="h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg"
+                                  title="Edit message"
+                                >
+                                  <svg
+                                    className="h-3.5 w-3.5"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                    />
+                                  </svg>
+                                </Button>
+                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleReadAloud(message.content, message.id)}
+                                className={`h-7 w-7 rounded-full border border-border/60 bg-background/90 p-0 shadow-sm backdrop-blur-sm transition-all duration-200 hover:bg-primary hover:text-primary-foreground hover:shadow-md dark:border-gray-600/60 dark:bg-gray-800/90 dark:hover:bg-primary dark:hover:shadow-lg ${
+                                  currentSpeakingId === message.id
+                                    ? 'border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-700 dark:bg-blue-900/50 dark:text-blue-400'
+                                    : ''
+                                }`}
+                                title={
+                                  currentSpeakingId === message.id ? 'Stop reading' : 'Read aloud'
+                                }
+                              >
+                                {currentSpeakingId === message.id ? (
+                                  <VolumeX className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Volume2 className="h-3.5 w-3.5" />
                                 )}
-                              </div>
-                            )}
-                            <div className="mt-1 text-xs opacity-70">
-                              {message.timestamp.toLocaleTimeString()}
+                              </Button>
                             </div>
                           </div>
-
-                          {/* Message Action Buttons - Visible on Hover */}
-                          <div className="absolute -bottom-2 right-2 flex gap-1 transition-opacity duration-200">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(message.content)}
-                              className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                              title="Copy message"
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
-                            {message.role === 'assistant' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRegenerate(message.id)}
-                                disabled={isLoading}
-                                className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                                title="Regenerate response"
-                              >
-                                <Sparkles className="h-3 w-3" />
-                              </Button>
-                            )}
-                            {message.role === 'assistant' && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleLikeMessage(message.id)}
-                                  className={`flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700 ${
-                                    messageFeedback[message.id] === true ? 'text-green-600' : ''
-                                  }`}
-                                  title="Like response"
-                                >
-                                  <ThumbsUp className="h-4 w-4" />
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDislikeMessage(message.id)}
-                                  className={`flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700 ${
-                                    messageFeedback[message.id] === false ? 'text-red-600' : ''
-                                  }`}
-                                  title="Dislike response"
-                                >
-                                  <ThumbsDown className="h-4 w-4" />
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleReportMessage(message.id)}
-                                  className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                                  title="Report response"
-                                >
-                                  <Flag className="h-3 w-3" />
-                                </Button>
-                              </>
-                            )}
-                            {message.role === 'user' && isLastUserMessage && !isEditing && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => startEditingMessage(message.id, message.content)}
-                                disabled={isLoading}
-                                className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                                title="Edit message"
-                              >
-                                <svg
-                                  className="h-3 w-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                  />
-                                </svg>
-                              </Button>
-                            )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleReadAloud(message.content, message.id)}
-                              className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                              title={
-                                currentSpeakingId === message.id ? 'Stop reading' : 'Read aloud'
-                              }
-                            >
-                              {currentSpeakingId === message.id ? (
-                                <VolumeX className="h-3 w-3" />
-                              ) : (
-                                <Volume2 className="h-3 w-3" />
-                              )}
-                            </Button>
-                          </div>
+                          {message.role === 'user' && (
+                            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary ring-2 ring-primary/20 dark:bg-blue-600 dark:ring-blue-500/20">
+                              <span className="text-xs font-bold text-primary-foreground dark:text-white">
+                                {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                        {message.role === 'user' && (
-                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary ring-2 ring-primary/20 dark:bg-blue-600 dark:ring-blue-500/20">
-                            <span className="text-xs font-bold text-primary-foreground dark:text-white">
-                              {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
                   {isLoading && (
                     <div className="flex justify-start gap-3">
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">

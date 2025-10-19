@@ -239,11 +239,16 @@ async function getUserMemoryContext(userId: string): Promise<string> {
       if (survey.role) context += `\n- Role: ${survey.role}`;
       if (survey.usagePurpose) context += `\n- Usage Purpose: ${survey.usagePurpose}`;
       if (survey.hearAboutUs) context += `\n- How they heard about us: ${survey.hearAboutUs}`;
-      if (survey.expectedFeatures?.length) context += `\n- Expected Features: ${survey.expectedFeatures.join(', ')}`;
-      if (survey.developmentExperience) context += `\n- Development Experience: ${survey.developmentExperience} years`;
-      if (survey.githubExperience) context += `\n- GitHub Experience: ${survey.githubExperience} years`;
-      if (survey.feedbackFrequency) context += `\n- Feedback Frequency: ${survey.feedbackFrequency}`;
-      if (survey.additionalFeedback) context += `\n- Additional Feedback: ${survey.additionalFeedback}`;
+      if (survey.expectedFeatures?.length)
+        context += `\n- Expected Features: ${survey.expectedFeatures.join(', ')}`;
+      if (survey.developmentExperience)
+        context += `\n- Development Experience: ${survey.developmentExperience} years`;
+      if (survey.githubExperience)
+        context += `\n- GitHub Experience: ${survey.githubExperience} years`;
+      if (survey.feedbackFrequency)
+        context += `\n- Feedback Frequency: ${survey.feedbackFrequency}`;
+      if (survey.additionalFeedback)
+        context += `\n- Additional Feedback: ${survey.additionalFeedback}`;
     }
 
     // Add memories if available
@@ -282,24 +287,38 @@ async function extractAndStoreMemories(
 ): Promise<void> {
   try {
     // Use AI to extract memorable information from the conversation
-    const memoryExtractionPrompt = `Analyze this conversation and extract any important user preferences, facts, or context that should be remembered for future conversations.
+    const memoryExtractionPrompt = `Analyze this conversation and extract important, actionable information that should be remembered for future conversations. Focus on extracting high-quality, specific memories that would genuinely help personalize future interactions.
 
 User Message: ${userMessage}
 Assistant Response: ${assistantResponse}
 
-Extract information in this format (only if relevant information exists):
-- preferred_language: [language they code in]
-- coding_style: [their coding preferences]
-- project_type: [type of project they're working on]
-- skill_level: [their experience level]
-- tools: [tools they use]
-- interests: [their interests]
-- name_preference: [how they prefer to be addressed]
+Extract ONLY information that meets these criteria:
+1. User preferences that affect how you should respond (e.g., "I prefer TypeScript over JavaScript")
+2. Technical skills or experience level (e.g., "I'm new to React" or "I work with Python daily")
+3. Specific tools, frameworks, or technologies they mentioned using
+4. Project context or goals they're working toward
+5. Communication preferences (e.g., "I prefer detailed explanations" or "Keep it concise")
+6. Domain expertise or interests that could inform responses
 
-Only extract information that is explicitly mentioned or strongly implied. Return JSON format:
-{"memories": [{"key": "string", "value": "string", "category": "preference|context|fact"}]}
+IMPORTANT: Only extract information that is EXPLICITLY stated or STRONGLY implied. Do not make assumptions or infer preferences that aren't clearly indicated.
 
-If no memorable information, return: {"memories": []}`;
+Format as JSON with this structure:
+{"memories": [
+  {"key": "specific_preference_or_fact", "value": "exact_detail_mentioned", "category": "preference|skill|tool|context|goal"}
+]}
+
+Examples of GOOD memories:
+- {"key": "programming_language", "value": "TypeScript", "category": "skill"}
+- {"key": "experience_level", "value": "senior_developer", "category": "skill"}
+- {"key": "preferred_framework", "value": "Next.js", "category": "preference"}
+- {"key": "current_project", "value": "building_ecommerce_site", "category": "context"}
+
+Examples of BAD memories (don't extract these):
+- Generic statements like "I like coding"
+- Assumptions like "probably uses VS Code"
+- Vague preferences like "I want good code"
+
+If no high-quality, specific information exists to remember, return: {"memories": []}`;
 
     const extractionModel = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY!,
@@ -1254,11 +1273,15 @@ STRICT GUIDELINES:
 
 FOLLOW-UP QUESTIONS:
 - After providing your main response, ALWAYS generate 2-4 relevant follow-up questions that the user might want to ask next
-- These questions should be natural continuations of the conversation and help explore the topic deeper
-- Format them as a JSON array at the very end of your response, like: ["Question 1?", "Question 2?", "Question 3?"]
-- Make sure the questions are specific to the Dionysus platform, development topics, or the current context
-- Only include questions that would genuinely be helpful for the user to explore further
-- Do not include the follow-up questions in your main response text - keep them separate as JSON
+- These questions should be natural continuations that help explore the topic deeper and provide practical value
+- IMPORTANT: Do NOT include these follow-up questions anywhere in your visible response text
+- Instead, append them as a JSON array at the very end of your response, after all other content
+- The JSON array should be on its own line and use this exact format: ["Question 1?", "Question 2?", "Question 3?"]
+- Make questions specific to Dionysus features, development workflows, or the current context
+- Focus on questions that would genuinely help the user accomplish their goals or learn more
+- Prefer actionable questions over generic ones (e.g., "How do I set up X?" instead of "What is X?")
+- Consider the user's current activity and what they might want to do next
+- The user will NOT see this JSON array - it will be automatically parsed and displayed as clickable buttons
 
 IMPORTANT CONVERSATION CONTEXT:
 - You are continuing an ongoing conversation with the user
@@ -1287,7 +1310,8 @@ ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
 Provide a helpful response about the Dionysus platform or development topics based on the current page context${attachmentContext ? ', attached files,' : ''}${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.
 
-IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in this exact format: ["Question 1?", "Question 2?", "Question 3?"]`;
+CRITICAL: End your response with a JSON array of 2-4 high-quality follow-up questions in this exact format: ["Question 1?", "Question 2?", "Question 3?"]
+This JSON array MUST be on its own line at the very end, after all other content. It will be automatically removed from your visible response and displayed as clickable buttons. Do NOT mention these questions anywhere in your main response text.`;
 
     // Prepare messages with proper multimodal support
     const systemMessage = new SystemMessage(systemPrompt);
@@ -1482,23 +1506,126 @@ IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in thi
             let followUpQuestions: string[] = [];
             let cleanResponse = fullResponse;
 
-            try {
-              // Look for JSON array at the end of the response
-              const responseLines = fullResponse.trim().split('\n');
-              const lastLine = responseLines[responseLines.length - 1];
+            console.log('AI Response before parsing:', fullResponse);
 
-              // Check if the last line is a JSON array
-              if (lastLine && lastLine.startsWith('[') && lastLine.endsWith(']')) {
-                const parsed = JSON.parse(lastLine);
-                if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
-                  followUpQuestions = parsed;
-                  // Remove the JSON array from the main response
-                  cleanResponse = responseLines.slice(0, -1).join('\n').trim();
+            try {
+              // Multiple parsing strategies for robustness
+
+              // Strategy 1: Look for JSON array pattern anywhere in the response
+              const jsonArrayRegex = /\[(\s*"[^"]*"(?:\s*,\s*"[^"]*")*\s*)\]$/;
+              let match = fullResponse.match(jsonArrayRegex);
+
+              if (match) {
+                try {
+                  const jsonString = match[0];
+                  const parsed = JSON.parse(jsonString);
+                  if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                    followUpQuestions = parsed;
+                    cleanResponse = fullResponse.replace(jsonArrayRegex, '').trim();
+                    console.log(
+                      'Successfully parsed follow-up questions (strategy 1):',
+                      followUpQuestions,
+                    );
+                  }
+                } catch (e) {
+                  console.warn('Strategy 1 parsing failed:', e);
                 }
               }
+
+              // Strategy 2: Look for code blocks with arrays
+              if (followUpQuestions.length === 0) {
+                const codeBlockRegex = /```(?:json|javascript|js)?\s*\n?(\[[\s\S]*?\])\s*\n?```/;
+                match = fullResponse.match(codeBlockRegex);
+
+                if (match) {
+                  try {
+                    const jsonString = match[1];
+                    const parsed = JSON.parse(jsonString);
+                    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                      followUpQuestions = parsed;
+                      cleanResponse = fullResponse.replace(codeBlockRegex, '').trim();
+                      console.log(
+                        'Successfully parsed follow-up questions (strategy 2):',
+                        followUpQuestions,
+                      );
+                    }
+                  } catch (e) {
+                    console.warn('Strategy 2 parsing failed:', e);
+                  }
+                }
+              }
+
+              // Strategy 3: Look for JSON array at the end of the response (original logic)
+              if (followUpQuestions.length === 0) {
+                const responseLines = fullResponse.trim().split('\n');
+                const lastLine = responseLines[responseLines.length - 1];
+
+                if (lastLine && lastLine.startsWith('[') && lastLine.endsWith(']')) {
+                  try {
+                    const parsed = JSON.parse(lastLine);
+                    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                      followUpQuestions = parsed;
+                      cleanResponse = responseLines.slice(0, -1).join('\n').trim();
+                      console.log(
+                        'Successfully parsed follow-up questions (strategy 3):',
+                        followUpQuestions,
+                      );
+                    }
+                  } catch (e) {
+                    console.warn('Strategy 3 parsing failed:', e);
+                  }
+                }
+              }
+
+              // Strategy 4: Look for numbered or bulleted list that might be questions
+              if (followUpQuestions.length === 0) {
+                const lines = fullResponse.split('\n');
+                const potentialQuestions: string[] = [];
+
+                for (const line of lines) {
+                  const trimmed = line.trim();
+                  // Look for lines that start with numbers, bullets, or question marks
+                  if (
+                    /^\d+\.\s*.+\?/.test(trimmed) || // 1. Question?
+                    /^[•\-*]\s*.+\?/.test(trimmed) || // • Question?
+                    (trimmed.endsWith('?') && trimmed.length > 10) // Long question lines
+                  ) {
+                    // Clean up the question
+                    let question = trimmed
+                      .replace(/^\d+\.\s*/, '') // Remove numbering
+                      .replace(/^[•\-*]\s*/, '') // Remove bullets
+                      .trim();
+
+                    if (question && question.endsWith('?')) {
+                      potentialQuestions.push(question);
+                    }
+                  }
+                }
+
+                if (potentialQuestions.length >= 2 && potentialQuestions.length <= 4) {
+                  followUpQuestions = potentialQuestions;
+                  // Remove the questions from the response
+                  let tempResponse = fullResponse;
+                  for (const question of potentialQuestions) {
+                    // Remove the line containing this question
+                    const questionRegex = new RegExp(
+                      `^.*${question.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*$`,
+                      'gm',
+                    );
+                    tempResponse = tempResponse.replace(questionRegex, '').trim();
+                  }
+                  cleanResponse = tempResponse;
+                  console.log(
+                    'Successfully parsed follow-up questions (strategy 4):',
+                    followUpQuestions,
+                  );
+                }
+              }
+
+              console.log('Clean response:', cleanResponse);
             } catch (parseError) {
-              // If parsing fails, keep the original response
               console.warn('Failed to parse follow-up questions:', parseError);
+              // If parsing fails completely, keep the original response
             }
 
             // Send sources if we have them
