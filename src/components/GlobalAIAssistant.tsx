@@ -54,6 +54,7 @@ interface Message {
   id: string;
   sources?: string[];
   attachments?: FileAttachment[];
+  followUpQuestions?: string[];
 }
 
 interface FileAttachment {
@@ -89,6 +90,9 @@ const GlobalAIAssistant: React.FC = () => {
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [originalMessage, setOriginalMessage] = useState<string>('');
 
   useEffect(() => {
     if (!showModelSelector) {
@@ -146,6 +150,24 @@ const GlobalAIAssistant: React.FC = () => {
       icon: '🤖',
       speed: 'Slow',
       quality: 'Excellent',
+    },
+    {
+      id: 'microsoft/mai-ds-r1:free',
+      name: 'Microsoft MAI DS R1',
+      provider: 'Microsoft',
+      description: 'Heavy model with superb capabilities',
+      icon: '🛡️',
+      speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
+      id: 'openai/gpt-oss-20b',
+      name: 'GPT OSS 20B',
+      provider: 'OpenAI',
+      description: 'Efficient open-source model with decent capabilities',
+      icon: '🤖',
+      speed: 'Fast',
+      quality: 'High',
     },
     {
       id: 'qwen-2.5-72b',
@@ -253,12 +275,12 @@ const GlobalAIAssistant: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showModelSelector]);
 
-  // Auto-switch from Perplexity or DeepSeek to Gemini if user loses pro access
   useEffect(() => {
     if (
       !hasProPlan &&
       (selectedModel === 'perplexity-sonar-pro' ||
         selectedModel === 'deepseek/deepseek-r1-0528:free' ||
+        selectedModel === 'microsoft/mai-ds-r1:free' ||
         selectedModel === 'openai/gpt-oss-120b')
     ) {
       setSelectedModel('gemini-2.5-flash');
@@ -962,6 +984,13 @@ const GlobalAIAssistant: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // If we're in editing mode, handle the edit save
+    if (isEditing) {
+      await saveEditedMessage(e);
+      return;
+    }
+
     if (!question.trim() || isLoading) return;
 
     // Clear previous errors
@@ -1111,6 +1140,15 @@ const GlobalAIAssistant: React.FC = () => {
                         msg.id === assistantMessageId ? { ...msg, sources: parsed.sources } : msg,
                       ),
                     );
+                  } else if (parsed.type === 'followUpQuestions') {
+                    // Update the assistant message follow-up questions
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
+                          : msg,
+                      ),
+                    );
                   } else if (parsed.type === 'complete') {
                     // Final update with sanitized content
                     setMessages((prev) =>
@@ -1120,6 +1158,7 @@ const GlobalAIAssistant: React.FC = () => {
                               ...msg,
                               content: sanitizeInput(parsed.fullResponse),
                               sources: parsed.sources || [],
+                              followUpQuestions: parsed.followUpQuestions || [],
                             }
                           : msg,
                       ),
@@ -1195,6 +1234,10 @@ const GlobalAIAssistant: React.FC = () => {
     }
     setIsLoading(false);
     setIsGenerating(false);
+    // Cancel edit mode if active
+    if (isEditing) {
+      cancelEditing();
+    }
     setIsOpen(false);
   };
 
@@ -1219,6 +1262,295 @@ const GlobalAIAssistant: React.FC = () => {
     }
 
     setShowClearDialog(false);
+  };
+
+  // Edit message functions
+  const startEditingMessage = (messageId: string, content: string) => {
+    setIsEditing(true);
+    setEditingMessageId(messageId);
+    setOriginalMessage(content);
+    setQuestion(content);
+    setInputError('');
+    // Clear any attached files when editing
+    setAttachedFiles([]);
+    // Focus the textarea
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  };
+
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditingMessageId(null);
+    setOriginalMessage('');
+    setQuestion('');
+    setInputError('');
+    setAttachedFiles([]);
+  };
+
+  const saveEditedMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question.trim() || !editingMessageId) return;
+
+    // Clear previous errors
+    setInputError('');
+
+    // Sanitize input
+    const sanitizedQuestion = sanitizeInput(question);
+
+    // Validate input length
+    if (sanitizedQuestion.length < MIN_MESSAGE_LENGTH) {
+      setInputError(`Question must be at least ${MIN_MESSAGE_LENGTH} characters long.`);
+      return;
+    }
+
+    if (sanitizedQuestion.length > MAX_MESSAGE_LENGTH) {
+      setInputError(`Question must be less than ${MAX_MESSAGE_LENGTH} characters.`);
+      return;
+    }
+
+    // Check rate limit (only if content actually changed)
+    if (sanitizedQuestion !== originalMessage) {
+      if (!checkRateLimit()) {
+        return;
+      }
+    }
+
+    // Validate relevance
+    const relevanceCheck = validateQuestionRelevance(sanitizedQuestion);
+    if (!relevanceCheck.isValid) {
+      setInputError(relevanceCheck.error || 'Invalid question');
+      return;
+    }
+
+    // Update the message in place
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === editingMessageId
+          ? {
+              ...msg,
+              content: sanitizedQuestion,
+              timestamp: new Date(), // Update timestamp
+              attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
+            }
+          : msg,
+      ),
+    );
+
+    // Clear edit state
+    setIsEditing(false);
+    setEditingMessageId(null);
+    setOriginalMessage('');
+    setQuestion('');
+    setAttachedFiles([]);
+
+    // If content changed, regenerate the assistant response
+    if (sanitizedQuestion !== originalMessage) {
+      // Find the assistant message that follows this user message
+      const userMessageIndex = messages.findIndex((msg) => msg.id === editingMessageId);
+      if (userMessageIndex !== -1) {
+        const assistantMessageIndex = messages.findIndex(
+          (msg, index) => index > userMessageIndex && msg.role === 'assistant',
+        );
+
+        if (assistantMessageIndex !== -1) {
+          // Remove the old assistant response if it exists
+          const assistantMessageId = messages[assistantMessageIndex]?.id;
+          if (assistantMessageId) {
+            setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
+
+            // Regenerate response with edited message
+            await handleRegenerateForEdit(editingMessageId, sanitizedQuestion);
+          }
+        }
+      }
+    }
+  };
+
+  const handleRegenerateForEdit = async (userMessageId: string, editedContent: string) => {
+    if (isLoading) return;
+
+    // Set loading state
+    setIsLoading(true);
+    setIsGenerating(true);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    // Create new assistant message
+    const newAssistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      id: newAssistantMessageId,
+      sources: [],
+      followUpQuestions: [],
+    };
+
+    // Add the new assistant message after the user message
+    setMessages((prev) => {
+      const userMessageIndex = prev.findIndex((msg) => msg.id === userMessageId);
+      if (userMessageIndex === -1) return prev;
+
+      const newMessages = [...prev];
+      newMessages.splice(userMessageIndex + 1, 0, assistantMessage);
+      return newMessages;
+    });
+
+    try {
+      // Prepare user information for personalization
+      const userInfo = user
+        ? {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            fullName: user.fullName || '',
+            email: user.primaryEmailAddress?.emailAddress || '',
+            username: user.username || '',
+            hasImage: !!user.imageUrl,
+          }
+        : null;
+
+      const response = await fetch('/api/ai-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-Origin': window.location.origin,
+        },
+        body: JSON.stringify({
+          question: editedContent,
+          context: currentContext,
+          conversationHistory: messages.slice(-10).map((msg) => ({
+            ...msg,
+            content: sanitizeInput(msg.content),
+          })),
+          platform: 'dionysus',
+          userInfo: userInfo,
+          model: selectedModel,
+          isRegeneration: true,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      // Handle streaming response
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+
+                if (data === '[DONE]') {
+                  setIsLoading(false);
+                  setIsGenerating(false);
+                  setAbortController(null);
+                  break;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+
+                  if (parsed.type === 'chunk') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, content: msg.content + parsed.content }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'sources') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, sources: parsed.sources }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'complete') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? {
+                              ...msg,
+                              content: sanitizeInput(parsed.fullResponse),
+                              sources: parsed.sources || [],
+                            }
+                          : msg,
+                      ),
+                    );
+                    setIsLoading(false);
+                    setIsGenerating(false);
+                    setAbortController(null);
+                  } else if (parsed.type === 'error') {
+                    throw new Error(parsed.error || 'Streaming error');
+                  }
+                } catch (parseError) {
+                  console.error('Error parsing streaming data:', parseError);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Fallback for non-streaming response
+        const data = await response.json();
+
+        if (!data.answer || typeof data.answer !== 'string') {
+          throw new Error('Invalid response format');
+        }
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === newAssistantMessageId
+              ? {
+                  ...msg,
+                  content: sanitizeInput(data.answer),
+                  sources: data.sources || [],
+                }
+              : msg,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error regenerating response for edited message:', error);
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newAssistantMessageId
+            ? {
+                ...msg,
+                content:
+                  'I apologize, but I encountered an error while regenerating the response. Please try again.',
+              }
+            : msg,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+      setIsGenerating(false);
+      setAbortController(null);
+    }
   };
 
   // Handle regenerating an assistant response
@@ -1514,6 +1846,15 @@ const GlobalAIAssistant: React.FC = () => {
     } else {
       recognition.start();
     }
+  };
+
+  // Handle follow-up question click
+  const handleFollowUpQuestionClick = (question: string) => {
+    setQuestion(question);
+    // Auto-submit the question
+    setTimeout(() => {
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+    }, 100);
   };
 
   const quickQuestions = [
@@ -1885,6 +2226,7 @@ const GlobalAIAssistant: React.FC = () => {
                             const isProOnly =
                               model.id === 'perplexity-sonar-pro' ||
                               model.id === 'openai/gpt-oss-120b' ||
+                              model.id === 'microsoft/mai-ds-r1:free' ||
                               model.id === 'deepseek/deepseek-r1-0528:free';
                             const isDisabled = isProOnly && !hasProPlan;
 
@@ -2021,160 +2363,220 @@ const GlobalAIAssistant: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`group flex gap-3 ${
-                        message.role === 'user' ? 'justify-end' : 'justify-start'
-                      }`}
-                    >
-                      {message.role === 'assistant' && (
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">
-                          <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-                        </div>
-                      )}
-                      <div className="relative max-w-[85%]">
-                        <div
-                          className={`rounded-lg p-3 shadow-sm ${
-                            message.role === 'user'
-                              ? 'bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white'
-                              : 'border bg-card text-card-foreground dark:border-gray-700 dark:bg-gray-800'
-                          }`}
-                        >
-                          {message.role === 'assistant' ? (
-                            <div>
-                              <div
-                                data-color-mode={theme === 'dark' ? 'dark' : 'light'}
-                                className="prose prose-sm dark:prose-invert max-w-none"
-                              >
-                                <MDEditor.Markdown
-                                  source={message.content}
-                                  style={{
-                                    backgroundColor: 'transparent',
-                                    color: 'inherit',
-                                  }}
-                                />
-                              </div>
-                              {message.sources && message.sources.length > 0 && (
-                                <div className="mt-3 border-t border-border pt-2 dark:border-gray-600">
-                                  <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                    <ExternalLink className="h-3 w-3" />
-                                    Sources:
-                                  </div>
-                                  <div className="space-y-1">
-                                    {message.sources.map((source, index) => (
-                                      <a
-                                        key={index}
-                                        href={source}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block text-xs text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
-                                      >
-                                        {index + 1}. {source}
-                                      </a>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div>
-                              <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                  {messages.map((message, index) => {
+                    // Check if this is the last user message
+                    const isLastUserMessage =
+                      message.role === 'user' &&
+                      messages.slice(index + 1).every((msg) => msg.role === 'assistant');
 
-                              {/* Display Attachments for User Messages */}
-                              {message.attachments && message.attachments.length > 0 && (
-                                <div className="mt-3 border-t border-primary-foreground/20 pt-2">
-                                  <div className="mb-2 flex items-center gap-1 text-xs font-medium opacity-80">
-                                    <Paperclip className="h-3 w-3" />
-                                    Attachments:
-                                  </div>
-                                  <div className="space-y-2">
-                                    {message.attachments.map((attachment) => (
-                                      <div
-                                        key={attachment.id}
-                                        className="flex items-center gap-2 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-xs"
-                                      >
-                                        {getFileIcon(attachment.type)}
-                                        <span className="flex-1 truncate">{attachment.name}</span>
-                                        <span className="opacity-70">
-                                          {formatFileSize(attachment.size)}
-                                        </span>
-                                        {attachment.url && attachment.type.startsWith('image/') && (
-                                          // Just disabling the lint to prevent Image tag warnings
-                                          // eslint-disable-next-line
-                                          <img
-                                            src={attachment.url}
-                                            alt={attachment.name}
-                                            className="h-8 w-8 cursor-pointer rounded object-cover"
-                                            onError={(e) => {
-                                              // Hide image if it fails to load
-                                              e.currentTarget.style.display = 'none';
-                                            }}
-                                            onClick={() => {
-                                              // Open image in new tab for larger view
-                                              window.open(attachment.url, '_blank');
-                                            }}
-                                          />
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <div className="mt-1 text-xs opacity-70">
-                            {message.timestamp.toLocaleTimeString()}
+                    return (
+                      <div
+                        key={message.id}
+                        className={`group flex gap-3 ${
+                          message.role === 'user' ? 'justify-end' : 'justify-start'
+                        }`}
+                      >
+                        {message.role === 'assistant' && (
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">
+                            <Bot className="h-4 w-4 text-violet-600 dark:text-violet-400" />
                           </div>
-                        </div>
-
-                        {/* Message Action Buttons - Visible on Hover */}
-                        <div className="absolute -bottom-2 right-2 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(message.content)}
-                            className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                            title="Copy message"
+                        )}
+                        <div className="relative max-w-[85%]">
+                          <div
+                            className={`rounded-lg p-3 shadow-sm ${
+                              message.role === 'user'
+                                ? 'bg-primary text-primary-foreground dark:bg-blue-600 dark:text-white'
+                                : 'border bg-card text-card-foreground dark:border-gray-700 dark:bg-gray-800'
+                            }`}
                           >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          {message.role === 'assistant' && (
+                            {message.role === 'assistant' ? (
+                              <div>
+                                <div
+                                  data-color-mode={theme === 'dark' ? 'dark' : 'light'}
+                                  className="prose prose-sm dark:prose-invert max-w-none"
+                                >
+                                  <MDEditor.Markdown
+                                    source={message.content}
+                                    style={{
+                                      backgroundColor: 'transparent',
+                                      color: 'inherit',
+                                    }}
+                                  />
+                                </div>
+                                {message.sources && message.sources.length > 0 && (
+                                  <div className="mt-3 border-t border-border pt-2 dark:border-gray-600">
+                                    <div className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                      <ExternalLink className="h-3 w-3" />
+                                      Sources:
+                                    </div>
+                                    <div className="space-y-1">
+                                      {message.sources.map((source, index) => (
+                                        <a
+                                          key={index}
+                                          href={source}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="block text-xs text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
+                                        >
+                                          {index + 1}. {source}
+                                        </a>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Follow-up Questions */}
+                                {message.followUpQuestions &&
+                                  message.followUpQuestions.length > 0 && (
+                                    <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                      <div className="mb-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                        <Lightbulb className="h-3 w-3" />
+                                        Follow-up Questions:
+                                      </div>
+                                      <div className="flex flex-wrap gap-2">
+                                        {message.followUpQuestions.map((question, index) => (
+                                          <Button
+                                            key={index}
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => handleFollowUpQuestionClick(question)}
+                                            disabled={isLoading}
+                                            className="h-auto max-w-full cursor-pointer justify-start whitespace-normal rounded-lg border-border bg-muted/50 px-3 py-2 text-left text-xs hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 dark:border-gray-600 dark:bg-gray-700/50 dark:hover:border-violet-700 dark:hover:bg-violet-900/20 dark:hover:text-violet-300"
+                                            title={`Click to ask: ${question}`}
+                                          >
+                                            <span className="line-clamp-2">{question}</span>
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
+                            ) : (
+                              <div>
+                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+
+                                {/* Display Attachments for User Messages */}
+                                {message.attachments && message.attachments.length > 0 && (
+                                  <div className="mt-3 border-t border-primary-foreground/20 pt-2">
+                                    <div className="mb-2 flex items-center gap-1 text-xs font-medium opacity-80">
+                                      <Paperclip className="h-3 w-3" />
+                                      Attachments:
+                                    </div>
+                                    <div className="space-y-2">
+                                      {message.attachments.map((attachment) => (
+                                        <div
+                                          key={attachment.id}
+                                          className="flex items-center gap-2 rounded border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 text-xs"
+                                        >
+                                          {getFileIcon(attachment.type)}
+                                          <span className="flex-1 truncate">{attachment.name}</span>
+                                          <span className="opacity-70">
+                                            {formatFileSize(attachment.size)}
+                                          </span>
+                                          {attachment.url &&
+                                            attachment.type.startsWith('image/') && (
+                                              // Just disabling the lint to prevent Image tag warnings
+                                              // eslint-disable-next-line
+                                              <img
+                                                src={attachment.url}
+                                                alt={attachment.name}
+                                                className="h-8 w-8 cursor-pointer rounded object-cover"
+                                                onError={(e) => {
+                                                  // Hide image if it fails to load
+                                                  e.currentTarget.style.display = 'none';
+                                                }}
+                                                onClick={() => {
+                                                  // Open image in new tab for larger view
+                                                  window.open(attachment.url, '_blank');
+                                                }}
+                                              />
+                                            )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div className="mt-1 text-xs opacity-70">
+                              {message.timestamp.toLocaleTimeString()}
+                            </div>
+                          </div>
+
+                          {/* Message Action Buttons - Visible on Hover */}
+                          <div className="absolute -bottom-2 right-2 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleRegenerate(message.id)}
-                              disabled={isLoading}
+                              onClick={() => copyToClipboard(message.content)}
                               className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                              title="Regenerate response"
+                              title="Copy message"
                             >
-                              <Sparkles className="h-3 w-3" />
+                              <Copy className="h-3 w-3" />
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleReadAloud(message.content, message.id)}
-                            className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
-                            title={currentSpeakingId === message.id ? 'Stop reading' : 'Read aloud'}
-                          >
-                            {currentSpeakingId === message.id ? (
-                              <VolumeX className="h-3 w-3" />
-                            ) : (
-                              <Volume2 className="h-3 w-3" />
+                            {message.role === 'assistant' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRegenerate(message.id)}
+                                disabled={isLoading}
+                                className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                                title="Regenerate response"
+                              >
+                                <Sparkles className="h-3 w-3" />
+                              </Button>
                             )}
-                          </Button>
+                            {message.role === 'user' && isLastUserMessage && !isEditing && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => startEditingMessage(message.id, message.content)}
+                                disabled={isLoading}
+                                className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                                title="Edit message"
+                              >
+                                <svg
+                                  className="h-3 w-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleReadAloud(message.content, message.id)}
+                              className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                              title={
+                                currentSpeakingId === message.id ? 'Stop reading' : 'Read aloud'
+                              }
+                            >
+                              {currentSpeakingId === message.id ? (
+                                <VolumeX className="h-3 w-3" />
+                              ) : (
+                                <Volume2 className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
+                        {message.role === 'user' && (
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary ring-2 ring-primary/20 dark:bg-blue-600 dark:ring-blue-500/20">
+                            <span className="text-xs font-bold text-primary-foreground dark:text-white">
+                              {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      {message.role === 'user' && (
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary ring-2 ring-primary/20 dark:bg-blue-600 dark:ring-blue-500/20">
-                          <span className="text-xs font-bold text-primary-foreground dark:text-white">
-                            {user?.firstName?.charAt(0)?.toUpperCase() || 'U'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                   {isLoading && (
                     <div className="flex justify-start gap-3">
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-violet-100 ring-2 ring-violet-200 dark:bg-violet-900/50 dark:ring-violet-800">
@@ -2247,12 +2649,46 @@ const GlobalAIAssistant: React.FC = () => {
 
         {/* Input Form */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={isEditing ? saveEditedMessage : handleSubmit}
           className="border-t border-border bg-muted/20 p-4 dark:border-gray-700 dark:bg-gray-800/20"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
+          {/* Edit Mode Indicator */}
+          {isEditing && (
+            <div className="mb-3 rounded-md border border-blue-200 bg-blue-50 p-3 dark:border-blue-800 dark:bg-blue-950/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-4 w-4 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
+                  </svg>
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                    Editing message
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={cancelEditing}
+                  className="h-6 px-2 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
           {/* Error Display */}
           {inputError && (
             <div className="mb-3 rounded-md border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/20">
@@ -2313,7 +2749,11 @@ const GlobalAIAssistant: React.FC = () => {
                   setQuestion(e.target.value);
                   setInputError(''); // Clear error on input change
                 }}
-                placeholder="Ask me about this page, Dionysus features, or development topics..."
+                placeholder={
+                  isEditing
+                    ? 'Edit your message...'
+                    : 'Ask me about this page, Dionysus features, or development topics...'
+                }
                 className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pr-28 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
                   inputError ? 'border-red-500 dark:border-red-400' : ''
                 }`}
@@ -2321,7 +2761,14 @@ const GlobalAIAssistant: React.FC = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    handleSubmit(e);
+                    if (isEditing) {
+                      saveEditedMessage(e);
+                    } else {
+                      handleSubmit(e);
+                    }
+                  } else if (e.key === 'Escape' && isEditing) {
+                    e.preventDefault();
+                    cancelEditing();
                   }
                 }}
               />
@@ -2375,6 +2822,22 @@ const GlobalAIAssistant: React.FC = () => {
                   >
                     <Square className="h-4 w-4 fill-current" />
                   </Button>
+                ) : isEditing ? (
+                  <Button
+                    type="submit"
+                    disabled={!question.trim() || isLoading || question.length < MIN_MESSAGE_LENGTH}
+                    className="h-8 bg-green-500 px-3 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
+                    title="Save edited message"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </Button>
                 ) : (
                   <Button
                     type="submit"
@@ -2408,11 +2871,20 @@ const GlobalAIAssistant: React.FC = () => {
                   <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
                     Enter
                   </kbd>{' '}
-                  to send,{' '}
+                  to {isEditing ? 'save' : 'send'},{' '}
                   <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
                     Shift + Enter
                   </kbd>{' '}
                   for new line
+                  {isEditing && (
+                    <>
+                      {', '}
+                      <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-xs dark:border-gray-600 dark:bg-gray-700">
+                        Escape
+                      </kbd>{' '}
+                      to cancel
+                    </>
+                  )}
                 </span>
                 <span className="text-xs">
                   {question.length}/{MAX_MESSAGE_LENGTH}

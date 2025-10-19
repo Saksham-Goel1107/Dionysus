@@ -146,6 +146,8 @@ type AIModelId =
   | 'qwen-2.5-32b'
   | 'mistral-large-latest'
   | 'deepseek/deepseek-r1-0528:free'
+  | 'openai/gpt-oss-20b'
+  | 'microsoft/mai-ds-r1:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -178,6 +180,18 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
     modelName: 'openai/gpt-oss-120b',
     temperature: 0.7,
     apiKeyEnv: 'GROQ_API_KEY',
+  },
+  'openai/gpt-oss-20b': {
+    provider: 'openrouter',
+    modelName: 'openai/gpt-oss-20b:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'microsoft/mai-ds-r1:free': {
+    provider: 'openrouter',
+    modelName: 'microsoft/mai-ds-r1:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
   },
   'qwen-2.5-72b': {
     provider: 'huggingface',
@@ -651,6 +665,7 @@ export async function POST(request: NextRequest) {
     if (
       selectedModel === 'perplexity-sonar-pro' ||
       selectedModel === 'deepseek/deepseek-r1-0528:free' ||
+      selectedModel === 'microsoft/mai-ds-r1:free' ||
       selectedModel === 'openai/gpt-oss-120b'
     ) {
       const hasProPlan =
@@ -820,6 +835,14 @@ STRICT GUIDELINES:
 - For images, describe what you see and how it relates to the user's question
 - For documents, summarize key points and relate them to the query
 
+FOLLOW-UP QUESTIONS:
+- After providing your main response, ALWAYS generate 2-4 relevant follow-up questions that the user might want to ask next
+- These questions should be natural continuations of the conversation and help explore the topic deeper
+- Format them as a JSON array at the very end of your response, like: ["Question 1?", "Question 2?", "Question 3?"]
+- Make sure the questions are specific to the Dionysus platform, development topics, or the current context
+- Only include questions that would genuinely be helpful for the user to explore further
+- Do not include the follow-up questions in your main response text - keep them separate as JSON
+
 IMPORTANT CONVERSATION CONTEXT:
 - You are continuing an ongoing conversation with the user
 - Review the previous conversation history to maintain context and avoid repetitive greetings
@@ -842,7 +865,9 @@ ${userContext}
 
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
-Provide a helpful response about the Dionysus platform or development topics based on the current page context${attachmentContext ? ', attached files,' : ''}${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.`;
+Provide a helpful response about the Dionysus platform or development topics based on the current page context${attachmentContext ? ', attached files,' : ''}${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.
+
+IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in this exact format: ["Question 1?", "Question 2?", "Question 3?"]`;
 
     // Prepare messages with proper multimodal support
     const systemMessage = new SystemMessage(systemPrompt);
@@ -911,6 +936,29 @@ Provide a helpful response about the Dionysus platform or development topics bas
               controller.enqueue(encoder.encode(`data: ${data}\n\n`));
             }
 
+            // Parse follow-up questions from the response
+            let followUpQuestions: string[] = [];
+            let cleanResponse = fullResponse;
+
+            try {
+              // Look for JSON array at the end of the response
+              const responseLines = fullResponse.trim().split('\n');
+              const lastLine = responseLines[responseLines.length - 1];
+
+              // Check if the last line is a JSON array
+              if (lastLine && lastLine.startsWith('[') && lastLine.endsWith(']')) {
+                const parsed = JSON.parse(lastLine);
+                if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                  followUpQuestions = parsed;
+                  // Remove the JSON array from the main response
+                  cleanResponse = responseLines.slice(0, -1).join('\n').trim();
+                }
+              }
+            } catch (parseError) {
+              // If parsing fails, keep the original response
+              console.warn('Failed to parse follow-up questions:', parseError);
+            }
+
             // Send sources if we have them
             if (sources.length > 0) {
               const sourcesData = JSON.stringify({
@@ -922,11 +970,23 @@ Provide a helpful response about the Dionysus platform or development topics bas
               controller.enqueue(encoder.encode(`data: ${sourcesData}\n\n`));
             }
 
+            // Send follow-up questions if we have them
+            if (followUpQuestions.length > 0) {
+              const followUpData = JSON.stringify({
+                type: 'followUpQuestions',
+                followUpQuestions: followUpQuestions,
+                timestamp: new Date().toISOString(),
+              });
+
+              controller.enqueue(encoder.encode(`data: ${followUpData}\n\n`));
+            }
+
             // Send completion signal
             const completeData = JSON.stringify({
               type: 'complete',
-              fullResponse: sanitizeInput(fullResponse),
+              fullResponse: sanitizeInput(cleanResponse),
               sources: sources,
+              followUpQuestions: followUpQuestions,
               timestamp: new Date().toISOString(),
             });
 
