@@ -141,13 +141,16 @@ type AIModelId =
   | 'gemini-2.5-flash'
   | 'groq-llama-3.3-70b'
   | 'perplexity-sonar-pro'
-  | 'openai/gpt-oss-120b';
-
+  | 'openai/gpt-oss-120b'
+  | 'qwen-2.5-72b'
+  | 'qwen-2.5-32b'
+  | 'mistral-large-latest'
+  | 'deepseek/deepseek-r1-0528:free'
+  | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
   modelName: string;
   temperature: number;
-  maxTokens: number;
   apiKeyEnv: string;
 }
 
@@ -156,29 +159,55 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
     provider: 'google',
     modelName: 'gemini-2.5-flash',
     temperature: 0.7,
-    maxTokens: 1500,
     apiKeyEnv: 'GEMINI_API_KEY',
   },
   'groq-llama-3.3-70b': {
     provider: 'groq',
     modelName: 'llama-3.3-70b-versatile',
     temperature: 0.7,
-    maxTokens: 8000,
     apiKeyEnv: 'GROQ_API_KEY',
   },
   'perplexity-sonar-pro': {
     provider: 'openai-compatible',
     modelName: 'sonar-pro',
     temperature: 0.7,
-    maxTokens: 4000,
     apiKeyEnv: 'PERPLEXITY_API_KEY',
   },
   'openai/gpt-oss-120b': {
     provider: 'groq',
     modelName: 'openai/gpt-oss-120b',
     temperature: 0.7,
-    maxTokens: 8000,
     apiKeyEnv: 'GROQ_API_KEY',
+  },
+  'qwen-2.5-72b': {
+    provider: 'huggingface',
+    modelName: 'Qwen/Qwen2.5-72B-Instruct',
+    temperature: 0.7,
+    apiKeyEnv: 'HUGGINGFACE_API_KEY',
+  },
+  'qwen-2.5-32b': {
+    provider: 'huggingface',
+    modelName: 'Qwen/Qwen2.5-32B-Instruct',
+    temperature: 0.7,
+    apiKeyEnv: 'HUGGINGFACE_API_KEY',
+  },
+  'mistral-large-latest': {
+    provider: 'mistral',
+    modelName: 'mistral-large-latest',
+    temperature: 0.7,
+    apiKeyEnv: 'MISTRAL_API_KEY',
+  },
+  'deepseek/deepseek-r1-0528:free': {
+    provider: 'openrouter',
+    modelName: 'deepseek/deepseek-r1-0528:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'qwen/qwen3-coder:free': {
+    provider: 'openrouter',
+    modelName: 'qwen/qwen3-coder:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
   },
 };
 
@@ -217,7 +246,6 @@ const initializeAIModel = (
         temperature: adjustedTemperature,
         topP: 0.8,
         topK: 40,
-        maxOutputTokens: config.maxTokens,
       });
 
     case 'groq':
@@ -225,7 +253,6 @@ const initializeAIModel = (
         apiKey: apiKey,
         modelName: config.modelName,
         temperature: adjustedTemperature,
-        maxTokens: config.maxTokens,
         configuration: {
           baseURL: 'https://api.groq.com/openai/v1',
         },
@@ -240,9 +267,38 @@ const initializeAIModel = (
         apiKey: apiKey,
         modelName: config.modelName,
         temperature: adjustedTemperature,
-        maxTokens: config.maxTokens,
         configuration: {
           baseURL: baseURLs[modelId] || 'https://api.openai.com/v1',
+        },
+      });
+
+    case 'qwen':
+      return new ChatOpenAI({
+        apiKey: apiKey,
+        modelName: config.modelName,
+        temperature: adjustedTemperature,
+        configuration: {
+          baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        },
+      });
+
+    case 'mistral':
+      return new ChatOpenAI({
+        apiKey: apiKey,
+        modelName: config.modelName,
+        temperature: adjustedTemperature,
+        configuration: {
+          baseURL: 'https://api.mistral.ai/v1',
+        },
+      });
+
+    case 'openrouter':
+      return new ChatOpenAI({
+        apiKey: apiKey,
+        modelName: config.modelName,
+        temperature: adjustedTemperature,
+        configuration: {
+          baseURL: 'https://openrouter.ai/api/v1',
         },
       });
 
@@ -254,7 +310,6 @@ const initializeAIModel = (
         temperature: isRegeneration ? 0.9 : 0.7,
         topP: 0.8,
         topK: 40,
-        maxOutputTokens: 1500,
       });
   }
 };
@@ -593,8 +648,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user is trying to use Perplexity (Pro-only feature)
-    if (selectedModel === 'perplexity-sonar-pro' || selectedModel === 'openai/gpt-oss-120b') {
+    if (
+      selectedModel === 'perplexity-sonar-pro' ||
+      selectedModel === 'deepseek/deepseek-r1-0528:free' ||
+      selectedModel === 'openai/gpt-oss-120b'
+    ) {
       const hasProPlan =
         has({ plan: 'dionysus_pro_pack' }) || has({ plan: 'dionysus_advance_pack' });
 

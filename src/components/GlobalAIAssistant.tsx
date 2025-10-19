@@ -43,6 +43,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import sanitizeHtml from 'sanitize-html';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Textarea } from './ui/textarea';
 
@@ -87,6 +88,13 @@ const GlobalAIAssistant: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (!showModelSelector) {
+      setModelSearchQuery('');
+    }
+  }, [showModelSelector]);
 
   useEffect(() => {
     (async () => {
@@ -118,7 +126,7 @@ const GlobalAIAssistant: React.FC = () => {
       provider: 'Google',
       description: 'Fast and efficient for most tasks',
       icon: '✨',
-      speed: 'Fast',
+      speed: 'Very Fast',
       quality: 'High',
     },
     {
@@ -127,7 +135,7 @@ const GlobalAIAssistant: React.FC = () => {
       provider: 'Groq',
       description: 'Powerful open-source model with fast inference',
       icon: '🦙',
-      speed: 'Very Fast',
+      speed: 'Decent Fast',
       quality: 'Very High',
     },
     {
@@ -137,6 +145,51 @@ const GlobalAIAssistant: React.FC = () => {
       description: 'Heavy open-source model with excellent capabilities',
       icon: '🤖',
       speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
+      id: 'qwen-2.5-72b',
+      name: 'Qwen 2.5 72B',
+      provider: 'Hugging Face',
+      description: 'Powerful multilingual model from Alibaba Cloud via Hugging Face',
+      icon: '🌟',
+      speed: 'Medium',
+      quality: 'Very High',
+    },
+    {
+      id: 'qwen-2.5-32b',
+      name: 'Qwen 2.5 32B',
+      provider: 'Hugging Face',
+      description: 'Efficient and capable multilingual model via Hugging Face',
+      icon: '⭐',
+      speed: 'Fast',
+      quality: 'High',
+    },
+    {
+      id: 'mistral-large-latest',
+      name: 'Mistral Large',
+      provider: 'Mistral',
+      description: 'Fast and efficient open-source model from Mistral.ai',
+      icon: '💨',
+      speed: 'Very Fast',
+      quality: 'High',
+    },
+    {
+      id: 'qwen/qwen3-coder:free',
+      name: 'Qwen 3 Coder',
+      provider: 'OpenRouter',
+      description: 'Specialized coding model with excellent code generation',
+      icon: '👨‍💻',
+      speed: 'Medium',
+      quality: 'Very High',
+    },
+    {
+      id: 'deepseek/deepseek-r1-0528:free',
+      name: 'DeepSeek R1',
+      provider: 'OpenRouter',
+      description: 'Advanced reasoning model with exceptional capabilities',
+      icon: '🧠',
+      speed: 'Medium',
       quality: 'Excellent',
     },
     {
@@ -200,9 +253,14 @@ const GlobalAIAssistant: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showModelSelector]);
 
-  // Auto-switch from Perplexity to Gemini if user loses pro access
+  // Auto-switch from Perplexity or DeepSeek to Gemini if user loses pro access
   useEffect(() => {
-    if (!hasProPlan && selectedModel === 'perplexity-sonar-pro') {
+    if (
+      !hasProPlan &&
+      (selectedModel === 'perplexity-sonar-pro' ||
+        selectedModel === 'deepseek/deepseek-r1-0528:free' ||
+        selectedModel === 'openai/gpt-oss-120b')
+    ) {
       setSelectedModel('gemini-2.5-flash');
     }
   }, [hasProPlan, selectedModel]);
@@ -1803,81 +1861,103 @@ const GlobalAIAssistant: React.FC = () => {
                   <ChevronDown className="h-3 w-3" />
                 </Button>
                 {showModelSelector && (
-                  <div className="absolute left-0 top-full z-50 mt-1 w-72 rounded-lg border border-border bg-background shadow-lg dark:border-gray-700 dark:bg-gray-900">
-                    <div className="p-2">
-                      <div className="mb-2 px-2 text-xs font-semibold text-muted-foreground">
+                  <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-border bg-background shadow-lg dark:border-gray-700 dark:bg-gray-900">
+                    <div className="p-3">
+                      <div className="mb-3 px-1 text-xs font-semibold text-muted-foreground">
                         Select AI Model
                       </div>
-                      {AI_MODELS.map((model) => {
-                        const isProOnly =
-                          model.id === 'perplexity-sonar-pro' || model.id === 'openai/gpt-oss-120b';
-                        const isDisabled = isProOnly && !hasProPlan;
+                      <Input
+                        placeholder="Search models..."
+                        value={modelSearchQuery}
+                        onChange={(e) => setModelSearchQuery(e.target.value)}
+                        className="mb-3 h-8 text-sm"
+                      />
+                      <ScrollArea className="h-80">
+                        <div className="space-y-1">
+                          {AI_MODELS.filter(
+                            (model) =>
+                              model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
+                              model.description
+                                .toLowerCase()
+                                .includes(modelSearchQuery.toLowerCase()) ||
+                              model.provider.toLowerCase().includes(modelSearchQuery.toLowerCase()),
+                          ).map((model) => {
+                            const isProOnly =
+                              model.id === 'perplexity-sonar-pro' ||
+                              model.id === 'openai/gpt-oss-120b' ||
+                              model.id === 'deepseek/deepseek-r1-0528:free';
+                            const isDisabled = isProOnly && !hasProPlan;
 
-                        return (
-                          <button
-                            key={model.id}
-                            onClick={() => {
-                              if (!isDisabled) {
-                                setSelectedModel(model.id);
-                                setShowModelSelector(false);
-                              }
-                            }}
-                            disabled={isDisabled}
-                            className={`w-full rounded-md p-2 text-left transition-colors ${
-                              isDisabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted'
-                            } ${
-                              selectedModel === model.id ? 'bg-violet-50 dark:bg-violet-900/20' : ''
-                            }`}
-                          >
-                            <div className="flex items-start gap-2">
-                              <span className="text-lg">{model.icon}</span>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span
-                                    className={`text-sm font-medium ${
-                                      isDisabled ? 'text-muted-foreground' : 'text-foreground'
-                                    }`}
-                                  >
-                                    {model.name}
-                                  </span>
-                                  {isProOnly && (
-                                    <Badge
-                                      variant="outline"
-                                      className="border-orange-200 text-xs text-orange-700 dark:border-orange-800 dark:text-orange-300"
-                                    >
-                                      Pro
-                                    </Badge>
-                                  )}
-                                  {selectedModel === model.id && !isDisabled && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="bg-violet-100 text-xs text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
-                                    >
-                                      Active
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {model.description}
-                                </div>
-                                <div className="mt-1 flex gap-2 text-xs">
-                                  <span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                    {model.speed}
-                                  </span>
-                                  <span className="rounded bg-green-50 px-1.5 py-0.5 text-green-600 dark:bg-green-900/30 dark:text-green-400">
-                                    {model.quality}
-                                  </span>
-                                </div>
-                                {isDisabled && (
-                                  <div className="mt-1 text-xs text-orange-600 dark:text-orange-400">
-                                    Upgrade to Premium plan to unlock this model
+                            return (
+                              <button
+                                key={model.id}
+                                onClick={() => {
+                                  if (!isDisabled) {
+                                    setSelectedModel(model.id);
+                                    setShowModelSelector(false);
+                                    setModelSearchQuery('');
+                                  }
+                                }}
+                                disabled={isDisabled}
+                                className={`w-full rounded-md p-2 text-left transition-colors ${
+                                  isDisabled ? 'cursor-not-allowed opacity-50' : 'hover:bg-muted'
+                                } ${
+                                  selectedModel === model.id
+                                    ? 'bg-violet-50 dark:bg-violet-900/20'
+                                    : ''
+                                }`}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <span className="text-lg">{model.icon}</span>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`text-sm font-medium ${
+                                          isDisabled ? 'text-muted-foreground' : 'text-foreground'
+                                        }`}
+                                      >
+                                        {model.name}
+                                      </span>
+                                      {isProOnly && (
+                                        <Badge
+                                          variant="outline"
+                                          className="border-orange-200 text-xs text-orange-700 dark:border-orange-800 dark:text-orange-300"
+                                        >
+                                          Pro
+                                        </Badge>
+                                      )}
+                                      {selectedModel === model.id && !isDisabled && (
+                                        <Badge
+                                          variant="secondary"
+                                          className="bg-violet-100 text-xs text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
+                                        >
+                                          Active
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {model.description}
+                                    </div>
+                                    <div className="mt-1 flex gap-2 text-xs">
+                                      <span className="rounded bg-blue-50 px-1.5 py-0.5 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                        {model.speed}
+                                      </span>
+                                      <span className="rounded bg-green-50 px-1.5 py-0.5 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                        {model.quality}
+                                      </span>
+                                    </div>
+                                    {isDisabled && (
+                                      <div className="mt-1 text-xs text-orange-600 dark:text-orange-400">
+                                        Upgrade to Premium plan to unlock this model
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </ScrollArea>
                     </div>
                   </div>
                 )}
