@@ -10,6 +10,201 @@ import sanitizeHtml from 'sanitize-html';
 // Initialize Firecrawl
 const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
 
+// Hugging Face Image Generation
+async function generateImage(prompt: string): Promise<{ imageUrl: string; error?: string }> {
+  try {
+    const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
+    if (!HF_API_KEY) {
+      return { imageUrl: '', error: 'Hugging Face API key not configured' };
+    }
+
+    // Enhance the prompt for better image generation
+    const enhancedPrompt = `high quality, detailed, professional: ${prompt}`;
+
+    // Using Stable Diffusion model from Hugging Face
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: enhancedPrompt,
+          options: {
+            wait_for_model: true,
+          },
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Hugging Face API error:', errorText);
+      return { imageUrl: '', error: `Image generation failed: ${response.statusText}` };
+    }
+
+    // Convert response to base64
+    const imageBuffer = await response.arrayBuffer();
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    const imageUrl = `data:image/png;base64,${base64Image}`;
+
+    return { imageUrl };
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return { imageUrl: '', error: 'Image generation failed' };
+  }
+}
+
+// Multi-stage thinking with chain of thought
+async function performExtendedThinking(
+  question: string,
+  context: string,
+): Promise<{
+  thinkingSteps: Array<{
+    step: number;
+    thought: string;
+    duration: number;
+    model: string;
+    timestamp: string;
+  }>;
+  finalAnswer: string;
+}> {
+  const thinkingSteps: Array<{
+    step: number;
+    thought: string;
+    duration: number;
+    model: string;
+    timestamp: string;
+  }> = [];
+
+  // Stage 1: Initial Analysis with Gemini Flash (fast)
+  const stage1Start = Date.now();
+  const stage1Model = new ChatGoogleGenerativeAI({
+    apiKey: process.env.GEMINI_API_KEY!,
+    model: 'gemini-2.0-flash-exp',
+    temperature: 0.7,
+  });
+
+  const stage1Prompt = `Analyze this question and provide initial thoughts. Break it down into key components and identify what needs to be addressed:
+
+Question: ${question}
+Context: ${context}
+
+Provide a brief analysis (2-3 sentences) of the key aspects to consider.`;
+
+  const stage1Response = await stage1Model.invoke([
+    new SystemMessage('You are an analytical assistant. Provide concise, structured analysis.'),
+    new HumanMessage(stage1Prompt),
+  ]);
+
+  const stage1Duration = (Date.now() - stage1Start) / 1000;
+  thinkingSteps.push({
+    step: 1,
+    thought: stage1Response.content.toString(),
+    duration: stage1Duration,
+    model: 'Gemini 2.0 Flash (Analysis)',
+    timestamp: new Date().toISOString(),
+  });
+
+  // Stage 2: Deep Reasoning with Qwen 2.5 72B (powerful)
+  const stage2Start = Date.now();
+  const stage2Model = new ChatOpenAI({
+    apiKey: process.env.HUGGINGFACE_API_KEY!,
+    modelName: 'Qwen/Qwen2.5-72B-Instruct',
+    temperature: 0.8,
+    configuration: {
+      baseURL: 'https://api-inference.huggingface.co/models',
+    },
+  });
+
+  const stage2Prompt = `Based on this analysis, think deeply about the problem:
+
+Question: ${question}
+Initial Analysis: ${stage1Response.content}
+Context: ${context}
+
+Provide detailed reasoning, consider edge cases, and think critically about the best approach. Be thorough but concise (3-4 sentences).`;
+
+  let stage2Response;
+  try {
+    stage2Response = await stage2Model.invoke([
+      new SystemMessage('You are a deep reasoning assistant. Think critically and thoroughly.'),
+      new HumanMessage(stage2Prompt),
+    ]);
+  } catch {
+    // Fallback to Gemini if Qwen fails
+    console.warn('Stage 2 model failed, falling back to Gemini');
+    stage2Response = await stage1Model.invoke([
+      new SystemMessage('You are a deep reasoning assistant. Think critically and thoroughly.'),
+      new HumanMessage(stage2Prompt),
+    ]);
+  }
+
+  const stage2Duration = (Date.now() - stage2Start) / 1000;
+  thinkingSteps.push({
+    step: 2,
+    thought: stage2Response.content.toString(),
+    duration: stage2Duration,
+    model: 'Qwen 2.5 72B (Deep Reasoning)',
+    timestamp: new Date().toISOString(),
+  });
+
+  // Stage 3: Synthesis and Final Answer with Mistral (balanced)
+  const stage3Start = Date.now();
+  const stage3Model = new ChatOpenAI({
+    apiKey: process.env.MISTRAL_API_KEY!,
+    modelName: 'mistral-large-latest',
+    temperature: 0.7,
+    configuration: {
+      baseURL: 'https://api.mistral.ai/v1',
+    },
+  });
+
+  const stage3Prompt = `Synthesize the analysis and reasoning into a comprehensive final answer:
+
+Question: ${question}
+Initial Analysis: ${stage1Response.content}
+Deep Reasoning: ${stage2Response.content}
+Context: ${context}
+
+Provide a complete, well-structured answer that addresses all aspects of the question. Include examples, code snippets if relevant, and best practices.`;
+
+  let stage3Response;
+  try {
+    stage3Response = await stage3Model.invoke([
+      new SystemMessage(
+        'You are a synthesis assistant. Combine insights into comprehensive answers.',
+      ),
+      new HumanMessage(stage3Prompt),
+    ]);
+  } catch {
+    // Fallback to Gemini if Mistral fails
+    console.warn('Stage 3 model failed, falling back to Gemini');
+    stage3Response = await stage1Model.invoke([
+      new SystemMessage(
+        'You are a synthesis assistant. Combine insights into comprehensive answers.',
+      ),
+      new HumanMessage(stage3Prompt),
+    ]);
+  }
+
+  const stage3Duration = (Date.now() - stage3Start) / 1000;
+  thinkingSteps.push({
+    step: 3,
+    thought: 'Synthesizing all insights into final comprehensive answer...',
+    duration: stage3Duration,
+    model: 'Mistral Large (Synthesis)',
+    timestamp: new Date().toISOString(),
+  });
+
+  return {
+    thinkingSteps,
+    finalAnswer: stage3Response.content.toString(),
+  };
+}
+
 // Initialize LangChain tracer
 let tracer: LangChainTracer | null = null;
 if (!tracer && process.env.LANGCHAIN_API_KEY) {
@@ -149,6 +344,8 @@ type AIModelId =
   | 'openai/gpt-oss-20b'
   | 'microsoft/mai-ds-r1:free'
   | 'moonshotai/kimi-k2:free'
+  | 'moonshotai/kimi-dev-72b:free'
+  | 'alibaba/tongyi-deepresearch-30b-a3b:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -221,6 +418,18 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
   'deepseek/deepseek-r1-0528:free': {
     provider: 'openrouter',
     modelName: 'deepseek/deepseek-r1-0528:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'moonshotai/kimi-dev-72b:free': {
+    provider: 'openrouter',
+    modelName: 'moonshotai/kimi-dev-72b:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'alibaba/tongyi-deepresearch-30b-a3b:free': {
+    provider: 'openrouter',
+    modelName: 'alibaba/tongyi-deepresearch-30b-a3b:free',
     temperature: 0.7,
     apiKeyEnv: 'OPENROUTER_API_KEY',
   },
@@ -658,6 +867,7 @@ export async function POST(request: NextRequest) {
       userInfo,
       model: selectedModel,
       isRegeneration,
+      features,
     } = await request.json();
     const { userId, has } = await auth();
 
@@ -813,9 +1023,52 @@ export async function POST(request: NextRequest) {
         '\n- Use this information to personalize responses (e.g., address the user by name when appropriate)';
     }
 
+    // Check if features are enabled
+    const hasImageGeneration = features?.includes('generate-image');
+    const hasExtendedThinking = features?.includes('extended-thinking');
+    const hasStudyLearn = features?.includes('study-learn');
+
+    // Build feature-specific instructions
+    let featureInstructions = '';
+    if (hasImageGeneration) {
+      featureInstructions += `\n\n🎨 IMAGE GENERATION MODE ACTIVATED:
+- The user has requested image generation along with their query
+- If their question involves creating, visualizing, or designing something visual, acknowledge this
+- Describe what kind of image would be generated based on their request
+- Note: An image will be automatically generated based on the conversation context`;
+    }
+
+    if (hasExtendedThinking) {
+      featureInstructions += `\n\n🧠 EXTENDED THINKING MODE ACTIVATED:
+- Take extra time to deeply analyze the question from multiple angles
+- Break down complex problems into smaller components
+- Consider edge cases, potential issues, and alternative approaches
+- Provide step-by-step reasoning for your conclusions
+- Show your thought process and reasoning chain
+- Be more thorough and comprehensive than usual
+- Think critically and challenge assumptions
+- Provide detailed explanations with supporting evidence`;
+    }
+
+    if (hasStudyLearn) {
+      featureInstructions += `\n\n📚 STUDY & LEARN MODE ACTIVATED:
+- Structure your response as an educational lesson
+- Start with fundamental concepts and build up to advanced topics
+- Include clear explanations with real-world examples
+- Provide code examples where applicable with detailed comments
+- Add practical exercises or challenges for the user to try
+- Suggest additional resources for deeper learning
+- Use analogies and metaphors to explain complex concepts
+- Create a learning roadmap if the topic is extensive
+- Include best practices and common pitfalls to avoid
+- End with key takeaways and summary points`;
+    }
+
     const systemPrompt = `You are an intelligent AI assistant for the Dionysus platform - an enterprise GitHub analytics and collaboration SaaS platform built with Next.js, TypeScript, tRPC, Prisma, and PostgreSQL. You provide AI-powered code analysis, meeting transcription, team collaboration, and comprehensive repository insights.
 
 ${isRegeneration ? `REGENERATION MODE: This is a regenerated response. The user was not satisfied with the previous answer. Provide a significantly improved, more comprehensive, and alternative response. Consider different approaches, additional details, examples, or perspectives that weren't covered in the previous response. Be more thorough and helpful than usual.` : ''}
+
+${featureInstructions}
 
 IMPORTANT CAPABILITIES:
 - You have access to real-time web search through Firecrawl
@@ -860,6 +1113,7 @@ IMPORTANT CONVERSATION CONTEXT:
 - Avoid saying users full name again and again instead try using just the first name more
 - If the user has been asking about specific topics, continue that thread naturally
 - Important: Do not again and again greet or acknowledge the user it's an ongoing conversation so be to the point
+- Dionysus is made by Saksham Goel his github profile is at https://github.com/saksham-goel1107 and the project github repo is at https://github.com/saksham-goel1107/dionysus and the website is at https://dionysus-gray.vercel.app and it's support page is at https://dionysus-gray.vercel.app/support
 
 CURRENT PAGE INFORMATION:
 ${sanitizedContext}
@@ -918,7 +1172,129 @@ IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in thi
     const messages = [systemMessage, userMessage];
 
     try {
-      // Create streaming response
+      // Handle extended thinking mode
+      if (hasExtendedThinking) {
+        // Create a streaming response for extended thinking
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+
+            try {
+              // Send thinking start signal
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'thinking', timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+
+              // Perform multi-stage thinking
+              const thinkingResult = await performExtendedThinking(
+                sanitizedQuestion,
+                sanitizedContext,
+              );
+
+              // Stream each thinking step to the client
+              for (const step of thinkingResult.thinkingSteps) {
+                const stepData = JSON.stringify({
+                  type: 'thinkingStep',
+                  ...step,
+                });
+                controller.enqueue(encoder.encode(`data: ${stepData}\n\n`));
+              }
+
+              // Send thinking complete signal
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'thinkingComplete', timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+
+              // Stream the final answer
+              const words = thinkingResult.finalAnswer.split(' ');
+              let currentText = '';
+
+              for (const word of words) {
+                currentText += (currentText ? ' ' : '') + word;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: 'chunk', content: word + ' ', timestamp: new Date().toISOString() })}\n\n`,
+                  ),
+                );
+                // Small delay to simulate streaming
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+
+              // Send sources if we have them
+              if (sources.length > 0) {
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ type: 'sources', sources, timestamp: new Date().toISOString() })}\n\n`,
+                  ),
+                );
+              }
+
+              // Handle image generation if requested
+              if (hasImageGeneration) {
+                try {
+                  const imagePrompt =
+                    sanitizedQuestion.length > 100
+                      ? sanitizedQuestion.substring(0, 100)
+                      : sanitizedQuestion;
+                  const imageResult = await generateImage(imagePrompt);
+
+                  if (imageResult.imageUrl && !imageResult.error) {
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify({ type: 'image', imageUrl: imageResult.imageUrl, timestamp: new Date().toISOString() })}\n\n`,
+                      ),
+                    );
+                  } else if (imageResult.error) {
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify({ type: 'imageError', error: imageResult.error, timestamp: new Date().toISOString() })}\n\n`,
+                      ),
+                    );
+                  }
+                } catch (imageError) {
+                  console.error('Image generation error:', imageError);
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ type: 'imageError', error: 'Image generation failed', timestamp: new Date().toISOString() })}\n\n`,
+                    ),
+                  );
+                }
+              }
+
+              // Send completion
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'complete', fullResponse: thinkingResult.finalAnswer, sources, timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            } catch (error) {
+              console.error('Extended thinking error:', error);
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'error', error: 'Extended thinking failed', timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(readableStream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive',
+          },
+        });
+      }
+
+      // Create streaming response (normal mode without extended thinking)
       const stream = await model.stream(messages, { callbacks: tracer ? [tracer] : undefined });
 
       // Create a readable stream
@@ -988,12 +1364,60 @@ IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in thi
               controller.enqueue(encoder.encode(`data: ${followUpData}\n\n`));
             }
 
+            // Handle image generation if requested
+            let generatedImageUrl: string | undefined;
+            if (hasImageGeneration) {
+              try {
+                // Extract a good image prompt from the conversation
+                // Use the user's question and the AI's response to create a descriptive prompt
+                const imagePrompt =
+                  sanitizedQuestion.length > 100
+                    ? sanitizedQuestion.substring(0, 100)
+                    : sanitizedQuestion;
+
+                const imageResult = await generateImage(imagePrompt);
+
+                if (imageResult.imageUrl && !imageResult.error) {
+                  generatedImageUrl = imageResult.imageUrl;
+
+                  // Send image generation success
+                  const imageData = JSON.stringify({
+                    type: 'image',
+                    imageUrl: generatedImageUrl,
+                    timestamp: new Date().toISOString(),
+                  });
+
+                  controller.enqueue(encoder.encode(`data: ${imageData}\n\n`));
+                } else if (imageResult.error) {
+                  // Send image generation error
+                  const imageErrorData = JSON.stringify({
+                    type: 'imageError',
+                    error: imageResult.error,
+                    timestamp: new Date().toISOString(),
+                  });
+
+                  controller.enqueue(encoder.encode(`data: ${imageErrorData}\n\n`));
+                }
+              } catch (imageError) {
+                console.error('Image generation error:', imageError);
+                // Don't fail the entire request if image generation fails
+                const imageErrorData = JSON.stringify({
+                  type: 'imageError',
+                  error: 'Image generation failed',
+                  timestamp: new Date().toISOString(),
+                });
+
+                controller.enqueue(encoder.encode(`data: ${imageErrorData}\n\n`));
+              }
+            }
+
             // Send completion signal
             const completeData = JSON.stringify({
               type: 'complete',
               fullResponse: sanitizeInput(cleanResponse),
               sources: sources,
               followUpQuestions: followUpQuestions,
+              imageUrl: generatedImageUrl,
               timestamp: new Date().toISOString(),
             });
 

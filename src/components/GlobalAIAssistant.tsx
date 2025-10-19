@@ -26,6 +26,7 @@ import {
   MicOff,
   Monitor,
   Paperclip,
+  Plus,
   Send,
   Shield,
   Smartphone,
@@ -47,6 +48,14 @@ import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Textarea } from './ui/textarea';
 
+interface ThinkingStep {
+  step: number;
+  thought: string;
+  duration: number;
+  model: string;
+  timestamp: Date;
+}
+
 interface Message {
   role: 'user' | 'assistant';
   content: string;
@@ -55,6 +64,10 @@ interface Message {
   sources?: string[];
   attachments?: FileAttachment[];
   followUpQuestions?: string[];
+  features?: string[]; // Selected features for this message
+  imageUrl?: string; // Generated image URL
+  thinkingSteps?: ThinkingStep[]; // Chain of thought for extended thinking
+  isThinking?: boolean; // Currently in thinking mode
 }
 
 interface FileAttachment {
@@ -93,12 +106,29 @@ const GlobalAIAssistant: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [originalMessage, setOriginalMessage] = useState<string>('');
+  const [showFeatureSelector, setShowFeatureSelector] = useState(false);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     if (!showModelSelector) {
       setModelSearchQuery('');
     }
   }, [showModelSelector]);
+
+  // Close feature selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFeatureSelector) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.feature-selector-container')) {
+          setShowFeatureSelector(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showFeatureSelector]);
 
   useEffect(() => {
     (async () => {
@@ -170,6 +200,15 @@ const GlobalAIAssistant: React.FC = () => {
       quality: 'Excellent',
     },
     {
+      id: 'alibaba/tongyi-deepresearch-30b-a3b:free',
+      name: 'Alibaba Tongyi Deepresearch',
+      provider: 'Alibaba',
+      description: 'Powerful model with Decent capabilities',
+      icon: '🐉',
+      speed: 'Decent',
+      quality: 'Good',
+    },
+    {
       id: 'openai/gpt-oss-20b',
       name: 'GPT OSS 20B',
       provider: 'OpenAI',
@@ -186,6 +225,15 @@ const GlobalAIAssistant: React.FC = () => {
       icon: '🌙',
       speed: 'Fast',
       quality: 'High',
+    },
+    {
+      id: 'moonshotai/kimi-dev-72b:free',
+      name: 'Kimi Dev 72B',
+      provider: 'Moonshot AI',
+      description: 'Powerful model with superb capabilities',
+      icon: '🌙',
+      speed: 'Medium',
+      quality: 'Very High',
     },
     {
       id: 'qwen-2.5-72b',
@@ -240,6 +288,34 @@ const GlobalAIAssistant: React.FC = () => {
       icon: '🔍',
       speed: 'Medium',
       quality: 'Excellent',
+    },
+  ];
+
+  // AI Features available
+  const AI_FEATURES = [
+    {
+      id: 'generate-image',
+      name: 'Generate Image',
+      description: 'Create images from text descriptions using AI',
+      icon: '🎨',
+      color: 'from-purple-500 to-pink-500',
+      requiresPro: false,
+    },
+    {
+      id: 'extended-thinking',
+      name: 'Extended Thinking',
+      description: 'Deep reasoning and analysis for complex problems',
+      icon: '🧠',
+      color: 'from-blue-500 to-cyan-500',
+      requiresPro: true,
+    },
+    {
+      id: 'study-learn',
+      name: 'Study & Learn',
+      description: 'Structured learning with examples and exercises',
+      icon: '📚',
+      color: 'from-green-500 to-emerald-500',
+      requiresPro: false,
     },
   ];
 
@@ -1269,11 +1345,14 @@ const GlobalAIAssistant: React.FC = () => {
       timestamp: new Date(),
       id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
+      features: selectedFeatures.length > 0 ? [...selectedFeatures] : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setQuestion('');
     setAttachedFiles([]); // Clear attachments after sending
+    setSelectedFeatures([]); // Clear selected features after sending
+    setShowFeatureSelector(false); // Close feature selector
     setIsLoading(true);
     setIsGenerating(true);
 
@@ -1327,6 +1406,7 @@ const GlobalAIAssistant: React.FC = () => {
           userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
           model: selectedModel === 'auto' ? selectAutoModel(sanitizedQuestion) : selectedModel, // Pass selected AI model (auto-select if needed)
+          features: userMessage.features, // Include selected features
         }),
         signal: controller.signal, // Add abort signal
       });
@@ -1374,6 +1454,39 @@ const GlobalAIAssistant: React.FC = () => {
                           : msg,
                       ),
                     );
+                  } else if (parsed.type === 'thinking') {
+                    // Update thinking status
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, isThinking: true } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'thinkingStep') {
+                    // Add a new thinking step
+                    const newStep: ThinkingStep = {
+                      step: parsed.step,
+                      thought: parsed.thought,
+                      duration: parsed.duration,
+                      model: parsed.model,
+                      timestamp: new Date(parsed.timestamp),
+                    };
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? {
+                              ...msg,
+                              thinkingSteps: [...(msg.thinkingSteps || []), newStep],
+                            }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'thinkingComplete') {
+                    // Thinking process completed
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, isThinking: false } : msg,
+                      ),
+                    );
                   } else if (parsed.type === 'sources') {
                     // Update the assistant message sources
                     setMessages((prev) =>
@@ -1390,6 +1503,18 @@ const GlobalAIAssistant: React.FC = () => {
                           : msg,
                       ),
                     );
+                  } else if (parsed.type === 'image') {
+                    // Update the assistant message with generated image
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, imageUrl: parsed.imageUrl } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'imageError') {
+                    // Handle image generation error
+                    console.error('Image generation error:', parsed.error);
+                    setToastMessage('Image generation failed');
+                    setTimeout(() => setToastMessage(''), 3000);
                   } else if (parsed.type === 'complete') {
                     // Final update with sanitized content
                     setMessages((prev) =>
@@ -1400,6 +1525,7 @@ const GlobalAIAssistant: React.FC = () => {
                               content: sanitizeInput(parsed.fullResponse),
                               sources: parsed.sources || [],
                               followUpQuestions: parsed.followUpQuestions || [],
+                              imageUrl: parsed.imageUrl,
                             }
                           : msg,
                       ),
@@ -1676,7 +1802,7 @@ const GlobalAIAssistant: React.FC = () => {
         throw new Error(`Server error: ${response.status}`);
       }
 
-      // Handle streaming response
+      // Handle streaming response for regenerated edited message
       if (response.body) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -1722,6 +1848,24 @@ const GlobalAIAssistant: React.FC = () => {
                           : msg,
                       ),
                     );
+                  } else if (parsed.type === 'followUpQuestions') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'image') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, imageUrl: parsed.imageUrl }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'imageError') {
+                    console.error('Image generation error:', parsed.error);
                   } else if (parsed.type === 'complete') {
                     setMessages((prev) =>
                       prev.map((msg) =>
@@ -1730,6 +1874,8 @@ const GlobalAIAssistant: React.FC = () => {
                               ...msg,
                               content: sanitizeInput(parsed.fullResponse),
                               sources: parsed.sources || [],
+                              followUpQuestions: parsed.followUpQuestions || [],
+                              imageUrl: parsed.imageUrl,
                             }
                           : msg,
                       ),
@@ -1884,7 +2030,7 @@ const GlobalAIAssistant: React.FC = () => {
         throw new Error(`Server error: ${response.status}`);
       }
 
-      // Handle streaming response (same as handleSubmit)
+      // Handle streaming response for regenerate (same as handleSubmit)
       if (response.body) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -1930,6 +2076,24 @@ const GlobalAIAssistant: React.FC = () => {
                           : msg,
                       ),
                     );
+                  } else if (parsed.type === 'followUpQuestions') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'image') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, imageUrl: parsed.imageUrl }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'imageError') {
+                    console.error('Image generation error:', parsed.error);
                   } else if (parsed.type === 'complete') {
                     setMessages((prev) =>
                       prev.map((msg) =>
@@ -1938,6 +2102,8 @@ const GlobalAIAssistant: React.FC = () => {
                               ...msg,
                               content: sanitizeInput(parsed.fullResponse),
                               sources: parsed.sources || [],
+                              followUpQuestions: parsed.followUpQuestions || [],
+                              imageUrl: parsed.imageUrl,
                             }
                           : msg,
                       ),
@@ -2011,6 +2177,28 @@ const GlobalAIAssistant: React.FC = () => {
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
       setToastMessage('Failed to copy');
+      setTimeout(() => setToastMessage(''), 2000);
+    }
+  };
+
+  // Download generated image
+  const downloadImage = async (imageUrl: string, messageId: string) => {
+    try {
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = `dionysus-ai-generated-${messageId}-${Date.now()}.png`;
+
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setToastMessage('Image downloaded!');
+      setTimeout(() => setToastMessage(''), 2000);
+    } catch (error) {
+      console.error('Failed to download image:', error);
+      setToastMessage('Failed to download image');
       setTimeout(() => setToastMessage(''), 2000);
     }
   };
@@ -2096,6 +2284,28 @@ const GlobalAIAssistant: React.FC = () => {
     setTimeout(() => {
       handleSubmit({ preventDefault: () => {} } as React.FormEvent);
     }, 100);
+  };
+
+  // Toggle feature selection
+  const toggleFeature = (featureId: string) => {
+    setSelectedFeatures((prev) => {
+      if (prev.includes(featureId)) {
+        return prev.filter((id) => id !== featureId);
+      } else {
+        // Some features are mutually exclusive
+        if (featureId === 'generate-image') {
+          // Image generation can be combined with other features
+          return [...prev, featureId];
+        } else if (featureId === 'extended-thinking' || featureId === 'study-learn') {
+          // These two are mutually exclusive
+          return [
+            ...prev.filter((id) => id !== 'extended-thinking' && id !== 'study-learn'),
+            featureId,
+          ];
+        }
+        return [...prev, featureId];
+      }
+    });
   };
 
   const quickQuestions = [
@@ -2667,6 +2877,126 @@ const GlobalAIAssistant: React.FC = () => {
                                   </div>
                                 )}
 
+                                {/* Thinking Steps */}
+                                {message.thinkingSteps && message.thinkingSteps.length > 0 && (
+                                  <details className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                    <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
+                                      <div className="inline-flex items-center gap-2">
+                                        <svg
+                                          className="h-3 w-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                          />
+                                        </svg>
+                                        Chain of Thought ({message.thinkingSteps.length} steps)
+                                        <ChevronDown className="h-3 w-3" />
+                                      </div>
+                                    </summary>
+                                    <div className="mt-3 space-y-3">
+                                      {message.thinkingSteps.map((step, idx) => (
+                                        <div
+                                          key={idx}
+                                          className="rounded-lg border border-border bg-muted/30 p-3 dark:border-gray-600 dark:bg-gray-700/30"
+                                        >
+                                          <div className="mb-2 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                              <Badge
+                                                variant="outline"
+                                                className="bg-violet-500/10 text-violet-600 dark:text-violet-400"
+                                              >
+                                                Step {step.step}
+                                              </Badge>
+                                              <span className="text-xs text-muted-foreground">
+                                                {step.model}
+                                              </span>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground">
+                                              {step.duration.toFixed(1)}s
+                                            </span>
+                                          </div>
+                                          <p className="text-xs text-foreground/80">
+                                            {step.thought}
+                                          </p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                )}
+
+                                {message.isThinking && (
+                                  <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-violet-500 border-t-transparent"></div>
+                                      <span>Deep thinking in progress...</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Generated Image */}
+                                {message.imageUrl && (
+                                  <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
+                                    <div className="mb-2 flex items-center justify-between">
+                                      <div className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                                        <svg
+                                          className="h-3 w-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                          />
+                                        </svg>
+                                        AI Generated Image
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => downloadImage(message.imageUrl!, message.id)}
+                                        className="h-6 px-2 text-xs hover:bg-violet-500/10"
+                                        title="Download image"
+                                      >
+                                        <svg
+                                          className="h-3 w-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                          />
+                                        </svg>
+                                        <span className="ml-1">Download</span>
+                                      </Button>
+                                    </div>
+                                    <div className="relative overflow-hidden rounded-lg border border-border dark:border-gray-600">
+                                      {/* eslint-disable-next-line */}
+                                      <img
+                                        src={message.imageUrl}
+                                        alt="AI Generated Image"
+                                        className="w-full cursor-pointer object-contain transition-transform hover:scale-105"
+                                        onClick={() => {
+                                          // Open image in new tab for larger view
+                                          window.open(message.imageUrl, '_blank');
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
                                 {/* Follow-up Questions */}
                                 {message.followUpQuestions &&
                                   message.followUpQuestions.length > 0 && (
@@ -2696,6 +3026,26 @@ const GlobalAIAssistant: React.FC = () => {
                             ) : (
                               <div>
                                 <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+
+                                {/* Display Selected Features for User Messages */}
+                                {message.features && message.features.length > 0 && (
+                                  <div className="mt-2 flex flex-wrap gap-1">
+                                    {message.features.map((featureId) => {
+                                      const feature = AI_FEATURES.find((f) => f.id === featureId);
+                                      if (!feature) return null;
+                                      return (
+                                        <Badge
+                                          key={featureId}
+                                          variant="secondary"
+                                          className="bg-primary-foreground/20 text-xs text-primary-foreground"
+                                        >
+                                          <span className="mr-1">{feature.icon}</span>
+                                          {feature.name}
+                                        </Badge>
+                                      );
+                                    })}
+                                  </div>
+                                )}
 
                                 {/* Display Attachments for User Messages */}
                                 {message.attachments && message.attachments.length > 0 && (
@@ -2984,6 +3334,27 @@ const GlobalAIAssistant: React.FC = () => {
           >
             {/* Text Input with Integrated Send Button */}
             <div className="relative">
+              {/* Feature Selector Button */}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowFeatureSelector(!showFeatureSelector)}
+                className={`absolute left-2 top-2 z-10 h-8 w-8 p-0 transition-all ${
+                  selectedFeatures.length > 0
+                    ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title="Select AI features"
+              >
+                <Plus className="h-4 w-4" />
+                {selectedFeatures.length > 0 && (
+                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                    {selectedFeatures.length}
+                  </span>
+                )}
+              </Button>
+
               <Textarea
                 ref={textareaRef}
                 value={question}
@@ -2996,7 +3367,7 @@ const GlobalAIAssistant: React.FC = () => {
                     ? 'Edit your message...'
                     : 'Ask me about this page, Dionysus features, or development topics...'
                 }
-                className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pr-28 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
+                className={`max-h-[120px] min-h-[44px] resize-none border-border bg-background pl-12 pr-28 focus:ring-2 focus:ring-violet-500 dark:border-gray-600 dark:bg-gray-800 dark:focus:ring-violet-400 ${
                   inputError ? 'border-red-500 dark:border-red-400' : ''
                 }`}
                 maxLength={MAX_MESSAGE_LENGTH}
@@ -3176,6 +3547,138 @@ const GlobalAIAssistant: React.FC = () => {
             </div>
           </div>
         </form>
+
+        {/* Feature Selector Popup */}
+        {showFeatureSelector && (
+          <div className="feature-selector-container absolute bottom-20 left-4 z-50 w-80 animate-in slide-in-from-bottom-5">
+            <div className="overflow-hidden rounded-lg border border-border bg-background shadow-2xl dark:border-gray-600 dark:bg-gray-800">
+              {/* Header */}
+              <div className="border-b border-border bg-gradient-to-r from-violet-500 to-purple-500 px-4 py-3 dark:border-gray-600">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-white" />
+                    <h3 className="text-sm font-semibold text-white">AI Features</h3>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowFeatureSelector(false)}
+                    className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs text-white/80">
+                  Select features to enhance your AI experience
+                </p>
+              </div>
+
+              {/* Features List */}
+              <div className="max-h-[400px] space-y-2 overflow-y-auto p-3">
+                {AI_FEATURES.map((feature) => {
+                  const isSelected = selectedFeatures.includes(feature.id);
+                  const isDisabled = feature.requiresPro && !hasProPlan;
+
+                  return (
+                    <button
+                      key={feature.id}
+                      type="button"
+                      onClick={() => {
+                        if (!isDisabled) {
+                          toggleFeature(feature.id);
+                        }
+                      }}
+                      disabled={isDisabled}
+                      className={`group relative w-full overflow-hidden rounded-lg border-2 p-3 text-left transition-all ${
+                        isSelected
+                          ? 'border-violet-500 bg-gradient-to-r from-violet-50 to-purple-50 dark:border-violet-400 dark:from-violet-950/50 dark:to-purple-950/50'
+                          : 'border-border bg-background hover:border-violet-300 dark:border-gray-600 dark:bg-gray-800/50 dark:hover:border-violet-500'
+                      } ${isDisabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                    >
+                      {/* Gradient Overlay for Selected */}
+                      {isSelected && (
+                        <div
+                          className={`absolute inset-0 bg-gradient-to-r opacity-10 ${feature.color}`}
+                        />
+                      )}
+
+                      <div className="relative z-10 flex items-start gap-3">
+                        {/* Icon */}
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-xl ${
+                            isSelected
+                              ? `bg-gradient-to-br ${feature.color} text-white shadow-lg`
+                              : 'bg-muted dark:bg-gray-700'
+                          }`}
+                        >
+                          {feature.icon}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-semibold text-foreground">
+                              {feature.name}
+                            </h4>
+                            {feature.requiresPro && (
+                              <Badge
+                                variant="secondary"
+                                className="bg-gradient-to-r from-amber-500 to-orange-500 text-xs text-white"
+                              >
+                                Pro
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{feature.description}</p>
+
+                          {/* Selection Indicator */}
+                          {isSelected && (
+                            <div className="mt-2 flex items-center gap-1 text-xs font-medium text-violet-600 dark:text-violet-400">
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                              Selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Footer with Apply Button */}
+              <div className="border-t border-border bg-muted/50 p-3 dark:border-gray-600 dark:bg-gray-800/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {selectedFeatures.length > 0
+                      ? `${selectedFeatures.length} feature${selectedFeatures.length > 1 ? 's' : ''} selected`
+                      : 'No features selected'}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => setShowFeatureSelector(false)}
+                    className="bg-gradient-to-r from-violet-500 to-purple-500 text-white hover:from-violet-600 hover:to-purple-600"
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Clear Conversation Confirmation Dialog */}
