@@ -86,7 +86,7 @@ const GlobalAIAssistant: React.FC = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<string>('gemini-2.5-flash');
+  const [selectedModel, setSelectedModel] = useState<string>('auto');
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [hasProPlan, sethasProPlan] = useState(false);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
@@ -124,6 +124,15 @@ const GlobalAIAssistant: React.FC = () => {
 
   // AI Model options
   const AI_MODELS = [
+    {
+      id: 'auto',
+      name: 'Auto Select',
+      provider: 'Smart',
+      description: 'Automatically chooses the best model for your question',
+      icon: '🎯',
+      speed: 'Adaptive',
+      quality: 'Optimal',
+    },
     {
       id: 'gemini-2.5-flash',
       name: 'Gemini 2.5 Flash',
@@ -982,6 +991,229 @@ const GlobalAIAssistant: React.FC = () => {
     });
   };
 
+  // Auto-select the best AI model based on the question
+  const selectAutoModel = (question: string): string => {
+    const lowerQuestion = question.toLowerCase();
+    const wordCount = lowerQuestion.split(' ').length;
+    const charCount = question.length;
+
+    // Keywords that indicate web search or real-time information is needed
+    const webSearchKeywords = [
+      'current',
+      'latest',
+      'recent',
+      'today',
+      'news',
+      'update',
+      'price',
+      'weather',
+      'stock',
+      'market',
+      'trending',
+      'popular',
+      'search',
+      'find',
+      'lookup',
+      'what is',
+      'who is',
+      'where is',
+      'when is',
+      'how much',
+      'what are',
+      'research',
+      'analyze',
+      'compare',
+      'review',
+      'vs',
+      'versus',
+      'ranking',
+    ];
+
+    // Keywords that indicate coding/programming questions
+    const codingKeywords = [
+      'code',
+      'programming',
+      'javascript',
+      'typescript',
+      'python',
+      'java',
+      'c++',
+      'react',
+      'next.js',
+      'node.js',
+      'html',
+      'css',
+      'sql',
+      'database',
+      'api',
+      'function',
+      'class',
+      'variable',
+      'algorithm',
+      'debug',
+      'error',
+      'fix',
+      'implement',
+      'build',
+      'deploy',
+      'git',
+      'github',
+      'terminal',
+      'command',
+      'script',
+      'framework',
+      'library',
+      'package',
+      'npm',
+      'yarn',
+      'docker',
+      'kubernetes',
+      'aws',
+      'azure',
+      'gcp',
+      'cloud',
+      'server',
+      'backend',
+      'frontend',
+    ];
+
+    // Keywords that indicate complex reasoning or analysis
+    const reasoningKeywords = [
+      'explain',
+      'why',
+      'how does',
+      'analyze',
+      'reason',
+      'logic',
+      'strategy',
+      'plan',
+      'design',
+      'architecture',
+      'complex',
+      'advanced',
+      'deep',
+      'philosophical',
+      'theoretical',
+      'mathematical',
+      'scientific',
+      'technical',
+      'optimization',
+      'performance',
+      'security',
+      'best practices',
+      'patterns',
+    ];
+
+    // Keywords that indicate creative or generative tasks
+    const creativeKeywords = [
+      'create',
+      'generate',
+      'design',
+      'write',
+      'compose',
+      'make',
+      'build',
+      'develop',
+      'craft',
+      'imagine',
+      'innovate',
+      'creative',
+      'artistic',
+    ];
+
+    // Keywords that indicate mathematical or calculation tasks
+    const mathKeywords = [
+      'calculate',
+      'compute',
+      'math',
+      'equation',
+      'formula',
+      'solve',
+      'algebra',
+      'geometry',
+      'statistics',
+      'probability',
+      'optimization',
+      'algorithm',
+    ];
+
+    // Check if web search is needed (highest priority)
+    const needsWebSearch = webSearchKeywords.some((keyword) => lowerQuestion.includes(keyword));
+    if (needsWebSearch && hasProPlan) {
+      return 'perplexity-sonar-pro'; // Best for real-time web search
+    }
+
+    // Check if it's a coding question
+    const isCodingQuestion = codingKeywords.some((keyword) => lowerQuestion.includes(keyword));
+    if (isCodingQuestion) {
+      if (hasProPlan) {
+        return 'qwen/qwen3-coder:free'; // Specialized coding model
+      } else {
+        // For free users, use models with good coding capabilities
+        if (charCount > 300) {
+          return 'qwen-2.5-72b'; // Better for complex coding questions
+        }
+        return 'mistral-large-latest'; // Good balance for coding
+      }
+    }
+
+    // Check if complex reasoning is needed
+    const needsReasoning = reasoningKeywords.some((keyword) => lowerQuestion.includes(keyword));
+    if (needsReasoning) {
+      if (hasProPlan) {
+        if (charCount > 500 || wordCount > 50) {
+          return 'deepseek/deepseek-r1-0528:free'; // Best for deep reasoning
+        }
+        return 'openai/gpt-oss-120b'; // Good for complex analysis
+      } else {
+        return 'qwen-2.5-72b'; // Best free option for reasoning
+      }
+    }
+
+    // Check for mathematical tasks
+    const isMathQuestion = mathKeywords.some((keyword) => lowerQuestion.includes(keyword));
+    if (isMathQuestion) {
+      if (hasProPlan) {
+        return 'deepseek/deepseek-r1-0528:free'; // Excellent at math
+      } else {
+        return 'qwen-2.5-72b'; // Good math capabilities
+      }
+    }
+
+    // Check for creative tasks
+    const isCreativeTask = creativeKeywords.some((keyword) => lowerQuestion.includes(keyword));
+    if (isCreativeTask) {
+      if (hasProPlan) {
+        return 'groq-llama-3.3-70b'; // Good for creative tasks
+      } else {
+        return 'mistral-large-latest'; // Creative capabilities
+      }
+    }
+
+    // For general questions - use different models based on complexity and user plan
+    if (!hasProPlan) {
+      // Free users get optimized selection
+      if (charCount < 100) {
+        return 'gemini-2.5-flash'; // Fast for simple questions
+      } else if (charCount < 300) {
+        return 'mistral-large-latest'; // Good balance
+      } else {
+        return 'qwen-2.5-32b'; // Better for longer questions
+      }
+    } else {
+      // Pro users get access to premium models
+      if (charCount < 100) {
+        return 'gemini-2.5-flash'; // Still fast for simple questions
+      } else if (charCount < 300) {
+        return 'groq-llama-3.3-70b'; // Powerful for medium complexity
+      } else if (charCount < 600) {
+        return 'microsoft/mai-ds-r1:free'; // Heavy model for complex questions
+      } else {
+        return 'openai/gpt-oss-120b'; // Maximum capability for very complex questions
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1085,7 +1317,7 @@ const GlobalAIAssistant: React.FC = () => {
           platform: 'dionysus', // Platform identifier
           userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
-          model: selectedModel, // Pass selected AI model
+          model: selectedModel === 'auto' ? selectAutoModel(sanitizedQuestion) : selectedModel, // Pass selected AI model (auto-select if needed)
         }),
         signal: controller.signal, // Add abort signal
       });
@@ -1425,7 +1657,7 @@ const GlobalAIAssistant: React.FC = () => {
           })),
           platform: 'dionysus',
           userInfo: userInfo,
-          model: selectedModel,
+          model: selectedModel === 'auto' ? selectAutoModel(editedContent) : selectedModel,
           isRegeneration: true,
         }),
         signal: controller.signal,
@@ -1633,7 +1865,7 @@ const GlobalAIAssistant: React.FC = () => {
           userId: 'authenticated',
           userInfo: userInfo,
           attachments: userMessage.attachments, // Include original attachments
-          model: selectedModel,
+          model: selectedModel === 'auto' ? selectAutoModel(userMessage.content) : selectedModel,
           isRegeneration: true, // Flag to indicate this is a regeneration
         }),
         signal: controller.signal,
@@ -2224,10 +2456,11 @@ const GlobalAIAssistant: React.FC = () => {
                               model.provider.toLowerCase().includes(modelSearchQuery.toLowerCase()),
                           ).map((model) => {
                             const isProOnly =
-                              model.id === 'perplexity-sonar-pro' ||
-                              model.id === 'openai/gpt-oss-120b' ||
-                              model.id === 'microsoft/mai-ds-r1:free' ||
-                              model.id === 'deepseek/deepseek-r1-0528:free';
+                              model.id !== 'auto' &&
+                              (model.id === 'perplexity-sonar-pro' ||
+                                model.id === 'openai/gpt-oss-120b' ||
+                                model.id === 'microsoft/mai-ds-r1:free' ||
+                                model.id === 'deepseek/deepseek-r1-0528:free');
                             const isDisabled = isProOnly && !hasProPlan;
 
                             return (
