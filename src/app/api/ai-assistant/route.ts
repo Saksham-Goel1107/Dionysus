@@ -1,3 +1,4 @@
+import { db } from '@/server/db';
 import { auth } from '@clerk/nextjs/server';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
@@ -211,6 +212,135 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   tracer = new LangChainTracer({
     projectName: 'dionysus-ai-assistant',
   });
+}
+
+// Fetch user memories from database
+async function getUserMemoryContext(userId: string): Promise<string> {
+  try {
+    const memories = await db.userMemory.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        lastUsedAt: 'desc',
+      },
+      take: 20, // Get top 20 most recent memories
+    });
+
+    if (memories.length === 0) {
+      return '';
+    }
+
+    let memoryContext = '\n\nUSER MEMORY (Information learned from previous conversations):';
+
+    // Group memories by category
+    const categorized: Record<string, typeof memories> = {};
+    for (const memory of memories) {
+      if (!categorized[memory.category]) {
+        categorized[memory.category] = [];
+      }
+      categorized[memory.category]!.push(memory);
+    }
+
+    // Build context from memories
+    for (const [category, items] of Object.entries(categorized)) {
+      memoryContext += `\n\n${category.toUpperCase()}:`;
+      for (const item of items) {
+        memoryContext += `\n- ${item.key}: ${item.value}`;
+      }
+    }
+
+    return memoryContext;
+  } catch (error) {
+    console.error('Error fetching user memories:', error);
+    return '';
+  }
+}
+
+// Extract and store user information from conversations
+async function extractAndStoreMemories(
+  userId: string,
+  sessionId: string,
+  userMessage: string,
+  assistantResponse: string,
+): Promise<void> {
+  try {
+    // Use AI to extract memorable information from the conversation
+    const memoryExtractionPrompt = `Analyze this conversation and extract any important user preferences, facts, or context that should be remembered for future conversations.
+
+User Message: ${userMessage}
+Assistant Response: ${assistantResponse}
+
+Extract information in this format (only if relevant information exists):
+- preferred_language: [language they code in]
+- coding_style: [their coding preferences]
+- project_type: [type of project they're working on]
+- skill_level: [their experience level]
+- tools: [tools they use]
+- interests: [their interests]
+- name_preference: [how they prefer to be addressed]
+
+Only extract information that is explicitly mentioned or strongly implied. Return JSON format:
+{"memories": [{"key": "string", "value": "string", "category": "preference|context|fact"}]}
+
+If no memorable information, return: {"memories": []}`;
+
+    const extractionModel = new ChatGoogleGenerativeAI({
+      apiKey: process.env.GEMINI_API_KEY!,
+      model: 'gemini-2.5-flash',
+      temperature: 0.3, // Low temperature for consistent extraction
+    });
+
+    const extractionResponse = await extractionModel.invoke([
+      new SystemMessage(
+        'You are a memory extraction assistant. Extract key information concisely.',
+      ),
+      new HumanMessage(memoryExtractionPrompt),
+    ]);
+
+    const responseText = extractionResponse.content.toString();
+
+    // Parse JSON response
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return;
+    }
+
+    const extracted = JSON.parse(jsonMatch[0]) as {
+      memories: Array<{ key: string; value: string; category: string }>;
+    };
+
+    // Store extracted memories
+    for (const memory of extracted.memories) {
+      if (memory.key && memory.value) {
+        await db.userMemory.upsert({
+          where: {
+            userId_key: {
+              userId: userId,
+              key: memory.key,
+            },
+          },
+          create: {
+            userId: userId,
+            key: memory.key,
+            value: memory.value,
+            category: memory.category || 'general',
+            source: sessionId,
+            confidence: 0.8,
+            lastUsedAt: new Date(),
+          },
+          update: {
+            value: memory.value,
+            lastUsedAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Error extracting and storing memories:', error);
+    // Don't throw - memory extraction is non-critical
+  }
 }
 
 interface Message {
@@ -868,6 +998,7 @@ export async function POST(request: NextRequest) {
       model: selectedModel,
       isRegeneration,
       features,
+      sessionId,
     } = await request.json();
     const { userId, has } = await auth();
 
@@ -975,6 +1106,9 @@ export async function POST(request: NextRequest) {
     // Initialize LangChain model based on user selection
     const modelId = (selectedModel as AIModelId) || 'gemini-2.5-flash';
     const model = initializeAIModel(modelId, isRegeneration || false);
+
+    // Fetch user memory context from database
+    const userMemoryContext = await getUserMemoryContext(userId);
 
     // Check if web search is needed
     const needsWebSearch = requiresWebSearch(sanitizedQuestion);
@@ -1123,6 +1257,8 @@ ${conversationContext}
 ${attachmentContext}
 
 ${userContext}
+
+${userMemoryContext}
 
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
@@ -1423,6 +1559,15 @@ IMPORTANT: End your response with a JSON array of 2-4 follow-up questions in thi
 
             controller.enqueue(encoder.encode(`data: ${completeData}\n\n`));
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+
+            // Extract and store user memories in the background (non-blocking)
+            if (sessionId) {
+              extractAndStoreMemories(userId, sessionId, sanitizedQuestion, cleanResponse).catch(
+                (err) => {
+                  console.error('Background memory extraction failed:', err);
+                },
+              );
+            }
           } catch (streamError) {
             console.error('Streaming error:', streamError);
             const errorData = JSON.stringify({

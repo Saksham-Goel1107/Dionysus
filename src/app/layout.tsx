@@ -17,8 +17,8 @@ import AnnouncementBell from './components/AnnouncementBell';
 import { ThemeProvider } from './components/theme-provider';
 // import MultisessionAppSupport from './MultiSession';
 import FullscreenPrompt from '@/components/FullscreenPrompt';
-import GlobalSearch from '@/components/GlobalSearch';
 import GlobalAIAssistant from '@/components/GlobalAIAssistant';
+import GlobalSearch from '@/components/GlobalSearch';
 import ReleaseNoteModal from '@/components/ReleaseNoteModal';
 import ClientOnly from '@/components/ui/ClientOnly';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
@@ -208,19 +208,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                       <Offline>
                         <Providers>{children}</Providers>
                       </Offline>
+                      <ClientOnly>
+                        <Toaster richColors />
+                        <ScrollToTopButton />
+                        <AnnouncementBell />
+                        <CustomContextMenu />
+                        <BlockInspectAndContext />
+                        <Analytics />
+                        <SpeedInsights />
+                        <FullscreenPrompt />
+                        <GlobalSearch />
+                        <GlobalAIAssistant />
+                      </ClientOnly>
                     </TRPCReactProvider>
-                    <ClientOnly>
-                      <Toaster richColors />
-                      <ScrollToTopButton />
-                      <AnnouncementBell />
-                      <CustomContextMenu />
-                      <BlockInspectAndContext />
-                      <Analytics />
-                      <SpeedInsights />
-                      <FullscreenPrompt />
-                      <GlobalSearch />
-                      <GlobalAIAssistant />
-                    </ClientOnly>
                     <Script
                       src="https://s.pageclip.co/v1/pageclip.js"
                       charSet="utf-8"

@@ -9,29 +9,40 @@ declare global {
   }
 }
 
+import { api } from '@/trpc/react';
 import { useUser } from '@clerk/nextjs';
 import MDEditor from '@uiw/react-md-editor';
 import {
   AlertTriangle,
   Bot,
   ChevronDown,
+  Clock,
   Copy,
+  Edit2,
   ExternalLink,
   File,
   FileImage,
   FileText,
+  Flag,
+  Heart,
+  History,
   Lightbulb,
   LogIn,
+  MessageSquare,
   Mic,
   MicOff,
   Monitor,
   Paperclip,
   Plus,
+  Search,
   Send,
+  Settings,
   Shield,
   Smartphone,
   Sparkles,
   Square,
+  ThumbsDown,
+  ThumbsUp,
   Trash2,
   Upload,
   Volume2,
@@ -47,6 +58,9 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { Textarea } from './ui/textarea';
+
+import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface ThinkingStep {
   step: number;
@@ -108,6 +122,110 @@ const GlobalAIAssistant: React.FC = () => {
   const [originalMessage, setOriginalMessage] = useState<string>('');
   const [showFeatureSelector, setShowFeatureSelector] = useState(false);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  // New state for database integration
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [showHistorySidebar, setShowHistorySidebar] = useState(false);
+  const [showMemoriesDialog, setShowMemoriesDialog] = useState(false);
+  const [sessionSearchQuery, setSessionSearchQuery] = useState('');
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [renameSessionId, setRenameSessionId] = useState<string | null>(null);
+  const [newSessionTitle, setNewSessionTitle] = useState('');
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportMessageId, setReportMessageId] = useState<string | null>(null);
+  const [reportReason, setReportReason] = useState<string>('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [messageFeedback, setMessageFeedback] = useState<Record<string, boolean>>({});
+
+  // tRPC hooks
+  const utils = api.useUtils();
+  const { data: sessions, isLoading: sessionsLoading } = api.chat.getSessions.useQuery({
+    limit: 50,
+  });
+  const { data: currentSession, refetch: refetchSession } = api.chat.getSession.useQuery(
+    { sessionId: currentSessionId! },
+    { enabled: !!currentSessionId },
+  );
+  const { data: userMemories } = api.chat.getUserMemories.useQuery({ limit: 50 });
+
+  const createSessionMutation = api.chat.createSession.useMutation({
+    onSuccess: (session) => {
+      setCurrentSessionId(session.id);
+      utils.chat.getSessions.invalidate();
+      toast.success('New chat created');
+    },
+  });
+
+  const addMessageMutation = api.chat.addMessage.useMutation({
+    onSuccess: () => {
+      if (currentSessionId) {
+        refetchSession();
+      }
+    },
+  });
+
+  const updateSessionTitleMutation = api.chat.updateSessionTitle.useMutation({
+    onSuccess: () => {
+      utils.chat.getSessions.invalidate();
+      if (currentSessionId) {
+        refetchSession();
+      }
+      toast.success('Chat renamed');
+      setShowRenameDialog(false);
+    },
+  });
+
+  const deleteSessionMutation = api.chat.deleteSession.useMutation({
+    onSuccess: (_data, variables) => {
+      utils.chat.getSessions.invalidate();
+      toast.success('Chat deleted');
+      // If the deleted session is the one currently open, clear it
+      if (variables && variables.sessionId && currentSessionId === variables.sessionId) {
+        setCurrentSessionId(null);
+        setMessages([]);
+      }
+    },
+  });
+
+  const addFeedbackMutation = api.chat.addFeedback.useMutation({
+    onSuccess: (_, variables) => {
+      setMessageFeedback((prev) => ({
+        ...prev,
+        [variables.messageId]: variables.isLike,
+      }));
+      toast.success(variables.isLike ? 'Feedback recorded: Like' : 'Feedback recorded: Dislike');
+    },
+  });
+
+  const reportMessageMutation = api.chat.reportMessage.useMutation({
+    onSuccess: () => {
+      toast.success('Report submitted. Thank you for helping us improve.');
+      setShowReportDialog(false);
+      setReportReason('');
+      setReportDescription('');
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const generateTitleMutation = api.chat.generateTitle.useMutation({
+    onSuccess: () => {
+      utils.chat.getSessions.invalidate();
+      if (currentSessionId) {
+        refetchSession();
+      }
+    },
+  });
+
+  const updateTitleMutation = api.chat.updateSessionTitle.useMutation({
+    onSuccess: () => {
+      utils.chat.getSessions.invalidate();
+      utils.chat.getSession.invalidate();
+      setShowRenameDialog(false);
+      toast.success('Chat renamed');
+    },
+  });
 
   useEffect(() => {
     if (!showModelSelector) {
@@ -323,11 +441,6 @@ const GlobalAIAssistant: React.FC = () => {
   const MAX_QUESTIONS_PER_HOUR = 50;
   const MAX_MESSAGE_LENGTH = 1000;
   const MIN_MESSAGE_LENGTH = 3;
-  const RATE_LIMIT_STORAGE_KEY = 'dionysus-ai-rate-limit';
-
-  // Storage key for persistence
-  const STORAGE_KEY = 'dionysus-ai-assistant-conversation';
-  const STORAGE_CONTEXT_KEY = 'dionysus-ai-assistant-context';
 
   // Mobile detection effect
   useEffect(() => {
@@ -504,34 +617,17 @@ const GlobalAIAssistant: React.FC = () => {
     return { isValid: true };
   };
 
-  // Rate limiting function
+  // Rate limiting function (simplified - backend also has rate limiting)
   const checkRateLimit = (): boolean => {
-    const now = Date.now();
-    const hourAgo = now - 60 * 60 * 1000;
-
-    try {
-      const rateLimitData = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
-      let timestamps: number[] = [];
-
-      if (rateLimitData) {
-        timestamps = JSON.parse(rateLimitData).filter((timestamp: number) => timestamp > hourAgo);
-      }
-
-      if (timestamps.length >= MAX_QUESTIONS_PER_HOUR) {
-        setInputError(
-          `Rate limit reached. You can ask ${MAX_QUESTIONS_PER_HOUR} questions per hour.`,
-        );
-        return false;
-      }
-
-      timestamps.push(now);
-      localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(timestamps));
-      setRateLimitCount(timestamps.length);
-      return true;
-    } catch (error) {
-      console.error('Error checking rate limit:', error);
-      return true; // Allow on error
+    // Backend handles rate limiting, this is just for UI feedback
+    if (rateLimitCount >= MAX_QUESTIONS_PER_HOUR) {
+      setInputError(
+        `Rate limit reached. You can ask ${MAX_QUESTIONS_PER_HOUR} questions per hour.`,
+      );
+      return false;
     }
+    setRateLimitCount((prev) => prev + 1);
+    return true;
   };
 
   // Initialize speech recognition
@@ -576,50 +672,61 @@ const GlobalAIAssistant: React.FC = () => {
       speechSynthesis.cancel();
     };
   }, []);
+
+  // Load messages from current session
   useEffect(() => {
-    try {
-      const savedMessages = localStorage.getItem(STORAGE_KEY);
-      const savedContext = localStorage.getItem(STORAGE_CONTEXT_KEY);
+    if (currentSession?.messages) {
+      const formattedMessages: Message[] = currentSession.messages.map((msg: any) => ({
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: new Date(msg.createdAt),
+        id: msg.id,
+        sources: msg.sources ? (Array.isArray(msg.sources) ? msg.sources : []) : undefined,
+        attachments: msg.attachments
+          ? Array.isArray(msg.attachments)
+            ? msg.attachments
+            : []
+          : undefined,
+        followUpQuestions: msg.followUpQuestions
+          ? Array.isArray(msg.followUpQuestions)
+            ? msg.followUpQuestions
+            : []
+          : undefined,
+        features: msg.features ? (Array.isArray(msg.features) ? msg.features : []) : undefined,
+        imageUrl: msg.imageUrl || undefined,
+        thinkingSteps: msg.thinkingSteps
+          ? Array.isArray(msg.thinkingSteps)
+            ? msg.thinkingSteps
+            : []
+          : undefined,
+      }));
 
-      if (savedMessages) {
-        const parsedMessages = JSON.parse(savedMessages);
-        // Convert timestamp strings back to Date objects
-        const messagesWithDates = parsedMessages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp),
-        }));
-        setMessages(messagesWithDates);
-      }
+      setMessages(formattedMessages);
 
-      if (savedContext) {
-        setCurrentContext(savedContext);
-      }
-    } catch (error) {
-      console.error('Error loading conversation from localStorage:', error);
+      // Load feedback state
+      const feedbackState: Record<string, boolean> = {};
+      currentSession.messages.forEach((msg: any) => {
+        if (msg.feedback && msg.feedback.length > 0) {
+          feedbackState[msg.id] = msg.feedback[0].isLike;
+        }
+      });
+      setMessageFeedback(feedbackState);
+    } else {
+      setMessages([]);
+      setMessageFeedback({});
     }
-  }, []);
+  }, [currentSession]);
 
-  // Save conversation to localStorage whenever messages change
+  // Auto-create session when opening if no session exists
   useEffect(() => {
-    if (messages.length > 0) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-      } catch (error) {
-        console.error('Error saving conversation to localStorage:', error);
+    if (isOpen && !currentSessionId && isSignedIn && !sessionsLoading) {
+      // Check if we have any existing sessions
+      if (sessions && sessions.sessions.length > 0) {
+        // Load the most recent session
+        setCurrentSessionId(sessions.sessions[0]!.id);
       }
     }
-  }, [messages]);
-
-  // Save context to localStorage whenever it changes
-  useEffect(() => {
-    if (currentContext) {
-      try {
-        localStorage.setItem(STORAGE_CONTEXT_KEY, currentContext);
-      } catch (error) {
-        console.error('Error saving context to localStorage:', error);
-      }
-    }
-  }, [currentContext]);
+  }, [isOpen, currentSessionId, isSignedIn, sessions, sessionsLoading]);
 
   // Auto-scroll to bottom when new messages are added with smooth behavior
   useEffect(() => {
@@ -1356,6 +1463,30 @@ const GlobalAIAssistant: React.FC = () => {
     setIsLoading(true);
     setIsGenerating(true);
 
+    // Create or ensure we have a session
+    let sessionId = currentSessionId;
+    if (!sessionId && isSignedIn) {
+      try {
+        const newSession = await createSessionMutation.mutateAsync({ title: 'New Chat' });
+        sessionId = newSession.id;
+        setCurrentSessionId(sessionId);
+      } catch (error) {
+        console.error('Failed to create session:', error);
+        toast.error('Failed to create chat session');
+      }
+    }
+
+    // Save user message to database
+    if (sessionId && isSignedIn) {
+      addMessageMutation.mutate({
+        sessionId,
+        role: 'user',
+        content: sanitizedQuestion,
+        attachments: attachedFiles.length > 0 ? attachedFiles : undefined,
+        features: selectedFeatures.length > 0 ? selectedFeatures : undefined,
+      });
+    }
+
     // Create AbortController for this request
     const controller = new AbortController();
     setAbortController(controller);
@@ -1407,6 +1538,7 @@ const GlobalAIAssistant: React.FC = () => {
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
           model: selectedModel === 'auto' ? selectAutoModel(sanitizedQuestion) : selectedModel, // Pass selected AI model (auto-select if needed)
           features: userMessage.features, // Include selected features
+          sessionId: sessionId, // Include session ID for database integration
         }),
         signal: controller.signal, // Add abort signal
       });
@@ -1517,12 +1649,13 @@ const GlobalAIAssistant: React.FC = () => {
                     setTimeout(() => setToastMessage(''), 3000);
                   } else if (parsed.type === 'complete') {
                     // Final update with sanitized content
+                    const finalContent = sanitizeInput(parsed.fullResponse);
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg.id === assistantMessageId
                           ? {
                               ...msg,
-                              content: sanitizeInput(parsed.fullResponse),
+                              content: finalContent,
                               sources: parsed.sources || [],
                               followUpQuestions: parsed.followUpQuestions || [],
                               imageUrl: parsed.imageUrl,
@@ -1530,6 +1663,28 @@ const GlobalAIAssistant: React.FC = () => {
                           : msg,
                       ),
                     );
+
+                    // Save assistant response to database
+                    if (sessionId && isSignedIn) {
+                      addMessageMutation.mutate({
+                        sessionId,
+                        role: 'assistant',
+                        content: finalContent,
+                        sources: parsed.sources || undefined,
+                        followUpQuestions: parsed.followUpQuestions || undefined,
+                        imageUrl: parsed.imageUrl || undefined,
+                        model:
+                          selectedModel === 'auto'
+                            ? selectAutoModel(sanitizedQuestion)
+                            : selectedModel,
+                      });
+
+                      // Generate title if this is the first exchange
+                      if (messages.length <= 1) {
+                        generateTitleMutation.mutate({ sessionId });
+                      }
+                    }
+
                     setIsLoading(false);
                     setIsGenerating(false);
                     setAbortController(null);
@@ -1614,21 +1769,109 @@ const GlobalAIAssistant: React.FC = () => {
   };
 
   const confirmClearConversation = () => {
+    // Delete current session if it exists
+    if (currentSessionId) {
+      deleteSessionMutation.mutate({ sessionId: currentSessionId });
+      setCurrentSessionId(null);
+    }
+
     setMessages([]);
     setInputError('');
     setRateLimitCount(0);
+    setShowClearDialog(false);
+  };
 
-    // Clear from localStorage as well
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(STORAGE_CONTEXT_KEY);
-      // Reset rate limit when clearing conversation
-      localStorage.removeItem(RATE_LIMIT_STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing conversation from localStorage:', error);
+  // New handler functions for database features
+  const handleCreateNewChat = () => {
+    if (!isSignedIn) {
+      toast.error('Please sign in to create a new chat');
+      return;
+    }
+    createSessionMutation.mutate({ title: 'New Chat' });
+  };
+
+  const handleLoadSession = (sessionId: string) => {
+    setCurrentSessionId(sessionId);
+    setShowHistorySidebar(false);
+  };
+
+  const handleRenameSession = (sessionId: string, currentTitle: string) => {
+    setRenameSessionId(sessionId);
+    setNewSessionTitle(currentTitle);
+    setShowRenameDialog(true);
+  };
+
+  const confirmRenameSession = () => {
+    if (!renameSessionId || !newSessionTitle.trim()) return;
+
+    updateTitleMutation.mutate({
+      sessionId: renameSessionId,
+      title: newSessionTitle.trim(),
+    });
+  };
+
+  const handleDeleteSession = (sessionId: string) => {
+    if (confirm('Are you sure you want to delete this chat?')) {
+      deleteSessionMutation.mutate({ sessionId });
+    }
+  };
+
+  const handleLikeMessage = (messageId: string) => {
+    const currentFeedback = messageFeedback[messageId];
+    const newIsLike = currentFeedback === true ? undefined : true;
+
+    if (newIsLike === undefined) {
+      // Remove feedback
+      setMessageFeedback((prev) => {
+        const updated = { ...prev };
+        delete updated[messageId];
+        return updated;
+      });
+    } else {
+      setMessageFeedback((prev) => ({ ...prev, [messageId]: true }));
+      addFeedbackMutation.mutate({
+        messageId,
+        isLike: true,
+      });
+    }
+  };
+
+  const handleDislikeMessage = (messageId: string) => {
+    const currentFeedback = messageFeedback[messageId];
+    const newIsLike = currentFeedback === false ? undefined : false;
+
+    if (newIsLike === undefined) {
+      // Remove feedback
+      setMessageFeedback((prev) => {
+        const updated = { ...prev };
+        delete updated[messageId];
+        return updated;
+      });
+    } else {
+      setMessageFeedback((prev) => ({ ...prev, [messageId]: false }));
+      addFeedbackMutation.mutate({
+        messageId,
+        isLike: false,
+      });
+    }
+  };
+
+  const handleReportMessage = (messageId: string) => {
+    setReportMessageId(messageId);
+    setShowReportDialog(true);
+  };
+
+  const confirmReportMessage = () => {
+    if (!reportMessageId || !reportReason) {
+      toast.error('Please select a reason for reporting');
+      return;
     }
 
-    setShowClearDialog(false);
+    reportMessageMutation.mutate({
+      messageId: reportMessageId,
+      reason: reportReason as any,
+      description: reportDescription || undefined,
+    });
   };
 
   // Edit message functions
@@ -2778,6 +3021,44 @@ const GlobalAIAssistant: React.FC = () => {
                 Clear Chat
               </Button>
             )}
+            {isSignedIn && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowHistorySidebar(!showHistorySidebar)}
+                className="h-6 gap-1 px-2 text-xs"
+                title="Chat History"
+              >
+                <History className="h-3 w-3" />
+              </Button>
+            )}
+            {isSignedIn && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMemoriesDialog(true)}
+                className="h-6 gap-1 px-2 text-xs"
+                title="AI Memories"
+              >
+                <Settings className="h-3 w-3" />
+              </Button>
+            )}
+            {isSignedIn && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCreateNewChat}
+                className="h-6 gap-1 px-2 text-xs"
+                title={
+                  messages.length === 0
+                    ? 'Cannot create a new chat while current chat is empty'
+                    : 'New Chat'
+                }
+                disabled={messages.length === 0}
+              >
+                <Plus className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -2788,6 +3069,113 @@ const GlobalAIAssistant: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        {/* Chat History Sidebar */}
+        {showHistorySidebar && (
+          <div className="absolute left-0 top-0 z-50 h-full w-80 border-r border-border bg-background shadow-lg">
+            <div className="flex h-full flex-col">
+              <div className="flex items-center justify-between border-b border-border p-4">
+                <h3 className="font-semibold">Chat History</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowHistorySidebar(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="border-b border-border p-3">
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search chats..."
+                    value={sessionSearchQuery}
+                    onChange={(e) => setSessionSearchQuery(e.target.value)}
+                    className="h-9 pl-8"
+                  />
+                </div>
+              </div>
+              <ScrollArea className="flex-1">
+                <div className="space-y-1 p-2">
+                  {sessionsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="text-sm text-muted-foreground">Loading chats...</div>
+                    </div>
+                  ) : sessions && sessions.sessions.length > 0 ? (
+                    sessions.sessions
+                      .filter((session) =>
+                        session.title.toLowerCase().includes(sessionSearchQuery.toLowerCase()),
+                      )
+                      .map((session) => (
+                        <div
+                          key={session.id}
+                          className={`group relative rounded-lg border p-3 transition-colors ${
+                            currentSessionId === session.id
+                              ? 'border-violet-200 bg-violet-50 dark:border-violet-800 dark:bg-violet-950/30'
+                              : 'border-transparent hover:border-border hover:bg-muted'
+                          }`}
+                        >
+                          <button
+                            onClick={() => handleLoadSession(session.id)}
+                            className="w-full text-left"
+                          >
+                            <div className="mb-1 flex items-start gap-2">
+                              <h4
+                                className="min-w-0 flex-1 truncate text-sm font-medium"
+                                title={session.title}
+                              >
+                                {session.title}
+                              </h4>
+                              <div className="flex flex-shrink-0 gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRenameSession(session.id, session.title);
+                                  }}
+                                  className="h-6 w-6 p-0"
+                                  title={`Rename ${session.title}`}
+                                >
+                                  <Edit2 className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteSession(session.id);
+                                  }}
+                                  className="h-6 w-6 p-0 hover:text-red-600"
+                                  title={`Delete ${session.title}`}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {new Date(
+                                session.lastMessageAt || session.createdAt,
+                              ).toLocaleDateString()}
+                              <span>•</span>
+                              <MessageSquare className="h-3 w-3" />
+                              {session._count.messages} messages
+                            </div>
+                          </button>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      No chats yet. Start a new conversation!
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        )}
 
         {/* Messages Area */}
         <div className="relative flex-1 overflow-hidden">
@@ -3096,7 +3484,7 @@ const GlobalAIAssistant: React.FC = () => {
                           </div>
 
                           {/* Message Action Buttons - Visible on Hover */}
-                          <div className="absolute -bottom-2 right-2 flex gap-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                          <div className="absolute -bottom-2 right-2 flex gap-1 transition-opacity duration-200">
                             <Button
                               variant="ghost"
                               size="sm"
@@ -3117,6 +3505,43 @@ const GlobalAIAssistant: React.FC = () => {
                               >
                                 <Sparkles className="h-3 w-3" />
                               </Button>
+                            )}
+                            {message.role === 'assistant' && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleLikeMessage(message.id)}
+                                  className={`flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700 ${
+                                    messageFeedback[message.id] === true ? 'text-green-600' : ''
+                                  }`}
+                                  title="Like response"
+                                >
+                                  <ThumbsUp className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDislikeMessage(message.id)}
+                                  className={`flex h-10 w-10 items-center justify-center rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700 ${
+                                    messageFeedback[message.id] === false ? 'text-red-600' : ''
+                                  }`}
+                                  title="Dislike response"
+                                >
+                                  <ThumbsDown className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleReportMessage(message.id)}
+                                  className="h-6 w-6 rounded-full border border-border/50 bg-background/80 p-0 backdrop-blur-sm hover:bg-muted dark:border-gray-600/50 dark:bg-gray-800/80 dark:hover:bg-gray-700"
+                                  title="Report response"
+                                >
+                                  <Flag className="h-3 w-3" />
+                                </Button>
+                              </>
                             )}
                             {message.role === 'user' && isLastUserMessage && !isEditing && (
                               <Button
@@ -3682,6 +4107,174 @@ const GlobalAIAssistant: React.FC = () => {
       </div>
 
       {/* Clear Conversation Confirmation Dialog */}
+      {/* Rename Session Dialog */}
+      {showRenameDialog && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowRenameDialog(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Rename Chat</h3>
+              <p className="text-sm text-muted-foreground">Give this chat a meaningful name.</p>
+            </div>
+            <Input
+              placeholder="New chat title"
+              value={newSessionTitle}
+              onChange={(e) => setNewSessionTitle(e.target.value)}
+              maxLength={200}
+              autoFocus
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowRenameDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmRenameSession}
+                disabled={!newSessionTitle.trim() || updateSessionTitleMutation.isPending}
+              >
+                {updateSessionTitleMutation.isPending ? 'Renaming...' : 'Rename'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Message Dialog */}
+      {showReportDialog && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowReportDialog(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-xl rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-foreground">Report AI Response</h3>
+              <p className="text-sm text-muted-foreground">
+                Help us improve by reporting problematic responses.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Reason</label>
+                <Select value={reportReason} onValueChange={(v) => setReportReason(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a reason" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inappropriate">Inappropriate Content</SelectItem>
+                    <SelectItem value="harmful">Harmful or Dangerous</SelectItem>
+                    <SelectItem value="inaccurate">Inaccurate Information</SelectItem>
+                    <SelectItem value="offensive">Offensive Language</SelectItem>
+                    <SelectItem value="spam">Spam or Nonsensical</SelectItem>
+                    <SelectItem value="other">Other Issue</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Description (Optional)</label>
+                <Textarea
+                  placeholder="Provide more details..."
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  rows={4}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {reportDescription.length}/1000
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowReportDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={confirmReportMessage}
+                disabled={!reportReason || reportMessageMutation.isPending}
+              >
+                {reportMessageMutation.isPending ? 'Submitting...' : 'Submit Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Memories Dialog */}
+      {showMemoriesDialog && (
+        <div
+          className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMemoriesDialog(false);
+          }}
+          tabIndex={-1}
+        >
+          <div className="mx-4 w-full max-w-3xl rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">AI Memories</h3>
+              <Button variant="ghost" size="sm" onClick={() => setShowMemoriesDialog(false)}>
+                Close
+              </Button>
+            </div>
+            <ScrollArea className="max-h-[60vh] pr-4">
+              <div className="space-y-4 py-2">
+                {!userMemories || userMemories.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-muted-foreground">
+                    <Heart className="mx-auto mb-2 h-8 w-8 opacity-50" />
+                    <p>No memories yet.</p>
+                    <p className="mt-1">The AI will learn about your preferences as you chat.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {['preference', 'context', 'fact', 'general']
+                      .filter((category) => userMemories.some((m) => m.category === category))
+                      .map((category) => (
+                        <div key={category}>
+                          <h4 className="mb-2 text-sm font-semibold capitalize">{category}</h4>
+                          <div className="space-y-2">
+                            {userMemories
+                              .filter((memory) => memory.category === category)
+                              .map((memory) => (
+                                <div
+                                  key={memory.id}
+                                  className="rounded-lg border border-border bg-muted/30 p-3"
+                                >
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium">
+                                        {memory.key.replace(/_/g, ' ')}
+                                      </p>
+                                      <p className="mt-1 text-sm text-muted-foreground">
+                                        {memory.value}
+                                      </p>
+                                    </div>
+                                    <Badge variant="outline" className="text-xs">
+                                      {Math.round(memory.confidence * 100)}% confident
+                                    </Badge>
+                                  </div>
+                                  <p className="mt-2 text-xs text-muted-foreground">
+                                    Last used: {new Date(memory.lastUsedAt).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+            <div className="mt-4 flex justify-end">
+              <Button onClick={() => setShowMemoriesDialog(false)}>Close</Button>
+            </div>
+          </div>
+        </div>
+      )}
       {showClearDialog && (
         <div
           className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 backdrop-blur-sm"

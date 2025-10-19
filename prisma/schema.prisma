@@ -30,6 +30,10 @@ model User {
   comments            Comment[]
   commentLikes        CommentLike[]
   blogLikes           BlogLike[]
+  chatSessions        ChatSession[]
+  messageFeedback     MessageFeedback[]
+  userMemories        UserMemory[]
+  messageReports      MessageReport[]
 }
 
 model Project {
@@ -291,4 +295,104 @@ model BlogLike {
 
   @@unique([userId, blogId])
   @@index([blogId])
+}
+
+// AI Chat System Models
+model ChatSession {
+  id          String        @id @default(cuid())
+  title       String        @default("New Chat")
+  userId      String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  lastMessageAt DateTime?   // Track last message time for sorting
+
+  // Relations
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages    ChatMessage[]
+
+  @@index([userId, updatedAt])
+  @@index([userId, lastMessageAt])
+}
+
+model ChatMessage {
+  id              String            @id @default(cuid())
+  sessionId       String
+  role            String            // 'user' or 'assistant'
+  content         String            @db.Text
+  attachments     Json?             // FileAttachment[]
+  sources         Json?             // string[]
+  followUpQuestions Json?           // string[]
+  features        Json?             // string[] - Selected features
+  imageUrl        String?           // Generated image URL
+  thinkingSteps   Json?             // ThinkingStep[]
+  model           String?           // Model used for this response
+  createdAt       DateTime          @default(now())
+
+  // Relations
+  session         ChatSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  feedback        MessageFeedback[]
+  reports         MessageReport[]
+
+  @@index([sessionId, createdAt])
+}
+
+model MessageFeedback {
+  id          String       @id @default(cuid())
+  messageId   String
+  userId      String
+  isLike      Boolean      // true for like, false for dislike
+  reason      String?      @db.Text // Optional reason for feedback
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  message     ChatMessage  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model UserMemory {
+  id          String   @id @default(cuid())
+  userId      String
+  key         String   // e.g., 'preferred_language', 'coding_style', 'project_context'
+  value       String   @db.Text
+  category    String   @default("general") // 'preference', 'context', 'fact', 'general'
+  source      String?  // Which chat/interaction this came from
+  confidence  Float    @default(1.0) // 0-1, how confident we are in this memory
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastUsedAt  DateTime @default(now()) // Track when this memory was last referenced
+
+  // Relations
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, key])
+  @@index([userId, category])
+  @@index([userId, lastUsedAt])
+}
+
+model MessageReport {
+  id          String   @id @default(cuid())
+  messageId   String
+  userId      String
+  reason      String   // 'inappropriate', 'harmful', 'inaccurate', 'offensive', 'other'
+  description String?  @db.Text // Detailed description of the issue
+  status      String   @default("pending") // 'pending', 'reviewed', 'resolved', 'dismissed'
+  reviewedBy  String?  // Admin who reviewed it
+  reviewedAt  DateTime?
+  resolution  String?  @db.Text // Admin's resolution notes
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  message     ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
