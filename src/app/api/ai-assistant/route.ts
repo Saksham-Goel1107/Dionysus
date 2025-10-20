@@ -533,6 +533,7 @@ type AIModelId =
   | 'alibaba/tongyi-deepresearch-30b-a3b:free'
   | 'z-ai/glm-4.5-air:free'
   | 'meituan/longcat-flash-chat:free'
+  | 'meta-llama/llama-4-maverick:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -565,6 +566,12 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
     modelName: 'openai/gpt-oss-120b',
     temperature: 0.7,
     apiKeyEnv: 'GROQ_API_KEY',
+  },
+  'meta-llama/llama-4-maverick:free': {
+    provider: 'openrouter',
+    modelName: 'meta-llama/llama-4-maverick:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
   },
   'openai/gpt-oss-20b': {
     provider: 'openrouter',
@@ -1085,6 +1092,7 @@ export async function POST(request: NextRequest) {
       selectedModel === 'deepseek/deepseek-r1-0528:free' ||
       selectedModel === 'microsoft/mai-ds-r1:free' ||
       selectedModel === 'meituan/longcat-flash-chat:free' ||
+      selectedModel === 'meta-llama/llama-4-maverick:free' ||
       selectedModel === 'openai/gpt-oss-120b'
     ) {
       const hasProPlan =
@@ -1605,8 +1613,6 @@ This JSON array MUST be on its own line at the very end, after all other content
             let followUpQuestions: string[] = [];
             let cleanResponse = fullResponse;
 
-            console.log('AI Response before parsing:', fullResponse);
-
             try {
               // Multiple parsing strategies for robustness
 
@@ -1621,10 +1627,7 @@ This JSON array MUST be on its own line at the very end, after all other content
                   if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
                     followUpQuestions = parsed;
                     cleanResponse = fullResponse.replace(jsonArrayRegex, '').trim();
-                    console.log(
-                      'Successfully parsed follow-up questions (strategy 1):',
-                      followUpQuestions,
-                    );
+
                   }
                 } catch (e) {
                   console.warn('Strategy 1 parsing failed:', e);
@@ -1646,10 +1649,7 @@ This JSON array MUST be on its own line at the very end, after all other content
                     if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
                       followUpQuestions = parsed;
                       cleanResponse = fullResponse.replace(codeBlockRegex, '').trim();
-                      console.log(
-                        'Successfully parsed follow-up questions (strategy 2):',
-                        followUpQuestions,
-                      );
+
                     }
                   } catch (e) {
                     console.warn('Strategy 2 parsing failed:', e);
@@ -1668,10 +1668,6 @@ This JSON array MUST be on its own line at the very end, after all other content
                     if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
                       followUpQuestions = parsed;
                       cleanResponse = responseLines.slice(0, -1).join('\n').trim();
-                      console.log(
-                        'Successfully parsed follow-up questions (strategy 3):',
-                        followUpQuestions,
-                      );
                     }
                   } catch (e) {
                     console.warn('Strategy 3 parsing failed:', e);
@@ -1717,14 +1713,9 @@ This JSON array MUST be on its own line at the very end, after all other content
                     tempResponse = tempResponse.replace(questionRegex, '').trim();
                   }
                   cleanResponse = tempResponse;
-                  console.log(
-                    'Successfully parsed follow-up questions (strategy 4):',
-                    followUpQuestions,
-                  );
                 }
               }
 
-              console.log('Clean response:', cleanResponse);
             } catch (parseError) {
               console.warn('Failed to parse follow-up questions:', parseError);
               // If parsing fails completely, keep the original response
