@@ -5,6 +5,7 @@ import { UserButton, useUser } from '@clerk/nextjs';
 import {
   AlertCircle,
   BarChart3,
+  Brain,
   ChartLine,
   ChevronLeft,
   ChevronRight,
@@ -93,6 +94,7 @@ export default function AdminSidebar() {
     { href: '/admin/doppler', label: 'Doppler', icon: Key },
     { href: '/admin/finances', label: 'Finances', icon: CreditCard },
     { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+    { href: '/admin/ai-analytics', label: 'AI Analytics', icon: Brain },
     { href: '/admin/coupons', label: 'Coupons', icon: Tag },
     { href: '/admin/blogs', label: 'Blogs', icon: Edit },
     { href: '/admin/image-upload', label: 'Image Upload', icon: ImageIcon },
