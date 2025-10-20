@@ -300,19 +300,20 @@ model BlogLike {
 
 // AI Chat System Models
 model ChatGroup {
-  id          String        @id @default(cuid())
-  name        String
-  description String?       @db.Text
-  userId      String
-  color       String?       // Optional color for visual distinction
-  icon        String?       // Optional icon/emoji
-  isFavorite  Boolean       @default(false) // Starred/favorite groups appear at top
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  description   String?       @db.Text
+  userId        String
+  color         String?       // Optional color for visual distinction
+  icon          String?       // Optional icon/emoji
+  isFavorite    Boolean       @default(false) // Starred/favorite groups appear at top
+  systemPrompt  String?       @db.Text // Custom system prompt for this group
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   // Relations
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessions    ChatSession[]
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions      ChatSession[]
 
   @@index([userId, isFavorite, createdAt])
   @@index([userId, createdAt])
@@ -324,7 +325,6 @@ model ChatSession {
   userId      String
   groupId     String?       // Optional: session can belong to a group
   isFavorite  Boolean       @default(false) // Starred/favorite chats appear at top
-  embedding   Unsupported("vector(1536)")?  // OpenAI ada-002 embeddings for semantic search
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   lastMessageAt DateTime?   // Track last message time for sorting
@@ -346,7 +346,6 @@ model ChatMessage {
   sessionId       String
   role            String            // 'user' or 'assistant'
   content         String            @db.Text
-  embedding       Unsupported("vector(1536)")?  // Vector embeddings for semantic search
   attachments     Json?             // FileAttachment[]
   sources         Json?             // string[]
   followUpQuestions Json?           // string[]

@@ -380,6 +380,17 @@ export const chatRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  // Clear all user memories
+  clearAllMemories: protectedProcedure.mutation(async ({ ctx }) => {
+    await ctx.db.userMemory.deleteMany({
+      where: {
+        userId: ctx.userId,
+      },
+    });
+
+    return { success: true };
+  }),
+
   // Generate chat title using AI (to be called after first message)
   generateTitle: protectedProcedure
     .input(
@@ -659,6 +670,7 @@ export const chatRouter = createTRPCRouter({
         description: z.string().optional(),
         color: z.string().optional(),
         icon: z.string().optional(),
+        systemPrompt: z.string().max(5000).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -669,6 +681,7 @@ export const chatRouter = createTRPCRouter({
           description: input.description,
           color: input.color,
           icon: input.icon,
+          systemPrompt: input.systemPrompt,
         },
       });
 
@@ -709,8 +722,7 @@ export const chatRouter = createTRPCRouter({
         description: z.string().optional(),
         color: z.string().optional(),
         icon: z.string().optional(),
-        isExpanded: z.boolean().optional(),
-        sortOrder: z.number().optional(),
+        systemPrompt: z.string().max(5000).optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -735,8 +747,7 @@ export const chatRouter = createTRPCRouter({
           description: input.description,
           color: input.color,
           icon: input.icon,
-          isExpanded: input.isExpanded,
-          sortOrder: input.sortOrder,
+          systemPrompt: input.systemPrompt,
         },
       });
 
@@ -878,215 +889,29 @@ export const chatRouter = createTRPCRouter({
       return updatedGroup;
     }),
 
-  // Generate embedding for a message (called after message is added)
-  generateMessageEmbedding: protectedProcedure
-    .input(
-      z.object({
-        messageId: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const message = await ctx.db.chatMessage.findFirst({
+  // Get group system prompt
+  getGroupSystemPrompt: protectedProcedure
+    .input(z.object({ groupId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const group = await ctx.db.chatGroup.findFirst({
         where: {
-          id: input.messageId,
-          session: {
-            userId: ctx.userId,
-          },
+          id: input.groupId,
+          userId: ctx.userId,
+        },
+        select: {
+          id: true,
+          name: true,
+          systemPrompt: true,
         },
       });
 
-      if (!message) {
+      if (!group) {
         throw new TRPCError({
           code: 'NOT_FOUND',
-          message: 'Message not found',
+          message: 'Group not found',
         });
       }
 
-      // Check if Gemini API key is available
-      if (!process.env.GEMINI_API_KEY) {
-        console.warn('Gemini API key not configured, skipping embedding generation');
-        return { success: true, skipped: true };
-      }
-
-      // Generate embedding using Gemini
-      try {
-        // Import the generateEmbedding function dynamically to avoid circular imports
-        const { generateEmbedding } = await import('@/lib/gemini');
-
-        const embedding = await generateEmbedding(message.content);
-
-        if (!embedding || embedding.length === 0) {
-          throw new Error('No embedding returned from Gemini');
-        }
-
-        // Update message with embedding
-        await ctx.db.$executeRaw`
-          UPDATE "ChatMessage"
-          SET embedding = ${JSON.stringify(embedding)}::vector
-          WHERE id = ${input.messageId}
-        `;
-
-        return { success: true };
-      } catch (error) {
-        console.error('Error generating embedding:', error);
-        // Don't throw error, just log it and return success to avoid breaking the chat flow
-        return { success: true, error: error instanceof Error ? error.message : 'Unknown error' };
-      }
-    }),
-
-  // Search messages using vector similarity
-  searchMessages: protectedProcedure
-    .input(
-      z.object({
-        query: z.string(),
-        groupId: z.string().optional(),
-        limit: z.number().min(1).max(50).optional().default(10),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      try {
-        // Check if Gemini API key is available
-        if (!process.env.GEMINI_API_KEY) {
-          throw new Error('Gemini API key not configured for embeddings');
-        }
-
-        // Generate embedding for query using Gemini
-        const { generateEmbedding } = await import('@/lib/gemini');
-        const queryEmbedding = await generateEmbedding(input.query);
-
-        if (!queryEmbedding || queryEmbedding.length === 0) {
-          throw new Error('No embedding returned from Gemini');
-        }
-
-        // Search using vector similarity
-        const groupFilter = input.groupId ? `AND s."groupId" = '${input.groupId}'` : '';
-
-        const results = await ctx.db.$queryRaw<
-          Array<{
-            id: string;
-            content: string;
-            role: string;
-            sessionId: string;
-            sessionTitle: string;
-            createdAt: Date;
-            similarity: number;
-          }>
-        >`
-          SELECT
-            m.id,
-            m.content,
-            m.role,
-            m."sessionId",
-            s.title as "sessionTitle",
-            m."createdAt",
-            1 - (m.embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
-          FROM "ChatMessage" m
-          JOIN "ChatSession" s ON m."sessionId" = s.id
-          WHERE s."userId" = ${ctx.userId}
-            AND m.embedding IS NOT NULL
-            ${groupFilter}
-          ORDER BY similarity DESC
-          LIMIT ${input.limit}
-        `;
-
-        return results;
-      } catch (error) {
-        console.error('Error searching messages:', error);
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to search messages',
-        });
-      }
-    }),
-
-  // Get relevant context for current chat (using embeddings)
-  getRelevantContext: protectedProcedure
-    .input(
-      z.object({
-        currentMessage: z.string(),
-        sessionId: z.string(),
-        limit: z.number().min(1).max(20).optional().default(5),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      try {
-        // Get current session to check if it's in a group
-        const session = await ctx.db.chatSession.findFirst({
-          where: {
-            id: input.sessionId,
-            userId: ctx.userId,
-          },
-          select: {
-            id: true,
-            groupId: true,
-          },
-        });
-
-        if (!session) {
-          throw new TRPCError({
-            code: 'NOT_FOUND',
-            message: 'Session not found',
-          });
-        }
-
-        // Check if Gemini API key is available
-        if (!process.env.GEMINI_API_KEY) {
-          throw new Error('Gemini API key not configured for embeddings');
-        }
-
-        // Generate embedding for current message using Gemini
-        const { generateEmbedding } = await import('@/lib/gemini');
-        const embedding = await generateEmbedding(input.currentMessage);
-
-        if (!embedding || embedding.length === 0) {
-          throw new Error('No embedding returned from Gemini');
-        }
-
-        // If in a group, search within group. Otherwise, search all user's messages
-        const groupFilter = session.groupId ? `AND s."groupId" = '${session.groupId}'` : '';
-
-        const results = await ctx.db.$queryRaw<
-          Array<{
-            id: string;
-            content: string;
-            role: string;
-            sessionId: string;
-            sessionTitle: string;
-            createdAt: Date;
-            similarity: number;
-          }>
-        >`
-          SELECT
-            m.id,
-            m.content,
-            m.role,
-            m."sessionId",
-            s.title as "sessionTitle",
-            m."createdAt",
-            1 - (m.embedding <=> ${JSON.stringify(embedding)}::vector) as similarity
-          FROM "ChatMessage" m
-          JOIN "ChatSession" s ON m."sessionId" = s.id
-          WHERE s."userId" = ${ctx.userId}
-            AND m."sessionId" != ${input.sessionId}
-            AND m.embedding IS NOT NULL
-            ${groupFilter}
-          ORDER BY similarity DESC
-          LIMIT ${input.limit}
-        `;
-
-        return {
-          context: results,
-          scope: session.groupId ? 'group' : 'all',
-          groupId: session.groupId,
-        };
-      } catch (error) {
-        console.error('Error getting relevant context:', error);
-        // Return empty context instead of failing
-        return {
-          context: [],
-          scope: 'all',
-          groupId: null,
-        };
-      }
+      return group;
     }),
 });

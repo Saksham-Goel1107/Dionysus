@@ -302,21 +302,30 @@ Extract ONLY information that meets these criteria:
 
 IMPORTANT: Only extract information that is EXPLICITLY stated or STRONGLY implied. Do not make assumptions or infer preferences that aren't clearly indicated.
 
+For each memory, assign a confidence score (0.0 to 1.0) based on:
+- 1.0 = Explicitly stated fact (e.g., "I use TypeScript")
+- 0.9 = Very strongly implied with clear evidence
+- 0.8 = Clearly stated preference or skill
+- 0.7 = Mentioned in context with reasonable certainty
+- 0.6 = Inferred from multiple contextual clues
+- 0.5 or below = Do NOT extract (too uncertain)
+
 Format as JSON with this structure:
 {"memories": [
-  {"key": "specific_preference_or_fact", "value": "exact_detail_mentioned", "category": "preference|skill|tool|context|goal"}
+  {"key": "specific_preference_or_fact", "value": "exact_detail_mentioned", "category": "preference|skill|tool|context|goal", "confidence": 0.95}
 ]}
 
-Examples of GOOD memories:
-- {"key": "programming_language", "value": "TypeScript", "category": "skill"}
-- {"key": "experience_level", "value": "senior_developer", "category": "skill"}
-- {"key": "preferred_framework", "value": "Next.js", "category": "preference"}
-- {"key": "current_project", "value": "building_ecommerce_site", "category": "context"}
+Examples of GOOD memories with confidence:
+- {"key": "programming_language", "value": "TypeScript", "category": "skill", "confidence": 1.0} (explicitly stated)
+- {"key": "experience_level", "value": "senior_developer", "category": "skill", "confidence": 0.9} (clearly demonstrated)
+- {"key": "preferred_framework", "value": "Next.js", "category": "preference", "confidence": 0.85} (stated preference)
+- {"key": "current_project", "value": "building_ecommerce_site", "category": "context", "confidence": 0.95} (mentioned directly)
 
 Examples of BAD memories (don't extract these):
 - Generic statements like "I like coding"
 - Assumptions like "probably uses VS Code"
 - Vague preferences like "I want good code"
+- Anything with confidence below 0.6
 
 If no high-quality, specific information exists to remember, return: {"memories": []}`;
 
@@ -342,12 +351,18 @@ If no high-quality, specific information exists to remember, return: {"memories"
     }
 
     const extracted = JSON.parse(jsonMatch[0]) as {
-      memories: Array<{ key: string; value: string; category: string }>;
+      memories: Array<{ key: string; value: string; category: string; confidence: number }>;
     };
 
-    // Store extracted memories
+    // Store extracted memories - only store those with confidence >= 0.6
     for (const memory of extracted.memories) {
       if (memory.key && memory.value) {
+        // Ensure confidence is valid, default to 0.8 if not provided
+        const confidence =
+          memory.confidence && memory.confidence >= 0.6 && memory.confidence <= 1.0
+            ? memory.confidence
+            : 0.8;
+
         await db.userMemory.upsert({
           where: {
             userId_key: {
@@ -361,11 +376,12 @@ If no high-quality, specific information exists to remember, return: {"memories"
             value: memory.value,
             category: memory.category || 'general',
             source: sessionId,
-            confidence: 0.8,
+            confidence: confidence,
             lastUsedAt: new Date(),
           },
           update: {
             value: memory.value,
+            confidence: confidence, // Update confidence on subsequent extractions
             lastUsedAt: new Date(),
             updatedAt: new Date(),
           },
@@ -383,6 +399,10 @@ interface Message {
   content: string;
   timestamp: Date;
   attachments?: FileAttachment[];
+  feedback?: {
+    isLike: boolean;
+    timestamp: string;
+  };
 }
 
 interface FileAttachment {
@@ -512,6 +532,7 @@ type AIModelId =
   | 'moonshotai/kimi-dev-72b:free'
   | 'alibaba/tongyi-deepresearch-30b-a3b:free'
   | 'z-ai/glm-4.5-air:free'
+  | 'meituan/longcat-flash-chat:free'
   | 'qwen/qwen3-coder:free';
 interface AIModelConfig {
   provider: string;
@@ -548,6 +569,12 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
   'openai/gpt-oss-20b': {
     provider: 'openrouter',
     modelName: 'openai/gpt-oss-20b:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'meituan/longcat-flash-chat:free': {
+    provider: 'openrouter',
+    modelName: 'meituan/longcat-flash-chat:free',
     temperature: 0.7,
     apiKeyEnv: 'OPENROUTER_API_KEY',
   },
@@ -1041,6 +1068,7 @@ export async function POST(request: NextRequest) {
       isRegeneration,
       features,
       sessionId,
+      groupId,
     } = await request.json();
     const { userId, has } = await auth();
 
@@ -1056,6 +1084,7 @@ export async function POST(request: NextRequest) {
       selectedModel === 'perplexity-sonar-pro' ||
       selectedModel === 'deepseek/deepseek-r1-0528:free' ||
       selectedModel === 'microsoft/mai-ds-r1:free' ||
+      selectedModel === 'meituan/longcat-flash-chat:free' ||
       selectedModel === 'openai/gpt-oss-120b'
     ) {
       const hasProPlan =
@@ -1152,6 +1181,30 @@ export async function POST(request: NextRequest) {
     // Fetch user memory context from database
     const userMemoryContext = await getUserMemoryContext(userId);
 
+    // Fetch group system prompt if session belongs to a group
+    let groupSystemPrompt = '';
+    if (groupId) {
+      try {
+        const group = await db.chatGroup.findFirst({
+          where: {
+            id: groupId,
+            userId: userId,
+          },
+          select: {
+            systemPrompt: true,
+            name: true,
+          },
+        });
+
+        if (group?.systemPrompt) {
+          groupSystemPrompt = `\n\nGROUP CUSTOM INSTRUCTIONS (${group.name}):\n${group.systemPrompt}\n`;
+        }
+      } catch (error) {
+        console.error('Error fetching group system prompt:', error);
+        // Continue without group prompt if there's an error
+      }
+    }
+
     // Check if web search is needed
     const needsWebSearch = requiresWebSearch(sanitizedQuestion);
     let webSearchContent = '';
@@ -1165,18 +1218,60 @@ export async function POST(request: NextRequest) {
 
     // Build sanitized conversation history
     let conversationContext = '';
+    let feedbackInsights = '';
     if (
       conversationHistory &&
       Array.isArray(conversationHistory) &&
       conversationHistory.length > 0
     ) {
       conversationContext = '\n\nPREVIOUS CONVERSATION:\n';
+      const feedbackPatterns: { liked: string[]; disliked: string[] } = { liked: [], disliked: [] };
+
       conversationHistory.slice(-10).forEach((msg: Message) => {
         if (msg.role && msg.content && typeof msg.content === 'string') {
           const sanitizedContent = sanitizeInput(msg.content);
           conversationContext += `${msg.role.toUpperCase()}: ${sanitizedContent}\n`;
+
+          // Track feedback patterns for learning
+          if (msg.feedback) {
+            const feedbackType = msg.feedback.isLike ? 'liked' : 'disliked';
+            feedbackPatterns[feedbackType].push(sanitizedContent.substring(0, 200)); // First 200 chars for pattern analysis
+          }
         }
       });
+
+      // Generate feedback insights
+      if (feedbackPatterns.liked.length > 0 || feedbackPatterns.disliked.length > 0) {
+        feedbackInsights = '\n\nUSER FEEDBACK INSIGHTS (Learn from these patterns):\n';
+
+        if (feedbackPatterns.liked.length > 0) {
+          feedbackInsights += `POSITIVE FEEDBACK PATTERNS (${feedbackPatterns.liked.length} liked responses):\n`;
+          feedbackPatterns.liked.slice(-3).forEach((pattern, idx) => {
+            feedbackInsights += `${idx + 1}. "${pattern}${pattern.length === 200 ? '...' : ''}"\n`;
+          });
+          feedbackInsights += '→ Prioritize similar response styles, depth, and helpfulness\n';
+        }
+
+        if (feedbackPatterns.disliked.length > 0) {
+          feedbackInsights += `NEGATIVE FEEDBACK PATTERNS (${feedbackPatterns.disliked.length} disliked responses):\n`;
+          feedbackPatterns.disliked.slice(-3).forEach((pattern, idx) => {
+            feedbackInsights += `${idx + 1}. "${pattern}${pattern.length === 200 ? '...' : ''}"\n`;
+          });
+          feedbackInsights += '→ Avoid similar response styles and improve in these areas\n';
+        }
+
+        feedbackInsights += '\nLEARNING OBJECTIVES:\n';
+        if (feedbackPatterns.liked.length > feedbackPatterns.disliked.length) {
+          feedbackInsights +=
+            '- Continue with current successful patterns\n- Build upon what works well\n';
+        } else if (feedbackPatterns.disliked.length > feedbackPatterns.liked.length) {
+          feedbackInsights +=
+            '- Significantly improve response quality\n- Study successful patterns and adapt\n';
+        } else {
+          feedbackInsights +=
+            '- Balance between different response approaches\n- Focus on consistency and quality\n';
+        }
+      }
     }
 
     // Process file attachments
@@ -1293,7 +1388,9 @@ IMPORTANT CONVERSATION CONTEXT:
 - Avoid saying users full name again and again instead try using just the first name more
 - If the user has been asking about specific topics, continue that thread naturally
 - Important: Do not again and again greet or acknowledge the user it's an ongoing conversation so be to the point
+- LEARN FROM USER FEEDBACK: If feedback insights are provided, study the patterns carefully and adapt your response style accordingly. Emulate successful patterns and avoid unsuccessful ones.
 - Dionysus is made by Saksham Goel his github profile is at https://github.com/saksham-goel1107 and the project github repo is at https://github.com/saksham-goel1107/dionysus and the website is at https://dionysus-gray.vercel.app and it's support page is at https://dionysus-gray.vercel.app/support
+${groupSystemPrompt}
 
 CURRENT PAGE INFORMATION:
 ${sanitizedContext}
@@ -1305,6 +1402,8 @@ ${attachmentContext}
 ${userContext}
 
 ${userMemoryContext}
+
+${feedbackInsights}
 
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
@@ -1540,6 +1639,9 @@ This JSON array MUST be on its own line at the very end, after all other content
                 if (match) {
                   try {
                     const jsonString = match[1];
+                    if (!jsonString) {
+                      throw new Error('No JSON string captured from code block');
+                    }
                     const parsed = JSON.parse(jsonString);
                     if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
                       followUpQuestions = parsed;
@@ -1555,9 +1657,9 @@ This JSON array MUST be on its own line at the very end, after all other content
                 }
               }
 
-              // Strategy 3: Look for JSON array at the end of the response (original logic)
+              // Strategy 3: Look for array on the last line
               if (followUpQuestions.length === 0) {
-                const responseLines = fullResponse.trim().split('\n');
+                const responseLines = fullResponse.split('\n');
                 const lastLine = responseLines[responseLines.length - 1];
 
                 if (lastLine && lastLine.startsWith('[') && lastLine.endsWith(']')) {
