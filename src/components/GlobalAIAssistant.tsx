@@ -105,85 +105,133 @@ interface FileAttachment {
   url?: string; // For images
 }
 
+// Helper function to refetch user memories
+async function refetchUserMemories(): Promise<any | null> {
+  try {
+    const res = await fetch('/api/chat/user-memories?limit=50', { cache: 'no-store' });
+
+    if (!res.ok) {
+      throw new Error(`Failed to refetch memories: ${res.status}`);
+    }
+
+    const data = await res.json();
+    try {
+      window.dispatchEvent(new CustomEvent('userMemoriesRefetched', { detail: data }));
+    } catch (error) {
+      console.error(error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('refetchUserMemories error:', error);
+    // Optionally surface a toast; keep it non-blocking here
+    try {
+      toast.error('Failed to refresh AI memories');
+    } catch (error) {
+      console.error(error);
+    }
+    return null;
+  }
+}
+
 const GlobalAIAssistant: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentContext, setCurrentContext] = useState('');
   const [inputError, setInputError] = useState('');
   const [rateLimitCount, setRateLimitCount] = useState(0);
-  const [showClearDialog, setShowClearDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [currentSpeakingId, setCurrentSpeakingId] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
+  const [isListening, setIsListening] = useState<boolean>(false);
   const [recognition, setRecognition] = useState<any>(null);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<FileAttachment[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [selectedModel, setSelectedModel] = useState<string>('auto');
-  const [showModelSelector, setShowModelSelector] = useState(false);
-  const [hasProPlan, sethasProPlan] = useState(false);
+  const [showModelSelector, setShowModelSelector] = useState<boolean>(false);
+  const [hasProPlan, sethasProPlan] = useState<boolean>(false);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [originalMessage, setOriginalMessage] = useState<string>('');
-  const [showFeatureSelector, setShowFeatureSelector] = useState(false);
+  const [showFeatureSelector, setShowFeatureSelector] = useState<boolean>(false);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   // New state for database integration
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [showHistorySidebar, setShowHistorySidebar] = useState(false);
-  const [showMemoriesDialog, setShowMemoriesDialog] = useState(false);
+  const [showHistorySidebar, setShowHistorySidebar] = useState<boolean>(false);
+  const [showMemoriesDialog, setShowMemoriesDialog] = useState<boolean>(false);
   const [sessionSearchQuery, setSessionSearchQuery] = useState('');
-  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showRenameDialog, setShowRenameDialog] = useState<boolean>(false);
   const [renameSessionId, setRenameSessionId] = useState<string | null>(null);
   const [newSessionTitle, setNewSessionTitle] = useState('');
-  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState<boolean>(false);
   const [reportMessageId, setReportMessageId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState<string>('');
   const [reportDescription, setReportDescription] = useState('');
   const [messageFeedback, setMessageFeedback] = useState<Record<string, boolean>>({});
 
+  // Feedback reason modal state
+  const [showFeedbackReasonDialog, setShowFeedbackReasonDialog] = useState(false);
+  const [feedbackMessageId, setFeedbackMessageId] = useState<string | null>(null);
+  const [feedbackIsLike, setFeedbackIsLike] = useState<boolean | null>(null);
+  const [feedbackReason, setFeedbackReason] = useState('');
+
   // Delete confirmation state
-  const [showDeleteSessionDialog, setShowDeleteSessionDialog] = useState(false);
+  const [showDeleteSessionDialog, setShowDeleteSessionDialog] = useState<boolean>(false);
   const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
   const [deleteSessionTitle, setDeleteSessionTitle] = useState('');
 
-  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState(false);
+  const [showDeleteGroupDialog, setShowDeleteGroupDialog] = useState<boolean>(false);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [deleteGroupName, setDeleteGroupName] = useState('');
 
+  // Clear all memories confirmation state
+  const [showClearMemoriesDialog, setShowClearMemoriesDialog] = useState<boolean>(false);
+
   // Group management state
-  const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [showEditGroup, setShowEditGroup] = useState(false);
+  const [showCreateGroup, setShowCreateGroup] = useState<boolean>(false);
+  const [showEditGroup, setShowEditGroup] = useState<boolean>(false);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupDescription, setNewGroupDescription] = useState('');
   const [newGroupIcon, setNewGroupIcon] = useState('📁');
   const [newGroupColor, setNewGroupColor] = useState('#8b5cf6');
+  const [newGroupSystemPrompt, setNewGroupSystemPrompt] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   // Move to group state
-  const [showMoveToGroupDialog, setShowMoveToGroupDialog] = useState(false);
+  const [showMoveToGroupDialog, setShowMoveToGroupDialog] = useState<boolean>(false);
   const [moveSessionId, setMoveSessionId] = useState<string | null>(null);
   const [moveSessionTitle, setMoveSessionTitle] = useState('');
 
-  // tRPC hooks
+  // User authentication
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  // tRPC hooks - only run when user is signed in
   const utils = api.useUtils();
-  const { data: sessions, isLoading: sessionsLoading } = api.chat.getSessions.useQuery({
-    limit: 50,
+  const { data: sessions, isLoading: sessionsLoading } = api.chat.getSessions.useQuery(
+    { limit: 50 },
+    { enabled: isSignedIn },
+  );
+  const { data: groups, isLoading: groupsLoading } = api.chat.getGroups.useQuery(undefined, {
+    enabled: isSignedIn,
   });
-  const { data: groups, isLoading: groupsLoading } = api.chat.getGroups.useQuery();
   const { data: currentSession, refetch: refetchSession } = api.chat.getSession.useQuery(
     { sessionId: currentSessionId! },
-    { enabled: !!currentSessionId },
+    { enabled: !!currentSessionId && isSignedIn },
   );
-  const { data: userMemories } = api.chat.getUserMemories.useQuery({ limit: 50 });
+  const { data: userMemories } = api.chat.getUserMemories.useQuery(
+    { limit: 50 },
+    { enabled: isSignedIn },
+  );
 
   const createSessionMutation = api.chat.createSession.useMutation({
     onSuccess: (session) => {
@@ -202,6 +250,7 @@ const GlobalAIAssistant: React.FC = () => {
       setNewGroupDescription('');
       setNewGroupIcon('📁');
       setNewGroupColor('#8b5cf6');
+      setNewGroupSystemPrompt('');
     },
   });
 
@@ -215,6 +264,7 @@ const GlobalAIAssistant: React.FC = () => {
       setNewGroupDescription('');
       setNewGroupIcon('📁');
       setNewGroupColor('#8b5cf6');
+      setNewGroupSystemPrompt('');
     },
   });
 
@@ -240,8 +290,6 @@ const GlobalAIAssistant: React.FC = () => {
     },
   });
 
-  const generateMessageEmbeddingMutation = api.chat.generateMessageEmbedding.useMutation();
-
   const toggleSessionFavoriteMutation = api.chat.toggleSessionFavorite.useMutation({
     onSuccess: () => {
       utils.chat.getSessions.invalidate();
@@ -258,17 +306,9 @@ const GlobalAIAssistant: React.FC = () => {
   });
 
   const addMessageMutation = api.chat.addMessage.useMutation({
-    onSuccess: (message) => {
+    onSuccess: () => {
       if (currentSessionId) {
         refetchSession();
-      }
-      // Trigger embedding generation in background
-      try {
-        if (message && (message as any).id) {
-          generateMessageEmbeddingMutation.mutate({ messageId: (message as any).id });
-        }
-      } catch (e) {
-        console.log('Error', e);
       }
     },
   });
@@ -306,6 +346,18 @@ const GlobalAIAssistant: React.FC = () => {
     },
   });
 
+  // Mutation to create or update a memory entry
+  const upsertMemoryMutation = api.chat.upsertMemory.useMutation({
+    onSuccess: () => {
+      // Invalidate cached memories so UI refreshes
+      utils.chat.getUserMemories.invalidate();
+      toast.success('Memory saved');
+    },
+    onError: (error) => {
+      toast.error('Failed to save memory: ' + (error?.message || 'Unknown error'));
+    },
+  });
+
   const reportMessageMutation = api.chat.reportMessage.useMutation({
     onSuccess: () => {
       toast.success('Report submitted. Thank you for helping us improve.');
@@ -315,6 +367,18 @@ const GlobalAIAssistant: React.FC = () => {
     },
     onError: (error) => {
       toast.error(error.message);
+    },
+  });
+
+  const clearAllMemoriesMutation = api.chat.clearAllMemories.useMutation({
+    onSuccess: () => {
+      toast.success('All memories cleared successfully.');
+      setShowMemoriesDialog(false);
+      // Refetch memories to update the UI
+      refetchUserMemories();
+    },
+    onError: (error) => {
+      toast.error('Failed to clear memories: ' + error.message);
     },
   });
 
@@ -377,7 +441,6 @@ const GlobalAIAssistant: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { theme } = useTheme();
-  const { isLoaded, isSignedIn, user } = useUser();
 
   // AI Model options
   const AI_MODELS = [
@@ -418,6 +481,15 @@ const GlobalAIAssistant: React.FC = () => {
       quality: 'Excellent',
     },
     {
+      id: 'meta-llama/llama-4-maverick:free',
+      name: 'META LLAMA 4',
+      provider: 'META',
+      description: 'Heavy Powerful model with excellent capabilities',
+      icon: '🤘',
+      speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
       id: 'microsoft/mai-ds-r1:free',
       name: 'Microsoft MAI DS R1',
       provider: 'Microsoft',
@@ -443,6 +515,15 @@ const GlobalAIAssistant: React.FC = () => {
       icon: '🐉',
       speed: 'Decent',
       quality: 'Good',
+    },
+    {
+      id: 'meituan/longcat-flash-chat:free',
+      name: 'Meituan Longcat Flash Chat',
+      provider: 'Meituan',
+      description: 'Super powerful model with Superb capabilities',
+      icon: '🐈',
+      speed: 'Slow',
+      quality: 'Excellent',
     },
     {
       id: 'openai/gpt-oss-20b',
@@ -606,6 +687,7 @@ const GlobalAIAssistant: React.FC = () => {
       (selectedModel === 'perplexity-sonar-pro' ||
         selectedModel === 'deepseek/deepseek-r1-0528:free' ||
         selectedModel === 'microsoft/mai-ds-r1:free' ||
+        selectedModel === 'meituan/longcat-flash-chat:free' ||
         selectedModel === 'openai/gpt-oss-120b')
     ) {
       setSelectedModel('gemini-2.5-flash');
@@ -1517,10 +1599,282 @@ const GlobalAIAssistant: React.FC = () => {
       } else if (charCount < 300) {
         return 'groq-llama-3.3-70b'; // Powerful for medium complexity
       } else if (charCount < 600) {
-        return 'microsoft/mai-ds-r1:free'; // Heavy model for complex questions
+        return 'microsoft/mai-ds-r1:free'; // Heavy model for complex complexity
       } else {
         return 'openai/gpt-oss-120b'; // Maximum capability for very complex questions
       }
+    }
+  };
+
+  // Edit message functions
+  const cancelEditing = () => {
+    setIsEditing(false);
+    setEditingMessageId(null);
+    setOriginalMessage('');
+    setQuestion('');
+    setInputError('');
+    setAttachedFiles([]);
+  };
+
+  const saveEditedMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question.trim() || !editingMessageId) return;
+
+    // Clear previous errors
+    setInputError('');
+
+    // Sanitize input
+    const sanitizedQuestion = sanitizeInput(question);
+
+    // Validate input length
+    if (sanitizedQuestion.length < MIN_MESSAGE_LENGTH) {
+      setInputError(`Question must be at least ${MIN_MESSAGE_LENGTH} characters long.`);
+      return;
+    }
+
+    if (sanitizedQuestion.length > MAX_MESSAGE_LENGTH) {
+      setInputError(`Question must be less than ${MAX_MESSAGE_LENGTH} characters.`);
+      return;
+    }
+
+    // Check rate limit (only if content actually changed)
+    if (sanitizedQuestion !== originalMessage) {
+      if (!checkRateLimit()) {
+        return;
+      }
+    }
+
+    // Validate relevance
+    const relevanceCheck = validateQuestionRelevance(sanitizedQuestion);
+    if (!relevanceCheck.isValid) {
+      setInputError(relevanceCheck.error || 'Invalid question');
+      return;
+    }
+
+    // Update the message in place
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === editingMessageId
+          ? {
+              ...msg,
+              content: sanitizedQuestion,
+              timestamp: new Date(), // Update timestamp
+              attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
+            }
+          : msg,
+      ),
+    );
+
+    // Clear edit state
+    setIsEditing(false);
+    setEditingMessageId(null);
+    setOriginalMessage('');
+    setQuestion('');
+    setAttachedFiles([]);
+
+    // If content changed, regenerate the assistant response
+    if (sanitizedQuestion !== originalMessage) {
+      // Find the assistant message that follows this user message
+      const userMessageIndex = messages.findIndex((msg) => msg.id === editingMessageId);
+      if (userMessageIndex !== -1) {
+        const assistantMessageIndex = messages.findIndex(
+          (msg, index) => index > userMessageIndex && msg.role === 'assistant',
+        );
+
+        if (assistantMessageIndex !== -1) {
+          // Remove the old assistant response if it exists
+          const assistantMessageId = messages[assistantMessageIndex]?.id;
+          if (assistantMessageId) {
+            setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
+
+            // Regenerate response with edited message
+            await handleRegenerateForEdit(editingMessageId, sanitizedQuestion);
+          }
+        }
+      }
+    }
+  };
+
+  const handleRegenerateForEdit = async (userMessageId: string, editedContent: string) => {
+    if (isLoading) return;
+
+    // Set loading state
+    setIsLoading(true);
+    setIsGenerating(true);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    // Create new assistant message
+    const newAssistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      id: newAssistantMessageId,
+      sources: [],
+      followUpQuestions: [],
+    };
+
+    // Add the new assistant message after the user message
+    setMessages((prev) => {
+      const userMessageIndex = prev.findIndex((msg) => msg.id === userMessageId);
+      if (userMessageIndex === -1) return prev;
+
+      const newMessages = [...prev];
+      newMessages.splice(userMessageIndex + 1, 0, assistantMessage);
+      return newMessages;
+    });
+
+    // Call the API with the edited message
+    try {
+      const response = await fetch('/api/ai-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: editedContent,
+          context: currentContext,
+          sessionId: currentSessionId,
+          model: selectedModel === 'auto' ? selectAutoModel(editedContent) : selectedModel,
+          features: [],
+          groupId: currentSession?.groupId || null,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      // Handle streaming response
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+
+                if (data === '[DONE]') {
+                  setIsLoading(false);
+                  setIsGenerating(false);
+                  setAbortController(null);
+                  break;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+
+                  if (parsed.type === 'chunk') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, content: msg.content + parsed.content }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'sources') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, sources: parsed.sources }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'followUpQuestions') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'complete') {
+                    const finalContent = sanitizeInput(parsed.fullResponse);
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === newAssistantMessageId
+                          ? {
+                              ...msg,
+                              content: finalContent,
+                              sources: parsed.sources || [],
+                              followUpQuestions: parsed.followUpQuestions || [],
+                            }
+                          : msg,
+                      ),
+                    );
+
+                    setIsLoading(false);
+                    setIsGenerating(false);
+                    setAbortController(null);
+                  } else if (parsed.type === 'error') {
+                    throw new Error(parsed.error || 'Streaming error');
+                  }
+                } catch (parseError) {
+                  console.error('Error parsing streaming data:', parseError);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Fallback for non-streaming response
+        const data = await response.json();
+
+        if (!data.answer || typeof data.answer !== 'string') {
+          throw new Error('Invalid response format');
+        }
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === newAssistantMessageId
+              ? {
+                  ...msg,
+                  content: sanitizeInput(data.answer),
+                  sources: data.sources || [],
+                }
+              : msg,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error regenerating response for edited message:', error);
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === newAssistantMessageId
+            ? {
+                ...msg,
+                content:
+                  'I apologize, but I encountered an error while regenerating the response. Please try again.',
+              }
+            : msg,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+      setIsGenerating(false);
+      setAbortController(null);
     }
   };
 
@@ -1650,13 +2004,21 @@ const GlobalAIAssistant: React.FC = () => {
           conversationHistory: messages.slice(-10).map((msg) => ({
             ...msg,
             content: sanitizeInput(msg.content),
-          })), // Send last 10 messages for better context
+            feedback:
+              messageFeedback[msg.id] !== undefined
+                ? {
+                    isLike: messageFeedback[msg.id],
+                    timestamp: new Date().toISOString(),
+                  }
+                : undefined,
+          })), // Send last 10 messages for better context with feedback
           platform: 'dionysus', // Platform identifier
           userInfo: userInfo, // Add user information for personalization
           attachments: attachedFiles.length > 0 ? attachedFiles : undefined, // Include file attachments
           model: selectedModel === 'auto' ? selectAutoModel(sanitizedQuestion) : selectedModel, // Pass selected AI model (auto-select if needed)
           features: userMessage.features, // Include selected features
           sessionId: sessionId, // Include session ID for database integration
+          groupId: currentSession?.groupId || null, // Include group ID for custom system prompt
         }),
         signal: controller.signal, // Add abort signal
       });
@@ -1955,11 +2317,11 @@ const GlobalAIAssistant: React.FC = () => {
         return updated;
       });
     } else {
-      setMessageFeedback((prev) => ({ ...prev, [messageId]: true }));
-      addFeedbackMutation.mutate({
-        messageId,
-        isLike: true,
-      });
+      // Show feedback reason modal
+      setFeedbackMessageId(messageId);
+      setFeedbackIsLike(true);
+      setFeedbackReason('');
+      setShowFeedbackReasonDialog(true);
     }
   };
 
@@ -1975,12 +2337,46 @@ const GlobalAIAssistant: React.FC = () => {
         return updated;
       });
     } else {
-      setMessageFeedback((prev) => ({ ...prev, [messageId]: false }));
-      addFeedbackMutation.mutate({
-        messageId,
-        isLike: false,
+      // Show feedback reason modal
+      setFeedbackMessageId(messageId);
+      setFeedbackIsLike(false);
+      setFeedbackReason('');
+      setShowFeedbackReasonDialog(true);
+    }
+  };
+
+  const handleSubmitFeedback = () => {
+    if (!feedbackMessageId || feedbackIsLike === null) return;
+
+    // Update UI state
+    setMessageFeedback((prev) => ({ ...prev, [feedbackMessageId]: feedbackIsLike }));
+
+    // Submit feedback with reason
+    addFeedbackMutation.mutate({
+      messageId: feedbackMessageId,
+      isLike: feedbackIsLike,
+      reason: feedbackReason.trim() || undefined,
+    });
+
+    // If reason provided, also store in memories
+    if (feedbackReason.trim()) {
+      const memoryKey = feedbackIsLike ? 'liked_response_reason' : 'disliked_response_reason';
+      const memoryValue = feedbackReason.trim();
+      const memoryCategory = 'feedback';
+
+      upsertMemoryMutation.mutate({
+        key: memoryKey,
+        value: memoryValue,
+        category: memoryCategory,
+        source: `feedback_${feedbackMessageId}`,
       });
     }
+
+    // Close modal
+    setShowFeedbackReasonDialog(false);
+    setFeedbackMessageId(null);
+    setFeedbackIsLike(null);
+    setFeedbackReason('');
   };
 
   const handleReportMessage = (messageId: string) => {
@@ -2013,6 +2409,7 @@ const GlobalAIAssistant: React.FC = () => {
       description: newGroupDescription.trim() || undefined,
       icon: newGroupIcon,
       color: newGroupColor,
+      systemPrompt: newGroupSystemPrompt.trim() || undefined,
     });
   };
 
@@ -2022,12 +2419,14 @@ const GlobalAIAssistant: React.FC = () => {
     currentDescription: string,
     currentIcon: string,
     currentColor: string,
+    currentSystemPrompt: string,
   ) => {
     setEditGroupId(groupId);
     setNewGroupName(currentName);
     setNewGroupDescription(currentDescription || '');
     setNewGroupIcon(currentIcon || '📁');
     setNewGroupColor(currentColor || '#8b5cf6');
+    setNewGroupSystemPrompt(currentSystemPrompt || '');
     setShowEditGroup(true);
   };
 
@@ -2043,6 +2442,7 @@ const GlobalAIAssistant: React.FC = () => {
       description: newGroupDescription.trim() || undefined,
       icon: newGroupIcon,
       color: newGroupColor,
+      systemPrompt: newGroupSystemPrompt.trim() || undefined,
     });
   };
 
@@ -2104,302 +2504,6 @@ const GlobalAIAssistant: React.FC = () => {
     setAttachedFiles([]);
     // Focus the textarea
     setTimeout(() => textareaRef.current?.focus(), 100);
-  };
-
-  const cancelEditing = () => {
-    setIsEditing(false);
-    setEditingMessageId(null);
-    setOriginalMessage('');
-    setQuestion('');
-    setInputError('');
-    setAttachedFiles([]);
-  };
-
-  const saveEditedMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!question.trim() || !editingMessageId) return;
-
-    // Clear previous errors
-    setInputError('');
-
-    // Sanitize input
-    const sanitizedQuestion = sanitizeInput(question);
-
-    // Validate input length
-    if (sanitizedQuestion.length < MIN_MESSAGE_LENGTH) {
-      setInputError(`Question must be at least ${MIN_MESSAGE_LENGTH} characters long.`);
-      return;
-    }
-
-    if (sanitizedQuestion.length > MAX_MESSAGE_LENGTH) {
-      setInputError(`Question must be less than ${MAX_MESSAGE_LENGTH} characters.`);
-      return;
-    }
-
-    // Check rate limit (only if content actually changed)
-    if (sanitizedQuestion !== originalMessage) {
-      if (!checkRateLimit()) {
-        return;
-      }
-    }
-
-    // Validate relevance
-    const relevanceCheck = validateQuestionRelevance(sanitizedQuestion);
-    if (!relevanceCheck.isValid) {
-      setInputError(relevanceCheck.error || 'Invalid question');
-      return;
-    }
-
-    // Update the message in place
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === editingMessageId
-          ? {
-              ...msg,
-              content: sanitizedQuestion,
-              timestamp: new Date(), // Update timestamp
-              attachments: attachedFiles.length > 0 ? [...attachedFiles] : undefined,
-            }
-          : msg,
-      ),
-    );
-
-    // Clear edit state
-    setIsEditing(false);
-    setEditingMessageId(null);
-    setOriginalMessage('');
-    setQuestion('');
-    setAttachedFiles([]);
-
-    // If content changed, regenerate the assistant response
-    if (sanitizedQuestion !== originalMessage) {
-      // Find the assistant message that follows this user message
-      const userMessageIndex = messages.findIndex((msg) => msg.id === editingMessageId);
-      if (userMessageIndex !== -1) {
-        const assistantMessageIndex = messages.findIndex(
-          (msg, index) => index > userMessageIndex && msg.role === 'assistant',
-        );
-
-        if (assistantMessageIndex !== -1) {
-          // Remove the old assistant response if it exists
-          const assistantMessageId = messages[assistantMessageIndex]?.id;
-          if (assistantMessageId) {
-            setMessages((prev) => prev.filter((msg) => msg.id !== assistantMessageId));
-
-            // Regenerate response with edited message
-            await handleRegenerateForEdit(editingMessageId, sanitizedQuestion);
-          }
-        }
-      }
-    }
-  };
-
-  const handleRegenerateForEdit = async (userMessageId: string, editedContent: string) => {
-    if (isLoading) return;
-
-    // Set loading state
-    setIsLoading(true);
-    setIsGenerating(true);
-
-    // Create AbortController for this request
-    const controller = new AbortController();
-    setAbortController(controller);
-
-    // Create new assistant message
-    const newAssistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const assistantMessage: Message = {
-      role: 'assistant',
-      content: '',
-      timestamp: new Date(),
-      id: newAssistantMessageId,
-      sources: [],
-      followUpQuestions: [],
-    };
-
-    // Add the new assistant message after the user message
-    setMessages((prev) => {
-      const userMessageIndex = prev.findIndex((msg) => msg.id === userMessageId);
-      if (userMessageIndex === -1) return prev;
-
-      const newMessages = [...prev];
-      newMessages.splice(userMessageIndex + 1, 0, assistantMessage);
-      return newMessages;
-    });
-
-    try {
-      // Prepare user information for personalization
-      const userInfo = user
-        ? {
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            fullName: user.fullName || '',
-            email: user.primaryEmailAddress?.emailAddress || '',
-            username: user.username || '',
-            hasImage: !!user.imageUrl,
-          }
-        : null;
-
-      const response = await fetch('/api/ai-assistant', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Request-Origin': window.location.origin,
-        },
-        body: JSON.stringify({
-          question: editedContent,
-          context: currentContext,
-          conversationHistory: messages.slice(-10).map((msg) => ({
-            ...msg,
-            content: sanitizeInput(msg.content),
-          })),
-          platform: 'dionysus',
-          userInfo: userInfo,
-          model: selectedModel === 'auto' ? selectAutoModel(editedContent) : selectedModel,
-          isRegeneration: true,
-        }),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
-
-      // Handle streaming response for regenerated edited message
-      if (response.body) {
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || '';
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6).trim();
-
-                if (data === '[DONE]') {
-                  setIsLoading(false);
-                  setIsGenerating(false);
-                  setAbortController(null);
-                  break;
-                }
-
-                try {
-                  const parsed = JSON.parse(data);
-
-                  if (parsed.type === 'chunk') {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === newAssistantMessageId
-                          ? { ...msg, content: msg.content + parsed.content }
-                          : msg,
-                      ),
-                    );
-                  } else if (parsed.type === 'sources') {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === newAssistantMessageId
-                          ? { ...msg, sources: parsed.sources }
-                          : msg,
-                      ),
-                    );
-                  } else if (parsed.type === 'followUpQuestions') {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === newAssistantMessageId
-                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
-                          : msg,
-                      ),
-                    );
-                  } else if (parsed.type === 'image') {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === newAssistantMessageId
-                          ? { ...msg, imageUrl: parsed.imageUrl }
-                          : msg,
-                      ),
-                    );
-                  } else if (parsed.type === 'imageError') {
-                    console.error('Image generation error:', parsed.error);
-                  } else if (parsed.type === 'complete') {
-                    setMessages((prev) =>
-                      prev.map((msg) =>
-                        msg.id === newAssistantMessageId
-                          ? {
-                              ...msg,
-                              content: sanitizeInput(parsed.fullResponse),
-                              sources: parsed.sources || [],
-                              followUpQuestions: parsed.followUpQuestions || [],
-                              imageUrl: parsed.imageUrl,
-                            }
-                          : msg,
-                      ),
-                    );
-                    setIsLoading(false);
-                    setIsGenerating(false);
-                    setAbortController(null);
-                  } else if (parsed.type === 'error') {
-                    throw new Error(parsed.error || 'Streaming error');
-                  }
-                } catch (parseError) {
-                  console.error('Error parsing streaming data:', parseError);
-                }
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-        }
-      } else {
-        // Fallback for non-streaming response
-        const data = await response.json();
-
-        if (!data.answer || typeof data.answer !== 'string') {
-          throw new Error('Invalid response format');
-        }
-
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === newAssistantMessageId
-              ? {
-                  ...msg,
-                  content: sanitizeInput(data.answer),
-                  sources: data.sources || [],
-                }
-              : msg,
-          ),
-        );
-      }
-    } catch (error) {
-      console.error('Error regenerating response for edited message:', error);
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        return;
-      }
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === newAssistantMessageId
-            ? {
-                ...msg,
-                content:
-                  'I apologize, but I encountered an error while regenerating the response. Please try again.',
-              }
-            : msg,
-        ),
-      );
-    } finally {
-      setIsLoading(false);
-      setIsGenerating(false);
-      setAbortController(null);
-    }
   };
 
   // Handle regenerating an assistant response
@@ -2994,7 +3098,9 @@ const GlobalAIAssistant: React.FC = () => {
             <div className="relative px-8 pb-8 pt-12 text-center">
               <div
                 className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 dark:from-violet-400 dark:to-purple-500"
-                style={{ animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite' }}
+                style={{
+                  animation: 'float 3s ease-in-out infinite, glow 2s ease-in-out infinite',
+                }}
               >
                 <Bot className="h-10 w-10 text-white" />
               </div>
@@ -3141,6 +3247,7 @@ const GlobalAIAssistant: React.FC = () => {
                               (model.id === 'perplexity-sonar-pro' ||
                                 model.id === 'openai/gpt-oss-120b' ||
                                 model.id === 'microsoft/mai-ds-r1:free' ||
+                                model.id === 'meituan/longcat-flash-chat:free' ||
                                 model.id === 'deepseek/deepseek-r1-0528:free');
                             const isDisabled = isProOnly && !hasProPlan;
 
@@ -3404,6 +3511,7 @@ const GlobalAIAssistant: React.FC = () => {
                                       (group as any).description || '',
                                       group.icon || '📁',
                                       (group as any).color || '#8b5cf6',
+                                      (group as any).systemPrompt || '',
                                     );
                                   }}
                                   className="h-6 w-6 p-0"
@@ -3764,51 +3872,79 @@ const GlobalAIAssistant: React.FC = () => {
 
                                   {/* Thinking Steps */}
                                   {message.thinkingSteps && message.thinkingSteps.length > 0 && (
-                                    <details className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                      <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
-                                        <div className="inline-flex items-center gap-2">
-                                          <svg
-                                            className="h-3 w-3"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
+                                    <details className="mt-4 border-t border-border pt-4 dark:border-gray-600">
+                                      <summary className="group cursor-pointer text-sm font-semibold text-foreground transition-colors hover:text-primary">
+                                        <div className="inline-flex items-center gap-3">
+                                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
+                                            <svg
+                                              className="h-4 w-4 text-white"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                            >
+                                              <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                                              />
+                                            </svg>
+                                          </div>
+                                          <span>Chain of Thought</span>
+                                          <Badge
+                                            variant="secondary"
+                                            className="bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300"
                                           >
-                                            <path
-                                              strokeLinecap="round"
-                                              strokeLinejoin="round"
-                                              strokeWidth={2}
-                                              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                                            />
-                                          </svg>
-                                          Chain of Thought ({message.thinkingSteps.length} steps)
-                                          <ChevronDown className="h-3 w-3" />
+                                            {message.thinkingSteps.length} steps
+                                          </Badge>
+                                          <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                                         </div>
                                       </summary>
-                                      <div className="mt-3 space-y-3">
+                                      <div className="mt-4 space-y-3">
                                         {message.thinkingSteps.map((step, idx) => (
                                           <div
                                             key={idx}
-                                            className="rounded-lg border border-border bg-muted/30 p-3 dark:border-gray-600 dark:bg-gray-700/30"
+                                            className="group relative rounded-xl border border-border bg-gradient-to-r from-background to-violet-50/30 p-4 shadow-sm transition-all hover:border-violet-200 hover:shadow-md dark:border-gray-600 dark:to-violet-950/10 dark:hover:border-violet-700"
                                           >
-                                            <div className="mb-2 flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <Badge
-                                                  variant="outline"
-                                                  className="bg-violet-500/10 text-violet-600 dark:text-violet-400"
-                                                >
-                                                  Step {step.step}
-                                                </Badge>
-                                                <span className="text-xs text-muted-foreground">
-                                                  {step.model}
-                                                </span>
+                                            {/* Connecting line for steps */}
+                                            {idx < message.thinkingSteps!.length - 1 && (
+                                              <div className="absolute -bottom-3 left-6 top-full w-0.5 bg-gradient-to-b from-violet-300 to-transparent dark:from-violet-600"></div>
+                                            )}
+
+                                            <div className="flex items-start gap-4">
+                                              {/* Step number indicator */}
+                                              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 text-sm font-bold text-white shadow-md">
+                                                {step.step}
                                               </div>
-                                              <span className="text-xs text-muted-foreground">
-                                                {step.duration.toFixed(1)}s
-                                              </span>
+
+                                              <div className="min-w-0 flex-1">
+                                                <div className="mb-2 flex items-center justify-between">
+                                                  <div className="flex items-center gap-2">
+                                                    <Badge
+                                                      variant="outline"
+                                                      className="border-violet-200 bg-violet-50 text-violet-700 dark:border-violet-700 dark:bg-violet-950/30 dark:text-violet-300"
+                                                    >
+                                                      {step.model}
+                                                    </Badge>
+                                                  </div>
+                                                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                                    <svg
+                                                      className="h-3 w-3"
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      viewBox="0 0 24 24"
+                                                    >
+                                                      <circle cx="12" cy="12" r="10" />
+                                                      <polyline points="12,6 12,12 16,14" />
+                                                    </svg>
+                                                    {step.duration.toFixed(1)}s
+                                                  </div>
+                                                </div>
+                                                <p className="text-sm leading-relaxed text-foreground/90">
+                                                  {step.thought}
+                                                </p>
+                                              </div>
                                             </div>
-                                            <p className="text-xs text-foreground/80">
-                                              {step.thought}
-                                            </p>
                                           </div>
                                         ))}
                                       </div>
@@ -3816,10 +3952,20 @@ const GlobalAIAssistant: React.FC = () => {
                                   )}
 
                                   {message.isThinking && (
-                                    <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                        <div className="h-3 w-3 animate-spin rounded-full border-2 border-violet-500 border-t-transparent"></div>
-                                        <span>Deep thinking in progress...</span>
+                                    <div className="mt-4 border-t border-border pt-4 dark:border-gray-600">
+                                      <div className="flex items-center gap-3 rounded-lg bg-gradient-to-r from-violet-50 to-purple-50 p-3 dark:from-violet-950/20 dark:to-purple-950/20">
+                                        <div className="relative">
+                                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-violet-500 border-t-transparent"></div>
+                                          <div className="absolute inset-0 h-6 w-6 animate-ping rounded-full bg-violet-400/20"></div>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+                                            Deep thinking in progress...
+                                          </span>
+                                          <span className="text-xs text-violet-600/80 dark:text-violet-400/80">
+                                            Analyzing complex problem with multiple reasoning steps
+                                          </span>
+                                        </div>
                                       </div>
                                     </div>
                                   )}
@@ -3887,12 +4033,22 @@ const GlobalAIAssistant: React.FC = () => {
                                   {/* Follow-up Questions */}
                                   {message.followUpQuestions &&
                                     message.followUpQuestions.length > 0 && (
-                                      <div className="mt-3 border-t border-border pt-3 dark:border-gray-600">
-                                        <div className="mb-3 flex items-center gap-1 text-xs font-medium text-muted-foreground">
-                                          <Lightbulb className="h-3 w-3" />
-                                          Follow-up Questions:
+                                      <div className="mt-4 border-t border-border pt-4 dark:border-gray-600">
+                                        <div className="mb-4 flex items-center gap-2">
+                                          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md">
+                                            <Lightbulb className="h-4 w-4 text-white" />
+                                          </div>
+                                          <span className="text-sm font-semibold text-foreground">
+                                            Suggested Follow-ups
+                                          </span>
+                                          <Badge
+                                            variant="secondary"
+                                            className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                          >
+                                            {message.followUpQuestions.length}
+                                          </Badge>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="grid gap-2 sm:grid-cols-2">
                                           {message.followUpQuestions.map((question, index) => (
                                             <Button
                                               key={index}
@@ -3900,12 +4056,17 @@ const GlobalAIAssistant: React.FC = () => {
                                               size="sm"
                                               onClick={() => handleFollowUpQuestionClick(question)}
                                               disabled={isLoading}
-                                              className="h-auto max-w-full cursor-pointer justify-start whitespace-normal rounded-lg border-border/70 bg-gradient-to-r from-violet-50 to-purple-50 px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-all duration-200 hover:border-violet-300 hover:from-violet-100 hover:to-purple-100 hover:shadow-md dark:border-gray-600/70 dark:from-violet-950/30 dark:to-purple-950/30 dark:hover:border-violet-600 dark:hover:from-violet-900/50 dark:hover:to-purple-900/50 dark:hover:shadow-lg"
+                                              className="group h-auto min-h-[3rem] w-full cursor-pointer justify-start whitespace-normal rounded-xl border-2 border-border/50 bg-gradient-to-r from-background to-emerald-50/30 px-4 py-3 text-left text-sm font-medium shadow-sm transition-all duration-300 hover:scale-[1.02] hover:border-emerald-300 hover:from-emerald-50 hover:to-emerald-100 hover:shadow-lg dark:border-gray-600/50 dark:to-emerald-950/20 dark:hover:border-emerald-600 dark:hover:from-emerald-900/30 dark:hover:to-emerald-900/50"
                                               title={`Click to ask: ${question}`}
                                             >
-                                              <span className="line-clamp-2 text-violet-900 dark:text-violet-100">
-                                                {question}
-                                              </span>
+                                              <div className="flex items-start gap-3">
+                                                <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-xs font-bold text-white shadow-sm">
+                                                  {index + 1}
+                                                </div>
+                                                <span className="leading-relaxed text-emerald-900 group-hover:text-emerald-800 dark:text-emerald-100 dark:group-hover:text-emerald-200">
+                                                  {question}
+                                                </span>
+                                              </div>
                                             </Button>
                                           ))}
                                         </div>
@@ -3918,7 +4079,7 @@ const GlobalAIAssistant: React.FC = () => {
 
                                   {/* Display Selected Features for User Messages */}
                                   {message.features && message.features.length > 0 && (
-                                    <div className="mt-2 flex flex-wrap gap-1">
+                                    <div className="mt-3 flex flex-wrap gap-2">
                                       {message.features.map((featureId) => {
                                         const feature = AI_FEATURES.find((f) => f.id === featureId);
                                         if (!feature) return null;
@@ -3926,10 +4087,12 @@ const GlobalAIAssistant: React.FC = () => {
                                           <Badge
                                             key={featureId}
                                             variant="secondary"
-                                            className="bg-primary-foreground/20 text-xs text-primary-foreground"
+                                            className="inline-flex items-center gap-1.5 rounded-full border-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 px-3 py-1 text-xs font-semibold text-blue-700 shadow-sm hover:from-blue-500/20 hover:to-purple-500/20 dark:from-blue-500/20 dark:to-purple-500/20 dark:text-blue-300 dark:hover:from-blue-500/30 dark:hover:to-purple-500/30"
                                           >
-                                            <span className="mr-1">{feature.icon}</span>
-                                            {feature.name}
+                                            <span className="text-blue-500 dark:text-blue-400">
+                                              {feature.icon}
+                                            </span>
+                                            <span className="font-medium">{feature.name}</span>
                                           </Badge>
                                         );
                                       })}
@@ -4692,6 +4855,20 @@ const GlobalAIAssistant: React.FC = () => {
                   maxLength={100}
                 />
               </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">System Prompt (Optional)</label>
+                <Textarea
+                  placeholder="Custom instructions for the AI assistant in this group..."
+                  value={newGroupSystemPrompt}
+                  onChange={(e) => setNewGroupSystemPrompt(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  These instructions will be added to the AI&apos;s default behavior for all chats
+                  in this group.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium">Icon</label>
@@ -4763,6 +4940,20 @@ const GlobalAIAssistant: React.FC = () => {
                   onChange={(e) => setNewGroupDescription(e.target.value)}
                   maxLength={100}
                 />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">System Prompt (Optional)</label>
+                <Textarea
+                  placeholder="Custom instructions for the AI assistant in this group..."
+                  value={newGroupSystemPrompt}
+                  onChange={(e) => setNewGroupSystemPrompt(e.target.value)}
+                  rows={3}
+                  className="resize-none"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  These instructions will be added to the AI&apos;s default behavior for all chats
+                  in this group.
+                </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -4895,9 +5086,12 @@ const GlobalAIAssistant: React.FC = () => {
           }}
           tabIndex={-1}
         >
-          <div className="mx-4 w-full max-w-xl rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
+          <div className="relative mx-4 w-full max-w-xl overflow-visible rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-foreground">Report AI Response</h3>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-foreground">
+                <Flag className="h-5 w-5 text-red-500" />
+                Report AI Response
+              </h3>
               <p className="text-sm text-muted-foreground">
                 Help us improve by reporting problematic responses.
               </p>
@@ -4906,16 +5100,46 @@ const GlobalAIAssistant: React.FC = () => {
               <div>
                 <label className="mb-2 block text-sm font-medium">Reason</label>
                 <Select value={reportReason} onValueChange={(v) => setReportReason(v)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select a reason" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="inappropriate">Inappropriate Content</SelectItem>
-                    <SelectItem value="harmful">Harmful or Dangerous</SelectItem>
-                    <SelectItem value="inaccurate">Inaccurate Information</SelectItem>
-                    <SelectItem value="offensive">Offensive Language</SelectItem>
-                    <SelectItem value="spam">Spam or Nonsensical</SelectItem>
-                    <SelectItem value="other">Other Issue</SelectItem>
+                  <SelectContent className="relative z-[10001] max-h-60 overflow-y-auto">
+                    <SelectItem value="inappropriate">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-red-500" />
+                        Inappropriate Content
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="harmful">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-orange-500" />
+                        Harmful or Dangerous
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="inaccurate">
+                      <div className="flex items-center gap-2">
+                        <X className="h-4 w-4 text-yellow-500" />
+                        Inaccurate Information
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="offensive">
+                      <div className="flex items-center gap-2">
+                        <Flag className="h-4 w-4 text-red-600" />
+                        Offensive Language
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="spam">
+                      <div className="flex items-center gap-2">
+                        <Trash2 className="h-4 w-4 text-gray-500" />
+                        Spam or Nonsensical
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="other">
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4 text-blue-500" />
+                        Other Issue
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -4957,63 +5181,222 @@ const GlobalAIAssistant: React.FC = () => {
           }}
           tabIndex={-1}
         >
-          <div className="mx-4 w-full max-w-3xl rounded-lg border border-border bg-background p-6 shadow-xl dark:border-gray-700">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">AI Memories</h3>
-              <Button variant="ghost" size="sm" onClick={() => setShowMemoriesDialog(false)}>
-                Close
-              </Button>
-            </div>
-            <ScrollArea className="max-h-[60vh] pr-4">
-              <div className="space-y-4 py-2">
-                {!userMemories || userMemories.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-muted-foreground">
-                    <Heart className="mx-auto mb-2 h-8 w-8 opacity-50" />
-                    <p>No memories yet.</p>
-                    <p className="mt-1">The AI will learn about your preferences as you chat.</p>
+          <div className="mx-4 h-[90vh] w-full max-w-5xl rounded-xl border border-border bg-background shadow-2xl dark:border-gray-700">
+            <div className="flex h-full flex-col">
+              {/* Header */}
+              <div className="flex-shrink-0 border-b border-border bg-gradient-to-r from-background to-muted/20 p-6 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="flex items-center gap-3 text-2xl font-bold text-foreground">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg">
+                        <Heart className="h-5 w-5 text-white" />
+                      </div>
+                      AI Memories
+                    </h3>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      What the AI remembers about you to personalize conversations
+                    </p>
                   </div>
-                ) : (
-                  <div className="space-y-3">
-                    {['preference', 'context', 'fact', 'general']
-                      .filter((category) => userMemories.some((m) => m.category === category))
-                      .map((category) => (
-                        <div key={category}>
-                          <h4 className="mb-2 text-sm font-semibold capitalize">{category}</h4>
-                          <div className="space-y-2">
-                            {userMemories
-                              .filter((memory) => memory.category === category)
-                              .map((memory) => (
-                                <div
-                                  key={memory.id}
-                                  className="rounded-lg border border-border bg-muted/30 p-3"
-                                >
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="flex-1">
-                                      <p className="text-sm font-medium">
-                                        {memory.key.replace(/_/g, ' ')}
-                                      </p>
-                                      <p className="mt-1 text-sm text-muted-foreground">
-                                        {memory.value}
-                                      </p>
-                                    </div>
-                                    <Badge variant="outline" className="text-xs">
-                                      {Math.round(memory.confidence * 100)}% confident
-                                    </Badge>
-                                  </div>
-                                  <p className="mt-2 text-xs text-muted-foreground">
-                                    Last used: {new Date(memory.lastUsedAt).toLocaleDateString()}
-                                  </p>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      ))}
+                  <div className="flex gap-3">
+                    {userMemories && userMemories.length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowClearMemoriesDialog(true)}
+                        disabled={clearAllMemoriesMutation.isPending}
+                        className="border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:border-red-700 dark:hover:bg-red-950/20 dark:hover:text-red-300"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {clearAllMemoriesMutation.isPending ? 'Clearing...' : 'Clear All'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowMemoriesDialog(false)}
+                      className="hover:bg-muted"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Close
+                    </Button>
                   </div>
-                )}
+                </div>
               </div>
-            </ScrollArea>
-            <div className="mt-4 flex justify-end">
-              <Button onClick={() => setShowMemoriesDialog(false)}>Close</Button>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="p-6">
+                    {!userMemories || userMemories.length === 0 ? (
+                      <div className="flex h-[60vh] flex-col items-center justify-center text-center">
+                        <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-100 to-purple-100 shadow-xl dark:from-pink-900/20 dark:to-purple-900/20">
+                          <Heart className="h-10 w-10 text-pink-500" />
+                        </div>
+                        <h4 className="mb-3 text-xl font-semibold text-foreground">
+                          No memories yet
+                        </h4>
+                        <p className="mx-auto max-w-md text-sm leading-relaxed text-muted-foreground">
+                          The AI will learn about your preferences, skills, and interests as you
+                          chat to provide more personalized assistance.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-8">
+                        {[
+                          {
+                            key: 'preference',
+                            label: 'Preferences',
+                            icon: Settings,
+                            color: 'text-blue-500',
+                            bgColor: 'bg-blue-50 dark:bg-blue-950/20',
+                            gradient: 'from-blue-500 to-blue-600',
+                            description:
+                              'Your preferred tools, frameworks, and communication styles',
+                          },
+                          {
+                            key: 'skill',
+                            label: 'Skills & Experience',
+                            icon: Star,
+                            color: 'text-yellow-500',
+                            bgColor: 'bg-yellow-50 dark:bg-yellow-950/20',
+                            gradient: 'from-yellow-500 to-orange-500',
+                            description: "Technical skills and experience levels you've mentioned",
+                          },
+                          {
+                            key: 'tool',
+                            label: 'Tools & Technologies',
+                            icon: Monitor,
+                            color: 'text-green-500',
+                            bgColor: 'bg-green-50 dark:bg-green-950/20',
+                            gradient: 'from-green-500 to-emerald-600',
+                            description: 'Software, frameworks, and technologies you work with',
+                          },
+                          {
+                            key: 'context',
+                            label: 'Project Context',
+                            icon: Folder,
+                            color: 'text-purple-500',
+                            bgColor: 'bg-purple-50 dark:bg-purple-950/20',
+                            gradient: 'from-purple-500 to-violet-600',
+                            description: 'Current projects and work context',
+                          },
+                          {
+                            key: 'goal',
+                            label: 'Goals & Interests',
+                            icon: Lightbulb,
+                            color: 'text-orange-500',
+                            bgColor: 'bg-orange-50 dark:bg-orange-950/20',
+                            gradient: 'from-orange-500 to-red-500',
+                            description: 'Your objectives and areas of interest',
+                          },
+                          {
+                            key: 'fact',
+                            label: 'Key Facts',
+                            icon: FileText,
+                            color: 'text-gray-500',
+                            bgColor: 'bg-gray-50 dark:bg-gray-950/20',
+                            gradient: 'from-gray-500 to-slate-600',
+                            description: 'Important facts and information about you',
+                          },
+                          {
+                            key: 'general',
+                            label: 'General',
+                            icon: MessageSquare,
+                            color: 'text-indigo-500',
+                            bgColor: 'bg-indigo-50 dark:bg-indigo-950/20',
+                            gradient: 'from-indigo-500 to-purple-600',
+                            description: 'Other relevant information',
+                          },
+                        ]
+                          .filter((category) =>
+                            userMemories.some((m) => m.category === category.key),
+                          )
+                          .map((category) => {
+                            const IconComponent = category.icon;
+                            const categoryMemories = userMemories.filter(
+                              (memory) => memory.category === category.key,
+                            );
+                            return (
+                              <div key={category.key} className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                  <div
+                                    className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${category.gradient} shadow-lg`}
+                                  >
+                                    <IconComponent className="h-6 w-6 text-white" />
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-foreground">
+                                      {category.label}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground">
+                                      {category.description}
+                                    </p>
+                                    <p className="mt-1 text-xs text-muted-foreground/80">
+                                      {categoryMemories.length} memories
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="ml-16 grid gap-4">
+                                  {categoryMemories.map((memory) => (
+                                    <div
+                                      key={memory.id}
+                                      className="group relative rounded-xl border border-border bg-gradient-to-r from-background via-background to-muted/20 p-5 shadow-sm transition-all hover:border-border/80 hover:from-muted/10 hover:to-muted/30 hover:shadow-lg"
+                                    >
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="min-w-0 flex-1">
+                                          <h5 className="mb-2 text-base font-semibold capitalize text-foreground">
+                                            {memory.key.replace(/_/g, ' ')}
+                                          </h5>
+                                          <p className="text-sm leading-relaxed text-muted-foreground">
+                                            {memory.value}
+                                          </p>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-3">
+                                          <Badge
+                                            variant="secondary"
+                                            className={`px-2 py-1 text-xs font-semibold ${
+                                              memory.confidence >= 0.95
+                                                ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-400'
+                                                : memory.confidence >= 0.85
+                                                  ? 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 dark:from-blue-900/30 dark:to-cyan-900/30 dark:text-blue-400'
+                                                  : memory.confidence >= 0.75
+                                                    ? 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-700 dark:from-yellow-900/30 dark:to-amber-900/30 dark:text-yellow-400'
+                                                    : 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 dark:from-orange-900/30 dark:to-red-900/30 dark:text-orange-400'
+                                            }`}
+                                            title={`Confidence: ${Math.round(memory.confidence * 100)}% - ${
+                                              memory.confidence >= 0.95
+                                                ? 'Explicit statement'
+                                                : memory.confidence >= 0.85
+                                                  ? 'Strongly implied'
+                                                  : memory.confidence >= 0.75
+                                                    ? 'Clear preference'
+                                                    : 'Contextual inference'
+                                            }`}
+                                          >
+                                            {memory.confidence >= 0.95
+                                              ? '✓ Explicit'
+                                              : memory.confidence >= 0.85
+                                                ? '◆ Strong'
+                                                : memory.confidence >= 0.75
+                                                  ? '○ Clear'
+                                                  : '△ Inferred'}
+                                          </Badge>
+                                          <p className="whitespace-nowrap text-xs text-muted-foreground">
+                                            {new Date(memory.lastUsedAt).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </div>
             </div>
           </div>
         </div>
@@ -5077,7 +5460,7 @@ const GlobalAIAssistant: React.FC = () => {
 
       {/* Delete Session Confirmation Dialog */}
       <AlertDialog open={showDeleteSessionDialog} onOpenChange={setShowDeleteSessionDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[10000]">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Chat</AlertDialogTitle>
             <AlertDialogDescription>
@@ -5092,6 +5475,107 @@ const GlobalAIAssistant: React.FC = () => {
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Feedback Reason Modal */}
+      <AlertDialog open={showFeedbackReasonDialog} onOpenChange={setShowFeedbackReasonDialog}>
+        <AlertDialogContent className="z-[10000] sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              {feedbackIsLike ? (
+                <>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+                    <ThumbsUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  Why did you like this response?
+                </>
+              ) : (
+                <>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                    <ThumbsDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  </div>
+                  Why did you dislike this response?
+                </>
+              )}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {feedbackIsLike
+                ? 'Help us improve by sharing what you liked about this response. This is optional but very helpful!'
+                : 'Help us improve by sharing what could be better about this response. This is optional but very helpful!'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Textarea
+              placeholder={
+                feedbackIsLike
+                  ? 'e.g., Clear explanation, helpful examples, accurate information...'
+                  : 'e.g., Too verbose, missing information, unclear explanation...'
+              }
+              value={feedbackReason}
+              onChange={(e) => setFeedbackReason(e.target.value)}
+              className="min-h-[100px] resize-none"
+              maxLength={500}
+            />
+            <div className="mt-2 text-right text-xs text-muted-foreground">
+              {feedbackReason.length}/500 characters
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setShowFeedbackReasonDialog(false);
+                setFeedbackMessageId(null);
+                setFeedbackIsLike(null);
+                setFeedbackReason('');
+              }}
+            >
+              Skip
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSubmitFeedback}
+              disabled={addFeedbackMutation.isPending}
+              className={
+                feedbackIsLike
+                  ? 'bg-green-600 hover:bg-green-700 focus:ring-green-600'
+                  : 'bg-red-600 hover:bg-red-700 focus:ring-red-600'
+              }
+            >
+              {addFeedbackMutation.isPending ? 'Submitting...' : 'Submit Feedback'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Clear All Memories Confirmation Dialog */}
+      <AlertDialog open={showClearMemoriesDialog} onOpenChange={setShowClearMemoriesDialog}>
+        <AlertDialogContent className="z-[10000] sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
+                <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </div>
+              Clear All AI Memories
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear all AI memories? This action cannot be undone and will
+              permanently delete all stored information about your preferences, skills, and
+              conversation history.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                clearAllMemoriesMutation.mutate();
+                setShowClearMemoriesDialog(false);
+              }}
+              disabled={clearAllMemoriesMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {clearAllMemoriesMutation.isPending ? 'Clearing...' : 'Clear All Memories'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
