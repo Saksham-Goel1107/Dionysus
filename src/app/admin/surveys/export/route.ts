@@ -7,13 +7,28 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) redirect('/');
-  const user = await currentUser();
-  const email = user?.emailAddresses?.[0]?.emailAddress;
-  if (email !== 'sakshamgoel1107@gmail.com') {
-    redirect('/');
-  }
+  const { userId, sessionClaims } = await auth();
+
+      if (!userId) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (!sessionClaims?.metadata?.role) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+
+      const user = await currentUser();
+
+      if (!user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      if (
+        user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL ||
+        sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET ||
+        userId !== process.env.ADMIN_USER_ID
+      ) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
 
   const surveyResponses = await db.survey.findMany({
     include: {

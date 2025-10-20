@@ -91,19 +91,27 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 // DELETE - Delete global plan
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { userId } = await auth();
+const { userId, sessionClaims } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    if (!sessionClaims?.metadata?.role) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+    }
 
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await currentUser();
 
-    if (!user || user.emailAddress !== process.env.ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (
+      user.emailAddresses[0]?.emailAddress !== process.env.ADMIN_EMAIL ||
+      sessionClaims?.metadata?.role !== process.env.ADMIN_SECRET ||
+      userId !== process.env.ADMIN_USER_ID
+    ) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     const planId = params.id;

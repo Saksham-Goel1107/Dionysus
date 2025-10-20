@@ -53,18 +53,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { userId } = await auth();
-
-    if (!userId) {
+    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress;
+    if (email !== process.env.ADMIN_EMAIL || userId !== process.env.ADMIN_USER_ID) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user || user.emailAddress !== process.env.ADMIN_EMAIL) {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     const {
