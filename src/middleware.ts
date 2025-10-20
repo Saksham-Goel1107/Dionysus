@@ -830,7 +830,7 @@ export default clerkMiddleware(async (auth, request) => {
       }
 
       const clerkUser = await res.json();
-      const hasMFA = clerkUser.totpEnabled || clerkUser.twoFactorEnabled;
+      const hasMFA = clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled;
 
       if (!hasMFA) {
         return new NextResponse(createMFARequiredOverlay(), {

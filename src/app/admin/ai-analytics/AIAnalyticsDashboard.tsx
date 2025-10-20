@@ -17,14 +17,18 @@ import type { LangSmithDashboardData } from '@/types/langsmith';
 import {
   Activity,
   AlertCircle,
+  AlertTriangle,
   BarChart3,
   CheckCircle2,
   Clock,
   DollarSign,
   Download,
+  Eye,
+  MessageSquare,
   RefreshCw,
   TrendingDown,
   TrendingUp,
+  User,
   XCircle,
   Zap,
 } from 'lucide-react';
@@ -60,6 +64,13 @@ export default function AIAnalyticsDashboard({
   const [timeRange, setTimeRange] = useState(initialTimeRange);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+
+  // Reported messages state
+  const [reportsData, setReportsData] = useState<any>(null);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState<string | null>(null);
+  const [reportsStatusFilter, setReportsStatusFilter] = useState('all');
+  const [reportsOffset, setReportsOffset] = useState(0);
 
   const fetchData = useCallback(async () => {
     try {
@@ -114,6 +125,61 @@ export default function AIAnalyticsDashboard({
     URL.revokeObjectURL(url);
   };
 
+  const fetchReportsData = useCallback(async () => {
+    try {
+      setReportsLoading(true);
+      setReportsError(null);
+      const response = await fetch(
+        `/api/admin/reported-messages?status=${reportsStatusFilter}&limit=50&offset=${reportsOffset}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch reports: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to fetch reported messages');
+      }
+
+      setReportsData(result.data);
+    } catch (err) {
+      setReportsError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error fetching reported messages:', err);
+    } finally {
+      setReportsLoading(false);
+    }
+  }, [reportsStatusFilter, reportsOffset]);
+
+  const updateReportStatus = async (reportId: string, status: string, resolution?: string) => {
+    try {
+      const response = await fetch('/api/admin/reported-messages', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reportId, status, resolution }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update report: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to update report');
+      }
+
+      // Refresh the reports data
+      fetchReportsData();
+    } catch (err) {
+      console.error('Error updating report:', err);
+      // You might want to show a toast notification here
+    }
+  };
+
   if (loading && !data) {
     return (
       <div className="space-y-6 p-6">
@@ -152,6 +218,293 @@ export default function AIAnalyticsDashboard({
   }
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+  // Reported Messages Tab Component
+  const ReportedMessagesTab = () => {
+    useEffect(() => {
+      fetchReportsData();
+    }, []); // Empty dependency array - only run on mount
+
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'pending':
+          return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+        case 'reviewed':
+          return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
+        case 'resolved':
+          return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        case 'dismissed':
+          return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+        default:
+          return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
+      }
+    };
+
+    const getReasonIcon = (reason: string) => {
+      switch (reason) {
+        case 'inappropriate':
+          return <AlertTriangle className="h-4 w-4 text-red-500" />;
+        case 'harmful':
+          return <XCircle className="h-4 w-4 text-red-600" />;
+        case 'inaccurate':
+          return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+        case 'offensive':
+          return <MessageSquare className="h-4 w-4 text-orange-500" />;
+        default:
+          return <AlertCircle className="h-4 w-4 text-gray-500" />;
+      }
+    };
+
+    if (reportsLoading && !reportsData) {
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-48" />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (reportsError) {
+      return (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            {reportsError}
+            <Button onClick={fetchReportsData} variant="outline" size="sm" className="ml-4">
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">Reported Messages</h2>
+            <p className="mt-1 text-muted-foreground">
+              Review and manage user-reported messages
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Select value={reportsStatusFilter} onValueChange={setReportsStatusFilter}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Reports</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="reviewed">Reviewed</SelectItem>
+                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="dismissed">Dismissed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" onClick={fetchReportsData}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary Stats */}
+        {reportsData && (
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Reports</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{reportsData.pagination.total}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending</CardTitle>
+                <Clock className="h-4 w-4 text-yellow-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-600">
+                  {reportsData.reports.filter((r: any) => r.status === 'pending').length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {reportsData.reports.filter((r: any) => r.status === 'resolved').length}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Dismissed</CardTitle>
+                <XCircle className="h-4 w-4 text-gray-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-600">
+                  {reportsData.reports.filter((r: any) => r.status === 'dismissed').length}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Reports List */}
+        <div className="space-y-4">
+          {reportsData?.reports.map((report: any) => (
+            <Card key={report.id} className="p-6">
+              <div className="space-y-4">
+                {/* Report Header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    {getReasonIcon(report.reason)}
+                    <div>
+                      <h3 className="font-semibold capitalize">{report.reason.replace('_', ' ')}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Reported by {report.reporter.firstName} {report.reporter.lastName} ({report.reporter.email})
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className={getStatusColor(report.status)}>
+                    {report.status}
+                  </Badge>
+                </div>
+
+                {/* Report Details */}
+                {report.description && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Description:</h4>
+                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                      {report.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Message Details */}
+                <div className="border-l-4 border-blue-200 pl-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-r-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {report.message.role === 'user' ? 'User Message' : 'Assistant Response'}
+                    </span>
+                    {report.message.model && (
+                      <Badge variant="outline" className="text-xs">
+                        {report.message.model}
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm whitespace-pre-wrap">{report.message.content}</p>
+                  {report.message.attachments && report.message.attachments.length > 0 && (
+                    <div className="mt-2">
+                      <span className="text-xs text-muted-foreground">Attachments: </span>
+                      <span className="text-xs">{report.message.attachments.length} files</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Author and Session Info */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div>
+                    <span>Author: {report.author.firstName} {report.author.lastName}</span>
+                    <span className="mx-2">•</span>
+                    <span>Session: {report.session.title || `Session ${report.session.id.slice(-8)}`}</span>
+                  </div>
+                  <div>
+                    Reported: {new Date(report.createdAt).toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Admin Actions */}
+                {report.status === 'pending' && (
+                  <div className="flex gap-2 pt-4 border-t">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => updateReportStatus(report.id, 'reviewed')}
+                    >
+                      <Eye className="mr-2 h-4 w-4" />
+                      Mark as Reviewed
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => updateReportStatus(report.id, 'resolved', 'Issue resolved')}
+                    >
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Resolve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => updateReportStatus(report.id, 'dismissed', 'Report dismissed')}
+                    >
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Dismiss
+                    </Button>
+                  </div>
+                )}
+
+                {/* Resolution */}
+                {report.resolution && (
+                  <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-md border-l-4 border-green-400">
+                    <h4 className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+                      Resolution:
+                    </h4>
+                    <p className="text-sm text-green-700 dark:text-green-300">{report.resolution}</p>
+                    {report.reviewedAt && (
+                      <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                        Resolved on {new Date(report.reviewedAt).toLocaleString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
+
+          {reportsData?.reports.length === 0 && (
+            <Card className="p-8 text-center">
+              <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No Reports Found</h3>
+              <p className="text-muted-foreground">
+                {reportsStatusFilter === 'all'
+                  ? 'There are no reported messages yet.'
+                  : `No ${reportsStatusFilter} reports found.`}
+              </p>
+            </Card>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {reportsData?.pagination.hasMore && (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setReportsOffset(reportsOffset + 50)}
+              disabled={reportsLoading}
+            >
+              Load More
+            </Button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -387,6 +740,7 @@ export default function AIAnalyticsDashboard({
           <TabsTrigger value="costs">Costs</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
           <TabsTrigger value="runs">Recent Runs</TabsTrigger>
+          <TabsTrigger value="reports">Reported Messages</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -981,6 +1335,10 @@ export default function AIAnalyticsDashboard({
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <ReportedMessagesTab />
         </TabsContent>
       </Tabs>
     </div>
