@@ -28,7 +28,7 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Area,
   AreaChart,
@@ -61,7 +61,7 @@ export default function AIAnalyticsDashboard({
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -85,11 +85,11 @@ export default function AIAnalyticsDashboard({
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
 
   useEffect(() => {
     fetchData();
-  }, [timeRange]);
+  }, [timeRange,fetchData]);
 
   useEffect(() => {
     if (autoRefresh) {
@@ -99,7 +99,7 @@ export default function AIAnalyticsDashboard({
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, timeRange]);
+  }, [autoRefresh, timeRange,fetchData]);
 
   const handleExportData = () => {
     if (!data) return;
@@ -198,6 +198,49 @@ export default function AIAnalyticsDashboard({
         </div>
       </div>
 
+      {/* Warning for no data */}
+      {data.metrics.total_runs === 0 && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Alert className="border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10">
+            <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <AlertTitle className="text-yellow-800 dark:text-yellow-400">
+              No Data Available
+            </AlertTitle>
+            <AlertDescription className="text-yellow-700 dark:text-yellow-500">
+              There are no LangSmith runs recorded for the selected time period.
+            </AlertDescription>
+          </Alert>
+
+          <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/10">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-400">
+                <AlertCircle className="h-5 w-5" />
+                Getting Started with LangSmith
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-blue-700 dark:text-blue-300">
+              <p className="mb-2">To start seeing data here, ensure:</p>
+              <ol className="ml-4 list-decimal space-y-1">
+                <li>LangChain is installed in your application</li>
+                <li>LANGCHAIN_API_KEY environment variable is set</li>
+                <li>LANGCHAIN_TRACING_V2=true is enabled</li>
+                <li>Your application is actively making LangChain calls</li>
+              </ol>
+              <p className="mt-3">
+                <a
+                  href="https://docs.smith.langchain.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium underline"
+                >
+                  View LangSmith Documentation →
+                </a>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Key Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -280,11 +323,17 @@ export default function AIAnalyticsDashboard({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(data.metrics.total_tokens / 1000).toFixed(1)}K
+              {data.metrics.total_tokens === 0
+                ? '0.0K'
+                : data.metrics.total_tokens >= 1000000
+                  ? `${(data.metrics.total_tokens / 1000000).toFixed(1)}M`
+                  : `${(data.metrics.total_tokens / 1000).toFixed(1)}K`}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Prompt: {(data.metrics.token_usage.prompt_tokens / 1000).toFixed(1)}K, Completion:{' '}
-              {(data.metrics.token_usage.completion_tokens / 1000).toFixed(1)}K
+              {data.metrics.token_usage.prompt_tokens === 0 &&
+              data.metrics.token_usage.completion_tokens === 0
+                ? 'No token usage data'
+                : `Prompt: ${(data.metrics.token_usage.prompt_tokens / 1000).toFixed(1)}K, Completion: ${(data.metrics.token_usage.completion_tokens / 1000).toFixed(1)}K`}
             </p>
           </CardContent>
         </Card>
@@ -296,7 +345,10 @@ export default function AIAnalyticsDashboard({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {((data.metrics.failed_runs / data.metrics.total_runs) * 100).toFixed(2)}%
+              {data.metrics.total_runs > 0
+                ? ((data.metrics.failed_runs / data.metrics.total_runs) * 100).toFixed(2)
+                : '0.00'}
+              %
             </div>
             <p className="mt-1 text-xs text-muted-foreground">{data.metrics.failed_runs} errors</p>
           </CardContent>
@@ -392,31 +444,55 @@ export default function AIAnalyticsDashboard({
                 <CardDescription>Breakdown by run type</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'LLM', value: data.metrics.runs_by_type.llm },
-                        { name: 'Chain', value: data.metrics.runs_by_type.chain },
-                        { name: 'Tool', value: data.metrics.runs_by_type.tool },
-                        { name: 'Retriever', value: data.metrics.runs_by_type.retriever },
-                        { name: 'Prompt', value: data.metrics.runs_by_type.prompt },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {[...Array(5)].map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                {data.metrics.total_runs === 0 ? (
+                  <div className="flex h-[250px] items-center justify-center">
+                    <div className="text-center">
+                      <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        No run data available for this time period
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'LLM', value: data.metrics.runs_by_type.llm },
+                          { name: 'Chain', value: data.metrics.runs_by_type.chain },
+                          { name: 'Tool', value: data.metrics.runs_by_type.tool },
+                          { name: 'Retriever', value: data.metrics.runs_by_type.retriever },
+                          { name: 'Prompt', value: data.metrics.runs_by_type.prompt },
+                        ].filter((item) => item.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        label={({ name, value, percent }) =>
+                          percent > 0.05
+                            ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                            : ''
+                        }
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {[
+                          { name: 'LLM', value: data.metrics.runs_by_type.llm },
+                          { name: 'Chain', value: data.metrics.runs_by_type.chain },
+                          { name: 'Tool', value: data.metrics.runs_by_type.tool },
+                          { name: 'Retriever', value: data.metrics.runs_by_type.retriever },
+                          { name: 'Prompt', value: data.metrics.runs_by_type.prompt },
+                        ]
+                          .filter((item) => item.value > 0)
+                          .map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => [`${value} runs`, 'Count']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
 
@@ -424,30 +500,46 @@ export default function AIAnalyticsDashboard({
             <Card>
               <CardHeader>
                 <CardTitle>Status Distribution</CardTitle>
-                <CardDescription>Success vs errors</CardDescription>
+                <CardDescription>Success vs errors vs pending</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart
-                    data={[
-                      {
-                        name: 'Status',
-                        Success: data.metrics.runs_by_status.success,
-                        Error: data.metrics.runs_by_status.error,
-                        Pending: data.metrics.runs_by_status.pending,
-                      },
-                    ]}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="Success" fill="#10b981" />
-                    <Bar dataKey="Error" fill="#ef4444" />
-                    <Bar dataKey="Pending" fill="#f59e0b" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {data.metrics.total_runs === 0 ? (
+                  <div className="flex h-[250px] items-center justify-center">
+                    <div className="text-center">
+                      <AlertCircle className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        No run data available for this time period
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={[
+                          { name: 'Success', value: data.metrics.runs_by_status.success },
+                          { name: 'Error', value: data.metrics.runs_by_status.error },
+                          { name: 'Pending', value: data.metrics.runs_by_status.pending },
+                        ].filter((item) => item.value > 0)}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={true}
+                        label={({ name, value, percent }) =>
+                          `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                        }
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        <Cell fill="#10b981" />
+                        <Cell fill="#ef4444" />
+                        <Cell fill="#f59e0b" />
+                      </Pie>
+                      <Tooltip formatter={(value: number) => [`${value} runs`, 'Count']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </div>

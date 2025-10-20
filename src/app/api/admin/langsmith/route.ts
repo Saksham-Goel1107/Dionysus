@@ -14,6 +14,55 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// Helper functions to extract token usage and cost from LangSmith runs
+function extractTokenUsage(
+  run: any,
+  type: 'total_tokens' | 'prompt_tokens' | 'completion_tokens',
+): number | null {
+  // Check multiple possible locations where token usage might be stored
+  const possibleLocations = [
+    run.extra?.[type],
+    run.extra?.metadata?.[type],
+    run.extra?.token_usage?.[type],
+    run.feedback_stats?.[type],
+    run.outputs?.token_usage?.[type],
+    run.outputs?.[type],
+    run[type],
+  ];
+
+  for (const location of possibleLocations) {
+    if (typeof location === 'number' && location >= 0) {
+      return location;
+    }
+  }
+
+  return null;
+}
+
+function extractCost(
+  run: any,
+  type: 'total_cost' | 'prompt_cost' | 'completion_cost',
+): number | null {
+  // Check multiple possible locations where cost might be stored
+  const possibleLocations = [
+    run.extra?.[type],
+    run.extra?.metadata?.[type],
+    run.extra?.cost?.[type],
+    run.feedback_stats?.[type],
+    run.outputs?.cost?.[type],
+    run.outputs?.[type],
+    run[type],
+  ];
+
+  for (const location of possibleLocations) {
+    if (typeof location === 'number' && location >= 0) {
+      return location;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Admin API endpoint for fetching comprehensive LangSmith metrics
  * Requires admin authentication
@@ -65,7 +114,6 @@ export async function GET(req: NextRequest) {
     const projectName = searchParams.get('project') || undefined;
 
     // Calculate date range
-    const endDate = new Date();
     const startDate = new Date();
     switch (timeRange) {
       case '24h':
@@ -84,6 +132,15 @@ export async function GET(req: NextRequest) {
         startDate.setDate(startDate.getDate() - 7);
     }
 
+    // Helper function to safely convert date
+    const safeDateToISOString = (date: any): string | null => {
+      if (!date) return null;
+      if (typeof date === 'string') return date;
+      if (date instanceof Date) return date.toISOString();
+      if (date.toISOString) return date.toISOString();
+      return new Date(date).toISOString();
+    };
+
     // Fetch projects first
     let allProjects = [];
     try {
@@ -91,14 +148,16 @@ export async function GET(req: NextRequest) {
       for await (const project of projectsIterator) {
         allProjects.push({
           id: project.id,
-          name: project.name,
+          name: project.name || 'Unnamed Project',
           description: project.description || null,
-          created_at: project.created_at?.toISOString() || new Date().toISOString(),
-          updated_at: project.created_at?.toISOString() || new Date().toISOString(),
           run_count: 0,
           tenant_id: project.tenant_id || '',
-          metadata: project.metadata || {},
-          tags: project.tags || [],
+          created_at:
+            safeDateToISOString((project as any).created_at || (project as any).createdAt) || '',
+          updated_at:
+            safeDateToISOString((project as any).updated_at || (project as any).updatedAt) || '',
+          metadata: {},
+          tags: [],
         });
       }
     } catch (error) {
@@ -121,20 +180,10 @@ export async function GET(req: NextRequest) {
           const runsIterator = client.listRuns({
             projectName: project.name,
             startTime: startDate,
-            endTime: endDate,
             limit: 100, // Limit per project to prevent memory issues
           });
 
           for await (const run of runsIterator) {
-            // Helper function to safely convert date
-            const safeDateToISOString = (date: any): string | null => {
-              if (!date) return null;
-              if (typeof date === 'string') return date;
-              if (date instanceof Date) return date.toISOString();
-              if (date.toISOString) return date.toISOString();
-              return new Date(date).toISOString();
-            };
-
             const langsmithRun: LangSmithRun = {
               id: run.id,
               name: run.name || 'Unnamed',
@@ -151,12 +200,12 @@ export async function GET(req: NextRequest) {
               trace_id: run.trace_id || run.id,
               session_id: run.session_id || null,
               session_name: (run.extra?.metadata as any)?.session_name || null,
-              total_tokens: (run.extra?.metadata as any)?.total_tokens || null,
-              prompt_tokens: (run.extra?.metadata as any)?.prompt_tokens || null,
-              completion_tokens: (run.extra?.metadata as any)?.completion_tokens || null,
-              total_cost: (run.extra?.metadata as any)?.total_cost || null,
-              prompt_cost: (run.extra?.metadata as any)?.prompt_cost || null,
-              completion_cost: (run.extra?.metadata as any)?.completion_cost || null,
+              total_tokens: extractTokenUsage(run, 'total_tokens'),
+              prompt_tokens: extractTokenUsage(run, 'prompt_tokens'),
+              completion_tokens: extractTokenUsage(run, 'completion_tokens'),
+              total_cost: extractCost(run, 'total_cost'),
+              prompt_cost: extractCost(run, 'prompt_cost'),
+              completion_cost: extractCost(run, 'completion_cost'),
               serialized: run.serialized || null,
               events: run.events || null,
               latency: (() => {
@@ -211,19 +260,16 @@ export async function GET(req: NextRequest) {
       .sort((a, b) => b.cost - a.cost)
       .slice(0, 10);
 
-    // Fetch projects
-    let projects = allProjects;
-
     const dashboardData: LangSmithDashboardData = {
       metrics,
       timeSeries,
       recentRuns,
-      projects,
       sessions: [], // Sessions would need separate implementation
       errorAnalysis,
       performanceAnalysis,
       costAnalysis,
       topRuns,
+      projects: allProjects,
     };
 
     return NextResponse.json(
