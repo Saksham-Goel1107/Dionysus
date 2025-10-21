@@ -3224,7 +3224,7 @@ const GlobalAIAssistant: React.FC = () => {
                   <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-border bg-background shadow-lg dark:border-gray-700 dark:bg-gray-900">
                     <div className="p-3">
                       <div className="mb-3 px-1 text-xs font-semibold text-muted-foreground">
-                        Select AI Model
+                        Select AI Model <span className="font-bold">({AI_MODELS.length-1})</span> Models Available
                       </div>
                       <Input
                         placeholder="Search models..."

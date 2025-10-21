@@ -832,7 +832,7 @@ export default clerkMiddleware(async (auth, request) => {
       const clerkUser = await res.json();
       const hasMFA = clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled;
 
-      if (!hasMFA) {
+      if (hasMFA) {
         return new NextResponse(createMFARequiredOverlay(), {
           status: 403,
           headers: {
@@ -959,6 +959,12 @@ export default clerkMiddleware(async (auth, request) => {
       }
     } catch (authError) {
       console.error('Auth error in middleware:', authError);
+      if (pathname.startsWith('/api/')) {
+        return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
       return NextResponse.redirect(new URL('/sign-in', request.url));
     }
   }

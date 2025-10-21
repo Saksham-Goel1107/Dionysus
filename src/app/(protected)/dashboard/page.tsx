@@ -1,7 +1,7 @@
 'use client';
 import useProject from '@/hooks/use-project';
 import { api } from '@/trpc/react';
-import { ExternalLink, Github, Loader2, MessageCirclePlus } from 'lucide-react';
+import { Copy, Download, ExternalLink, Github, Loader2, MessageCirclePlus } from 'lucide-react';
 import Link from 'next/link';
 import ArchiveButton from './_components/ArchiveButton';
 import AskQuestionCard from './_components/AskQuestionCard';
@@ -31,9 +31,10 @@ type Props = {};
 const Page = ({}: Props) => {
   const { project, projects, projectId } = useProject();
   const { isLoading: isProjectsLoading } = api.project.getProjects.useQuery();
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isLeavingLoading, setisLeavingLoading] = useState(false);
-  const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState<boolean>(false);
+  const [isLeavingLoading, setisLeavingLoading] = useState<boolean>(false);
+  const [showPricingModal, setShowPricingModal] = useState<boolean>(false);
+  const [showCloneCommand, setShowCloneCommand] = useState<boolean>(false);
   const utils = api.useContext();
 
   const { value: maintenanceScheduled } = useFeatureFlag('maintenancescheduled', false);
@@ -74,6 +75,42 @@ const Page = ({}: Props) => {
 
   const cancelLeaveProject = () => {
     setShowConfirm(false);
+  };
+
+  const handleDownloadZip = () => {
+    if (!project || !project.githubUrl) return;
+
+    // Extract owner/repo from GitHub URL
+    const urlMatch = project.githubUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    if (!urlMatch) return;
+
+    const [, owner, repo] = urlMatch;
+    const zipUrl = `https://github.com/${owner}/${repo}/archive/main.zip`;
+
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = zipUrl;
+    link.download = `${repo}-main.zip`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success('Download started!');
+  };
+
+  const handleCopyCloneCommand = async () => {
+    if (!project || !project.githubUrl) return;
+
+    const cloneCommand = `git clone ${project.githubUrl}.git`;
+
+    try {
+      await navigator.clipboard.writeText(cloneCommand);
+      toast.success('Clone command copied to clipboard!');
+      setShowCloneCommand(true);
+      setTimeout(() => setShowCloneCommand(false), 3000);
+    } catch {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   useEffect(() => {
@@ -151,22 +188,54 @@ const Page = ({}: Props) => {
         <div className="flex flex-wrap items-center justify-between gap-y-4">
           {/* GITHUB LINK */}
           <div className="w-fit rounded-md bg-primary px-4 py-3">
-            <div className="flex items-center">
-              <Github className="size-5 text-white" />
-              <div className="ml-2">
-                <p className="text-sm font-medium text-white">
-                  This project is linked to{' '}
-                  <Link
-                    href={project.githubUrl ?? ''}
-                    className="inline-flex items-center text-white/80 hover:underline"
-                    target="_blank"
-                  >
-                    {project.githubUrl}
-                    <ExternalLink className="ml-1 size-4" />
-                  </Link>
-                </p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center">
+                <Github className="size-5 text-white" />
+                <div className="ml-2">
+                  <p className="text-sm font-medium text-white">
+                    This project is linked to{' '}
+                    <Link
+                      href={project.githubUrl ?? ''}
+                      className="inline-flex items-center text-white/80 hover:underline"
+                      target="_blank"
+                    >
+                      {project.githubUrl}
+                      <ExternalLink className="ml-1 size-4" />
+                    </Link>
+                  </p>
+                </div>
+              </div>
+
+              {/* Download and Clone Buttons */}
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleDownloadZip}
+                  className="flex items-center gap-1 bg-white/10 text-white hover:bg-white/20"
+                >
+                  <Download className="size-4" />
+                  Download ZIP
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleCopyCloneCommand}
+                  className="flex items-center gap-1 bg-white/10 text-white hover:bg-white/20"
+                >
+                  <Copy className="size-4" />
+                  Clone
+                </Button>
               </div>
             </div>
+
+            {/* Clone Command Display */}
+            {showCloneCommand && (
+              <div className="mt-2 rounded bg-white/10 p-2">
+                <code className="text-xs text-white/90">git clone {project.githubUrl}.git</code>
+              </div>
+            )}
           </div>
 
           <div className="h-4"></div>
