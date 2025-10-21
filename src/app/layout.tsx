@@ -31,6 +31,7 @@ import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import MobileInfoPrompt from './components/MobileInfoPrompt';
 import Offline from './offline';
+import { HighlightInit } from '@highlight-run/next/client'
 
 export const metadata: Metadata = {
   title: {
@@ -133,6 +134,17 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const showMaintenance = isMaintenance && !hasValidBypass;
 
   return (
+    <>
+    <HighlightInit
+        projectId={process.env.HIGHLIGHT_PROJECT_ID || 'your-project-id'}
+        serviceName="my-nextjs-frontend"
+        tracingOrigins
+        networkRecording={{
+          enabled: process.env.NODE_ENV === 'production' ? true : false,
+          recordHeadersAndBody: true,
+          urlBlocklist: [],
+        }}
+      />
     <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
       <Head>
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
@@ -284,5 +296,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         </ErrorBoundary>
       </body>
     </html>
+    </>
   );
 }

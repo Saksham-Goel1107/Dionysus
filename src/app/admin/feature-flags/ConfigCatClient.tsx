@@ -176,42 +176,7 @@ export default function ConfigCatClient() {
     [selectedEnvironment, toast],
   );
 
-  const fetchSettings = useCallback(
-    async (configId: string, environmentId: string) => {
-      try {
-        setSettingsLoading(true);
-        const response = await fetch(`/api/admin/configcat/settings?configId=${configId}`);
-        if (!response.ok) throw new Error('Failed to fetch settings');
-
-        const data = await response.json();
-        const settingsData: SettingWithValue[] = data.settings || [];
-
-        setSettings(
-          settingsData.map((s) => ({
-            ...s,
-            loading: true,
-          })),
-        );
-
-        // Fetch values for each setting
-        for (const setting of settingsData) {
-          fetchSettingValue(setting.settingId, environmentId);
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to fetch feature flags.',
-          variant: 'destructive',
-        });
-      } finally {
-        setSettingsLoading(false);
-      }
-    },
-    [toast],
-  );
-
-  const fetchSettingValue = async (settingId: number, environmentId: string) => {
+  const fetchSettingValue = useCallback(async (settingId: number, environmentId: string) => {
     try {
       const response = await fetch(
         `/api/admin/configcat/settings/${settingId}?environmentId=${environmentId}`,
@@ -336,7 +301,42 @@ export default function ConfigCatClient() {
         ),
       );
     }
-  };
+  }, [settings]);
+
+  const fetchSettings = useCallback(
+    async (configId: string, environmentId: string) => {
+      try {
+        setSettingsLoading(true);
+        const response = await fetch(`/api/admin/configcat/settings?configId=${configId}`);
+        if (!response.ok) throw new Error('Failed to fetch settings');
+
+        const data = await response.json();
+        const settingsData: SettingWithValue[] = data.settings || [];
+
+        setSettings(
+          settingsData.map((s) => ({
+            ...s,
+            loading: true,
+          })),
+        );
+
+        // Fetch values for each setting
+        for (const setting of settingsData) {
+          fetchSettingValue(setting.settingId, environmentId);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to fetch feature flags.',
+          variant: 'destructive',
+        });
+      } finally {
+        setSettingsLoading(false);
+      }
+    },
+    [toast, fetchSettingValue],
+  );
 
   useEffect(() => {
     fetchProducts();

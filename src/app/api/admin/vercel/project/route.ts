@@ -1,12 +1,12 @@
 import { vercelClient } from '@/lib/vercel-client';
 import { auth } from '@clerk/nextjs/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * Admin API: Get project information
  * GET /api/admin/vercel/project
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId, sessionClaims } = await auth();
 

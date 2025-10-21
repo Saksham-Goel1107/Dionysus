@@ -141,7 +141,6 @@ export class ConfigCatManagementClient {
     environmentId: string,
     settingId: number,
     value: boolean | string | number,
-    reason?: string,
   ): Promise<SettingValue> {
     const response = await fetch(
       `${this.baseUrl}/v1/environments/${environmentId}/settings/${settingId}/value`,

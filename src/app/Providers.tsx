@@ -13,6 +13,7 @@ import AiChatSidebar from './components/AiChatSidebar';
 import CookieBanner from './components/CookieBanner';
 import RecaptchaGate from './components/RecaptchaGate';
 import LogRocket from 'logrocket';
+import { H } from '@highlight-run/next/client';
 if (process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_LOGROCKET_KEY) {
   LogRocket.init(process.env.NEXT_PUBLIC_LOGROCKET_KEY);
 }
@@ -30,6 +31,16 @@ function Providers({ children }: { children: React.ReactNode }) {
   const userData = user?.user;
   const [isAbTester, setIsAbTester] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (user?.user && process.env.NODE_ENV === 'production') {
+      H.identify(user.user.primaryEmailAddress?.emailAddress || 'anonymus@example.com', {
+        id: userId,
+        highlightDisplayName: user.user.fullName || 'Anonymus',
+        avatar: user.user.imageUrl || '',
+      });
+    }
+  }, [user.user,userId]);
 
   useEffect(() => {
     if (user?.user && process.env.NODE_ENV === 'production') {
@@ -170,7 +181,6 @@ function Providers({ children }: { children: React.ReactNode }) {
     display: showTranslate && isTranslateReady ? 'block' : 'none',
     visibility: (isTranslateReady ? 'visible' : 'hidden') as React.CSSProperties['visibility'], // Always render, hide until ready
   };
-
   return (
     <>
       {isAbTester && (

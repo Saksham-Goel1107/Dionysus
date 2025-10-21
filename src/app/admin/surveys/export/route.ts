@@ -1,5 +1,4 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 import { db } from '@/server/db';
 import { NextResponse } from 'next/server';
 
