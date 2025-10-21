@@ -70,7 +70,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const awaitedParams = await params;
     const settingId = parseInt(awaitedParams.id);
     const body = await request.json();
-    const { environmentId, value, reason } = body;
+    const { environmentId, value } = body;
 
     if (!environmentId || value === undefined) {
       return NextResponse.json(
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 
     const client = createConfigCatClient(apiKey);
-    const updatedValue = await client.updateSettingValue(environmentId, settingId, value, reason);
+    const updatedValue = await client.updateSettingValue(environmentId, settingId, value);
 
     return NextResponse.json({ value: updatedValue });
   } catch (error) {
