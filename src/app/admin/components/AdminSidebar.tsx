@@ -11,7 +11,6 @@ import {
   ChevronRight,
   CreditCard,
   Edit,
-  FileText,
   Flag,
   ImageIcon,
   Key,
@@ -100,7 +99,6 @@ export default function AdminSidebar() {
     { href: '/admin/blogs', label: 'Blogs', icon: Edit },
     { href: '/admin/image-upload', label: 'Image Upload', icon: ImageIcon },
     { href: '/admin/surveys', label: 'Surveys', icon: ChartLine },
-    { href: '/admin/pageclip', label: 'Pageclip', icon: FileText },
     { href: '/admin/error-tracking', label: 'Error Tracking', icon: AlertCircle },
   ];
 

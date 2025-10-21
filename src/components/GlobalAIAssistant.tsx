@@ -1710,7 +1710,7 @@ const GlobalAIAssistant: React.FC = () => {
     const newAssistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const assistantMessage: Message = {
       role: 'assistant',
-      content: '',
+      content: 'Analyzing your question with extended thinking...', // Better initial message for regeneration
       timestamp: new Date(),
       id: newAssistantMessageId,
       sources: [],
@@ -1770,9 +1770,7 @@ const GlobalAIAssistant: React.FC = () => {
                 const data = line.slice(6).trim();
 
                 if (data === '[DONE]') {
-                  setIsLoading(false);
-                  setIsGenerating(false);
-                  setAbortController(null);
+                  // Just break the loop - loading states will be cleared by 'complete' event
                   break;
                 }
 
@@ -2048,9 +2046,7 @@ const GlobalAIAssistant: React.FC = () => {
                 const data = line.slice(6).trim();
 
                 if (data === '[DONE]') {
-                  setIsLoading(false);
-                  setIsGenerating(false);
-                  setAbortController(null);
+                  // Just break the loop - loading states will be cleared by 'complete' event
                   break;
                 }
 
@@ -2128,17 +2124,18 @@ const GlobalAIAssistant: React.FC = () => {
                     setToastMessage('Image generation failed');
                     setTimeout(() => setToastMessage(''), 3000);
                   } else if (parsed.type === 'complete') {
-                    // Final update with sanitized content
+                    // Final update with sanitized content - only update if we don't have content from chunks
                     const finalContent = sanitizeInput(parsed.fullResponse);
                     setMessages((prev) =>
                       prev.map((msg) =>
                         msg.id === assistantMessageId
                           ? {
                               ...msg,
-                              content: finalContent,
-                              sources: parsed.sources || [],
-                              followUpQuestions: parsed.followUpQuestions || [],
-                              imageUrl: parsed.imageUrl,
+                              content: msg.content || finalContent, // Keep accumulated content if exists
+                              sources: parsed.sources || msg.sources || [],
+                              followUpQuestions:
+                                parsed.followUpQuestions || msg.followUpQuestions || [],
+                              imageUrl: parsed.imageUrl || msg.imageUrl,
                             }
                           : msg,
                       ),
@@ -2146,13 +2143,17 @@ const GlobalAIAssistant: React.FC = () => {
 
                     // Save assistant response to database
                     if (sessionId && isSignedIn) {
+                      const messageToSave = messages.find((m) => m.id === assistantMessageId);
+                      const contentToSave = messageToSave?.content || finalContent;
+
                       addMessageMutation.mutate({
                         sessionId,
                         role: 'assistant',
-                        content: finalContent,
-                        sources: parsed.sources || undefined,
-                        followUpQuestions: parsed.followUpQuestions || undefined,
-                        imageUrl: parsed.imageUrl || undefined,
+                        content: contentToSave,
+                        sources: parsed.sources || messageToSave?.sources || undefined,
+                        followUpQuestions:
+                          parsed.followUpQuestions || messageToSave?.followUpQuestions || undefined,
+                        imageUrl: parsed.imageUrl || messageToSave?.imageUrl || undefined,
                         model:
                           selectedModel === 'auto'
                             ? selectAutoModel(sanitizedQuestion)
@@ -2617,9 +2618,7 @@ const GlobalAIAssistant: React.FC = () => {
                 const data = line.slice(6).trim();
 
                 if (data === '[DONE]') {
-                  setIsLoading(false);
-                  setIsGenerating(false);
-                  setAbortController(null);
+                  // Just break the loop - loading states will be cleared by 'complete' event
                   break;
                 }
 
@@ -3224,7 +3223,8 @@ const GlobalAIAssistant: React.FC = () => {
                   <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-border bg-background shadow-lg dark:border-gray-700 dark:bg-gray-900">
                     <div className="p-3">
                       <div className="mb-3 px-1 text-xs font-semibold text-muted-foreground">
-                        Select AI Model <span className="font-bold">({AI_MODELS.length-1})</span> Models Available
+                        Select AI Model <span className="font-bold">({AI_MODELS.length - 1})</span>{' '}
+                        Models Available
                       </div>
                       <Input
                         placeholder="Search models..."

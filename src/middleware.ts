@@ -830,14 +830,14 @@ export default clerkMiddleware(async (auth, request) => {
       }
 
       const clerkUser = await res.json();
-      const hasMFA = clerkUser?.totpEnabled || clerkUser?.twoFactorEnabled;
+      const hasMFA = clerkUser?.totp_enabled || clerkUser?.two_factor_enabled;
 
-      if (hasMFA) {
+      if (!hasMFA) {
         return new NextResponse(createMFARequiredOverlay(), {
           status: 403,
           headers: {
-            'Content-Type': 'text/html',
-            'Cache-Control': 'no-store',
+        'Content-Type': 'text/html',
+        'Cache-Control': 'no-store',
           },
         });
       }

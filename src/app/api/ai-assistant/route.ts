@@ -214,46 +214,58 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   });
 }
 
-// Fetch user memories and survey data from database
+// Fetch user memories and survey data from database (optimized single query)
 async function getUserMemoryContext(userId: string): Promise<string> {
   try {
+    // Single query to get both memories and survey data
     const [memories, survey] = await Promise.all([
       db.userMemory.findMany({
         where: { userId },
         orderBy: { lastUsedAt: 'desc' },
-        take: 20,
+        take: 15, // Reduced from 20 to limit data sent to AI
+        select: {
+          category: true,
+          key: true,
+          value: true,
+        },
       }),
       db.survey.findUnique({
         where: { userId },
+        select: {
+          companyName: true,
+          companySize: true,
+          industry: true,
+          role: true,
+          usagePurpose: true,
+          hearAboutUs: true,
+          expectedFeatures: true,
+          developmentExperience: true,
+          githubExperience: true,
+          feedbackFrequency: true,
+          additionalFeedback: true,
+        },
       }),
     ]);
 
     let context = '';
 
-    // Add survey data if available
+    // Add survey data if available (limit length to prevent token bloat)
     if (survey) {
-      context += '\n\nUSER PROFILE (From onboarding survey):';
-      if (survey.companyName) context += `\n- Company: ${survey.companyName}`;
-      if (survey.companySize) context += `\n- Company Size: ${survey.companySize}`;
-      if (survey.industry) context += `\n- Industry: ${survey.industry}`;
-      if (survey.role) context += `\n- Role: ${survey.role}`;
-      if (survey.usagePurpose) context += `\n- Usage Purpose: ${survey.usagePurpose}`;
-      if (survey.hearAboutUs) context += `\n- How they heard about us: ${survey.hearAboutUs}`;
+      context += '\n\nUSER PROFILE:';
+      if (survey.companyName) context += `\n- Company: ${survey.companyName.substring(0, 50)}`;
+      if (survey.companySize) context += `\n- Size: ${survey.companySize}`;
+      if (survey.industry) context += `\n- Industry: ${survey.industry.substring(0, 30)}`;
+      if (survey.role) context += `\n- Role: ${survey.role.substring(0, 30)}`;
+      if (survey.usagePurpose) context += `\n- Purpose: ${survey.usagePurpose.substring(0, 50)}`;
       if (survey.expectedFeatures?.length)
-        context += `\n- Expected Features: ${survey.expectedFeatures.join(', ')}`;
-      if (survey.developmentExperience)
-        context += `\n- Development Experience: ${survey.developmentExperience} years`;
-      if (survey.githubExperience)
-        context += `\n- GitHub Experience: ${survey.githubExperience} years`;
-      if (survey.feedbackFrequency)
-        context += `\n- Feedback Frequency: ${survey.feedbackFrequency}`;
-      if (survey.additionalFeedback)
-        context += `\n- Additional Feedback: ${survey.additionalFeedback}`;
+        context += `\n- Features: ${survey.expectedFeatures.slice(0, 3).join(', ')}`;
+      if (survey.developmentExperience) context += `\n- Dev Exp: ${survey.developmentExperience}y`;
+      if (survey.githubExperience) context += `\n- GitHub Exp: ${survey.githubExperience}y`;
     }
 
-    // Add memories if available
+    // Add memories if available (limit to prevent token overflow)
     if (memories.length > 0) {
-      context += '\n\nUSER MEMORY (Information learned from previous conversations):';
+      context += '\n\nUSER MEMORY:';
 
       const categorized: Record<string, typeof memories> = {};
       for (const memory of memories) {
@@ -263,22 +275,30 @@ async function getUserMemoryContext(userId: string): Promise<string> {
         categorized[memory.category]!.push(memory);
       }
 
+      // Limit categories and items per category
+      const categoryLimit = 3;
+      const itemsPerCategoryLimit = 2;
+      let categoryCount = 0;
+
       for (const [category, items] of Object.entries(categorized)) {
+        if (categoryCount >= categoryLimit) break;
         context += `\n\n${category.toUpperCase()}:`;
-        for (const item of items) {
-          context += `\n- ${item.key}: ${item.value}`;
+        for (const item of items.slice(0, itemsPerCategoryLimit)) {
+          context += `\n- ${item.key}: ${item.value.substring(0, 100)}`;
         }
+        categoryCount++;
       }
     }
 
-    return context;
+    // Limit total context length to prevent AI token limits
+    return context.length > 1500 ? context.substring(0, 1500) + '...' : context;
   } catch (error) {
     console.error('Error fetching user context:', error);
     return '';
   }
 }
 
-// Extract and store user information from conversations
+// Extract and store user information from conversations (optimized with conditions)
 async function extractAndStoreMemories(
   userId: string,
   sessionId: string,
@@ -286,59 +306,46 @@ async function extractAndStoreMemories(
   assistantResponse: string,
 ): Promise<void> {
   try {
-    // Use AI to extract memorable information from the conversation
-    const memoryExtractionPrompt = `Analyze this conversation and extract important, actionable information that should be remembered for future conversations. Focus on extracting high-quality, specific memories that would genuinely help personalize future interactions.
+    // Skip memory extraction for very short conversations or generic questions
+    if (userMessage.length < 20 || assistantResponse.length < 50) {
+      return;
+    }
 
-User Message: ${userMessage}
-Assistant Response: ${assistantResponse}
+    // Skip for obvious non-personal questions
+    const skipPatterns = [
+      /^what is/i,
+      /^how do/i,
+      /^explain/i,
+      /^show me/i,
+      /^tell me/i,
+      /^can you/i,
+      /^please/i,
+      /^help/i,
+    ];
 
-Extract ONLY information that meets these criteria:
-1. User preferences that affect how you should respond (e.g., "I prefer TypeScript over JavaScript")
-2. Technical skills or experience level (e.g., "I'm new to React" or "I work with Python daily")
-3. Specific tools, frameworks, or technologies they mentioned using
-4. Project context or goals they're working toward
-5. Communication preferences (e.g., "I prefer detailed explanations" or "Keep it concise")
-6. Domain expertise or interests that could inform responses
+    if (skipPatterns.some((pattern) => pattern.test(userMessage.trim()))) {
+      return;
+    }
 
-IMPORTANT: Only extract information that is EXPLICITLY stated or STRONGLY implied. Do not make assumptions or infer preferences that aren't clearly indicated.
+    // Use AI to extract memorable information from the conversation (with shorter prompt)
+    const memoryExtractionPrompt = `Extract key user preferences or facts from this conversation. Focus ONLY on specific, actionable information.
 
-For each memory, assign a confidence score (0.0 to 1.0) based on:
-- 1.0 = Explicitly stated fact (e.g., "I use TypeScript")
-- 0.9 = Very strongly implied with clear evidence
-- 0.8 = Clearly stated preference or skill
-- 0.7 = Mentioned in context with reasonable certainty
-- 0.6 = Inferred from multiple contextual clues
-- 0.5 or below = Do NOT extract (too uncertain)
+User: ${userMessage.substring(0, 200)}
+Assistant: ${assistantResponse.substring(0, 300)}
 
-Format as JSON with this structure:
-{"memories": [
-  {"key": "specific_preference_or_fact", "value": "exact_detail_mentioned", "category": "preference|skill|tool|context|goal", "confidence": 0.95}
-]}
+Return JSON: {"memories": [{"key": "fact_name", "value": "fact_value", "category": "preference|skill|tool", "confidence": 0.9}]}
 
-Examples of GOOD memories with confidence:
-- {"key": "programming_language", "value": "TypeScript", "category": "skill", "confidence": 1.0} (explicitly stated)
-- {"key": "experience_level", "value": "senior_developer", "category": "skill", "confidence": 0.9} (clearly demonstrated)
-- {"key": "preferred_framework", "value": "Next.js", "category": "preference", "confidence": 0.85} (stated preference)
-- {"key": "current_project", "value": "building_ecommerce_site", "category": "context", "confidence": 0.95} (mentioned directly)
-
-Examples of BAD memories (don't extract these):
-- Generic statements like "I like coding"
-- Assumptions like "probably uses VS Code"
-- Vague preferences like "I want good code"
-- Anything with confidence below 0.6
-
-If no high-quality, specific information exists to remember, return: {"memories": []}`;
+If no specific facts, return: {"memories": []}`;
 
     const extractionModel = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY!,
       model: 'gemini-2.5-flash',
-      temperature: 0.3, // Low temperature for consistent extraction
+      temperature: 0.2,
+      maxOutputTokens: 500, // Limit output
     });
 
     const extractionResponse = await extractionModel.invoke([
-      new SystemMessage(
-        'You are a memory extraction assistant. Extract key information concisely.',
-      ),
+      new SystemMessage('Extract user facts concisely as JSON.'),
       new HumanMessage(memoryExtractionPrompt),
     ]);
 
@@ -346,24 +353,23 @@ If no high-quality, specific information exists to remember, return: {"memories"
 
     // Parse JSON response
     const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return;
-    }
+    if (!jsonMatch) return;
 
     const extracted = JSON.parse(jsonMatch[0]) as {
       memories: Array<{ key: string; value: string; category: string; confidence: number }>;
     };
 
-    // Store extracted memories - only store those with confidence >= 0.6
-    for (const memory of extracted.memories) {
-      if (memory.key && memory.value) {
-        // Ensure confidence is valid, default to 0.8 if not provided
-        const confidence =
-          memory.confidence && memory.confidence >= 0.6 && memory.confidence <= 1.0
-            ? memory.confidence
-            : 0.8;
+    // Store only high-confidence memories
+    const highConfidenceMemories = extracted.memories.filter((m) => m.confidence >= 0.7);
 
-        await db.userMemory.upsert({
+    if (highConfidenceMemories.length === 0) return;
+
+    // Batch upsert operations
+    const upsertPromises = highConfidenceMemories
+      .filter((memory) => memory.key && memory.value)
+      .slice(0, 3) // Limit to 3 memories per conversation
+      .map((memory) =>
+        db.userMemory.upsert({
           where: {
             userId_key: {
               userId: userId,
@@ -373,36 +379,26 @@ If no high-quality, specific information exists to remember, return: {"memories"
           create: {
             userId: userId,
             key: memory.key,
-            value: memory.value,
+            value: memory.value.substring(0, 200), // Limit value length
             category: memory.category || 'general',
             source: sessionId,
-            confidence: confidence,
+            confidence: Math.min(memory.confidence, 1.0),
             lastUsedAt: new Date(),
           },
           update: {
-            value: memory.value,
-            confidence: confidence, // Update confidence on subsequent extractions
+            value: memory.value.substring(0, 200),
+            confidence: Math.min(memory.confidence, 1.0),
             lastUsedAt: new Date(),
             updatedAt: new Date(),
           },
-        });
-      }
-    }
+        }),
+      );
+
+    await Promise.all(upsertPromises);
   } catch (error) {
     console.error('Error extracting and storing memories:', error);
     // Don't throw - memory extraction is non-critical
   }
-}
-
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  attachments?: FileAttachment[];
-  feedback?: {
-    isLike: boolean;
-    timestamp: string;
-  };
 }
 
 interface FileAttachment {
@@ -1186,12 +1182,20 @@ export async function POST(request: NextRequest) {
     const modelId = (selectedModel as AIModelId) || 'gemini-2.5-flash';
     const model = initializeAIModel(modelId, isRegeneration || false);
 
-    // Fetch user memory context from database
-    const userMemoryContext = await getUserMemoryContext(userId);
+    // Fetch user memory context from database (skip for very basic queries)
+    const shouldFetchMemories =
+      sanitizedQuestion.length > 30 && // Skip very short questions
+      !sanitizedQuestion.toLowerCase().includes('hello') &&
+      !sanitizedQuestion.toLowerCase().includes('hi') &&
+      !sanitizedQuestion.toLowerCase().includes('thank') &&
+      !sanitizedQuestion.toLowerCase().includes('help');
 
-    // Fetch group system prompt if session belongs to a group
+    const userMemoryContext = shouldFetchMemories ? await getUserMemoryContext(userId) : '';
+
+    // Fetch group system prompt if session belongs to a group (skip for basic queries)
     let groupSystemPrompt = '';
-    if (groupId) {
+    if (groupId && shouldFetchMemories) {
+      // Only fetch group prompt if we're fetching memories
       try {
         const group = await db.chatGroup.findFirst({
           where: {
@@ -1213,8 +1217,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if web search is needed
-    const needsWebSearch = requiresWebSearch(sanitizedQuestion);
+    // Check if web search is needed (skip for simple questions)
+    const needsWebSearch =
+      requiresWebSearch(sanitizedQuestion) &&
+      sanitizedQuestion.length > 50 && // Skip very short questions
+      !sanitizedQuestion.toLowerCase().includes('hello') &&
+      !sanitizedQuestion.toLowerCase().includes('hi') &&
+      !sanitizedQuestion.toLowerCase().includes('thank');
+
     let webSearchContent = '';
     let sources: string[] = [];
 
@@ -1224,60 +1234,27 @@ export async function POST(request: NextRequest) {
       sources = searchResults.sources;
     }
 
-    // Build sanitized conversation history
+    // Build sanitized conversation history (optimized with limits)
     let conversationContext = '';
-    let feedbackInsights = '';
     if (
       conversationHistory &&
       Array.isArray(conversationHistory) &&
       conversationHistory.length > 0
     ) {
-      conversationContext = '\n\nPREVIOUS CONVERSATION:\n';
-      const feedbackPatterns: { liked: string[]; disliked: string[] } = { liked: [], disliked: [] };
+      conversationContext = '\n\nRECENT CONVERSATION:\n';
 
-      conversationHistory.slice(-10).forEach((msg: Message) => {
+      // Limit to last 5 messages and truncate each message
+      const recentMessages = conversationHistory.slice(-5);
+
+      for (const msg of recentMessages) {
         if (msg.role && msg.content && typeof msg.content === 'string') {
           const sanitizedContent = sanitizeInput(msg.content);
-          conversationContext += `${msg.role.toUpperCase()}: ${sanitizedContent}\n`;
-
-          // Track feedback patterns for learning
-          if (msg.feedback) {
-            const feedbackType = msg.feedback.isLike ? 'liked' : 'disliked';
-            feedbackPatterns[feedbackType].push(sanitizedContent.substring(0, 200)); // First 200 chars for pattern analysis
-          }
-        }
-      });
-
-      // Generate feedback insights
-      if (feedbackPatterns.liked.length > 0 || feedbackPatterns.disliked.length > 0) {
-        feedbackInsights = '\n\nUSER FEEDBACK INSIGHTS (Learn from these patterns):\n';
-
-        if (feedbackPatterns.liked.length > 0) {
-          feedbackInsights += `POSITIVE FEEDBACK PATTERNS (${feedbackPatterns.liked.length} liked responses):\n`;
-          feedbackPatterns.liked.slice(-3).forEach((pattern, idx) => {
-            feedbackInsights += `${idx + 1}. "${pattern}${pattern.length === 200 ? '...' : ''}"\n`;
-          });
-          feedbackInsights += '→ Prioritize similar response styles, depth, and helpfulness\n';
-        }
-
-        if (feedbackPatterns.disliked.length > 0) {
-          feedbackInsights += `NEGATIVE FEEDBACK PATTERNS (${feedbackPatterns.disliked.length} disliked responses):\n`;
-          feedbackPatterns.disliked.slice(-3).forEach((pattern, idx) => {
-            feedbackInsights += `${idx + 1}. "${pattern}${pattern.length === 200 ? '...' : ''}"\n`;
-          });
-          feedbackInsights += '→ Avoid similar response styles and improve in these areas\n';
-        }
-
-        feedbackInsights += '\nLEARNING OBJECTIVES:\n';
-        if (feedbackPatterns.liked.length > feedbackPatterns.disliked.length) {
-          feedbackInsights +=
-            '- Continue with current successful patterns\n- Build upon what works well\n';
-        } else if (feedbackPatterns.disliked.length > feedbackPatterns.liked.length) {
-          feedbackInsights +=
-            '- Significantly improve response quality\n- Study successful patterns and adapt\n';
-        } else {
-          feedbackInsights +=
-            '- Balance between different response approaches\n- Focus on consistency and quality\n';
+          // Truncate long messages to prevent token bloat
+          const truncatedContent =
+            sanitizedContent.length > 300
+              ? sanitizedContent.substring(0, 300) + '...'
+              : sanitizedContent;
+          conversationContext += `${msg.role.toUpperCase()}: ${truncatedContent}\n`;
         }
       }
     }
@@ -1411,8 +1388,6 @@ ${userContext}
 
 ${userMemoryContext}
 
-${feedbackInsights}
-
 ${webSearchContent ? `\n\nWEB SEARCH RESULTS:\n${webSearchContent}\n` : ''}
 
 Provide a helpful response about the Dionysus platform or development topics based on the current page context${attachmentContext ? ', attached files,' : ''}${webSearchContent ? ' and web search results' : ''}. Remember, you have web search capabilities and can find specific, current resources and recommendations.
@@ -1420,8 +1395,17 @@ Provide a helpful response about the Dionysus platform or development topics bas
 CRITICAL: End your response with a JSON array of 2-4 high-quality follow-up questions in this exact format: ["Question 1?", "Question 2?", "Question 3?"]
 This JSON array MUST be on its own line at the very end, after all other content. It will be automatically removed from your visible response and displayed as clickable buttons. Do NOT mention these questions anywhere in your main response text.`;
 
+    // Limit total system prompt length to prevent token overflow (keep under 8000 chars for safety)
+    const maxSystemPromptLength = 8000;
+    const truncatedSystemPrompt =
+      systemPrompt.length > maxSystemPromptLength
+        ? systemPrompt.substring(0, maxSystemPromptLength - 100) +
+          '\n\n[Context truncated for length]\n\n' +
+          systemPrompt.substring(systemPrompt.length - 500) // Keep the end with instructions
+        : systemPrompt;
+
     // Prepare messages with proper multimodal support
-    const systemMessage = new SystemMessage(systemPrompt);
+    const systemMessage = new SystemMessage(truncatedSystemPrompt);
 
     // Check if we have image attachments to include directly in the message
     interface ImageAttachment extends FileAttachment {
@@ -1597,128 +1581,44 @@ This JSON array MUST be on its own line at the very end, after all other content
 
             for await (const chunk of stream) {
               const content = chunk.content || chunk.text || '';
-              fullResponse += content;
+              if (content) {
+                // Only send non-empty chunks
+                fullResponse += content;
 
-              // Send chunk to client
-              const data = JSON.stringify({
-                type: 'chunk',
-                content: content,
-                timestamp: new Date().toISOString(),
-              });
+                // Send chunk to client immediately
+                const data = JSON.stringify({
+                  type: 'chunk',
+                  content: content,
+                  timestamp: new Date().toISOString(),
+                });
 
-              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+              }
             }
 
-            // Parse follow-up questions from the response
+            // Parse follow-up questions from the response (optimized - do this incrementally)
             let followUpQuestions: string[] = [];
             let cleanResponse = fullResponse;
 
-            try {
-              // Multiple parsing strategies for robustness
+            // Simple check for JSON array at the end
+            const jsonArrayRegex = /\[(\s*"[^"]*"(?:\s*,\s*"[^"]*")*\s*)\]$/;
+            const match = fullResponse.match(jsonArrayRegex);
 
-              // Strategy 1: Look for JSON array pattern anywhere in the response
-              const jsonArrayRegex = /\[(\s*"[^"]*"(?:\s*,\s*"[^"]*")*\s*)\]$/;
-              let match = fullResponse.match(jsonArrayRegex);
-
-              if (match) {
-                try {
-                  const jsonString = match[0];
-                  const parsed = JSON.parse(jsonString);
-                  if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
-                    followUpQuestions = parsed;
-                    cleanResponse = fullResponse.replace(jsonArrayRegex, '').trim();
-
-                  }
-                } catch (e) {
-                  console.warn('Strategy 1 parsing failed:', e);
+            if (match) {
+              try {
+                const jsonString = match[0];
+                const parsed = JSON.parse(jsonString);
+                if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+                  followUpQuestions = parsed;
+                  cleanResponse = fullResponse.replace(jsonArrayRegex, '').trim();
                 }
+              } catch (e) {
+                console.warn('Follow-up parsing failed:', e);
+                // Keep original response if parsing fails
+                cleanResponse = fullResponse;
               }
-
-              // Strategy 2: Look for code blocks with arrays
-              if (followUpQuestions.length === 0) {
-                const codeBlockRegex = /```(?:json|javascript|js)?\s*\n?(\[[\s\S]*?\])\s*\n?```/;
-                match = fullResponse.match(codeBlockRegex);
-
-                if (match) {
-                  try {
-                    const jsonString = match[1];
-                    if (!jsonString) {
-                      throw new Error('No JSON string captured from code block');
-                    }
-                    const parsed = JSON.parse(jsonString);
-                    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
-                      followUpQuestions = parsed;
-                      cleanResponse = fullResponse.replace(codeBlockRegex, '').trim();
-
-                    }
-                  } catch (e) {
-                    console.warn('Strategy 2 parsing failed:', e);
-                  }
-                }
-              }
-
-              // Strategy 3: Look for array on the last line
-              if (followUpQuestions.length === 0) {
-                const responseLines = fullResponse.split('\n');
-                const lastLine = responseLines[responseLines.length - 1];
-
-                if (lastLine && lastLine.startsWith('[') && lastLine.endsWith(']')) {
-                  try {
-                    const parsed = JSON.parse(lastLine);
-                    if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
-                      followUpQuestions = parsed;
-                      cleanResponse = responseLines.slice(0, -1).join('\n').trim();
-                    }
-                  } catch (e) {
-                    console.warn('Strategy 3 parsing failed:', e);
-                  }
-                }
-              }
-
-              // Strategy 4: Look for numbered or bulleted list that might be questions
-              if (followUpQuestions.length === 0) {
-                const lines = fullResponse.split('\n');
-                const potentialQuestions: string[] = [];
-
-                for (const line of lines) {
-                  const trimmed = line.trim();
-                  // Look for lines that start with numbers, bullets, or question marks
-                  if (
-                    /^\d+\.\s*.+\?/.test(trimmed) || // 1. Question?
-                    /^[•\-*]\s*.+\?/.test(trimmed) || // • Question?
-                    (trimmed.endsWith('?') && trimmed.length > 10) // Long question lines
-                  ) {
-                    // Clean up the question
-                    let question = trimmed
-                      .replace(/^\d+\.\s*/, '') // Remove numbering
-                      .replace(/^[•\-*]\s*/, '') // Remove bullets
-                      .trim();
-
-                    if (question && question.endsWith('?')) {
-                      potentialQuestions.push(question);
-                    }
-                  }
-                }
-
-                if (potentialQuestions.length >= 2 && potentialQuestions.length <= 4) {
-                  followUpQuestions = potentialQuestions;
-                  // Remove the questions from the response
-                  let tempResponse = fullResponse;
-                  for (const question of potentialQuestions) {
-                    // Remove the line containing this question
-                    const questionRegex = new RegExp(
-                      `^.*${question.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*$`,
-                      'gm',
-                    );
-                    tempResponse = tempResponse.replace(questionRegex, '').trim();
-                  }
-                  cleanResponse = tempResponse;
-                }
-              }
-
-            } catch (parseError) {
-              console.warn('Failed to parse follow-up questions:', parseError);
-              // If parsing fails completely, keep the original response
+            } else {
+              cleanResponse = fullResponse;
             }
 
             // Send sources if we have them
@@ -1804,7 +1704,8 @@ This JSON array MUST be on its own line at the very end, after all other content
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
 
             // Extract and store user memories in the background (non-blocking)
-            if (sessionId) {
+            // Only for substantial responses (>50 chars) that aren't just follow-up questions
+            if (sessionId && cleanResponse.length > 50 && !cleanResponse.match(/^\s*\[.*\]\s*$/)) {
               extractAndStoreMemories(userId, sessionId, sanitizedQuestion, cleanResponse).catch(
                 (err) => {
                   console.error('Background memory extraction failed:', err);
