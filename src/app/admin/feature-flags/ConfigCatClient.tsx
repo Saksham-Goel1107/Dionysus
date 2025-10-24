@@ -176,14 +176,104 @@ export default function ConfigCatClient() {
     [selectedEnvironment, toast],
   );
 
-  const fetchSettingValue = useCallback(async (settingId: number, environmentId: string) => {
-    try {
-      const response = await fetch(
-        `/api/admin/configcat/settings/${settingId}?environmentId=${environmentId}`,
-      );
+  const fetchSettingValue = useCallback(
+    async (settingId: number, environmentId: string) => {
+      try {
+        const response = await fetch(
+          `/api/admin/configcat/settings/${settingId}?environmentId=${environmentId}`,
+        );
 
-      if (!response.ok) {
-        // If the API returns an error (e.g., 404 when no value is set), use default value
+        if (!response.ok) {
+          // If the API returns an error (e.g., 404 when no value is set), use default value
+          const setting = settings.find((s) => s.settingId === settingId);
+          let defaultValue: boolean | string | number | undefined;
+
+          if (setting) {
+            switch (setting.settingType) {
+              case 'boolean':
+                defaultValue = false;
+                break;
+              case 'int':
+                defaultValue = 0;
+                break;
+              case 'double':
+                defaultValue = 0.0;
+                break;
+              case 'string':
+                defaultValue = '';
+                break;
+              default:
+                defaultValue = undefined;
+            }
+          }
+
+          setSettings((prev) =>
+            prev.map((s) =>
+              s.settingId === settingId
+                ? {
+                    ...s,
+                    value: defaultValue,
+                    loading: false,
+                  }
+                : s,
+            ),
+          );
+          return;
+        }
+
+        const data = await response.json();
+
+        // Handle different possible response structures
+        let rawValue;
+        if (data.value !== undefined) {
+          // Response structure: { value: actualValue, ... }
+          rawValue = data.value;
+        } else {
+          // Fallback
+          rawValue = data;
+        }
+
+        // Parse the value based on setting type
+        let parsedValue: boolean | string | number | undefined = rawValue;
+
+        // Find the setting to get its type
+        const setting = settings.find((s) => s.settingId === settingId);
+        if (setting) {
+          switch (setting.settingType) {
+            case 'boolean':
+              parsedValue = rawValue === 'true' || rawValue === true;
+              break;
+            case 'int':
+              parsedValue = parseInt(String(rawValue));
+              if (isNaN(parsedValue)) parsedValue = 0;
+              break;
+            case 'double':
+              parsedValue = parseFloat(String(rawValue));
+              if (isNaN(parsedValue)) parsedValue = 0.0;
+              break;
+            case 'string':
+              parsedValue = String(rawValue || '');
+              break;
+            default:
+              parsedValue = rawValue;
+          }
+        }
+
+        setSettings((prev) =>
+          prev.map((s) =>
+            s.settingId === settingId
+              ? {
+                  ...s,
+                  value: parsedValue,
+                  loading: false,
+                }
+              : s,
+          ),
+        );
+      } catch (error) {
+        console.error(`Error fetching value for setting ${settingId}:`, error);
+
+        // On error, also use default value
         const setting = settings.find((s) => s.settingId === settingId);
         let defaultValue: boolean | string | number | undefined;
 
@@ -208,100 +298,13 @@ export default function ConfigCatClient() {
 
         setSettings((prev) =>
           prev.map((s) =>
-            s.settingId === settingId
-              ? {
-                  ...s,
-                  value: defaultValue,
-                  loading: false,
-                }
-              : s,
+            s.settingId === settingId ? { ...s, value: defaultValue, loading: false } : s,
           ),
         );
-        return;
       }
-
-      const data = await response.json();
-
-      // Handle different possible response structures
-      let rawValue;
-      if (data.value !== undefined) {
-        // Response structure: { value: actualValue, ... }
-        rawValue = data.value;
-      } else {
-        // Fallback
-        rawValue = data;
-      }
-
-      // Parse the value based on setting type
-      let parsedValue: boolean | string | number | undefined = rawValue;
-
-      // Find the setting to get its type
-      const setting = settings.find((s) => s.settingId === settingId);
-      if (setting) {
-        switch (setting.settingType) {
-          case 'boolean':
-            parsedValue = rawValue === 'true' || rawValue === true;
-            break;
-          case 'int':
-            parsedValue = parseInt(String(rawValue));
-            if (isNaN(parsedValue)) parsedValue = 0;
-            break;
-          case 'double':
-            parsedValue = parseFloat(String(rawValue));
-            if (isNaN(parsedValue)) parsedValue = 0.0;
-            break;
-          case 'string':
-            parsedValue = String(rawValue || '');
-            break;
-          default:
-            parsedValue = rawValue;
-        }
-      }
-
-      setSettings((prev) =>
-        prev.map((s) =>
-          s.settingId === settingId
-            ? {
-                ...s,
-                value: parsedValue,
-                loading: false,
-              }
-            : s,
-        ),
-      );
-    } catch (error) {
-      console.error(`Error fetching value for setting ${settingId}:`, error);
-
-      // On error, also use default value
-      const setting = settings.find((s) => s.settingId === settingId);
-      let defaultValue: boolean | string | number | undefined;
-
-      if (setting) {
-        switch (setting.settingType) {
-          case 'boolean':
-            defaultValue = false;
-            break;
-          case 'int':
-            defaultValue = 0;
-            break;
-          case 'double':
-            defaultValue = 0.0;
-            break;
-          case 'string':
-            defaultValue = '';
-            break;
-          default:
-            defaultValue = undefined;
-        }
-      }
-
-      setSettings((prev) =>
-        prev.map((s) =>
-          s.settingId === settingId ? { ...s, value: defaultValue, loading: false } : s,
-        ),
-      );
-    }
-  }, [settings]);
+    },
+    [settings],
+  );
 
   const fetchSettings = useCallback(
     async (configId: string, environmentId: string) => {

@@ -40,7 +40,7 @@ function Providers({ children }: { children: React.ReactNode }) {
         avatar: user.user.imageUrl || '',
       });
     }
-  }, [user.user,userId]);
+  }, [user.user, userId]);
 
   useEffect(() => {
     if (user?.user && process.env.NODE_ENV === 'production') {

@@ -31,7 +31,7 @@ import Script from 'next/script';
 import ClerkProviderWithTheme from './ClerkProviderWithTheme';
 import MobileInfoPrompt from './components/MobileInfoPrompt';
 import Offline from './offline';
-import { HighlightInit } from '@highlight-run/next/client'
+import { HighlightInit } from '@highlight-run/next/client';
 
 export const metadata: Metadata = {
   title: {
@@ -135,7 +135,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
 
   return (
     <>
-    <HighlightInit
+      <HighlightInit
         projectId={process.env.HIGHLIGHT_PROJECT_ID || 'your-project-id'}
         serviceName="my-nextjs-frontend"
         tracingOrigins
@@ -145,111 +145,121 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           urlBlocklist: [],
         }}
       />
-    <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
-      <Head>
-        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
-        <meta name="referrer" content="strict-origin-when-cross-origin" />
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="canonical" href="https://dionysus-gray.vercel.app" />
-        <title>Dionysus – Your AI Github Assistant</title>
-        <meta name="title" content="Dionysus – Your AI Github Assistant" />
-        <meta
-          name="description"
-          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers."
-        />
-        <meta
-          name="keywords"
-          content="AI, GitHub, assistant, developer tools, productivity, coding, typescript, react, nextjs, trpc, open source, prisma, stripe, saas, automation, chatbot, livekit, cloudinary, tailwindcss, zod, clerk, vercel, stream, web development, frontend, backend, fullstack"
-        />
-        <meta name="author" content="Saksham Goel" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://dionysus-gray.vercel.app" />
-        <meta property="og:title" content="Dionysus – Your AI Github Assistant" />
-        <meta
-          property="og:description"
-          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
-        />
-        <meta property="og:image" content="https://dionysus-gray.vercel.app/logo.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Dionysus – Your AI Github Assistant" />
-        <meta property="og:site_name" content="Dionysus" />
-        <meta property="og:locale" content="en_US" />
-        <meta property="og:see_also" content="https://github.com/Saksham-Goel1107/Dionysus" />
-        <meta property="og:updated_time" content="2025-08-11T00:00:00.000Z" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@Saksham1199805" />
-        <meta name="twitter:creator" content="@Saksham1199805" />
-        <meta name="twitter:url" content="https://dionysus-gray.vercel.app" />
-        <meta name="twitter:title" content="Dionysus – Your AI Github Assistant" />
-        <meta
-          name="twitter:description"
-          content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
-        />
-        <meta name="twitter:image" content="https://dionysus-gray.vercel.app/logo.png" />
-        <meta name="theme-color" content="#6366f1" />
-        <meta name="slack-app-id" content="" />
-        <meta name="linkedin:owner" content="https://www.linkedin.com/in/saksham-goel-88b74b33a" />
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/logo.png" />
-      </Head>
-      <body suppressHydrationWarning>
-        <ErrorBoundary>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <ClientOnly>
-              <MobileInfoPrompt />
-              <ReleaseNoteModal />
-            </ClientOnly>
-            <ClerkProviderWithTheme>
-              {/* <MultisessionAppSupport> */}
-              {showMaintenance ? (
-                <>
-                  <MaintenanceScreen />
-                  <BlockInspectAndContext />
-                  <ClientOnly>
-                    <CustomContextMenu />
-                    <Analytics />
-                    <SpeedInsights />
-                  </ClientOnly>
-                </>
-              ) : (
-                <>
-                  <ConfigCatProvider sdkKey={process.env.CONFIGCAT_SDK_KEY || ''}>
-                    <GoogleOneTap cancelOnTapOutside={true} itpSupport={true} fedCmSupport={true} />
-                    <TRPCReactProvider>
-                      <Offline>
-                        <Providers>{children}</Providers>
-                      </Offline>
-                      <ClientOnly>
-                        <Toaster richColors />
-                        <ScrollToTopButton />
-                        <AnnouncementBell />
-                        <CustomContextMenu />
-                        <BlockInspectAndContext />
-                        <Analytics />
-                        <SpeedInsights />
-                        <FullscreenPrompt />
-                        <GlobalSearch />
-                        <GlobalAIAssistant />
-                      </ClientOnly>
-                    </TRPCReactProvider>
-                    <Script
-                      src="https://s.pageclip.co/v1/pageclip.js"
-                      charSet="utf-8"
-                      strategy="afterInteractive"
-                    ></Script>
-                    {process.env.NODE_ENV === 'production' && (
-                      <>
-                        <Script
-                          src="https://cdn.userway.org/widget.js"
-                          data-account={process.env.USERWAY_ACCOUNT}
-                        ></Script>
-                        <Script
-                          id="crisp-chat"
-                          type="text/javascript"
-                          strategy="afterInteractive"
-                          data-magic-browse="true"
-                        >{`
+      <html lang="en" className={`${GeistSans.variable}`} suppressHydrationWarning>
+        <Head>
+          <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+          <meta name="referrer" content="strict-origin-when-cross-origin" />
+          <meta name="robots" content="index, follow" />
+          <meta name="language" content="English" />
+          <meta name="revisit-after" content="7 days" />
+          <link rel="manifest" href="/manifest.json" />
+          <link rel="canonical" href="https://dionysus-gray.vercel.app" />
+          <title>Dionysus – Your AI Github Assistant</title>
+          <meta name="title" content="Dionysus – Your AI Github Assistant" />
+          <meta
+            name="description"
+            content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster. Get instant help, code suggestions, and productivity tools for developers."
+          />
+          <meta
+            name="keywords"
+            content="AI, GitHub, assistant, developer tools, productivity, coding, typescript, react, nextjs, trpc, open source, prisma, stripe, saas, automation, chatbot, livekit, cloudinary, tailwindcss, zod, clerk, vercel, stream, web development, frontend, backend, fullstack"
+          />
+          <meta name="author" content="Saksham Goel" />
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content="https://dionysus-gray.vercel.app" />
+          <meta property="og:title" content="Dionysus – Your AI Github Assistant" />
+          <meta
+            property="og:description"
+            content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
+          />
+          <meta property="og:image" content="https://dionysus-gray.vercel.app/logo.png" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content="Dionysus – Your AI Github Assistant" />
+          <meta property="og:site_name" content="Dionysus" />
+          <meta property="og:locale" content="en_US" />
+          <meta property="og:see_also" content="https://github.com/Saksham-Goel1107/Dionysus" />
+          <meta property="og:updated_time" content="2025-08-11T00:00:00.000Z" />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@Saksham1199805" />
+          <meta name="twitter:creator" content="@Saksham1199805" />
+          <meta name="twitter:url" content="https://dionysus-gray.vercel.app" />
+          <meta name="twitter:title" content="Dionysus – Your AI Github Assistant" />
+          <meta
+            name="twitter:description"
+            content="Dionysus is your AI-powered GitHub assistant, helping you code smarter and faster."
+          />
+          <meta name="twitter:image" content="https://dionysus-gray.vercel.app/logo.png" />
+          <meta name="theme-color" content="#6366f1" />
+          <meta name="slack-app-id" content="" />
+          <meta
+            name="linkedin:owner"
+            content="https://www.linkedin.com/in/saksham-goel-88b74b33a"
+          />
+          <link rel="icon" href="/favicon.ico" />
+          <link rel="apple-touch-icon" href="/logo.png" />
+        </Head>
+        <body suppressHydrationWarning>
+          <ErrorBoundary>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+              <ClientOnly>
+                <MobileInfoPrompt />
+                <ReleaseNoteModal />
+              </ClientOnly>
+              <ClerkProviderWithTheme>
+                {/* <MultisessionAppSupport> */}
+                {showMaintenance ? (
+                  <>
+                    <MaintenanceScreen />
+                    <BlockInspectAndContext />
+                    <ClientOnly>
+                      <CustomContextMenu />
+                      <Analytics />
+                      <SpeedInsights />
+                    </ClientOnly>
+                  </>
+                ) : (
+                  <>
+                    <ConfigCatProvider sdkKey={process.env.CONFIGCAT_SDK_KEY || ''}>
+                      <GoogleOneTap
+                        cancelOnTapOutside={true}
+                        itpSupport={true}
+                        fedCmSupport={true}
+                      />
+                      <TRPCReactProvider>
+                        <Offline>
+                          <Providers>{children}</Providers>
+                        </Offline>
+                        <ClientOnly>
+                          <Toaster richColors />
+                          <ScrollToTopButton />
+                          <AnnouncementBell />
+                          <CustomContextMenu />
+                          <BlockInspectAndContext />
+                          <Analytics />
+                          <SpeedInsights />
+                          <FullscreenPrompt />
+                          <GlobalSearch />
+                          <GlobalAIAssistant />
+                        </ClientOnly>
+                      </TRPCReactProvider>
+                      <Script
+                        src="https://s.pageclip.co/v1/pageclip.js"
+                        charSet="utf-8"
+                        strategy="afterInteractive"
+                      ></Script>
+                      {process.env.NODE_ENV === 'production' && (
+                        <>
+                          <Script
+                            src="https://cdn.userway.org/widget.js"
+                            data-account={process.env.USERWAY_ACCOUNT}
+                          ></Script>
+                          <Script
+                            id="crisp-chat"
+                            type="text/javascript"
+                            strategy="afterInteractive"
+                            data-magic-browse="true"
+                          >{`
                             window.$crisp = [];
                             window.CRISP_WEBSITE_ID = "${process.env.CRISP_TOKEN?.replace(/["'<>&]/g, '')}";
                             window.$crisp.push(["safe", true]);
@@ -260,7 +270,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                               d.getElementsByTagName("head")[0].appendChild(s);
                             })();
                           `}</Script>
-                        <Script id="hotjar" strategy="afterInteractive">{`
+                          <Script id="hotjar" strategy="afterInteractive">{`
       (function(h,o,t,j,a,r){
           h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
           h._hjSettings={hjid:6468665,hjsv:6};
@@ -270,32 +280,32 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           a.appendChild(r);
       })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     `}</Script>
-                        <Script
-                          async
-                          src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
-                        ></Script>
-                        <Script id="gtag" strategy="afterInteractive">{`
+                          <Script
+                            async
+                            src="https://www.googletagmanager.com/gtag/js?id=G-W02TQN9H65"
+                          ></Script>
+                          <Script id="gtag" strategy="afterInteractive">{`
                             window.dataLayer = window.dataLayer || [];
                             function gtag(){dataLayer.push(arguments);}
                             gtag('js', new Date());
 
                             gtag('config', 'G-W02TQN9H65');
                           `}</Script>
-                        <Script
-                          strategy="beforeInteractive"
-                          src={`https://cse.google.com/cse.js?cx=${process.env.GOOGLE_CSE_ID}`}
-                        ></Script>
-                      </>
-                    )}
-                  </ConfigCatProvider>
-                </>
-              )}
-              {/* </MultisessionAppSupport> */}
-            </ClerkProviderWithTheme>
-          </ThemeProvider>
-        </ErrorBoundary>
-      </body>
-    </html>
+                          <Script
+                            strategy="beforeInteractive"
+                            src={`https://cse.google.com/cse.js?cx=${process.env.GOOGLE_CSE_ID}`}
+                          ></Script>
+                        </>
+                      )}
+                    </ConfigCatProvider>
+                  </>
+                )}
+                {/* </MultisessionAppSupport> */}
+              </ClerkProviderWithTheme>
+            </ThemeProvider>
+          </ErrorBoundary>
+        </body>
+      </html>
     </>
   );
 }

@@ -276,6 +276,132 @@ ${
   `;
 }
 
+function createDomainRestrictionOverlay() {
+  return `
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Access Restricted - Dionysus</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: white;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      z-index: 999999;
+      animation: fadeIn 0.4s ease-out forwards;
+      overflow-y: auto;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.96);}
+      to { opacity: 1; transform: scale(1);}
+    }
+    .card {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 18px;
+      padding: 2.5rem 2rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      backdrop-filter: blur(22px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      margin: auto;
+      min-height: fit-content;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.45s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(24px); opacity: 0;}
+      to { transform: translateY(0); opacity: 1;}
+    }
+    .icon {
+      font-size: 3.1rem;
+      margin-bottom: 1.1rem;
+      color: #ef4444;
+      text-shadow: 0 0 12px rgba(239,68,68,0.45);
+    }
+    .title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.7rem;
+      background: linear-gradient(45deg, #f43f5e, #f97316);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .message {
+      font-size: 1.1rem;
+      margin-bottom: 1.8rem;
+      opacity: 0.95;
+      line-height: 1.6;
+      color: #e2e8f0;
+    }
+    .url {
+      background: rgba(15, 23, 42, 0.55);
+      border-radius: 12px;
+      padding: 1.4rem;
+      margin: 1.8rem 0;
+      text-align: center;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 1rem;
+      color: #fbbf24;
+      word-break: break-all;
+    }
+    .contact {
+      background: rgba(37, 99, 235, 0.15);
+      border: 1px solid rgba(37, 99, 235, 0.3);
+      border-radius: 12px;
+      padding: 1.2rem;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .contact a {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .contact a:hover { text-decoration: underline; }
+    @media (max-width: 768px) {
+      .card { padding: 2rem 1.5rem; }
+      .title { font-size: 1.9rem; }
+      .message { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <div class="icon">🚫</div>
+      <h1 class="title">Access Restricted</h1>
+      <p class="message">This website can only be accessed from the official domain. If you think this is an error, please report it on <a class="link" target="_blank" rel="noopener noreferrer" href="https://github.com/Saksham-Goel1107/Dionysus/issues/new?template=bug_report.md">GitHub</a>.</p>
+      <div class="url">https://dionysus-gray.vercel.app</div>
+      <div class="contact">
+        <p><strong>Official Access Point</strong></p>
+        <p>Please visit: <a href="https://dionysus-gray.vercel.app">https://dionysus-gray.vercel.app</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
 // Function to create rate limit overlay HTML
 function createRateLimitOverlay() {
   return `
@@ -714,6 +840,18 @@ export default clerkMiddleware(async (auth, request) => {
     console.log('User-Agent:', userAgent);
     console.log('Country:', country);
 
+    // Domain restriction check
+    const allowedHost = 'dionysus-gray.vercel.app';
+    if (request.nextUrl.host !== allowedHost) {
+      return new NextResponse(createDomainRestrictionOverlay(), {
+        status: 403,
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     if (isAutomatedUserAgent(userAgent)) {
       return new NextResponse(
         createBlockedOverlay(
@@ -836,8 +974,8 @@ export default clerkMiddleware(async (auth, request) => {
         return new NextResponse(createMFARequiredOverlay(), {
           status: 403,
           headers: {
-        'Content-Type': 'text/html',
-        'Cache-Control': 'no-store',
+            'Content-Type': 'text/html',
+            'Cache-Control': 'no-store',
           },
         });
       }
@@ -962,7 +1100,7 @@ export default clerkMiddleware(async (auth, request) => {
       if (pathname.startsWith('/api/')) {
         return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
         });
       }
       return NextResponse.redirect(new URL('/sign-in', request.url));

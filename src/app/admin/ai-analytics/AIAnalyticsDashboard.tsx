@@ -100,7 +100,7 @@ export default function AIAnalyticsDashboard({
 
   useEffect(() => {
     fetchData();
-  }, [timeRange,fetchData]);
+  }, [timeRange, fetchData]);
 
   useEffect(() => {
     if (autoRefresh) {
@@ -110,7 +110,7 @@ export default function AIAnalyticsDashboard({
 
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, timeRange,fetchData]);
+  }, [autoRefresh, timeRange, fetchData]);
 
   const handleExportData = () => {
     if (!data) return;
@@ -292,9 +292,7 @@ export default function AIAnalyticsDashboard({
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">Reported Messages</h2>
-            <p className="mt-1 text-muted-foreground">
-              Review and manage user-reported messages
-            </p>
+            <p className="mt-1 text-muted-foreground">Review and manage user-reported messages</p>
           </div>
           <div className="flex gap-2">
             <Select value={reportsStatusFilter} onValueChange={setReportsStatusFilter}>
@@ -374,30 +372,31 @@ export default function AIAnalyticsDashboard({
                   <div className="flex items-center gap-3">
                     {getReasonIcon(report.reason)}
                     <div>
-                      <h3 className="font-semibold capitalize">{report.reason.replace('_', ' ')}</h3>
+                      <h3 className="font-semibold capitalize">
+                        {report.reason.replace('_', ' ')}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        Reported by {report.reporter.firstName} {report.reporter.lastName} ({report.reporter.email})
+                        Reported by {report.reporter.firstName} {report.reporter.lastName} (
+                        {report.reporter.email})
                       </p>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(report.status)}>
-                    {report.status}
-                  </Badge>
+                  <Badge className={getStatusColor(report.status)}>{report.status}</Badge>
                 </div>
 
                 {/* Report Details */}
                 {report.description && (
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Description:</h4>
-                    <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                    <h4 className="mb-1 text-sm font-medium">Description:</h4>
+                    <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
                       {report.description}
                     </p>
                   </div>
                 )}
 
                 {/* Message Details */}
-                <div className="border-l-4 border-blue-200 pl-4 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-r-md">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="rounded-r-md border-l-4 border-blue-200 bg-blue-50 p-4 pl-4 dark:bg-blue-900/10">
+                  <div className="mb-2 flex items-center gap-2">
                     <User className="h-4 w-4" />
                     <span className="text-sm font-medium">
                       {report.message.role === 'user' ? 'User Message' : 'Assistant Response'}
@@ -408,7 +407,7 @@ export default function AIAnalyticsDashboard({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{report.message.content}</p>
+                  <p className="whitespace-pre-wrap text-sm">{report.message.content}</p>
                   {report.message.attachments && report.message.attachments.length > 0 && (
                     <div className="mt-2">
                       <span className="text-xs text-muted-foreground">Attachments: </span>
@@ -420,18 +419,20 @@ export default function AIAnalyticsDashboard({
                 {/* Author and Session Info */}
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div>
-                    <span>Author: {report.author.firstName} {report.author.lastName}</span>
+                    <span>
+                      Author: {report.author.firstName} {report.author.lastName}
+                    </span>
                     <span className="mx-2">•</span>
-                    <span>Session: {report.session.title || `Session ${report.session.id.slice(-8)}`}</span>
+                    <span>
+                      Session: {report.session.title || `Session ${report.session.id.slice(-8)}`}
+                    </span>
                   </div>
-                  <div>
-                    Reported: {new Date(report.createdAt).toLocaleString()}
-                  </div>
+                  <div>Reported: {new Date(report.createdAt).toLocaleString()}</div>
                 </div>
 
                 {/* Admin Actions */}
                 {report.status === 'pending' && (
-                  <div className="flex gap-2 pt-4 border-t">
+                  <div className="flex gap-2 border-t pt-4">
                     <Button
                       size="sm"
                       variant="outline"
@@ -461,13 +462,15 @@ export default function AIAnalyticsDashboard({
 
                 {/* Resolution */}
                 {report.resolution && (
-                  <div className="bg-green-50 dark:bg-green-900/10 p-3 rounded-md border-l-4 border-green-400">
-                    <h4 className="text-sm font-medium text-green-800 dark:text-green-400 mb-1">
+                  <div className="rounded-md border-l-4 border-green-400 bg-green-50 p-3 dark:bg-green-900/10">
+                    <h4 className="mb-1 text-sm font-medium text-green-800 dark:text-green-400">
                       Resolution:
                     </h4>
-                    <p className="text-sm text-green-700 dark:text-green-300">{report.resolution}</p>
+                    <p className="text-sm text-green-700 dark:text-green-300">
+                      {report.resolution}
+                    </p>
                     {report.reviewedAt && (
-                      <p className="text-xs text-green-600 dark:text-green-500 mt-1">
+                      <p className="mt-1 text-xs text-green-600 dark:text-green-500">
                         Resolved on {new Date(report.reviewedAt).toLocaleString()}
                       </p>
                     )}
@@ -479,8 +482,8 @@ export default function AIAnalyticsDashboard({
 
           {reportsData?.reports.length === 0 && (
             <Card className="p-8 text-center">
-              <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No Reports Found</h3>
+              <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium">No Reports Found</h3>
               <p className="text-muted-foreground">
                 {reportsStatusFilter === 'all'
                   ? 'There are no reported messages yet.'
@@ -822,9 +825,7 @@ export default function AIAnalyticsDashboard({
                         cy="50%"
                         labelLine={true}
                         label={({ name, value, percent }) =>
-                          percent > 0.05
-                            ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
-                            : ''
+                          percent > 0.05 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ''
                         }
                         outerRadius={80}
                         fill="#8884d8"
