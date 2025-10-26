@@ -27,9 +27,24 @@ export const chatRouter = createTRPCRouter({
       z.object({
         title: z.string().optional().default('New Chat'),
         groupId: z.string().optional(),
+        isIncognito: z.boolean().optional().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Skip database operations in incognito mode
+      if (input.isIncognito) {
+        return {
+          id: 'incognito-session',
+          userId: ctx.userId,
+          title: input.title ?? 'New Chat',
+          groupId: input.groupId ?? null,
+          lastMessageAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isFavorite: false,
+        };
+      }
+
       const session = await ctx.db.chatSession.create({
         data: {
           userId: ctx.userId,
@@ -133,9 +148,29 @@ export const chatRouter = createTRPCRouter({
         imageUrl: z.string().optional(),
         thinkingSteps: z.array(thinkingStepSchema).optional(),
         model: z.string().optional(),
+        isIncognito: z.boolean().optional().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Skip database operations in incognito mode
+      if (input.isIncognito) {
+        return {
+          id: `incognito-message-${Date.now()}`,
+          sessionId: input.sessionId,
+          role: input.role,
+          content: input.content,
+          attachments: input.attachments ?? null,
+          sources: input.sources ?? null,
+          followUpQuestions: input.followUpQuestions ?? null,
+          features: input.features ?? null,
+          imageUrl: input.imageUrl ?? null,
+          thinkingSteps: input.thinkingSteps ?? null,
+          model: input.model ?? null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
       // Verify session belongs to user
       const session = await ctx.db.chatSession.findFirst({
         where: {
@@ -241,9 +276,23 @@ export const chatRouter = createTRPCRouter({
         messageId: z.string(),
         isLike: z.boolean(),
         reason: z.string().optional(),
+        isIncognito: z.boolean().optional().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // Skip database operations in incognito mode
+      if (input.isIncognito) {
+        return {
+          id: `incognito-feedback-${Date.now()}`,
+          messageId: input.messageId,
+          userId: ctx.userId,
+          isLike: input.isLike,
+          reason: input.reason ?? null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      }
+
       // Verify message exists and belongs to user's session
       const message = await ctx.db.chatMessage.findFirst({
         where: {

@@ -11,6 +11,18 @@ import sanitizeHtml from 'sanitize-html';
 // Initialize Firecrawl
 const firecrawl = new FirecrawlApp({ apiKey: process.env.FIRECRAWL_API_KEY });
 
+// Model caching for faster initialization
+const modelCache = new Map<string, any>();
+const MODEL_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
+// Memory context caching
+const memoryCache = new Map<string, { context: string; timestamp: number }>();
+const MEMORY_CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+
+// Response caching for similar questions
+const responseCache = new Map<string, { response: string; sources: string[]; timestamp: number }>();
+const RESPONSE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 // Hugging Face Image Generation
 async function generateImage(prompt: string): Promise<{ imageUrl: string; error?: string }> {
   try {
@@ -58,7 +70,7 @@ async function generateImage(prompt: string): Promise<{ imageUrl: string; error?
   }
 }
 
-// Multi-stage thinking with chain of thought
+// Multi-stage thinking with chain of thought (optimized for speed)
 async function performExtendedThinking(
   question: string,
   context: string,
@@ -80,129 +92,41 @@ async function performExtendedThinking(
     timestamp: string;
   }> = [];
 
-  // Stage 1: Initial Analysis with Gemini Flash (fast)
-  const stage1Start = Date.now();
-  const stage1Model = new ChatGoogleGenerativeAI({
+  // Single fast analysis with Gemini Flash (much faster than multi-stage)
+  const startTime = Date.now();
+  const model = new ChatGoogleGenerativeAI({
     apiKey: process.env.GEMINI_API_KEY!,
     model: 'gemini-2.0-flash-exp',
     temperature: 0.7,
+    maxOutputTokens: 2000, // Limit output for speed
   });
 
-  const stage1Prompt = `Analyze this question and provide initial thoughts. Break it down into key components and identify what needs to be addressed:
+  const prompt = `Analyze this question deeply and provide a comprehensive response. Break down the problem, consider edge cases, and provide detailed reasoning:
 
 Question: ${question}
 Context: ${context}
 
-Provide a brief analysis (2-3 sentences) of the key aspects to consider.`;
+Provide a thorough analysis with step-by-step reasoning, considering multiple approaches and potential issues. Be comprehensive but concise.`;
 
-  const stage1Response = await stage1Model.invoke([
-    new SystemMessage('You are an analytical assistant. Provide concise, structured analysis.'),
-    new HumanMessage(stage1Prompt),
+  const response = await model.invoke([
+    new SystemMessage(
+      'You are an expert analyst. Provide deep, structured analysis with clear reasoning.',
+    ),
+    new HumanMessage(prompt),
   ]);
 
-  const stage1Duration = (Date.now() - stage1Start) / 1000;
+  const duration = (Date.now() - startTime) / 1000;
   thinkingSteps.push({
     step: 1,
-    thought: stage1Response.content.toString(),
-    duration: stage1Duration,
-    model: 'Gemini 2.0 Flash (Analysis)',
-    timestamp: new Date().toISOString(),
-  });
-
-  // Stage 2: Deep Reasoning with Qwen 2.5 72B (powerful)
-  const stage2Start = Date.now();
-  const stage2Model = new ChatOpenAI({
-    apiKey: process.env.HUGGINGFACE_API_KEY!,
-    modelName: 'Qwen/Qwen2.5-72B-Instruct',
-    temperature: 0.8,
-    configuration: {
-      baseURL: 'https://api-inference.huggingface.co/models',
-    },
-  });
-
-  const stage2Prompt = `Based on this analysis, think deeply about the problem:
-
-Question: ${question}
-Initial Analysis: ${stage1Response.content}
-Context: ${context}
-
-Provide detailed reasoning, consider edge cases, and think critically about the best approach. Be thorough but concise (3-4 sentences).`;
-
-  let stage2Response;
-  try {
-    stage2Response = await stage2Model.invoke([
-      new SystemMessage('You are a deep reasoning assistant. Think critically and thoroughly.'),
-      new HumanMessage(stage2Prompt),
-    ]);
-  } catch {
-    // Fallback to Gemini if Qwen fails
-    console.warn('Stage 2 model failed, falling back to Gemini');
-    stage2Response = await stage1Model.invoke([
-      new SystemMessage('You are a deep reasoning assistant. Think critically and thoroughly.'),
-      new HumanMessage(stage2Prompt),
-    ]);
-  }
-
-  const stage2Duration = (Date.now() - stage2Start) / 1000;
-  thinkingSteps.push({
-    step: 2,
-    thought: stage2Response.content.toString(),
-    duration: stage2Duration,
-    model: 'Qwen 2.5 72B (Deep Reasoning)',
-    timestamp: new Date().toISOString(),
-  });
-
-  // Stage 3: Synthesis and Final Answer with Mistral (balanced)
-  const stage3Start = Date.now();
-  const stage3Model = new ChatOpenAI({
-    apiKey: process.env.MISTRAL_API_KEY!,
-    modelName: 'mistral-large-latest',
-    temperature: 0.7,
-    configuration: {
-      baseURL: 'https://api.mistral.ai/v1',
-    },
-  });
-
-  const stage3Prompt = `Synthesize the analysis and reasoning into a comprehensive final answer:
-
-Question: ${question}
-Initial Analysis: ${stage1Response.content}
-Deep Reasoning: ${stage2Response.content}
-Context: ${context}
-
-Provide a complete, well-structured answer that addresses all aspects of the question. Include examples, code snippets if relevant, and best practices.`;
-
-  let stage3Response;
-  try {
-    stage3Response = await stage3Model.invoke([
-      new SystemMessage(
-        'You are a synthesis assistant. Combine insights into comprehensive answers.',
-      ),
-      new HumanMessage(stage3Prompt),
-    ]);
-  } catch {
-    // Fallback to Gemini if Mistral fails
-    console.warn('Stage 3 model failed, falling back to Gemini');
-    stage3Response = await stage1Model.invoke([
-      new SystemMessage(
-        'You are a synthesis assistant. Combine insights into comprehensive answers.',
-      ),
-      new HumanMessage(stage3Prompt),
-    ]);
-  }
-
-  const stage3Duration = (Date.now() - stage3Start) / 1000;
-  thinkingSteps.push({
-    step: 3,
-    thought: 'Synthesizing all insights into final comprehensive answer...',
-    duration: stage3Duration,
-    model: 'Mistral Large (Synthesis)',
+    thought: response.content.toString(),
+    duration: duration,
+    model: 'Gemini 2.0 Flash (Fast Analysis)',
     timestamp: new Date().toISOString(),
   });
 
   return {
     thinkingSteps,
-    finalAnswer: stage3Response.content.toString(),
+    finalAnswer: response.content.toString(),
   };
 }
 
@@ -214,8 +138,14 @@ if (!tracer && process.env.LANGCHAIN_API_KEY) {
   });
 }
 
-// Fetch user memories and survey data from database (optimized single query)
+// Fetch user memories and survey data from database (optimized single query with caching)
 async function getUserMemoryContext(userId: string): Promise<string> {
+  // Check cache first
+  const cached = memoryCache.get(userId);
+  if (cached && Date.now() - cached.timestamp < MEMORY_CACHE_TTL) {
+    return cached.context;
+  }
+
   try {
     // Single query to get both memories and survey data
     const [memories, survey] = await Promise.all([
@@ -276,7 +206,7 @@ async function getUserMemoryContext(userId: string): Promise<string> {
       }
 
       // Limit categories and items per category
-      const categoryLimit = 3;
+      const categoryLimit = 2; // Reduced from 3
       const itemsPerCategoryLimit = 2;
       let categoryCount = 0;
 
@@ -284,14 +214,19 @@ async function getUserMemoryContext(userId: string): Promise<string> {
         if (categoryCount >= categoryLimit) break;
         context += `\n\n${category.toUpperCase()}:`;
         for (const item of items.slice(0, itemsPerCategoryLimit)) {
-          context += `\n- ${item.key}: ${item.value.substring(0, 100)}`;
+          context += `\n- ${item.key}: ${item.value.substring(0, 80)}`; // Reduced from 100
         }
         categoryCount++;
       }
     }
 
     // Limit total context length to prevent AI token limits
-    return context.length > 1500 ? context.substring(0, 1500) + '...' : context;
+    const finalContext = context.length > 1200 ? context.substring(0, 1200) + '...' : context;
+
+    // Cache the result
+    memoryCache.set(userId, { context: finalContext, timestamp: Date.now() });
+
+    return finalContext;
   } catch (error) {
     console.error('Error fetching user context:', error);
     return '';
@@ -530,7 +465,9 @@ type AIModelId =
   | 'z-ai/glm-4.5-air:free'
   | 'meituan/longcat-flash-chat:free'
   | 'meta-llama/llama-4-maverick:free'
-  | 'qwen/qwen3-coder:free';
+  | 'qwen/qwen3-coder:free'
+  | 'nousresearch/hermes-3-llama-3.1-405b:free'
+  | 'minimax/minimax-m2:free';
 interface AIModelConfig {
   provider: string;
   modelName: string;
@@ -617,6 +554,18 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
     temperature: 0.7,
     apiKeyEnv: 'MISTRAL_API_KEY',
   },
+  'minimax/minimax-m2:free': {
+    provider: 'openrouter',
+    modelName: 'minimax/minimax-m2:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
+  'nousresearch/hermes-3-llama-3.1-405b:free': {
+    provider: 'openrouter',
+    modelName: 'nousresearch/hermes-3-llama-3.1-405b:free',
+    temperature: 0.7,
+    apiKeyEnv: 'OPENROUTER_API_KEY',
+  },
   'deepseek/deepseek-r1-0528:free': {
     provider: 'openrouter',
     modelName: 'deepseek/deepseek-r1-0528:free',
@@ -643,11 +592,18 @@ const AI_MODEL_CONFIGS: Record<AIModelId, AIModelConfig> = {
   },
 };
 
-// Initialize AI model based on selection
+// Initialize AI model based on selection (with caching)
 const initializeAIModel = (
   modelId: AIModelId = 'gemini-2.5-flash',
   isRegeneration: boolean = false,
 ) => {
+  const cacheKey = `${modelId}-${isRegeneration}`;
+  const cached = modelCache.get(cacheKey);
+
+  if (cached && Date.now() - cached.timestamp < MODEL_CACHE_TTL) {
+    return cached.model;
+  }
+
   // Resolve model config and API key for the selected model
   const config = AI_MODEL_CONFIGS[modelId] || AI_MODEL_CONFIGS['gemini-2.5-flash'];
   const apiKey = process.env[config.apiKeyEnv];
@@ -657,10 +613,12 @@ const initializeAIModel = (
     ? Math.min(config.temperature + 0.2, 1.0)
     : config.temperature;
 
+  let model: any;
+
   if (!apiKey) {
     console.warn(`API key for ${modelId} not found, falling back to Gemini`);
     // Fallback to Gemini if the selected model's API key is not available
-    return new ChatGoogleGenerativeAI({
+    model = new ChatGoogleGenerativeAI({
       apiKey: process.env.GEMINI_API_KEY!,
       model: 'gemini-2.5-flash',
       temperature: isRegeneration ? 0.7 : 0.5,
@@ -668,82 +626,93 @@ const initializeAIModel = (
       topK: 40,
       maxOutputTokens: 1500,
     });
+  } else {
+    switch (config.provider) {
+      case 'google':
+        model = new ChatGoogleGenerativeAI({
+          apiKey: apiKey,
+          model: config.modelName,
+          temperature: adjustedTemperature,
+          topP: 0.8,
+          topK: 40,
+        });
+        break;
+
+      case 'groq':
+        model = new ChatOpenAI({
+          apiKey: apiKey,
+          modelName: config.modelName,
+          temperature: adjustedTemperature,
+          configuration: {
+            baseURL: 'https://api.groq.com/openai/v1',
+          },
+        });
+        break;
+
+      case 'openai-compatible':
+        const baseURLs: Record<string, string> = {
+          'perplexity-sonar-pro': 'https://api.perplexity.ai',
+        };
+
+        model = new ChatOpenAI({
+          apiKey: apiKey,
+          modelName: config.modelName,
+          temperature: adjustedTemperature,
+          configuration: {
+            baseURL: baseURLs[modelId] || 'https://api.openai.com/v1',
+          },
+        });
+        break;
+
+      case 'qwen':
+        model = new ChatOpenAI({
+          apiKey: apiKey,
+          modelName: config.modelName,
+          temperature: adjustedTemperature,
+          configuration: {
+            baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+          },
+        });
+        break;
+
+      case 'mistral':
+        model = new ChatOpenAI({
+          apiKey: apiKey,
+          modelName: config.modelName,
+          temperature: adjustedTemperature,
+          configuration: {
+            baseURL: 'https://api.mistral.ai/v1',
+          },
+        });
+        break;
+
+      case 'openrouter':
+        model = new ChatOpenAI({
+          apiKey: apiKey,
+          modelName: config.modelName,
+          temperature: adjustedTemperature,
+          configuration: {
+            baseURL: 'https://openrouter.ai/api/v1',
+          },
+        });
+        break;
+
+      default:
+        // Fallback to Gemini
+        model = new ChatGoogleGenerativeAI({
+          apiKey: process.env.GEMINI_API_KEY!,
+          model: 'gemini-2.5-flash',
+          temperature: isRegeneration ? 0.9 : 0.7,
+          topP: 0.8,
+          topK: 40,
+        });
+    }
   }
 
-  switch (config.provider) {
-    case 'google':
-      return new ChatGoogleGenerativeAI({
-        apiKey: apiKey,
-        model: config.modelName,
-        temperature: adjustedTemperature,
-        topP: 0.8,
-        topK: 40,
-      });
+  // Cache the model
+  modelCache.set(cacheKey, { model, timestamp: Date.now() });
 
-    case 'groq':
-      return new ChatOpenAI({
-        apiKey: apiKey,
-        modelName: config.modelName,
-        temperature: adjustedTemperature,
-        configuration: {
-          baseURL: 'https://api.groq.com/openai/v1',
-        },
-      });
-
-    case 'openai-compatible':
-      const baseURLs: Record<string, string> = {
-        'perplexity-sonar-pro': 'https://api.perplexity.ai',
-      };
-
-      return new ChatOpenAI({
-        apiKey: apiKey,
-        modelName: config.modelName,
-        temperature: adjustedTemperature,
-        configuration: {
-          baseURL: baseURLs[modelId] || 'https://api.openai.com/v1',
-        },
-      });
-
-    case 'qwen':
-      return new ChatOpenAI({
-        apiKey: apiKey,
-        modelName: config.modelName,
-        temperature: adjustedTemperature,
-        configuration: {
-          baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-        },
-      });
-
-    case 'mistral':
-      return new ChatOpenAI({
-        apiKey: apiKey,
-        modelName: config.modelName,
-        temperature: adjustedTemperature,
-        configuration: {
-          baseURL: 'https://api.mistral.ai/v1',
-        },
-      });
-
-    case 'openrouter':
-      return new ChatOpenAI({
-        apiKey: apiKey,
-        modelName: config.modelName,
-        temperature: adjustedTemperature,
-        configuration: {
-          baseURL: 'https://openrouter.ai/api/v1',
-        },
-      });
-
-    default:
-      // Fallback to Gemini
-      return new ChatGoogleGenerativeAI({
-        apiKey: process.env.GEMINI_API_KEY!,
-        model: 'gemini-2.5-flash',
-        temperature: isRegeneration ? 0.9 : 0.7,
-        topP: 0.8,
-        topK: 40,
-      });
-  }
+  return model;
 };
 
 // Process file attachments for AI context
@@ -975,71 +944,67 @@ const requiresWebSearch = (question: string): boolean => {
   return hasSearchIndicator || isGeneralQuestion;
 };
 
-// Perform web search using Firecrawl
+// Perform web search using Firecrawl (optimized for speed)
 const performWebSearch = async (query: string): Promise<{ content: string; sources: string[] }> => {
   try {
     if (!process.env.FIRECRAWL_API_KEY) {
       return { content: '', sources: [] };
     }
 
-    // Search for relevant documentation and resources
-    const searchQueries = [];
-
-    // Create more targeted search queries based on the question content
+    // More selective search - only for very specific queries
     const lowerQuery = query.toLowerCase();
 
-    if (lowerQuery.includes('react') || lowerQuery.includes('component')) {
-      searchQueries.push(`${query} React documentation tutorial`);
-      searchQueries.push(`${query} React examples GitHub`);
-    } else if (lowerQuery.includes('next') || lowerQuery.includes('nextjs')) {
-      searchQueries.push(`${query} Next.js documentation`);
-      searchQueries.push(`${query} Next.js tutorial 2024`);
-    } else if (lowerQuery.includes('typescript') || lowerQuery.includes('ts')) {
-      searchQueries.push(`${query} TypeScript documentation`);
-      searchQueries.push(`${query} TypeScript examples`);
-    } else if (
-      lowerQuery.includes('youtube') ||
-      lowerQuery.includes('video') ||
-      lowerQuery.includes('tutorial')
+    // Skip search for basic questions
+    if (
+      query.length < 20 ||
+      lowerQuery.includes('hello') ||
+      lowerQuery.includes('hi') ||
+      lowerQuery.includes('thank') ||
+      lowerQuery.includes('help') ||
+      lowerQuery.includes('what is dionysus') ||
+      lowerQuery.includes('how to use')
     ) {
-      searchQueries.push(`${query} YouTube tutorial 2024`);
-      searchQueries.push(`${query} video guide`);
-    } else if (lowerQuery.includes('github') || lowerQuery.includes('repository')) {
-      searchQueries.push(`${query} GitHub repository`);
-      searchQueries.push(`${query} open source examples`);
-    } else {
-      // Generic searches for other topics
-      searchQueries.push(`${query} documentation tutorial`);
-      searchQueries.push(`${query} examples guide 2024`);
+      return { content: '', sources: [] };
     }
 
-    // Add a general search if we don't have enough queries
-    if (searchQueries.length < 2) {
-      searchQueries.push(`${query} best practices`);
+    // Create more targeted search queries based on the question content
+    const searchQueries = [];
+
+    if (lowerQuery.includes('react') || lowerQuery.includes('component')) {
+      searchQueries.push(`${query} React documentation`);
+    } else if (lowerQuery.includes('next') || lowerQuery.includes('nextjs')) {
+      searchQueries.push(`${query} Next.js documentation`);
+    } else if (lowerQuery.includes('typescript') || lowerQuery.includes('ts')) {
+      searchQueries.push(`${query} TypeScript documentation`);
+    } else if (lowerQuery.includes('github') || lowerQuery.includes('repository')) {
+      searchQueries.push(`${query} GitHub`);
+    } else {
+      // Generic search for other topics - limit to 1 query
+      searchQueries.push(`${query} documentation`);
     }
 
     const searchResults: { content: string; sources: string[] } = { content: '', sources: [] };
 
-    // Search with the generated queries
-    for (const searchQuery of searchQueries.slice(0, 3)) {
+    // Search with only 1 query and limit results
+    for (const searchQuery of searchQueries.slice(0, 1)) {
       try {
         const searchResponse = await firecrawl.search(searchQuery, {
-          limit: 3,
+          limit: 2, // Reduced from 3
         });
 
         if (searchResponse && Array.isArray(searchResponse)) {
-          for (const result of searchResponse) {
+          for (const result of searchResponse.slice(0, 2)) {
+            // Limit to 2 results
             if (result.content && result.url) {
               searchResults.content += `\n\nSOURCE: ${result.url}\n`;
-              searchResults.content += `TITLE: ${result.title || 'No title'}\n`;
-              searchResults.content += `CONTENT: ${result.content.substring(0, 1000)}...\n`;
+              searchResults.content += `CONTENT: ${result.content.substring(0, 600)}...\n`; // Reduced from 1000
               searchResults.sources.push(result.url);
             }
           }
         }
       } catch (searchError) {
         console.error('Search error:', searchError);
-        // Continue with other searches
+        // Continue without failing
       }
     }
 
@@ -1089,6 +1054,7 @@ export async function POST(request: NextRequest) {
       selectedModel === 'microsoft/mai-ds-r1:free' ||
       selectedModel === 'meituan/longcat-flash-chat:free' ||
       selectedModel === 'meta-llama/llama-4-maverick:free' ||
+      selectedModel === 'nousresearch/hermes-3-llama-3.1-405b:free' ||
       selectedModel === 'openai/gpt-oss-120b'
     ) {
       const hasProPlan =
@@ -1569,6 +1535,67 @@ This JSON array MUST be on its own line at the very end, after all other content
       }
 
       // Create streaming response (normal mode without extended thinking)
+
+      // Check response cache for similar questions (skip for regeneration or complex queries)
+      const cacheKey = `${sanitizedQuestion.substring(0, 100)}-${sanitizedContext.substring(0, 50)}`;
+      const cachedResponse = responseCache.get(cacheKey);
+
+      if (
+        cachedResponse &&
+        Date.now() - cachedResponse.timestamp < RESPONSE_CACHE_TTL &&
+        !isRegeneration
+      ) {
+        // Return cached response immediately
+        const readableStream = new ReadableStream({
+          start(controller) {
+            const encoder = new TextEncoder();
+
+            // Stream cached response instantly
+            const words = cachedResponse.response.split(' ');
+            let currentText = '';
+
+            for (const word of words) {
+              currentText += (currentText ? ' ' : '') + word;
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'chunk', content: word + ' ', timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+              // Very fast streaming for cached responses
+            }
+
+            // Send sources if available
+            if (cachedResponse.sources.length > 0) {
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({ type: 'sources', sources: cachedResponse.sources, timestamp: new Date().toISOString() })}\n\n`,
+                ),
+              );
+            }
+
+            // Send completion
+            controller.enqueue(
+              encoder.encode(
+                `data: ${JSON.stringify({ type: 'complete', fullResponse: cachedResponse.response, sources: cachedResponse.sources, timestamp: new Date().toISOString() })}\n\n`,
+              ),
+            );
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+          },
+        });
+
+        return new Response(readableStream, {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            Connection: 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        });
+      }
+
       const stream = await model.stream(messages, { callbacks: tracer ? [tracer] : undefined });
 
       // Create a readable stream

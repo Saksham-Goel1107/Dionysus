@@ -20,6 +20,8 @@ import {
   Copy,
   Edit2,
   ExternalLink,
+  Eye,
+  EyeOff,
   File,
   FileImage,
   FileText,
@@ -163,6 +165,9 @@ const GlobalAIAssistant: React.FC = () => {
   const [originalMessage, setOriginalMessage] = useState<string>('');
   const [showFeatureSelector, setShowFeatureSelector] = useState<boolean>(false);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  // Incognito mode state
+  const [isIncognitoMode, setIsIncognitoMode] = useState<boolean>(false);
 
   // New state for database integration
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -490,6 +495,15 @@ const GlobalAIAssistant: React.FC = () => {
       quality: 'Excellent',
     },
     {
+      id: 'minimax/minimax-m2:free',
+      name: 'MINIMAX M2',
+      provider: 'MINIMAX',
+      description: 'Heavy Powerful model with excellent capabilities',
+      icon: '🤏',
+      speed: 'Medium',
+      quality: 'Excellent',
+    },
+    {
       id: 'microsoft/mai-ds-r1:free',
       name: 'Microsoft MAI DS R1',
       provider: 'Microsoft',
@@ -522,6 +536,15 @@ const GlobalAIAssistant: React.FC = () => {
       provider: 'Meituan',
       description: 'Super powerful model with Superb capabilities',
       icon: '🐈',
+      speed: 'Slow',
+      quality: 'Excellent',
+    },
+    {
+      id: 'nousresearch/hermes-3-llama-3.1-405b:free',
+      name: 'NOUSEARCH HERMES 3',
+      provider: 'NOUSEARCH',
+      description: 'Super powerful model with Superb capabilities',
+      icon: '🏛️',
       speed: 'Slow',
       quality: 'Excellent',
     },
@@ -688,6 +711,7 @@ const GlobalAIAssistant: React.FC = () => {
         selectedModel === 'deepseek/deepseek-r1-0528:free' ||
         selectedModel === 'microsoft/mai-ds-r1:free' ||
         selectedModel === 'meituan/longcat-flash-chat:free' ||
+        selectedModel === 'nousresearch/hermes-3-llama-3.1-405b:free' ||
         selectedModel === 'openai/gpt-oss-120b')
     ) {
       setSelectedModel('gemini-2.5-flash');
@@ -917,16 +941,16 @@ const GlobalAIAssistant: React.FC = () => {
     }
   }, [currentSession]);
 
-  // Auto-create session when opening if no session exists
+  // Auto-create session when opening if no session exists (skip in incognito mode)
   useEffect(() => {
-    if (isOpen && !currentSessionId && isSignedIn && !sessionsLoading) {
+    if (isOpen && !currentSessionId && isSignedIn && !sessionsLoading && !isIncognitoMode) {
       // Check if we have any existing sessions
       if (sessions && sessions.sessions.length > 0) {
         // Load the most recent session
         setCurrentSessionId(sessions.sessions[0]!.id);
       }
     }
-  }, [isOpen, currentSessionId, isSignedIn, sessions, sessionsLoading]);
+  }, [isOpen, currentSessionId, isSignedIn, sessions, sessionsLoading, isIncognitoMode]);
 
   // Auto-scroll to bottom when new messages are added with smooth behavior
   useEffect(() => {
@@ -1935,7 +1959,7 @@ const GlobalAIAssistant: React.FC = () => {
 
     // Create or ensure we have a session
     let sessionId = currentSessionId;
-    if (!sessionId && isSignedIn) {
+    if (!sessionId && isSignedIn && !isIncognitoMode) {
       try {
         const newSession = await createSessionMutation.mutateAsync({ title: 'New Chat' });
         sessionId = newSession.id;
@@ -1946,8 +1970,8 @@ const GlobalAIAssistant: React.FC = () => {
       }
     }
 
-    // Save user message to database
-    if (sessionId && isSignedIn) {
+    // Save user message to database (skip in incognito mode)
+    if (sessionId && isSignedIn && !isIncognitoMode) {
       addMessageMutation.mutate({
         sessionId,
         role: 'user',
@@ -2141,8 +2165,8 @@ const GlobalAIAssistant: React.FC = () => {
                       ),
                     );
 
-                    // Save assistant response to database
-                    if (sessionId && isSignedIn) {
+                    // Save assistant response to database (skip in incognito mode)
+                    if (sessionId && isSignedIn && !isIncognitoMode) {
                       const messageToSave = messages.find((m) => m.id === assistantMessageId);
                       const contentToSave = messageToSave?.content || finalContent;
 
@@ -2240,6 +2264,11 @@ const GlobalAIAssistant: React.FC = () => {
     // Cancel edit mode if active
     if (isEditing) {
       cancelEditing();
+    }
+    // Clear messages if in incognito mode
+    if (isIncognitoMode) {
+      setMessages([]);
+      setCurrentSessionId(null);
     }
     setIsOpen(false);
   };
@@ -3246,6 +3275,7 @@ const GlobalAIAssistant: React.FC = () => {
                               model.id !== 'auto' &&
                               (model.id === 'perplexity-sonar-pro' ||
                                 model.id === 'openai/gpt-oss-120b' ||
+                                model.id === 'nousresearch/hermes-3-llama-3.1-405b:free' ||
                                 model.id === 'microsoft/mai-ds-r1:free' ||
                                 model.id === 'meituan/longcat-flash-chat:free' ||
                                 model.id === 'deepseek/deepseek-r1-0528:free');
@@ -3328,6 +3358,32 @@ const GlobalAIAssistant: React.FC = () => {
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            {/* Incognito Mode Toggle */}
+            <Button
+              variant={isIncognitoMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                const newMode = !isIncognitoMode;
+                setIsIncognitoMode(newMode);
+                if (newMode) {
+                  // Entering incognito mode - clear current session
+                  setCurrentSessionId(null);
+                  toast.info('Incognito mode enabled. Chat will not be saved.');
+                } else {
+                  // Exiting incognito mode
+                  toast.info('Incognito mode disabled. Chat will be saved.');
+                }
+              }}
+              className={`h-7 gap-1 px-2 text-xs ${
+                isIncognitoMode
+                  ? 'bg-gray-700 text-white hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+              title={isIncognitoMode ? "Exit Incognito Mode" : "Enter Incognito Mode"}
+            >
+              {isIncognitoMode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+              <span className="hidden sm:inline">{isIncognitoMode ? 'Incognito' : 'Normal'}</span>
+            </Button>
             <div className="hidden text-xs text-muted-foreground sm:block">
               Press
               <kbd className="mx-1 rounded border border-border bg-background px-1.5 py-0.5 text-xs shadow-sm dark:border-gray-600 dark:bg-gray-800">
@@ -3347,7 +3403,7 @@ const GlobalAIAssistant: React.FC = () => {
                 Clear Chat
               </Button>
             )}
-            {isSignedIn && (
+            {isSignedIn && !isIncognitoMode && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -3358,7 +3414,7 @@ const GlobalAIAssistant: React.FC = () => {
                 <History className="h-3 w-3" />
               </Button>
             )}
-            {isSignedIn && (
+            {isSignedIn && !isIncognitoMode && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -3369,7 +3425,7 @@ const GlobalAIAssistant: React.FC = () => {
                 <Settings className="h-3 w-3" />
               </Button>
             )}
-            {isSignedIn && (
+            {isSignedIn && !isIncognitoMode && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -3396,8 +3452,23 @@ const GlobalAIAssistant: React.FC = () => {
           </div>
         </div>
 
+        {/* Incognito Mode Banner */}
+        {isIncognitoMode && (
+          <div className="border-b border-gray-300 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 px-4 py-2 dark:border-gray-600 dark:from-gray-800 dark:via-gray-700 dark:to-gray-800">
+            <div className="flex items-center gap-2 text-sm">
+              <EyeOff className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+              <span className="font-medium text-gray-800 dark:text-gray-200">
+                Incognito Mode Active
+              </span>
+              <span className="text-gray-600 dark:text-gray-400">
+                • Chat is not saved • No history • Cleared on close
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Chat History Sidebar */}
-        {showHistorySidebar && (
+        {showHistorySidebar && !isIncognitoMode && (
           <div className="absolute left-0 top-0 z-50 h-full w-[5xl] border-r border-border bg-background shadow-lg">
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-border p-4">
@@ -4174,7 +4245,7 @@ const GlobalAIAssistant: React.FC = () => {
                                   <Sparkles className="h-3.5 w-3.5" />
                                 </Button>
                               )}
-                              {message.role === 'assistant' && (
+                              {message.role === 'assistant' && !isIncognitoMode && (
                                 <>
                                   <Button
                                     variant="ghost"
