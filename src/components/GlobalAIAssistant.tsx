@@ -96,6 +96,7 @@ interface Message {
   imageUrl?: string; // Generated image URL
   thinkingSteps?: ThinkingStep[]; // Chain of thought for extended thinking
   isThinking?: boolean; // Currently in thinking mode
+  error?: string; // Error message if request failed
 }
 
 interface FileAttachment {
@@ -2096,8 +2097,8 @@ const GlobalAIAssistant: React.FC = () => {
                   } else if (parsed.type === 'thinkingStep') {
                     // Add a new thinking step
                     const newStep: ThinkingStep = {
-                      step: parsed.step,
-                      thought: parsed.thought,
+                      step: parsed.stepNumber || parsed.step,
+                      thought: parsed.content || parsed.thought,
                       duration: parsed.duration,
                       model: parsed.model,
                       timestamp: new Date(parsed.timestamp),
@@ -2178,6 +2179,7 @@ const GlobalAIAssistant: React.FC = () => {
                         followUpQuestions:
                           parsed.followUpQuestions || messageToSave?.followUpQuestions || undefined,
                         imageUrl: parsed.imageUrl || messageToSave?.imageUrl || undefined,
+                        thinkingSteps: messageToSave?.thinkingSteps || undefined,
                         model:
                           selectedModel === 'auto'
                             ? selectAutoModel(sanitizedQuestion)
@@ -2234,14 +2236,16 @@ const GlobalAIAssistant: React.FC = () => {
         return;
       }
 
-      // Update the assistant message with error
+      // Update the assistant message with error state
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === assistantMessageId
             ? {
                 ...msg,
+                error: errorMessage,
                 content:
-                  'I apologize, but I encountered an error while processing your question. Please try again with a question related to this page or the Dionysus platform.',
+                  'I apologize, but I encountered an error while processing your question. Please try again.',
               }
             : msg,
         ),
@@ -2751,6 +2755,295 @@ const GlobalAIAssistant: React.FC = () => {
                 ...msg,
                 content:
                   'I apologize, but I encountered an error while regenerating the response. Please try again.',
+              }
+            : msg,
+        ),
+      );
+    } finally {
+      setIsLoading(false);
+      setIsGenerating(false);
+      setAbortController(null);
+    }
+  };
+
+  // Retry failed message
+  const handleRetry = async (assistantMessageId: string) => {
+    if (isLoading) return;
+
+    // Find the assistant message and its corresponding user message
+    const assistantMessageIndex = messages.findIndex((msg) => msg.id === assistantMessageId);
+    if (assistantMessageIndex === -1) return;
+
+    // Find the user message that prompted this response (should be right before the assistant message)
+    let userMessageIndex = -1;
+    for (let i = assistantMessageIndex - 1; i >= 0; i--) {
+      const msg = messages[i];
+      if (msg?.role === 'user') {
+        userMessageIndex = i;
+        break;
+      }
+    }
+
+    if (userMessageIndex === -1) return;
+
+    const userMessage = messages[userMessageIndex];
+    if (!userMessage) {
+      // Safety: if userMessage is unexpectedly undefined, abort retry
+      return;
+    }
+
+    // Clear the error state and reset content
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === assistantMessageId
+          ? {
+              ...msg,
+              error: undefined,
+              content: '',
+              thinkingSteps: undefined,
+              isThinking: false,
+              sources: [],
+              followUpQuestions: undefined,
+              imageUrl: undefined,
+            }
+          : msg,
+      ),
+    );
+
+    // Set loading state
+    setIsLoading(true);
+    setIsGenerating(true);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    try {
+      // Prepare user information for personalization
+      const userInfo = user
+        ? {
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            fullName: user.fullName || '',
+            email: user.primaryEmailAddress?.emailAddress || '',
+            username: user.username || '',
+            hasImage: !!user.imageUrl,
+          }
+        : null;
+
+      const response = await fetch('/api/ai-assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-Origin': window.location.origin,
+        },
+        body: JSON.stringify({
+          question: userMessage.content,
+          context: currentContext,
+          conversationHistory: messages.slice(-10).map((msg) => ({
+            ...msg,
+            content: sanitizeInput(msg.content),
+          })),
+          platform: 'dionysus',
+          userId: 'authenticated',
+          userInfo: userInfo,
+          attachments: userMessage.attachments,
+          model: selectedModel === 'auto' ? selectAutoModel(userMessage.content) : selectedModel,
+          features: userMessage.features,
+          sessionId: currentSessionId,
+          groupId: currentSession?.groupId || null,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      // Handle streaming response for retry (same as handleSubmit)
+      if (response.body) {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+
+                if (data === '[DONE]') {
+                  break;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+
+                  if (parsed.type === 'chunk') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? { ...msg, content: msg.content + parsed.content }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'thinking') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, isThinking: true } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'thinkingStep') {
+                    const newStep: ThinkingStep = {
+                      step: parsed.stepNumber || parsed.step,
+                      thought: parsed.content || parsed.thought,
+                      duration: parsed.duration,
+                      model: parsed.model,
+                      timestamp: new Date(parsed.timestamp),
+                    };
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? {
+                              ...msg,
+                              thinkingSteps: [...(msg.thinkingSteps || []), newStep],
+                            }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'thinkingComplete') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, isThinking: false } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'sources') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, sources: parsed.sources } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'followUpQuestions') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? { ...msg, followUpQuestions: parsed.followUpQuestions }
+                          : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'image') {
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId ? { ...msg, imageUrl: parsed.imageUrl } : msg,
+                      ),
+                    );
+                  } else if (parsed.type === 'imageError') {
+                    console.error('Image generation error:', parsed.error);
+                    setToastMessage('Image generation failed');
+                    setTimeout(() => setToastMessage(''), 3000);
+                  } else if (parsed.type === 'complete') {
+                    const finalContent = sanitizeInput(parsed.fullResponse);
+                    setMessages((prev) =>
+                      prev.map((msg) =>
+                        msg.id === assistantMessageId
+                          ? {
+                              ...msg,
+                              content: msg.content || finalContent,
+                              sources: parsed.sources || msg.sources || [],
+                              followUpQuestions:
+                                parsed.followUpQuestions || msg.followUpQuestions || [],
+                              imageUrl: parsed.imageUrl || msg.imageUrl,
+                            }
+                          : msg,
+                      ),
+                    );
+
+                    // Save assistant response to database (skip in incognito mode)
+                    if (currentSessionId && isSignedIn && !isIncognitoMode) {
+                      const messageToSave = messages.find((m) => m.id === assistantMessageId);
+                      const contentToSave = messageToSave?.content || finalContent;
+
+                      addMessageMutation.mutate({
+                        sessionId: currentSessionId,
+                        role: 'assistant',
+                        content: contentToSave,
+                        sources: parsed.sources || messageToSave?.sources || undefined,
+                        followUpQuestions:
+                          parsed.followUpQuestions || messageToSave?.followUpQuestions || undefined,
+                        imageUrl: parsed.imageUrl || messageToSave?.imageUrl || undefined,
+                        thinkingSteps: messageToSave?.thinkingSteps || undefined,
+                        model:
+                          selectedModel === 'auto'
+                            ? selectAutoModel(userMessage.content)
+                            : selectedModel,
+                      });
+
+                      // Generate title if this is the first exchange
+                      if (messages.length <= 1) {
+                        generateTitleMutation.mutate({ sessionId: currentSessionId });
+                      }
+                    }
+
+                    setIsLoading(false);
+                    setIsGenerating(false);
+                    setAbortController(null);
+                  } else if (parsed.type === 'error') {
+                    throw new Error(parsed.error || 'Streaming error');
+                  }
+                } catch (parseError) {
+                  console.error('Error parsing streaming data:', parseError);
+                }
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+      } else {
+        // Fallback for non-streaming response
+        const data = await response.json();
+
+        if (!data.answer || typeof data.answer !== 'string') {
+          throw new Error('Invalid response format');
+        }
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? {
+                  ...msg,
+                  content: sanitizeInput(data.answer),
+                  sources: data.sources || [],
+                }
+              : msg,
+          ),
+        );
+      }
+    } catch (error) {
+      console.error('Error retrying AI response:', error);
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
+
+      // Update the assistant message with error state
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId
+            ? {
+                ...msg,
+                error: errorMessage,
+                content:
+                  'I apologize, but I encountered an error while processing your question. Please try again.',
               }
             : msg,
         ),
@@ -3360,7 +3653,7 @@ const GlobalAIAssistant: React.FC = () => {
           <div className="ml-auto flex items-center gap-2">
             {/* Incognito Mode Toggle */}
             <Button
-              variant={isIncognitoMode ? "default" : "outline"}
+              variant={isIncognitoMode ? 'default' : 'outline'}
               size="sm"
               onClick={() => {
                 const newMode = !isIncognitoMode;
@@ -3379,7 +3672,7 @@ const GlobalAIAssistant: React.FC = () => {
                   ? 'bg-gray-700 text-white hover:bg-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-800'
               }`}
-              title={isIncognitoMode ? "Exit Incognito Mode" : "Enter Incognito Mode"}
+              title={isIncognitoMode ? 'Exit Incognito Mode' : 'Enter Incognito Mode'}
             >
               {isIncognitoMode ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
               <span className="hidden sm:inline">{isIncognitoMode ? 'Incognito' : 'Normal'}</span>
@@ -4215,6 +4508,60 @@ const GlobalAIAssistant: React.FC = () => {
                                   )}
                                 </div>
                               )}
+
+                              {/* Error Display and Retry Button */}
+                              {message.role === 'assistant' && message.error && (
+                                <div className="mt-3 border-t border-red-200 pt-3 dark:border-red-800">
+                                  <div className="flex items-start gap-3 rounded-lg bg-red-50 p-3 dark:bg-red-950/20">
+                                    <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
+                                      <svg
+                                        className="h-4 w-4 text-red-600 dark:text-red-400"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                        />
+                                      </svg>
+                                    </div>
+                                    <div className="flex-1">
+                                      <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                                        Request Failed
+                                      </p>
+                                      <p className="mt-1 text-xs text-red-700 dark:text-red-300">
+                                        {message.error}
+                                      </p>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRetry(message.id)}
+                                        disabled={isLoading}
+                                        className="mt-2 h-7 border-red-300 bg-white px-3 text-xs text-red-700 hover:border-red-400 hover:bg-red-50 dark:border-red-700 dark:bg-red-950/50 dark:text-red-300 dark:hover:bg-red-900/50"
+                                      >
+                                        <svg
+                                          className="mr-1.5 h-3 w-3"
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                          />
+                                        </svg>
+                                        Retry
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
                               {message.content && (
                                 <div className="mt-1 text-xs opacity-70">
                                   {message.timestamp.toLocaleTimeString()}

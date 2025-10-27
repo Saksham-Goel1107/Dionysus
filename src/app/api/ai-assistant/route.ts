@@ -70,7 +70,7 @@ async function generateImage(prompt: string): Promise<{ imageUrl: string; error?
   }
 }
 
-// Multi-stage thinking with chain of thought (optimized for speed)
+// Multi-stage thinking with chain of thought (optimized for speed and reliability with powerful models)
 async function performExtendedThinking(
   question: string,
   context: string,
@@ -92,50 +92,354 @@ async function performExtendedThinking(
     timestamp: string;
   }> = [];
 
-  // Single fast analysis with Gemini Flash (much faster than multi-stage)
-  const startTime = Date.now();
-  const model = new ChatGoogleGenerativeAI({
-    apiKey: process.env.GEMINI_API_KEY!,
-    model: 'gemini-2.0-flash-exp',
-    temperature: 0.7,
-    maxOutputTokens: 2000, // Limit output for speed
-  });
+  // Available super powerful models for extended thinking
+  const superPowerfulModels: AIModelId[] = [
+    'perplexity-sonar-pro', // Most powerful for analysis
+    'deepseek/deepseek-r1-0528:free', // Excellent reasoning
+    'microsoft/mai-ds-r1:free', // Advanced reasoning
+    'meta-llama/llama-4-maverick:free', // Powerful general AI
+    'nousresearch/hermes-3-llama-3.1-405b:free', // Strong reasoning
+    'openai/gpt-oss-120b', // Large context model
+    'qwen/qwen3-coder:free', // Good for technical analysis
+    'moonshotai/kimi-dev-72b:free', // Strong general AI
+    'alibaba/tongyi-deepresearch-30b-a3b:free', // Research focused
+    'z-ai/glm-4.5-air:free', // Advanced language model
+    'minimax/minimax-m2:free', // Powerful multimodal
+    'meituan/longcat-flash-chat:free', // Fast and capable
+    'gemini-2.5-flash', // Fallback
+  ];
 
-  const prompt = `Analyze this question deeply and provide a comprehensive response. Break down the problem, consider edge cases, and provide detailed reasoning:
+  // Helper function to get a random powerful model different from the current one
+  const getRandomPowerfulModel = (excludeModel?: string): AIModelId => {
+    const available = superPowerfulModels.filter((m) => m !== excludeModel);
+    return available[Math.floor(Math.random() * available.length)] || 'gemini-2.5-flash';
+  };
+
+  // Helper function to try a model with fallback for extended thinking
+  const tryPowerfulModelWithFallback = async (
+    stepNumber: number,
+    prompt: string,
+    systemMessage: string,
+    primaryModel: AIModelId,
+    maxRetries: number = 3,
+  ): Promise<{ response: any; model: string; duration: number }> => {
+    let currentModel = primaryModel;
+    let lastError: any = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const start = Date.now();
+        const model = initializeAIModel(currentModel, false);
+
+        // Test the model with a simple invoke first
+        const testResponse = await Promise.race([
+          model.invoke([
+            new SystemMessage('Test response - respond with "OK"'),
+            new HumanMessage('Test'),
+          ]),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Model timeout')), 15000)),
+        ]);
+
+        if (!testResponse.content && !testResponse.text) {
+          throw new Error(`Model ${currentModel} returned empty response`);
+        }
+
+        // If test passes, proceed with the actual prompt
+        const response = await Promise.race([
+          model.invoke([new SystemMessage(systemMessage), new HumanMessage(prompt)]),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Model response timeout')), 30000),
+          ),
+        ]);
+
+        const duration = (Date.now() - start) / 1000;
+        return { response, model: currentModel, duration };
+      } catch (error) {
+        console.warn(
+          `Step ${stepNumber} failed with model ${currentModel}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+        lastError = error;
+        currentModel = getRandomPowerfulModel(currentModel);
+      }
+    }
+
+    throw new Error(
+      `All powerful models failed for step ${stepNumber}. Last error: ${lastError?.message || 'Unknown error'}`,
+    );
+  };
+
+  // Step 1: Deep Analysis - Use most powerful model for initial breakdown
+  try {
+    const step1Result = await tryPowerfulModelWithFallback(
+      1,
+      `Perform a comprehensive analysis of this question. Break it down into fundamental components and identify the core problem with exceptional depth:
 
 Question: ${question}
 Context: ${context}
 
-Provide a thorough analysis with step-by-step reasoning, considering multiple approaches and potential issues. Be comprehensive but concise.`;
+Provide a detailed breakdown covering:
+1. Core problem identification and root cause analysis
+2. Key requirements, constraints, and success criteria
+3. Multiple potential solution approaches with technical depth
+4. Edge cases, failure modes, and risk assessment
+5. Dependencies, prerequisites, and environmental factors
+6. Performance, scalability, and reliability considerations
 
-  const response = await model.invoke([
-    new SystemMessage(
-      'You are an expert analyst. Provide deep, structured analysis with clear reasoning.',
-    ),
-    new HumanMessage(prompt),
-  ]);
+Be extremely thorough and provide expert-level analysis.`,
+      'You are a world-class AI analyst with deep expertise across all technical domains. Provide exceptional analytical depth and precision.',
+      'perplexity-sonar-pro',
+    );
 
-  const duration = (Date.now() - startTime) / 1000;
-  thinkingSteps.push({
-    step: 1,
-    thought: response.content.toString(),
-    duration: duration,
-    model: 'Gemini 2.0 Flash (Fast Analysis)',
-    timestamp: new Date().toISOString(),
-  });
+    thinkingSteps.push({
+      step: 1,
+      thought: `**🔍 Deep Problem Analysis:**\n${step1Result.response.content.toString()}`,
+      duration: step1Result.duration,
+      model: step1Result.model,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Step 1 failed completely:', error);
+    thinkingSteps.push({
+      step: 1,
+      thought: `**🔍 Deep Problem Analysis:**\nFailed to perform deep analysis. Error: ${error instanceof Error ? error.message : String(error)}`,
+      duration: 0,
+      model: 'failed',
+      timestamp: new Date().toISOString(),
+    });
+  }
 
-  return {
-    thinkingSteps,
-    finalAnswer: response.content.toString(),
-  };
+  // Step 2: Advanced Reasoning - Use different powerful model for solution evaluation
+  try {
+    const step2Result = await tryPowerfulModelWithFallback(
+      2,
+      `Based on the deep analysis above, provide advanced reasoning and evaluation of multiple solution approaches:
+
+Question: ${question}
+Deep Analysis: ${thinkingSteps[0]?.thought.replace('**🔍 Deep Problem Analysis:**\n', '') || 'Analysis not available'}
+
+Provide comprehensive evaluation covering:
+1. Detailed technical architecture and implementation strategies
+2. Comparative analysis of solution approaches (pros/cons with metrics)
+3. Risk assessment and mitigation strategies
+4. Performance optimization and efficiency considerations
+5. Security, compliance, and best practice implications
+6. Cost-benefit analysis and resource requirements
+7. Timeline estimates and development complexity assessment
+8. Alternative innovative approaches and cutting-edge solutions
+
+Provide expert-level reasoning with specific technical details and actionable insights.`,
+      'You are an elite AI reasoning specialist with unparalleled analytical capabilities. Provide sophisticated technical reasoning and strategic insights.',
+      'deepseek/deepseek-r1-0528:free',
+    );
+
+    thinkingSteps.push({
+      step: 2,
+      thought: `**🧠 Advanced Solution Reasoning:**\n${step2Result.response.content.toString()}`,
+      duration: step2Result.duration,
+      model: step2Result.model,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Step 2 failed completely:', error);
+    thinkingSteps.push({
+      step: 2,
+      thought: `**🧠 Advanced Solution Reasoning:**\nFailed to perform advanced reasoning. Error: ${error instanceof Error ? error.message : String(error)}`,
+      duration: 0,
+      model: 'failed',
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  // Step 3: Expert Synthesis - Use another powerful model for final comprehensive response
+  try {
+    const step3Result = await tryPowerfulModelWithFallback(
+      3,
+      `Synthesize all analysis and reasoning into a masterful, comprehensive, and immediately actionable response:
+
+Question: ${question}
+Deep Analysis: ${thinkingSteps[0]?.thought.replace('**🔍 Deep Problem Analysis:**\n', '') || 'Analysis not available'}
+Advanced Reasoning: ${thinkingSteps[1]?.thought.replace('**🧠 Advanced Solution Reasoning:**\n', '') || 'Reasoning not available'}
+
+Create a response that demonstrates expert-level understanding and provides:
+1. Clear, comprehensive solution with step-by-step implementation
+2. Specific code examples, configurations, and technical details
+3. Best practices, performance optimizations, and security considerations
+4. Common pitfalls, troubleshooting guidance, and maintenance strategies
+5. Alternative approaches with clear trade-off analysis
+6. Future-proofing recommendations and scalability guidance
+7. Resource links, documentation, and learning materials
+8. Success metrics and validation approaches
+
+Make the response exceptionally practical, immediately actionable, and demonstrate deep technical expertise.`,
+      'You are a master AI synthesizer capable of creating exceptional technical content. Provide comprehensive, actionable, and expert-level responses.',
+      'microsoft/mai-ds-r1:free',
+    );
+
+    thinkingSteps.push({
+      step: 3,
+      thought: `**✨ Expert Synthesis & Solution:**\n${step3Result.response.content.toString()}`,
+      duration: step3Result.duration,
+      model: step3Result.model,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      thinkingSteps,
+      finalAnswer: step3Result.response.content.toString(),
+    };
+  } catch (error) {
+    console.error('Step 3 failed completely:', error);
+
+    // If final synthesis fails, try with multiple fallback models
+    try {
+      const fallbackModels = [
+        'meta-llama/llama-4-maverick:free',
+        'nousresearch/hermes-3-llama-3.1-405b:free',
+        'openai/gpt-oss-120b',
+      ];
+      let finalResult: any = null;
+
+      for (const fallbackModel of fallbackModels) {
+        try {
+          const fallbackResult = await tryPowerfulModelWithFallback(
+            3,
+            `Provide a comprehensive answer to this question based on the available analysis:
+
+Question: ${question}
+Context: ${context}
+
+${thinkingSteps[0] ? `Analysis: ${thinkingSteps[0].thought.replace('**🔍 Deep Problem Analysis:**\n', '')}` : ''}
+${thinkingSteps[1] ? `Reasoning: ${thinkingSteps[1].thought.replace('**🧠 Advanced Solution Reasoning:**\n', '')}` : ''}
+
+Provide a detailed, actionable response with specific recommendations and technical details.`,
+            'You are an expert AI assistant providing comprehensive technical solutions.',
+            fallbackModel as AIModelId,
+            1, // Only 1 retry for fallback
+          );
+
+          finalResult = fallbackResult;
+          break; // Success, exit the loop
+        } catch (fallbackError) {
+          console.warn(`Fallback model ${fallbackModel} also failed:`, fallbackError);
+          continue;
+        }
+      }
+
+      if (finalResult) {
+        thinkingSteps.push({
+          step: 3,
+          thought: `**✨ Expert Synthesis & Solution (Fallback):**\n${finalResult.response.content.toString()}`,
+          duration: finalResult.duration,
+          model: finalResult.model,
+          timestamp: new Date().toISOString(),
+        });
+
+        return {
+          thinkingSteps,
+          finalAnswer: finalResult.response.content.toString(),
+        };
+      }
+    } catch (fallbackError) {
+      console.error('All fallback attempts failed:', fallbackError);
+    }
+
+    // Ultimate fallback - provide a basic response
+    thinkingSteps.push({
+      step: 3,
+      thought: `**Error:**\nUnable to generate a comprehensive response. All powerful AI models failed. Please try again later or use a simpler query.`,
+      duration: 0,
+      model: 'failed',
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      thinkingSteps,
+      finalAnswer:
+        "I apologize, but I'm currently experiencing issues with all available AI models. Please try again in a few moments, or try a different question. If the problem persists, consider using the standard AI assistant instead of extended thinking mode.",
+    };
+  }
 }
 
-// Initialize LangChain tracer
-let tracer: LangChainTracer | null = null;
-if (!tracer && process.env.LANGCHAIN_API_KEY) {
-  tracer = new LangChainTracer({
-    projectName: 'dionysus-ai-assistant',
-  });
+// Function to attempt AI generation with fallback models (enhanced with powerful models)
+async function generateWithFallbackModels(
+  messages: any[],
+  tracer: any,
+  selectedModelId: AIModelId,
+  isRegeneration: boolean = false,
+): Promise<any> {
+  // Create a prioritized list of powerful models to try, starting with the selected one
+  const powerfulFallbackModels: AIModelId[] = [
+    selectedModelId, // Always try the selected model first
+    'perplexity-sonar-pro', // Most powerful for complex queries
+    'deepseek/deepseek-r1-0528:free', // Excellent reasoning
+    'microsoft/mai-ds-r1:free', // Advanced reasoning
+    'meta-llama/llama-4-maverick:free', // Powerful general AI
+    'nousresearch/hermes-3-llama-3.1-405b:free', // Strong reasoning
+    'openai/gpt-oss-120b', // Large context model
+    'qwen/qwen3-coder:free', // Good for technical queries
+    'moonshotai/kimi-dev-72b:free', // Strong general AI
+    'alibaba/tongyi-deepresearch-30b-a3b:free', // Research focused
+    'z-ai/glm-4.5-air:free', // Advanced language model
+    'minimax/minimax-m2:free', // Powerful multimodal
+    'meituan/longcat-flash-chat:free', // Fast and capable
+    'gemini-2.5-flash', // Reliable fallback
+  ];
+
+  // Remove duplicates while preserving order
+  const uniqueModels = powerfulFallbackModels.filter(
+    (model, index, arr) => arr.indexOf(model) === index,
+  );
+
+  let lastError: any = null;
+  let attemptedModels: string[] = [];
+
+  for (const modelId of uniqueModels) {
+    try {
+      attemptedModels.push(modelId);
+      console.log(
+        `Attempting to generate with powerful model: ${modelId} (attempted: ${attemptedModels.join(', ')})`,
+      );
+
+      const fallbackModel = initializeAIModel(modelId, isRegeneration);
+
+      // Test the model with a simple invoke first to check if it works
+      const testResponse = await Promise.race([
+        fallbackModel.invoke([
+          new SystemMessage('Test response - respond with "OK"'),
+          new HumanMessage('Test'),
+        ]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Model timeout')), 10000)),
+      ]);
+
+      if (!testResponse.content && !testResponse.text) {
+        throw new Error(`Model ${modelId} returned empty response`);
+      }
+
+      console.log(`Model ${modelId} test passed, proceeding with streaming`);
+
+      // If test passes, proceed with streaming
+      const stream = await fallbackModel.stream(messages, {
+        callbacks: tracer ? [tracer] : undefined,
+      });
+
+      return stream;
+    } catch (error) {
+      console.warn(
+        `Powerful model ${modelId} failed:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      lastError = error;
+
+      // Continue to next model if this one failed
+      continue;
+    }
+  }
+
+  // If all models failed, throw the last error with context
+  const errorMessage = `All powerful AI models failed. Attempted: ${attemptedModels.join(', ')}. Last error: ${lastError instanceof Error ? lastError.message : String(lastError)}`;
+  console.error(errorMessage);
+  throw new Error(errorMessage);
 }
 
 // Fetch user memories and survey data from database (optimized single query with caching)
@@ -1146,7 +1450,6 @@ export async function POST(request: NextRequest) {
 
     // Initialize LangChain model based on user selection
     const modelId = (selectedModel as AIModelId) || 'gemini-2.5-flash';
-    const model = initializeAIModel(modelId, isRegeneration || false);
 
     // Fetch user memory context from database (skip for very basic queries)
     const shouldFetchMemories =
@@ -1433,13 +1736,23 @@ This JSON array MUST be on its own line at the very end, after all other content
                 sanitizedContext,
               );
 
-              // Stream each thinking step to the client
+              // Stream each thinking step to the client with enhanced formatting
               for (const step of thinkingResult.thinkingSteps) {
                 const stepData = JSON.stringify({
                   type: 'thinkingStep',
-                  ...step,
+                  stepNumber: step.step,
+                  title:
+                    step.thought.split('\n')[0]?.replace(/\*\*/g, '').trim() || `Step ${step.step}`,
+                  content: step.thought,
+                  duration: step.duration,
+                  model: step.model,
+                  timestamp: step.timestamp,
+                  isVisible: true, // Ensure the step is marked as visible
                 });
                 controller.enqueue(encoder.encode(`data: ${stepData}\n\n`));
+
+                // Add a delay between steps for better UX and to ensure proper rendering
+                await new Promise((resolve) => setTimeout(resolve, 300));
               }
 
               // Send thinking complete signal
@@ -1596,7 +1909,13 @@ This JSON array MUST be on its own line at the very end, after all other content
         });
       }
 
-      const stream = await model.stream(messages, { callbacks: tracer ? [tracer] : undefined });
+      const tracer = new LangChainTracer();
+      const stream = await generateWithFallbackModels(
+        messages,
+        tracer,
+        modelId,
+        isRegeneration || false,
+      );
 
       // Create a readable stream
       const readableStream = new ReadableStream({
