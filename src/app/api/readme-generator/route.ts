@@ -1,4 +1,4 @@
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai/chat_models';
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { LangChainTracer } from 'langchain/callbacks';

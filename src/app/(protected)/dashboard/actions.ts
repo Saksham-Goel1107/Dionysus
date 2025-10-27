@@ -1,6 +1,6 @@
 'use server';
 
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai/chat_models';
 import { generateEmbedding } from '@/lib/gemini';
 import { readReplicaDb2 } from '@/server/read-replica-2-db';
 import { LangChainTracer } from 'langchain/callbacks';

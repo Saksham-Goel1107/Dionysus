@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai';
+import { ChatGoogleGenerativeAI } from '@langchain/google-genai/chat_models';
 import { LangChainTracer } from 'langchain/callbacks';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
