@@ -1110,7 +1110,20 @@ export default clerkMiddleware(async (auth, request) => {
   const isRecaptchaVerifyApi = pathname.startsWith('/api/recaptcha-verify');
   const isApiRouteGlobal = pathname.startsWith('/api/');
   const recaptchaFailed = request.cookies.get('recaptcha_failed')?.value === 'true';
-  if (recaptchaFailed && isApiRouteGlobal && !isRecaptchaVerifyApi) {
+
+  const allowedApiRoutes = [
+    '/api/trpc/',
+    '/api/user/pro-status',
+    '/api/has-password',
+    '/api/newsletter/status',
+    '/api/create',
+    '/api/uptime',
+    '/api/maintenance-info',
+  ];
+
+  const isAllowedApiRoute = allowedApiRoutes.some(route => pathname.startsWith(route));
+
+  if (recaptchaFailed && isApiRouteGlobal && !isRecaptchaVerifyApi && !isAllowedApiRoute) {
     return new NextResponse(
       createBlockedOverlay('Security verification required.', [
         'reCAPTCHA verification failed',
